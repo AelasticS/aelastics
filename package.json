@@ -2,14 +2,32 @@
   "name": "aelastics-types",
   "version": "0.2.0",
   "description": "",
-  "keywords": [],
+  "keywords": [
+    "type definitions",
+    "data structures",
+    "validation",
+    "serialization"
+  ],
   "main": "dist/aelastics-types.umd.js",
   "module": "dist/aelastics-types.es5.js",
   "typings": "dist/types/aelastics-types.d.ts",
   "files": [
     "dist"
   ],
-  "author": "Sinisa <sinisa.neskovic@fon.bg.ac.rs>",
+  "author": {
+    "name": "AelasticS team",
+    "email": "support@AelasticS.com",
+    "url": "https://www.AelasticS.com"
+  },
+  "contributors": [
+    {
+      "name": "Sinisa Neskovic",
+      "email": "sinisa.neskovic@AelasticS.com",
+      "url": "https://a.com"
+    },
+    "Ivana Todorovic",
+    "Nikola Kojic"
+  ],
   "repository": {
     "type": "git",
     "url": ""
@@ -116,5 +134,8 @@
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.12.0",
     "typescript": "^3.0.3"
+  },
+  "dependencies": {
+    "aelastics-result": "^1.0.2"
   }
 }
