@@ -92,7 +92,7 @@ export class NumberTypeC extends SimpleTypeC<number> {
     get integer() {
         return this.addValidator({
             message: (value, label) => `Expected ${label} to be an integer, got ${value}`,
-            predicate: value => Number.isInteger(value) //is.integer(value)
+            predicate: value => Number.isInteger(value) // is.integer(value)
         });
     }
 
@@ -142,7 +142,7 @@ export class NumberTypeC extends SimpleTypeC<number> {
     get integerOrInfinite() {
         return this.addValidator({
             message: (value, label) => `Expected ${label} to be an integer or infinite, got ${value}`,
-            predicate: value => Number.isInteger(value) || !Number.isFinite(value) //.infinite(value)
+            predicate: value => Number.isInteger(value) || !Number.isFinite(value) // .infinite(value)
         });
     }
 
@@ -192,10 +192,11 @@ export class NumberTypeC extends SimpleTypeC<number> {
 }
 
 /**
- *  number type
+ *  Number type
  */
+// tslint:disable-next-line:variable-name
 export const number: NumberTypeC = new NumberTypeC('number');
 number.addValidator({
-    message: (value, label) => `Value ${label}: "${value}" is not of type "${name}`,
-    predicate: (value) => (typeof value === 'number')
+    message: (value:any, label:string) => `Value ${label}: "${value}" is not of type "${name}`,
+    predicate: (value:any) => (typeof value === 'number')
 });

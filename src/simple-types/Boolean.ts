@@ -2,22 +2,22 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import {SimpleTypeC} from "./SimpleType";
+import { SimpleTypeC } from './SimpleType'
 
 export class BooleanTypeC extends SimpleTypeC<boolean> {
-    public readonly _tag: 'Boolean' = 'Boolean';
-    constructor(name: string) {
-        super(name);
-    }
+  public readonly _tag: 'Boolean' = 'Boolean'
+  constructor(name: string) {
+    super(name)
+  }
 }
 
 /**
- *  boolean type
+ *  Boolean type
  */
-
-export const boolean: BooleanTypeC = new BooleanTypeC('boolean');
+// tslint:disable-next-line:variable-name
+export const boolean: BooleanTypeC = new BooleanTypeC('boolean')
 
 boolean.addValidator({
-    message: (value, label) => `Value ${label}="${value}" is not of type "${name}`,
-    predicate: (value) => (typeof value === 'boolean')
-});
+  message: (value:any, label:string) => `Value ${label}="${value}" is not of type "${name}`,
+  predicate: (value:any) => typeof value === 'boolean'
+})
