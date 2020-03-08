@@ -1,4 +1,5 @@
 # aelastics-types
 
-Type system dynamically created at run time
+ Types dynamically created at run time with data validation and serialization
+
 
