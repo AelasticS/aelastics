@@ -225,7 +225,11 @@ describe('Array test cases', () => {
     let emp = [
       {
         name: 'Jovan',
-        age: 22,
+        employmentDate: {
+          day: 25,
+          month: 3,
+          year: 2018
+        },
         dateOfBirth: {
           day: 31,
           month: 12,
@@ -234,7 +238,11 @@ describe('Array test cases', () => {
       },
       {
         name: 'Petar',
-        age: 22,
+        employmentDate: {
+          day: 4,
+          month: 10,
+          year: 2018
+        },
         dateOfBirth: {
           day: 14,
           month: 7,
@@ -252,7 +260,11 @@ describe('Array test cases', () => {
     let emp = [
       {
         name: 'Jovan',
-        age: 104,
+        employmentDate: {
+          day: 25,
+          month: 3,
+          year: 2010
+        },
         dateOfBirth: {
           day: 31,
           month: 5,
@@ -261,7 +273,11 @@ describe('Array test cases', () => {
       },
       {
         name: 'Petar',
-        age: 21,
+        employmentDate: {
+          day: 25,
+          month: 3,
+          year: 2018
+        },
         dateOfBirth: {
           day: 14,
           month: 7,

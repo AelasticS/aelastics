@@ -218,10 +218,14 @@ describe('ObjectTest', () => {
     expect(isSuccess(type.validate(o, []))).toBe(true)
   })
 
-  it('should be valid examples.EmployeeType object', () => {
+  it('should be valid example of EmployeeType object', () => {
     let emp = {
       name: 'John',
-      age: 22,
+      employmentDate: {
+        day: 25,
+        month: 3,
+        year: 2018
+      },
       dateOfBirth: {
         day: 12,
         month: 12,
@@ -234,7 +238,11 @@ describe('ObjectTest', () => {
   it('should not be valid examples.EmployeeType object in case of invalid value for month', () => {
     let emp = {
       name: 'John',
-      age: 22,
+      employmentDate: {
+        day: 25,
+        month: 3,
+        year: 2018
+      },
       dateOfBirth: {
         day: 12,
         month: 22,
@@ -246,15 +254,18 @@ describe('ObjectTest', () => {
       let s = errorMessages(f)
       expect(s).toEqual(
         'Expected dateOfBirth:[object Object]/month:22 to be in range [1..12], got 22\n' +
-          'Expected dateOfBirth:[object Object] to be correct value of date, got [object Object]\n' +
-          'Expected  that number of age is in correct relation with date of birth, got [object Object]\n'
+          'Expected dateOfBirth:[object Object] to be correct value of date, got [object Object]\n'
       )
     }
   })
   it('should not be valid examples.EmployeeType object in case of invalid value for day', () => {
     let emp = {
       name: 'John',
-      age: 52,
+      employmentDate: {
+        day: 25,
+        month: 3,
+        year: 2018
+      },
       dateOfBirth: {
         day: 31,
         month: 4,
@@ -265,14 +276,18 @@ describe('ObjectTest', () => {
     if (isFailure(f)) {
       let s = errorMessages(f)
       expect(s).toEqual(
-        'Expected dateOfBirth:[object Object] to be correct value of date, got [object Object]\nExpected  that number of age is in correct relation with date of birth, got [object Object]\n'
+        'Expected dateOfBirth:[object Object] to be correct value of date, got [object Object]\n'
       )
     }
   })
   it('EmployeeBadDay2', () => {
     let emp = {
       name: 'Jovan',
-      age: 22,
+      employmentDate: {
+        day: 25,
+        month: 3,
+        year: 2018
+      },
       dateOfBirth: {
         day: 30,
         month: 2,
@@ -283,10 +298,14 @@ describe('ObjectTest', () => {
     expect(isSuccess(f)).toBe(false)
   })
 
-  it('should not be valid examples.EmployeeType object in case of wrong relation between date of birth and ages', () => {
+  it('should not be valid examples.EmployeeType object in case of wrong relation between date of birth and day of employment', () => {
     let emp = {
       name: 'John',
-      age: 25,
+      employmentDate: {
+        day: 25,
+        month: 3,
+        year: 2012
+      },
       dateOfBirth: {
         day: 28,
         month: 4,
@@ -297,25 +316,7 @@ describe('ObjectTest', () => {
     if (isFailure(f)) {
       let s = errorMessages(f)
       expect(s).toEqual(
-        'Expected  that number of age is in correct relation with date of birth, got [object Object]\n'
-      )
-    }
-  })
-  it('EmployeeAgeAndDAteDontMatch2', () => {
-    let emp = {
-      name: 'Jovan',
-      age: 22,
-      dateOfBirth: {
-        day: 28,
-        month: 4,
-        year: 1996
-      }
-    }
-    let f = examples.EmployeeType.validate(emp, [])
-    if (isFailure(f)) {
-      let s = errorMessages(f)
-      expect(s).toEqual(
-        'Expected  that number of age is in correct relation with date of birth, got [object Object]\n'
+        'Expected  date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]\n'
       )
     }
   })
@@ -405,7 +406,7 @@ describe('ObjectTest', () => {
       index: '0122/2016'
     }
 
-    let f = examples.EmployeeType.validate(student, [])
+    let f = examples.studentType.validate(student, [])
 
     expect(isSuccess(f)).toBe(false)
   })
