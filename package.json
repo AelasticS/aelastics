@@ -3,9 +3,9 @@
   "version": "0.2.0",
   "description": "",
   "keywords": [
-    "type definitions",
-    "data structures",
-    "validation",
+    "runtime type definitions",
+    "dynamic data types",
+    "data validation",
     "serialization"
   ],
   "main": "dist/aelastics-types.umd.js",

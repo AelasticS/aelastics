@@ -14,12 +14,12 @@ export * from './simple-types/Literal'
 export * from './complex-types/TaggedUnionType'
 export * from './simple-types/Optional'
 export * from './complex-types/Array'
-export * from "./complex-types/UnionType"
-export * from "./complex-types/Subtype"
+export * from './complex-types/UnionType'
+export * from './complex-types/Subtype'
 export * from './complex-types/Map'
 export * from './complex-types/FunctionalType'
 export * from './complex-types/IntersectionType'
 export * from './complex-types/ComplexType'
 export * from './TypeSchema'
-export * from "./complex-types/ObjReference"
-export * from "./LinkC"
+export * from './complex-types/ObjReference'
+export * from './LinkC'

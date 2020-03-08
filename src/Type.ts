@@ -40,8 +40,7 @@ export abstract class TypeC<T, D = T> {
   public readonly _T!: T // natural type
   public readonly _D!: D // DTO type
 
-
-//  public derivedFrom: TypeC<T, D>
+  //  public derivedFrom: TypeC<T, D>
 
   /** Unique name for this type */
   public readonly name: string
@@ -94,7 +93,6 @@ export abstract class TypeC<T, D = T> {
     }
     return success<D>((value as unknown) as D)
   }
-
 
   public addValidator(validator: Validator<T>): this {
     this.validators.push(validator)
