@@ -176,10 +176,3 @@ export const getAtomValidator = <T>(name: string): Validator<T> => ({
 
 // todo: Tuple
 // Todo: Enum
-
-// Ivana>
-// todo: Void
-// todo: Null
-// todo: Undefined
-// todo: Never
-//

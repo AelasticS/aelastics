@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import * as t from '../../index'
+import * as t from '../../src'
 import {
   BirthPlaceType ,
   SexType ,
@@ -49,8 +49,7 @@ export const inv1: t.TypeOf<typeof InvoiceType> = {
   ])
 }
 
-const dt = t.date
-export const dateValue: t.DtoTypeOf<typeof dt> = '5'
+export const dateValue: t.DtoTypeOf<typeof t.date> = '5'
 
 export const invDTO: t.DtoTypeOf<typeof InvoiceType> = {
   id : 1 ,
