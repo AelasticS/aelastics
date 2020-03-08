@@ -18,6 +18,6 @@ export class BooleanTypeC extends SimpleTypeC<boolean> {
 export const boolean: BooleanTypeC = new BooleanTypeC('boolean')
 
 boolean.addValidator({
-  message: (value:any, label:string) => `Value ${label}="${value}" is not of type "${name}`,
+  message: (value:any, label:string) => `Value ${label}="${value}" is not of type "${label}`,
   predicate: (value:any) => typeof value === 'boolean'
 })

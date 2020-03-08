@@ -155,16 +155,19 @@ export abstract class TypeC<T, D = T> {
 }
 
 /**
- *  'type of' operator
- */
-export type TypeOf<C extends TypeC<unknown>> = C['_T']
-
-export type DtoTypeOf<C extends TypeC<unknown>> = C['_D']
-
-/**
  *  'any' type
  */
 export interface Any extends TypeC<any> {}
+
+
+/**
+ *  'type of' operator
+ */
+export type TypeOf<C extends Any> = C['_T']
+
+export type DtoTypeOf<C extends Any> = C['_D']
+
+
 
 export const getAtomValidator = <T>(name: string): Validator<T> => ({
   message: (value, label) => `Value ${label}: "${value}" is not of type "${name}`,

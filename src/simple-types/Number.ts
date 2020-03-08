@@ -197,6 +197,6 @@ export class NumberTypeC extends SimpleTypeC<number> {
 // tslint:disable-next-line:variable-name
 export const number: NumberTypeC = new NumberTypeC('number');
 number.addValidator({
-    message: (value:any, label:string) => `Value ${label}: "${value}" is not of type "${name}`,
+    message: (value:any, label:string) => `Value ${label}: "${value}" is not of type "${label}`,
     predicate: (value:any) => (typeof value === 'number')
 });

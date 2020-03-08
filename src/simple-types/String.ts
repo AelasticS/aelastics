@@ -234,6 +234,6 @@ export class StringTypeC extends SimpleTypeC<string> {
 export const string: StringTypeC = new StringTypeC('string')
 
 string.addValidator({
-  message: (value:any, label:string) => `Value ${label}: "${value}" is not of type "${name}`,
+  message: (value:any, label:string) => `Value ${label}: "${value}" is not of type "${label}`,
   predicate: (value:any) => typeof value === 'string'
 })
