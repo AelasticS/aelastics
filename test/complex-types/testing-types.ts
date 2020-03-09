@@ -3,7 +3,7 @@
  *
  */
 
-import * as t from '../../src'
+import * as t from '../../src/aelastics-types'
 import { Failure } from 'aelastics-result'
 // function that returns only error messages from failure
 export const errorMessages = (emp: Failure) => {

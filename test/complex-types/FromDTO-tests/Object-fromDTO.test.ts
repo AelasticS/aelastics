@@ -1,6 +1,6 @@
 import { isFailure, isSuccess } from 'aelastics-result'
 import * as examples from '../testing-types'
-import * as t from '../../../src'
+import * as t from '../../../src/aelastics-types'
 
 describe('Testing fromDTO method of ObjectType', () => {
   it('should be valid fromDTO for examples.DateType', () => {

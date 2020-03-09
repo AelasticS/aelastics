@@ -1,4 +1,4 @@
-import * as t from '../../src/index'
+import * as t from '../../src/aelastics-types'
 import { isSuccess } from 'aelastics-result'
 
 const personName = t.string.derive('name').alphabetical

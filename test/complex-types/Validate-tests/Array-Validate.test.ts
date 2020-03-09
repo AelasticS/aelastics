@@ -1,5 +1,5 @@
 import * as at from '../../../src/complex-types/Array'
-import * as t from '../../../src'
+import * as t from '../../../src/aelastics-types'
 import { isSuccess } from 'aelastics-result'
 import * as examples from '../testing-types'
 

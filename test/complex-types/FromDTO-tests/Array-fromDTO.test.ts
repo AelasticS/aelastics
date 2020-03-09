@@ -1,5 +1,5 @@
 import { isFailure, isSuccess } from 'aelastics-result'
-import * as t from '../../../src'
+import * as t from '../../../src/aelastics-types'
 import * as at from '../../../src/complex-types/Array'
 import * as examples from '../testing-types'
 

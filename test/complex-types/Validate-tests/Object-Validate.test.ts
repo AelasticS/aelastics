@@ -1,4 +1,4 @@
-import * as t from '../../../src'
+import * as t from '../../../src/aelastics-types'
 import { isSuccess, isFailure, Failure } from 'aelastics-result'
 import * as examples from '../testing-types'
 
