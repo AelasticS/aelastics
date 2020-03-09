@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "SimpleType.js",
+  "sourceRoot": "",
+  "sources": [
+    "../../../src/simple-types/SimpleType.ts"
+  ],
+  "names": [],
+  "mappings": "AAAA;;GAEG;AAEH,OAAO,EAAO,KAAK,EAAE,MAAM,SAAS,CAAA;AACpC,OAAO,EAAU,OAAO,EAAE,MAAM,kBAAkB,CAAA;AAElD,MAAM,OAAgB,WAAsB,SAAQ,KAAW;IAC7D,sDAAsD;IAEtD,YAAY,IAAY;QACtB,KAAK,CAAC,IAAI,CAAC,CAAA;IACb,CAAC;IAED,aAAa,CAAC,SAAwB;QACpC,OAAO,OAAO,CAAC,IAAI,CAAC,CAAA;IACtB,CAAC;CACF"
+}

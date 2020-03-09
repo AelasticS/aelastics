@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "ComplexType.js",
+  "sourceRoot": "",
+  "sources": [
+    "../../../src/complex-types/ComplexType.ts"
+  ],
+  "names": [],
+  "mappings": "AAAA;;GAEG;AAEH,OAAO,EAAE,KAAK,EAAE,MAAM,SAAS,CAAA;AAE/B;;GAEG;AACH,MAAM,OAAgB,YAAkD,SAAQ,KAAW;IACzF,YAAY,IAAY,EAAW,QAAW;QAC5C,KAAK,CAAC,IAAI,CAAC,CAAA;QADsB,aAAQ,GAAR,QAAQ,CAAG;IAE9C,CAAC;CACF"
+}

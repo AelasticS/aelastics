@@ -1,0 +1,12 @@
+{
+  "version": 3,
+  "file": "aelastics-types.umd.js",
+  "sources": [
+    "../src/aelastics-types.ts"
+  ],
+  "sourcesContent": [
+    "// Import here Polyfills if needed. Recommended core-js (npm i -D core-js)\n  // import \"core-js/fn/array.find\"\n  // ...\nexport default class DummyClass {\n\n}\n"
+  ],
+  "names": [],
+  "mappings": ";;;;;;EAAA;EACE;EACA;AACF,QAAqB,UAAU;GAE9B;;;;;;;;"
+}
