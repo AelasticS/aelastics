@@ -13,7 +13,7 @@
 - Special types (optional, object reference, link)
 - Type schemas (subschemas) as containers of type definitions
 - Special type operators for interface declarations  
-- Support for Intellisence in code editors
+- Support for Intellisence/typechecking in code editors similar to React prop-types library
 
 
 #### Validation
@@ -29,3 +29,16 @@
 - Graph data structures are supported via generated object IDs 
 
 
+##Introduction
+
+## Simple types
+
+## Complex types
+
+## Special types
+
+## Type schemas
+
+## Static typechecking 
+
+## Conversion and serialization
