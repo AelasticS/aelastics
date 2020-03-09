@@ -1,5 +1,5 @@
 {
-  "name": "aelastics-types",
+  "name": "@aelastics/aelastics-types",
   "version": "0.2.0",
   "description": "",
   "keywords": [
@@ -22,15 +22,28 @@
   "contributors": [
     {
       "name": "Sinisa Neskovic",
-      "email": "sinisa.neskovic@AelasticS.com",
-      "url": "https://a.com"
+      "email": "support@AelasticS.com",
+      "url": "https://www.AelasticS.com"
     },
-    "Ivana Todorovic",
-    "Nikola Kojic"
+    {
+      "name": "Ivana Todorovic",
+      "email": "support@AelasticS.com",
+      "url": "https://www.AelasticS.com"
+    },
+    {
+      "name": "Nikola Kojic",
+      "email": "support@AelasticS.com",
+      "url": "https://www.AelasticS.com"
+    },
+    {
+      "name": "Lazar Milosavljevic",
+      "email": "support@AelasticS.com",
+      "url": "https://www.AelasticS.com"
+    }
   ],
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/AelasticS/aelastics-types.git"
   },
   "license": "MIT",
   "engines": {

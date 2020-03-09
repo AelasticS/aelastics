@@ -1,7 +1,7 @@
 # AelasticS Types
 
 > Types dynamically created at run time 
-> - tree and graph data structures supported 
+> - tree and graph data structures 
 > - data validation and serialization
 
 ## Highlights
@@ -28,6 +28,21 @@
 - Optional automatic object ID generation
 - Graph data structures are supported via generated object IDs 
 
+## Example
+
+```ts
+import * as t from "aelastics-types";
+
+export const AgeType = t.number.derive('Human age').int8.positive.inRange(1, 120);
+
+export const WorkerType = t.object({
+    name: t.string,
+    age: t.optional(AgeType),
+    sex: t.unionOf([t.literal('male'), t.literal("female")],"sexType"),
+    birthPlace:  t.object({name: t.string, state: t.string}),
+    children: t.listOf(t.object({name: t.string}, "Child"))
+}, 'WorkerType');
+```
 
 ##Introduction
 
