@@ -18,7 +18,7 @@ import {
 } from 'aelastics-result'
 import { Any, TypeC } from '../Type'
 import { TypeSchema } from '../TypeSchema'
-import { OptionalTypeC } from '../'
+import { OptionalTypeC } from '../simple-types/Optional'
 
 export class SubtypeC<
   P extends Props,
