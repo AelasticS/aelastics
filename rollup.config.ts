@@ -7,7 +7,7 @@ import json from 'rollup-plugin-json'
 
 const pkg = require('./package.json')
 
-const libraryName = 'index' // 'aelastics-types'
+const libraryName = 'aelastics-types' // 'aelastics-types'
 
 export default {
   input : `src/${libraryName}.ts` ,
