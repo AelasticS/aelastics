@@ -1,7 +1,7 @@
 // Import here Polyfills if needed. Recommended core-js (npm i -D core-js)
 // import "core-js/fn/array.find"
 // ...
-export { Type, Any, TypeOf, DtoTypeOf } from './Type'
+export { Type, Any, TypeOf, DtoTypeOf } from './common/Type'
 // export * from './simple-types/SimpleType'
 export { boolean } from './simple-types/Boolean'
 export { date } from './simple-types/DateType'
@@ -18,6 +18,6 @@ export { mapOf } from './complex-types/Map'
 export { fun, argsType, returnType } from './complex-types/FunctionalType'
 export { intersectionOf } from './complex-types/IntersectionType'
 // export * from './complex-types/ComplexType'
-export { schema, ValidateStatusEnum } from './TypeSchema'
+export { schema, ValidateStatusEnum } from './common/TypeSchema'
 export { ref } from './complex-types/ObjReference'
-export { link } from './LinkC'
+export { link } from './common/LinkC'

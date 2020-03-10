@@ -4,7 +4,7 @@
  */
 
 import { ComplexTypeC } from './ComplexType'
-import { Any, DtoTypeOf, TypeOf } from '../Type'
+import { Any, DtoTypeOf, TypeOf } from '../common/Type'
 import {
   Error,
   failure,

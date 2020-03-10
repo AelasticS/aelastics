@@ -5,19 +5,19 @@
 
 import {
   appendPath,
-  Errors ,
-  failures ,
-  failureValidation ,
-  isFailure ,
-  success ,
-  validationError ,
-  Path ,
+  Errors,
+  failures,
+  failureValidation,
+  isFailure,
+  success,
+  validationError,
+  Path,
   Result
 } from 'aelastics-result'
 import { ComplexTypeC } from './ComplexType'
-import { Any , DtoTypeOf , TypeC , TypeOf } from '../Type'
+import { Any, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
 import { OptionalTypeC } from '../simple-types/Optional'
-import { TypeSchema } from '../TypeSchema'
+import { TypeSchema } from '../common/TypeSchema'
 
 export interface Props {
   [key: string]: Any // TypeC<any>

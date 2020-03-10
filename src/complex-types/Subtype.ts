@@ -16,8 +16,8 @@ import {
   validationError,
   appendPath
 } from 'aelastics-result'
-import { Any, TypeC } from '../Type'
-import { TypeSchema } from '../TypeSchema'
+import { Any, TypeC } from '../common/Type'
+import { TypeSchema } from '../common/TypeSchema'
 import { OptionalTypeC } from '../simple-types/Optional'
 
 export class SubtypeC<
@@ -178,5 +178,14 @@ export const subtype = <P extends Props, S extends Props>(
   name: string = getSubtypeName(superType),
   schema?: TypeSchema,
   superProps: S = superType['baseType']
-): SubtypeC<P, S, ObjectTypeC<Props>> =>
-  new SubtypeC(name, extraProps, superType as ObjectTypeC<Props>)
+): SubtypeC<P, S, ObjectTypeC<Props>> => {
+  const obj: SubtypeC<P, S, ObjectTypeC<Props>> = new SubtypeC(
+    name,
+    extraProps,
+    superType as ObjectTypeC<Props>
+  ) // new ObjectTypeC<P>(name, props, identifier)
+  if (schema) {
+    schema.addType(obj)
+  }
+  return obj
+}

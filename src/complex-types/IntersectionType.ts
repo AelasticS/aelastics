@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, DtoTypeOf, TypeOf } from '../Type'
+import { Any, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 

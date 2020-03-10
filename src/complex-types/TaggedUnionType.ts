@@ -15,7 +15,7 @@ import {
   Result
 } from 'aelastics-result'
 import { ObjectType, Props, ObjectTypeC } from './ObjectType'
-import { Any, DtoTypeOf, TypeOf } from '../Type'
+import { Any, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { LiteralTypeC } from '../simple-types/Literal'
 

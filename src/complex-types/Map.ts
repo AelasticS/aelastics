@@ -16,7 +16,7 @@ import {
   Result
 } from 'aelastics-result'
 import { ComplexTypeC } from './ComplexType'
-import { Any, DtoTypeOf, TypeOf } from '../Type'
+import { Any, DtoTypeOf, TypeOf } from '../common/Type'
 
 /**
  * Map type

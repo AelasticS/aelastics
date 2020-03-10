@@ -13,7 +13,7 @@ import {
   success,
   Result
 } from 'aelastics-result'
-import { Any, DtoTypeOf, TypeOf } from '../Type'
+import { Any, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 
 /**

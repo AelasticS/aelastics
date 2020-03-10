@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { Any, TypeC } from '../Type'
+import { Any, TypeC } from '../common/Type'
 import { Result, success } from 'aelastics-result'
 
 export abstract class SimpleTypeC<T, D = T> extends TypeC<T, D> {

@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, DtoTypeOf, TypeC, TypeOf } from '../Type'
+import { Any, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
 import { DtoObjectType, ObjectType, Props } from './ObjectType'
 import { failures, isFailure, Result, success } from 'aelastics-result'
 

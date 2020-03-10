@@ -3,19 +3,19 @@
  *
  */
 
-import { TypeC , Any } from '../Type'
+import { TypeC, Any } from '../common/Type'
 import { ObjectTypeC } from './ObjectType'
 import {
-  appendPath ,
-  Errors ,
-  Failure ,
-  failures ,
-  failureValidation ,
-  isFailure ,
-  Path ,
-  Result ,
-  success ,
-  Success ,
+  appendPath,
+  Errors,
+  Failure,
+  failures,
+  failureValidation,
+  isFailure,
+  Path,
+  Result,
+  success,
+  Success,
   validationError
 } from 'aelastics-result'
 

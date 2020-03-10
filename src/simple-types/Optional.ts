@@ -3,7 +3,7 @@
  */
 
 import { success, Path, Result, failures, isFailure } from 'aelastics-result'
-import { Any, DtoTypeOf, TypeC, TypeOf } from '../Type'
+import { Any, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
 
 const getOptionalName = (base: Any): string => `optional ${base.name}`
 

@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { TypeC } from '../Type'
+import { TypeC } from '../common/Type'
 
 /**
  *  Complex type: a structure which is derived from some type P
