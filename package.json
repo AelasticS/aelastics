@@ -1,6 +1,6 @@
 {
   "name": "aelastics-types",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Type system dynamically created at run time",
   "keywords": [
     "runtime type definitions",
