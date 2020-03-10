@@ -8,25 +8,26 @@
 
 #### Types 
 
-- Simple types (number, string, boolean, literal)
+- Simple types (number, string, boolean, literal and user defined semantic domains/types)
+- Chainable operators for user defined simple types
 - Complex types (object types, subtypes, array, map, date type, union, tagged union, intersection)
 - Special types (optional, object reference, link)
-- Type schemas (subschemas) as containers of type definitions
-- Special type operators for interface declarations  
-- Support for Intellisence/typechecking in code editors similar to React prop-types library
+- Type schemas as containers of type definitions to manage complexity
+- Special meta-type operators to deduce interface declarations used at compile time 
+- Intellisence in code editors and typechecking in compile time, similar to React prop-types library
 
 
 #### Validation
 - Lots of built-in validations
-- Supports custom complex validations
-- Chainable API
-- Extensive error reports
+- Custom complex validations and object/data value constrains
+- User defined error message specifications
+- Extensive error reports collected during data validations
 
 #### Serialization
-- Conversion into/from Data Transfer Objects
-- Support for date type, map, unions, object references
-- Optional automatic object ID generation
-- Graph data structures are supported via generated object IDs 
+- Serialization/deserialization to/from Data Transfer Objects 
+- Support for date type, map, union, object references
+- Optional automatic object ID generation (version 1.1)
+- Graph data structures are serialized/deserialized using generated object IDs (version 1.1) 
 
 ## Example
 
@@ -56,4 +57,4 @@ export const WorkerType = t.object({
 
 ## Static typechecking 
 
-## Conversion and serialization
+## Serialization
