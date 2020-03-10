@@ -163,7 +163,7 @@ export interface Any extends TypeC<any> {}
 
 export type Any = TypeC<any>
 
-export type Type<D, T> = TypeC<D, T>
+export type Type<T, D = T> = TypeC<T, D>
 
 /**
  *  'type of' operator
