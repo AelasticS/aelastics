@@ -162,14 +162,15 @@ export interface Any extends TypeC<any> {}
 */
 
 export type Any = TypeC<any>
+
+export type Type<D, T> = TypeC<D, T>
+
 /**
  *  'type of' operator
  */
 export type TypeOf<C extends Any> = C['_T']
 
 export type DtoTypeOf<C extends Any> = C['_D']
-
-
 
 export const getAtomValidator = <T>(name: string): Validator<T> => ({
   message: (value, label) => `Value ${label}: "${value}" is not of type "${name}`,
