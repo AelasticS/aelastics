@@ -45,16 +45,3 @@ export const WorkerType = t.object({
 }, 'WorkerType');
 ```
 
-##Introduction
-
-## Simple types
-
-## Complex types
-
-## Special types
-
-## Type schemas
-
-## Static typechecking 
-
-## Serialization
