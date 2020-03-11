@@ -5,7 +5,7 @@
 import { SimpleTypeC } from './SimpleType'
 import { Error, failure, success, Path, Result } from 'aelastics-result'
 
-type LiteralValue = string | number | boolean
+export type LiteralValue = string | number | boolean
 
 /**
  *  Literal TypeC

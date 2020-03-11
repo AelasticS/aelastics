@@ -1,6 +1,8 @@
 // Import here Polyfills if needed. Recommended core-js (npm i -D core-js)
 // import "core-js/fn/array.find"
 // ...
+// import { TypeC } from './common/Type'
+
 export { Type, Any, TypeOf, DtoTypeOf } from './common/Type'
 export { boolean } from './simple-types/Boolean'
 export { date } from './simple-types/DateType'
@@ -32,6 +34,14 @@ import * as cst from './complex-types/Subtype'
 import * as ctut from './complex-types/TaggedUnionType'
 import * as cut from './complex-types/UnionType'
 
+import * as st from './simple-types/SimpleType'
+import * as sto from './simple-types/Optional'
+import * as sts from './simple-types/String'
+import * as stb from './simple-types/Boolean'
+import * as stn from './simple-types/Number'
+import * as stl from './simple-types/Literal'
+import * as std from './simple-types/DateType'
+
 export namespace types {
   export type Type<T, D = T> = ct.TypeC<T, D>
   export type Any = ct.Any
@@ -55,4 +65,12 @@ export namespace types {
     P
   >
   export type UnionType<P extends Any[]> = cut.UnionTypeC<P>
+
+  export type SimpleType<T> = st.SimpleTypeC<T>
+  export type OptionalType<T extends Any> = sto.OptionalTypeC<T>
+  export type String = sts.StringTypeC
+  export type BooleanType = stb.BooleanTypeC
+  export type NumberType = stn.NumberTypeC
+  export type LiteralType<T extends stl.LiteralValue> = stl.LiteralTypeC<T>
+  export type DateType = std.DateTypeC
 }
