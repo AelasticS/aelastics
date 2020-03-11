@@ -49,36 +49,71 @@ import * as schema from './common/TypeSchema'
 
 export namespace types {
   export type Type<T, D = T> = ct.TypeC<T, D>
+  export const isType = (v: any) => v instanceof ct.TypeC
+
   export type Any = ct.Any
   export type TypeOf<T extends Any> = ct.TypeOf<T>
   export type ObjectType<T extends cot.Props> = cot.ObjectType<T>
   export type DtoObjectType<T extends cot.Props> = cot.DtoObjectType<T>
 
   export type ArrayType<T extends ct.Any> = cat.ArrayTypeC<T>
+  export const isArrayType = (v: any) => v instanceof cat.ArrayTypeC
+
   export type ComplexType<P, T extends any, D extends any = T> = cct.ComplexTypeC<T, D>
-  export type FunctionalType<T extends cot.Props> = cft.FunctionalTypeC<T, any>
+  export const isComplexType = (v: any) => v instanceof cct.ComplexTypeC
+
+  export type FunctionalType<P extends cot.Props, R extends Any> = cft.FunctionalTypeC<P, R>
+  export const isFunctionalType = (v: any) => v instanceof cft.FunctionalTypeC
+
   export type IntersectionType<P extends Array<Any>> = cit.IntersectionTypeC<P>
+  export const isIntersectionType = (v: any) => v instanceof cit.IntersectionTypeC
+
   export type MapType<K extends Any, V extends Any> = cmt.MapTypeC<K, V>
+  export const isMapType = (v: any) => v instanceof cmt.MapTypeC
+
   export type ObjReference<T extends cot.ObjectTypeC<any>> = cort.ObjReference<T>
+  export const isObjReference = (v: any) => v instanceof cort.ObjReference
+
   export type Subtype<
     P extends cot.Props,
     SP extends cot.Props,
     S extends cot.ObjectTypeC<cot.Props>
   > = cst.SubtypeC<P, SP, S>
+  export const isSubtype = (v: any) => v instanceof cst.SubtypeC
+
   export type TaggedUnionType<Tag extends string, P extends cot.Props> = ctut.TaggedUnionTypeC<
     Tag,
     P
   >
+  export const isTaggedUnionType = (v: any) => v instanceof ctut.TaggedUnionTypeC
+
   export type UnionType<P extends Any[]> = cut.UnionTypeC<P>
+  export const isUnionType = (v: any) => v instanceof cut.UnionTypeC
 
   export type SimpleType<T> = st.SimpleTypeC<T>
+  export const isSimpleType = (v: any) => v instanceof st.SimpleTypeC
+
   export type OptionalType<T extends Any> = sto.OptionalTypeC<T>
+  export const isOptionalType = (v: any) => v instanceof sto.OptionalTypeC
+
   export type StringType = sts.StringTypeC
+  export const isStringType = (v: any) => v instanceof sts.StringTypeC
+
   export type BooleanType = stb.BooleanTypeC
+  export const isBooleanType = (v: any) => v instanceof stb.BooleanTypeC
+
   export type NumberType = stn.NumberTypeC
+  export const isNumberType = (v: any) => v instanceof stn.NumberTypeC
+
   export type LiteralType<T extends stl.LiteralValue> = stl.LiteralTypeC<T>
+  export const isLiteralType = (v: any) => v instanceof stl.LiteralTypeC
+
   export type DateType = std.DateTypeC
+  export const isDateType = (v: any) => v instanceof std.DateTypeC
 
   export type TypeSchema = schema.TypeSchema
+  export const isTypeSchema = (v: any) => v instanceof schema.TypeSchema
+
   export type LinkType = link.LinkC
+  export const isLinkType = (v: any) => v instanceof link.LinkC
 }
