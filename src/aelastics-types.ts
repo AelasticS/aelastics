@@ -24,6 +24,7 @@ export { schema, ValidateStatusEnum } from './common/TypeSchema'
 export { ref } from './complex-types/ObjReference'
 export { link } from './common/LinkC'
 
+// tslint:disable-next-line:no-duplicate-imports
 import * as ct from './common/Type'
 import * as cot from './complex-types/ObjectType'
 import * as cat from './complex-types/Array'
@@ -49,11 +50,16 @@ import * as schema from './common/TypeSchema'
 
 export namespace types {
   export type Type<T, D = T> = ct.TypeC<T, D>
-  export const isType = (v: any) => v instanceof ct.TypeC
+
+  export function isType(v: any) {
+    return v instanceof ct.TypeC
+  }
 
   export type Any = ct.Any
   export type TypeOf<T extends Any> = ct.TypeOf<T>
   export type ObjectType<T extends cot.Props> = cot.ObjectType<T>
+  export const isObjectType = (v: any) => v instanceof cot.ObjectTypeC
+
   export type DtoObjectType<T extends cot.Props> = cot.DtoObjectType<T>
 
   export type ArrayType<T extends ct.Any> = cat.ArrayTypeC<T>
