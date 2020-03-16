@@ -83,7 +83,11 @@ export class ObjectTypeC<P extends Props> extends ComplexTypeC<P, ObjectType<P>,
     return obj
   }
 
-  public validate(input: ObjectType<P>, path: Path = []): Result<boolean> {
+  public validate(
+    input: ObjectType<P>,
+    path: Path = [],
+    traversed?: Map<Any, Any>
+  ): Result<boolean> {
     const result = isObject(input)
       ? success(input)
       : failureValidation('Value is not object', path, this.name, input)
@@ -91,20 +95,27 @@ export class ObjectTypeC<P extends Props> extends ComplexTypeC<P, ObjectType<P>,
       return result
     }
 
+    if (traversed === undefined) {
+      traversed = new Map<Any, Any>()
+    }
+
     const errors: Errors = []
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
       const k = this.keys[i]
-      if (!hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
-        errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
-        continue
-      }
 
-      const ak = input[k]
+      if (!traversed.has(t)) {
+        if (!hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
+          errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
+          continue
+        }
 
-      const validation = t.validate(ak, appendPath(path, k, t.name, ak))
-      if (isFailure(validation)) {
-        errors.push(...validation.errors)
+        const ak = input[k]
+
+        const validation = t.validate(ak, appendPath(path, k, t.name, ak), traversed)
+        if (isFailure(validation)) {
+          errors.push(...validation.errors)
+        }
       }
     }
 
