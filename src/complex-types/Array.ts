@@ -33,17 +33,32 @@ export class ArrayTypeC<
     return []
   }
 
-  public validate(input: Array<TypeOf<E>>, path: Path = []): Result<boolean> {
+  public validate(
+    input: Array<TypeOf<E>>,
+    path: Path = [],
+    traversed?: Map<Any, Any>
+  ): Result<boolean> {
     if (!Array.isArray(input)) {
       return failure(new Error(`Value ${path}: '${input}' is not Array`))
     }
 
+    if (traversed === undefined) {
+      traversed = new Map<Any, Any>()
+    }
+
+    traversed.set(this, this)
+
     const errors: Errors = []
     for (let i = 0; i < input.length; i++) {
       const x = input[i]
-      const validation = this.baseType.validate(x, appendPath(path, `[${i}]`, this.name))
-      if (isFailure(validation)) {
-        errors.push(...validation.errors)
+      if (!traversed.has(x)) {
+        const validation = this.baseType.validate(
+          x,
+          appendPath(path, `[${i}]`, this.name, traversed)
+        )
+        if (isFailure(validation)) {
+          errors.push(...validation.errors)
+        }
       }
     }
 

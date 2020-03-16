@@ -68,7 +68,7 @@ export abstract class TypeC<T, D = T> {
    *  The default implementation just check all validators. Should be overridden for more complex use cases.
    */
 
-  public validate(value: T, path: Path = []): Result<boolean> {
+  public validate(value: T, path: Path = [], traversed?: Map<Any, Any>): Result<boolean> {
     if (typeof value === 'undefined') {
       return failure(new Error(`Value ${path}: '${value}' is undefined`))
     }
