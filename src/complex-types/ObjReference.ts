@@ -34,7 +34,17 @@ export class ObjReference<T extends ObjectTypeC<any>> extends TypeC<IdentifierOf
 
   // ToDo: Ivana
   // value should be of type corresponding to the identifier of the referenced type
-  validate(value: any /*IdentifierOfType<T>*/, path: Path = []): Success<boolean> | Failure {
+  validate(
+    value: any /*IdentifierOfType<T>*/,
+    path: Path = [],
+    traversed?: Map<Any, Any>
+  ): Success<boolean> | Failure {
+    if (traversed === undefined) {
+      traversed = new Map<Any, Any>()
+    }
+
+    traversed.set(this, this)
+
     const result = isObject(value)
       ? success(value)
       : failureValidation('Value is not object', path, this.name, value)
@@ -68,9 +78,11 @@ export class ObjReference<T extends ObjectTypeC<any>> extends TypeC<IdentifierOf
       const ak = value[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
 
-      const validation = t.validate(ak, appendPath(path, k, t.name, ak))
-      if (isFailure(validation)) {
-        errors.push(...validation.errors)
+      if (!traversed.has(t)) {
+        const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+        if (isFailure(validation)) {
+          errors.push(...validation.errors)
+        }
       }
     }
 

@@ -42,7 +42,11 @@ export class TaggedUnionTypeC<Tag extends string, P extends Props> extends Compl
     super(name, elements)
   }
 
-  public validate(value: TypeOf<this>, path: Path = []): Result<boolean> {
+  public validate(
+    value: TypeOf<this>,
+    path: Path = [],
+    traversed?: Map<Any, Any>
+  ): Result<boolean> {
     const instance = value[this.discriminator]
     if (!instance) {
       return failure(

@@ -20,18 +20,33 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
 > {
   public readonly _tag: 'Intersection' = 'Intersection'
 
-  validate(value: UnionToIntersection<TypeOf<P[number]>>, path: Path = []): Result<boolean> {
+  validate(
+    value: UnionToIntersection<TypeOf<P[number]>>,
+    path: Path = [],
+    traversed?: Map<Any, Any>
+  ): Result<boolean> {
+    if (traversed === undefined) {
+      traversed = new Map<Any, Any>()
+    }
+
+    traversed.set(this, this)
+
     const err: Error[] = []
     for (const t of this.baseType) {
+      if (traversed.has(t)) {
+        continue
+      }
       const res = t.validate(value, path)
       if (isFailure(res)) {
         err.push(...res.errors)
       }
     }
+
     const res = super.validate(value, path)
     if (isFailure(res)) {
       err.push(...res.errors)
     }
+
     if (err.length > 0) {
       return failures(err)
     } else {

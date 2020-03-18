@@ -50,7 +50,16 @@ export class SubtypeC<
     return Object.assign(this.superType.defaultValue(), super.defaultValue())
   }
 
-  public validate(input: ObjectType<P & SP>, path: Path = []): Result<boolean> {
+  public validate(
+    input: ObjectType<P & SP>,
+    path: Path = [],
+    traversed?: Map<Any, Any>
+  ): Result<boolean> {
+    if (traversed === undefined) {
+      traversed = new Map<Any, Any>()
+    }
+    traversed.set(this, this)
+
     let mapOfAllProperties = this.allProperties
     let keys = Array.from(mapOfAllProperties.keys())
 
@@ -71,11 +80,12 @@ export class SubtypeC<
           errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
           continue
         }
-
-        const ak = input[k]
-        const validation = t.validate(ak, appendPath(path, k, t.name, ak))
-        if (isFailure(validation)) {
-          errors.push(...validation.errors)
+        if (!traversed.has(t)) {
+          const ak = input[k]
+          const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+          if (isFailure(validation)) {
+            errors.push(...validation.errors)
+          }
         }
       }
     }

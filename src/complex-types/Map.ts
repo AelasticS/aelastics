@@ -59,13 +59,17 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     const errors: Errors = []
 
     input.forEach((value: V, key: K) => {
+      let res
       // Is this good way to cancel undefined check?
       // @ts-ignore
       if (!traversed.has(value)) {
-        let res = this.baseType.validate(value, appendPath(path, `[${key}]`, value.name, traversed))
+        res = this.baseType.validate(value, appendPath(path, `[${key}]`, value.name, traversed))
         if (isFailure(res)) {
           errors.push(...res.errors)
         }
+      }
+      // @ts-ignore
+      if (!traversed.has(key)) {
         res = this.keyType.validate(key, appendPath(path, `[${key}]`, key.name, traversed))
         if (isFailure(res)) {
           errors.push(...res.errors)
