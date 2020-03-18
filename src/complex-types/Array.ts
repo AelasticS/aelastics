@@ -11,9 +11,10 @@ import {
   isFailure,
   Path,
   success,
-  Result
+  Result,
+  isSuccess
 } from 'aelastics-result'
-import { Any, DtoTypeOf, TypeOf } from '../common/Type'
+import { Any, ConversionOptions, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 
 /**
@@ -33,29 +34,15 @@ export class ArrayTypeC<
     return []
   }
 
-  public validate(
-    input: Array<TypeOf<E>>,
-    path: Path = [],
-    traversed?: Map<Any, Any>
-  ): Result<boolean> {
+  public validate(input: Array<TypeOf<E>>, path: Path = []): Result<boolean> {
     if (!Array.isArray(input)) {
       return failure(new Error(`Value ${path}: '${input}' is not Array`))
     }
 
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
-    }
-
-    traversed.set(this, this)
-
     const errors: Errors = []
     for (let i = 0; i < input.length; i++) {
       const x = input[i]
-      if (traversed.has(x)) {
-        continue
-      }
-
-      const validation = this.baseType.validate(x, appendPath(path, `[${i}]`, this.name, traversed))
+      const validation = this.baseType.validate(x, appendPath(path, `[${i}]`, this.name))
       if (isFailure(validation)) {
         errors.push(...validation.errors)
       }
@@ -91,37 +78,31 @@ export class ArrayTypeC<
     }
     return errors.length ? failures(errors) : success(a)
   }
-  public toDTO(
-    input: Array<TypeOf<E>>,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<Array<DtoTypeOf<E>>> {
-    if (validate) {
-      const res = this.validate(input, path)
-      if (isFailure(res)) {
-        return failures(res.errors)
-      }
-    } else {
-      if (!Array.isArray(input)) {
-        return failure(new Error(`Value ${path}: '${input}' is not Array`))
-      }
-    }
 
+  toDTOCyclic(
+    input: Array<TypeOf<E>>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    options: ConversionOptions & { counter: number }
+  ): Result<Array<DtoTypeOf<E>>> {
+    if (!Array.isArray(input)) {
+      return failure(new Error(`Value ${path} is not Array: '${input}' `))
+    }
     const a: Array<DtoTypeOf<E>> = []
-    const errors: Errors = []
     for (let i = 0; i < input.length; i++) {
       const x = input[i]
-      const conversion = this.baseType.toDTO(x, [], validate)
-      if (isFailure(conversion)) {
-        errors.push(...conversion.errors)
-      } else {
+      const conversion = this.baseType.toDTOCyclic(
+        x,
+        appendPath(path, `[${i}]`, this.name),
+        visitedNodes,
+        errors,
+        options
+      )
+      if (isSuccess(conversion)) {
         a.push(conversion.value)
       }
     }
-    /* const res = this.checkValidators(input, path);
-        if (isFailure(res)) {
-            errors.push(...res.errors)
-        } */
     return errors.length ? failures(errors) : success(a)
   }
 

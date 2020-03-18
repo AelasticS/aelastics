@@ -15,6 +15,7 @@ import {
   success,
   validationError
 } from 'aelastics-result'
+import { IObjectDescriptor, IObjectLiteral } from '../serializer/JsonDeserializer'
 
 export type Predicate<T> = (value: T) => boolean
 
@@ -28,9 +29,32 @@ export type vDeserialize<T> = (value: any, path: Path) => Result<T>
 
 export type Conversion<In, Out> = (value: In, path: Path) => Result<Out>
 
+export type Constructor<T extends {} = {}> = new (...args: any[]) => T
+
+export interface ConversionOptions {
+  validate: boolean
+  generateID: boolean
+  typeInfo: boolean
+  classInstances: boolean // or POJO - Literal object
+  constructors?: Map<string, Constructor> // constructors
+}
+
+export const defaultConversionOptions: ConversionOptions = {
+  validate: true,
+  generateID: false,
+  typeInfo: false,
+  classInstances: false
+}
+
 export interface Validator<T> {
   predicate: Predicate<T> // (value: t)=> boolean;
   message(value: T, label?: string, result?: any): string
+}
+
+export interface InstanceReference {
+  id: number // unique identifier within object graph
+  typeOf: string // instance category: Literal Object, or Typescript class
+  className: string // used as a class name
 }
 
 /**
@@ -68,11 +92,10 @@ export abstract class TypeC<T, D = T> {
    *  The default implementation just check all validators. Should be overridden for more complex use cases.
    */
 
-  public validate(value: T): Result<boolean> {
-    return this.validateCyclic(value, [], new Map<any, any>())
-  }
-
-  public validateCyclic(value: T, path: Path = [], traversed: Map<any, any>): Result<boolean> {
+  public validate(value: T, path: Path = []): Result<boolean> {
+    if (typeof value === 'undefined') {
+      return failure(new Error(`Value ${path}: '${value}' is undefined`))
+    }
     return this.checkValidators(value, path) // (this as TypeC<any>).checkValidators(input, []);
   }
 
@@ -87,12 +110,58 @@ export abstract class TypeC<T, D = T> {
     return isSuccess(res) ? success<T>((value as unknown) as T) : res
   }
 
-  public toDTO(value: T, path: Path = [], validate: boolean = true): Result<D> {
-    if (validate) {
-      const res = this.validate(value, path)
-      return isSuccess(res) ? success<D>((value as unknown) as D) : res
+  /** @internal */
+  public fromDTOCyclic(value: D, path: Path): Result<T> {
+    const res = this.validate((value as unknown) as T, path)
+    return isSuccess(res) ? success<T>((value as unknown) as T) : res
+  }
+
+  /**
+   *  Conversion function - validates value of type T and converts it to DTO (data transfer object) of type D.
+   *  Returns either a new instance of D or errors, if validation fails;
+   *
+   * @param value
+   * @param options
+   */
+  public toDTO(
+    value: T,
+    options: ConversionOptions = {
+      validate: true,
+      generateID: false,
+      typeInfo: false,
+      classInstances: false
     }
-    return success<D>((value as unknown) as D)
+  ): Result<D> {
+    let convOptions = { ...options, ...{ counter: 0 } }
+    if (options?.validate) {
+      const res = this.validate(value, [])
+      return isSuccess(res)
+        ? this.toDTOCyclic(value, [], new Map<any, any>(), [], convOptions)
+        : res
+    }
+    return this.toDTOCyclic(value, [], new Map<any, any>(), [], convOptions)
+  }
+
+  /*  private createObjectDescriptor(value: T): InstanceReference {
+      return {
+        id: ++this.counter,
+        typeOf: typeof node,
+        className: node.constructor.name
+      }
+    }*/
+
+  //  ID generated, needed in case of graph structures
+  //  literal objects or class instances
+
+  /** @internal */
+  public toDTOCyclic(
+    input: T,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    options: ConversionOptions & { counter: number }
+  ): Result<D> {
+    return failure(validationError('Internal method toDTOCyclic not implemented', path, `${input}`))
   }
 
   public addValidator(validator: Validator<T>): this {
@@ -128,6 +197,7 @@ export abstract class TypeC<T, D = T> {
     return derived
   }
 
+  /** @internal */
   private checkOneLevel(currentType: TypeC<T>, value: any, errs: Errors, path: Path) {
     let hasError: boolean = false
     for (const { predicate, message } of currentType.validators) {
