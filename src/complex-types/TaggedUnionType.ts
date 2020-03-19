@@ -15,7 +15,7 @@ import {
   Result
 } from 'aelastics-result'
 import { ObjectType, Props, ObjectTypeC } from './ObjectType'
-import { Any, DtoTypeOf, TypeOf } from '../common/Type'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { LiteralTypeC } from '../simple-types/Literal'
 
@@ -42,7 +42,7 @@ export class TaggedUnionTypeC<Tag extends string, P extends Props> extends Compl
     super(name, elements)
   }
 
-  public validate(value: TypeOf<this>, path: Path = []): Result<boolean> {
+  public validate(value: any, path: Path = []): Result<boolean> {
     const instance = value[this.discriminator]
     if (!instance) {
       return failure(
@@ -109,50 +109,38 @@ export class TaggedUnionTypeC<Tag extends string, P extends Props> extends Compl
     }
   }
 
-  public toDTO(
-    input: TypeOf<this>,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<DtoTypeOf<P[keyof P]>> {
-    // const errors: Errors = [];
-    if (validate) {
-      const res = this.validate(input, path)
-      if (isFailure(res)) {
-        return failures(res.errors)
-      }
-    }
-
+  toDTOCyclic(
+    input: TypeOf<P[keyof P]>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): InstanceReference | DtoTypeOf<P[keyof P]> {
     const instance = input[this.discriminator]
     if (!instance) {
-      return failure(
+      errors.push(
         new Error(
           `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`
         )
       )
+      return undefined
     } else {
       const type = findTypeFromDiscriminator(instance, this.baseType)
       if (!type) {
-        return failure(
+        errors.push(
           new Error(
             `Value ${path}: '${input}' - there is no type in tagged union named: '${instance}'`
           )
         )
+        return undefined
       }
-
-      const conversion = type.toDTO(input, appendPath(path, instance, type.name, input), validate)
-
-      if (isFailure(conversion)) {
-        return conversion
-      }
-      /*
-            const res = this.checkValidators(conversion.value, path);
-            if (isFailure(res)) {
-                return res;
-            }
-        */
-      //            return errors.length ? failures(errors) : success(conversion.value);
-
-      return success(conversion.value)
+      return type?.toDTOCyclic(
+        input,
+        appendPath(path, instance, type?.name, input),
+        visitedNodes,
+        errors,
+        context
+      )
     }
   }
 

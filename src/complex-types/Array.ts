@@ -14,7 +14,14 @@ import {
   Result,
   isSuccess
 } from 'aelastics-result'
-import { Any, ConversionOptions, DtoTypeOf, TypeOf } from '../common/Type'
+import {
+  Any,
+  ConversionContext,
+  ConversionOptions,
+  DtoTypeOf,
+  InstanceReference,
+  TypeOf
+} from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 
 /**
@@ -79,31 +86,33 @@ export class ArrayTypeC<
     return errors.length ? failures(errors) : success(a)
   }
 
+  // todo: first array element to identify array type
   toDTOCyclic(
-    input: Array<TypeOf<E>>,
+    inputArray: Array<TypeOf<E>>,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: Error[],
-    options: ConversionOptions & { counter: number }
-  ): Result<Array<DtoTypeOf<E>>> {
-    if (!Array.isArray(input)) {
-      return failure(new Error(`Value ${path} is not Array: '${input}' `))
+    context: ConversionContext
+  ): Array<DtoTypeOf<E> | InstanceReference> | InstanceReference {
+    if (!Array.isArray(inputArray)) {
+      errors.push(new Error(`Value ${path} is not Array: '${inputArray}' `))
     }
-    const a: Array<DtoTypeOf<E>> = []
-    for (let i = 0; i < input.length; i++) {
-      const x = input[i]
+    let ref = this.handleGraph(inputArray, path, visitedNodes, errors, context)
+    if (ref) {
+      return ref
+    }
+    const outputArray: Array<DtoTypeOf<E> | InstanceReference> = []
+    for (let i = 0; i < inputArray.length; i++) {
       const conversion = this.baseType.toDTOCyclic(
-        x,
+        inputArray[i],
         appendPath(path, `[${i}]`, this.name),
         visitedNodes,
         errors,
-        options
+        context
       )
-      if (isSuccess(conversion)) {
-        a.push(conversion.value)
-      }
+      outputArray.push(conversion)
     }
-    return errors.length ? failures(errors) : success(a)
+    return outputArray
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

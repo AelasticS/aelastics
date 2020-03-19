@@ -16,7 +16,7 @@ import {
   Result
 } from 'aelastics-result'
 import { ComplexTypeC } from './ComplexType'
-import { Any, DtoTypeOf, TypeOf } from '../common/Type'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
 
 /**
  * Map type
@@ -41,39 +41,20 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     return new Map()
   }
 
-  public validate(
-    input: Map<TypeOf<K>, TypeOf<V>>,
-    path: Path = [],
-    traversed?: Map<Any, Any>
-  ): Result<boolean> {
+  public validate(input: Map<TypeOf<K>, TypeOf<V>>, path: Path = []): Result<boolean> {
     if (!(input instanceof Map)) {
       return failure(new Error(`Value ${path}: '${input}' is not valid Map`))
     }
-
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
-    }
-
-    traversed.set(this, this)
-
     const errors: Errors = []
 
     input.forEach((value: V, key: K) => {
-      let res
-      // Is this good way to cancel undefined check?
-      // @ts-ignore
-      if (!traversed.has(value)) {
-        res = this.baseType.validate(value, appendPath(path, `[${key}]`, value.name, traversed))
-        if (isFailure(res)) {
-          errors.push(...res.errors)
-        }
+      let res = this.baseType.validate(value, appendPath(path, `[${key}]`, value.name))
+      if (isFailure(res)) {
+        errors.push(...res.errors)
       }
-      // @ts-ignore
-      if (!traversed.has(key)) {
-        res = this.keyType.validate(key, appendPath(path, `[${key}]`, key.name, traversed))
-        if (isFailure(res)) {
-          errors.push(...res.errors)
-        }
+      res = this.keyType.validate(key, appendPath(path, `[${key}]`, key.name))
+      if (isFailure(res)) {
+        errors.push(...res.errors)
       }
     })
 
@@ -123,61 +104,25 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     return errors.length ? failures(errors) : success(a)
   }
 
-  public toDTO(
-    input: Map<TypeOf<K>, TypeOf<V>> | Map<K, V>,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<Array<[K, V]>> {
-    if (validate) {
-      const res = this.validate(input, path)
-      if (isFailure(res)) {
-        return failures(res.errors)
-      }
+  toDTOCyclic(
+    input: Map<TypeOf<K>, TypeOf<V>>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): InstanceReference | Array<[DtoTypeOf<K>, DtoTypeOf<V>]> {
+    let ref = this.handleGraph(input, path, visitedNodes, errors, context)
+    if (ref) {
+      return ref
     }
-    const a: Array<[K, TypeOf<V>]> = []
-    const errors: Errors = []
-
+    const a: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> = []
     for (const [k, v] of input.entries()) {
-      let newPath = appendPath(path, `[ ]`, this.name)
-      const keyConversion = this.keyType.toDTO(k, newPath, validate)
-      if (isFailure(keyConversion)) {
-        errors.push(...keyConversion.errors)
-        continue
-      }
-      const valueConversion = this.baseType.toDTO(v, newPath, validate)
-      if (isFailure(valueConversion)) {
-        errors.push(...valueConversion.errors)
-      } else {
-        a.push([k, v])
-      }
+      let newPath = appendPath(path, `[${k}]`, this.name)
+      const keyConversion = this.keyType.toDTOCyclic(k, newPath, visitedNodes, errors, context)
+      const valueConversion = this.baseType.toDTOCyclic(v, newPath, visitedNodes, errors, context)
+      a.push([k, v])
     }
-
-    /*  for (let i = 0; i < input.length; i++) {
-             let newPath = appendPath(path, `[${i}]`,this.name);
-             if(input[i].length != 2){
-                 errors.push(validationError("Invalid map element",newPath, this.name));
-                 continue;
-             }
-             const k:K = input[i][0];
-
-             const keyConversion = this.keyType.toDTO(k, newPath);
-             if (isFailure(keyConversion)) {
-                 errors.push(...keyConversion.errors);
-                 continue;
-             }
-
-             const x: V = input[i][1];
-
-             const valueConversion = this.baseType.toDTO(x, newPath);
-             if (isFailure(valueConversion)) {
-                 errors.push(...valueConversion.errors);
-             } else {
-                 a.push(keyConversion.value, valueConversion.value)
-
-             }
-         } */
-
-    return errors.length ? failures(errors) : success(a)
+    return a
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

@@ -16,9 +16,9 @@ import {
   validationError,
   appendPath
 } from 'aelastics-result'
-import { Any, TypeC } from '../common/Type'
+import { Any, ConversionContext, InstanceReference, TypeC } from '../common/Type'
 import { TypeSchema } from '../common/TypeSchema'
-import { OptionalTypeC } from '../simple-types/Optional'
+import { OptionalTypeC } from '../common/Optional'
 
 export class SubtypeC<
   P extends Props,
@@ -50,16 +50,7 @@ export class SubtypeC<
     return Object.assign(this.superType.defaultValue(), super.defaultValue())
   }
 
-  public validate(
-    input: ObjectType<P & SP>,
-    path: Path = [],
-    traversed?: Map<Any, Any>
-  ): Result<boolean> {
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
-    }
-    traversed.set(this, this)
-
+  public validate(input: ObjectType<P & SP>, path: Path = []): Result<boolean> {
     let mapOfAllProperties = this.allProperties
     let keys = Array.from(mapOfAllProperties.keys())
 
@@ -80,12 +71,11 @@ export class SubtypeC<
           errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
           continue
         }
-        if (!traversed.has(t)) {
-          const ak = input[k]
-          const validation = t.validate(ak, appendPath(path, k, t.name, ak))
-          if (isFailure(validation)) {
-            errors.push(...validation.errors)
-          }
+
+        const ak = input[k]
+        const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+        if (isFailure(validation)) {
+          errors.push(...validation.errors)
         }
       }
     }
@@ -120,36 +110,22 @@ export class SubtypeC<
       }
     }
   }
-  public toDTO(
-    input: ObjectType<P & SP>,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<DtoObjectType<P & SP>> {
-    if (validate) {
-      const res = this.validate(input, path)
-      if (isFailure(res)) {
-        return failures(res.errors)
-      }
-    }
-    let resSuper = this.superType.toDTO(input, path, validate)
-    let res = super.toDTO(input, path, validate)
-    if (isFailure(resSuper)) {
-      if (isFailure(res)) {
-        //  both failure
-        Object.assign(resSuper.errors, res.errors)
-      }
 
-      return resSuper
-    } else {
-      if (isFailure(res)) {
-        // only res failure
-        return res
-      } else {
-        // both success
-        Object.assign(resSuper.value, res.value)
-        return resSuper as Result<DtoObjectType<P & SP>>
-      }
+  toDTOCyclic(
+    input: ObjectType<P & SP>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): DtoObjectType<P & SP> | InstanceReference {
+    let ref = this.handleGraph(input, path, visitedNodes, errors, context)
+    if (ref) {
+      return ref
     }
+    let res = super.toDTOCyclic(input, path, visitedNodes, errors, context)
+    let resSuper = this.superType.toDTOCyclic(input, path, visitedNodes, errors, context)
+    Object.assign(res, resSuper)
+    return res as DtoObjectType<P & SP>
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

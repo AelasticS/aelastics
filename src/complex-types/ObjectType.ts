@@ -12,11 +12,22 @@ import {
   success,
   validationError,
   Path,
-  Result
+  Result,
+  Error,
+  isSuccess,
+  failure
 } from 'aelastics-result'
 import { ComplexTypeC } from './ComplexType'
-import { Any, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
-import { OptionalTypeC } from '../simple-types/Optional'
+import {
+  Any,
+  ConversionContext,
+  ConversionOptions,
+  DtoTypeOf,
+  InstanceReference,
+  TypeC,
+  TypeOf
+} from '../common/Type'
+import { OptionalTypeC } from '../common/Optional'
 import { TypeSchema } from '../common/TypeSchema'
 
 export interface Props {
@@ -83,7 +94,7 @@ export class ObjectTypeC<P extends Props> extends ComplexTypeC<P, ObjectType<P>,
     return obj
   }
 
-  validateCyclic(input: ObjectType<P>, path: Path = [], traversed: Map<any, any>): Result<boolean> {
+  public validate(input: ObjectType<P>, path: Path = []): Result<boolean> {
     const result = isObject(input)
       ? success(input)
       : failureValidation('Value is not object', path, this.name, input)
@@ -91,17 +102,10 @@ export class ObjectTypeC<P extends Props> extends ComplexTypeC<P, ObjectType<P>,
       return result
     }
 
-    if (traversed.has(input)) {
-      return success(true)
-    }
-
-    traversed.set(input, input)
-
     const errors: Errors = []
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
       const k = this.keys[i]
-
       if (!hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
         errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
         continue
@@ -109,7 +113,7 @@ export class ObjectTypeC<P extends Props> extends ComplexTypeC<P, ObjectType<P>,
 
       const ak = input[k]
 
-      const validation = t.validateCyclic(ak, appendPath(path, k, t.name, ak), traversed)
+      const validation = t.validate(ak, appendPath(path, k, t.name, ak))
       if (isFailure(validation)) {
         errors.push(...validation.errors)
       }
@@ -166,38 +170,54 @@ export class ObjectTypeC<P extends Props> extends ComplexTypeC<P, ObjectType<P>,
     }
     return errors.length ? failures(errors) : success(a)
   }
-  // not sure if toDTO should do any validation
-  public toDTO(
+
+  /** @internal */
+  toDTOCyclic(
     input: ObjectType<P>,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<DtoObjectType<P>> {
-    if (validate) {
-      const res = this.validate(input)
-      if (isFailure(res)) {
-        return res
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): DtoObjectType<P> | InstanceReference {
+    let output: DtoObjectType<P> = {} as DtoObjectType<P>
+    try {
+      let ref = this.handleGraph(input, path, visitedNodes, errors, context)
+      if (ref) {
+        return ref
       }
-    }
-    let a: DtoObjectType<P> = {} as DtoObjectType<P>
-    const errors: Errors = []
-    for (let i = 0; i < this.len; i++) {
-      const t = this.types[i]
-      const k = this.keys[i]
-      const ak = input[k]
-
-      const conversion = t.toDTO(ak, appendPath(path, k, t.name, ak), validate)
-      if (isFailure(conversion)) {
-        errors.push(...conversion.errors)
-      } else {
-        // Object.defineProperty(a, k,{value:conversion.value});
-        ;((a as unknown) as any)[k] = conversion.value
+      for (let i = 0; i < this.len; i++) {
+        const t = this.types[i]
+        const k = this.keys[i]
+        const ak = input[k]
+        const conversion = t.toDTOCyclic(
+          ak,
+          appendPath(path, k, t.name, ak),
+          visitedNodes,
+          errors,
+          context
+        )
+        ObjectTypeC.addProperty(output, k, conversion)
+        // ((a as unknown) as any)[k] = conversion.value
       }
+      return output
+    } catch (e) {
+      errors.push(
+        validationError(`Catched exception '${(e as Error).message}'`, path, this.name, input)
+      )
+      return output
     }
-
-    return success(a)
   }
 
-  validateLinks(traversed: Map<Any, Any>): Result<boolean> {
+  private static addProperty(obj: Object, prop: string, value: any) {
+    Object.defineProperty(obj, prop, {
+      value: value,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    })
+  }
+
+  validateLinks(traversed: Map<any, any>): Result<boolean> {
     traversed.set(this, this)
 
     let errors = []

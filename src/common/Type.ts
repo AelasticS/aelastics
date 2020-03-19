@@ -13,9 +13,11 @@ import {
   pathToString,
   Result,
   success,
-  validationError
+  validationError,
+  isFailure
 } from 'aelastics-result'
 import { IObjectDescriptor, IObjectLiteral } from '../serializer/JsonDeserializer'
+import { ObjectType } from '../complex-types/ObjectType'
 
 export type Predicate<T> = (value: T) => boolean
 
@@ -32,12 +34,14 @@ export type Conversion<In, Out> = (value: In, path: Path) => Result<Out>
 export type Constructor<T extends {} = {}> = new (...args: any[]) => T
 
 export interface ConversionOptions {
-  validate: boolean
-  generateID: boolean
-  typeInfo: boolean
-  classInstances: boolean // or POJO - Literal object
+  validate: boolean // should validate , because of serializing partial data
+  generateID: boolean // generateID if it is graph
+  typeInfo: boolean // should put meta type info
+  classInstances: boolean // put constructor name or POJO - Literal object
   constructors?: Map<string, Constructor> // constructors
 }
+
+export type ConversionContext = ConversionOptions & { counter: number }
 
 export const defaultConversionOptions: ConversionOptions = {
   validate: true,
@@ -131,27 +135,22 @@ export abstract class TypeC<T, D = T> {
       typeInfo: false,
       classInstances: false
     }
-  ): Result<D> {
-    let convOptions = { ...options, ...{ counter: 0 } }
-    if (options?.validate) {
-      const res = this.validate(value, [])
-      return isSuccess(res)
-        ? this.toDTOCyclic(value, [], new Map<any, any>(), [], convOptions)
-        : res
-    }
-    return this.toDTOCyclic(value, [], new Map<any, any>(), [], convOptions)
-  }
-
-  /*  private createObjectDescriptor(value: T): InstanceReference {
-      return {
-        id: ++this.counter,
-        typeOf: typeof node,
-        className: node.constructor.name
+  ): Result<D | InstanceReference> {
+    if (options.validate) {
+      let res = this.validate(value, [])
+      if (isFailure(res)) {
+        return failures(res.errors)
       }
-    }*/
-
-  //  ID generated, needed in case of graph structures
-  //  literal objects or class instances
+    }
+    let convOptions = { ...options, ...{ counter: 0 } }
+    let errs: Errors = []
+    let res = this.toDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
+    if (errs.length > 0) {
+      return failures(errs)
+    } else {
+      return success(res)
+    }
+  }
 
   /** @internal */
   public toDTOCyclic(
@@ -159,9 +158,19 @@ export abstract class TypeC<T, D = T> {
     path: Path,
     visitedNodes: Map<any, any>,
     errors: Error[],
-    options: ConversionOptions & { counter: number }
-  ): Result<D> {
-    return failure(validationError('Internal method toDTOCyclic not implemented', path, `${input}`))
+    context: ConversionContext
+  ): D | InstanceReference {
+    errors.push(validationError('Internal method toDTOCyclic not implemented', path, `${input}`))
+    return (input as any) as D
+  }
+
+  // ToDo: override methods in subtypes!
+  public makeReference(input: any, id: number): InstanceReference {
+    return {
+      className: this.name,
+      typeOf: 'object',
+      id: id
+    }
   }
 
   public addValidator(validator: Validator<T>): this {

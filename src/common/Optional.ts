@@ -3,7 +3,7 @@
  */
 
 import { success, Path, Result, failures, isFailure } from 'aelastics-result'
-import { Any, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeC, TypeOf } from './Type'
 
 const getOptionalName = (base: Any): string => `optional ${base.name}`
 
@@ -34,25 +34,18 @@ export class OptionalTypeC<T extends TypeC<any>> extends TypeC<
       return this.base.fromDTO(value, path)
     }
   }
-  /**
-   * toDTO
-   */
-  public toDTO(
-    value: TypeOf<T> | undefined,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<DtoTypeOf<T>> {
-    if (validate) {
-      const res = this.validate(value, path)
-      if (isFailure(res)) {
-        return failures(res.errors)
-      }
-    }
 
-    if (typeof value === 'undefined') {
-      return success(undefined)
+  toDTOCyclic(
+    input: TypeOf<T> | undefined,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): InstanceReference | DtoTypeOf<T> | undefined {
+    if (typeof input === 'undefined') {
+      return undefined
     } else {
-      return this.base.toDTO(value, path, validate)
+      return this.base.toDTOCyclic(input, path, visitedNodes, errors, context)
     }
   }
 
