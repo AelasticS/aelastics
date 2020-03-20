@@ -4,7 +4,7 @@
  */
 
 import { ComplexTypeC } from './ComplexType'
-import { Any, DtoTypeOf, TypeOf } from '../common/Type'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
 import {
   Error,
   failure,
@@ -14,7 +14,8 @@ import {
   isSuccess,
   Path,
   Result,
-  success
+  success,
+  validationError
 } from 'aelastics-result'
 
 export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
@@ -28,22 +29,9 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     super(name, baseType)
   }
 
-  public validate(
-    value: TypeOf<P[number]>,
-    path: Path = [],
-    traversed?: Map<Any, Any>
-  ): Result<boolean> {
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
-    }
-
-    traversed.set(this, this)
-
+  public validate(value: TypeOf<P[number]>, path: Path = []): Result<boolean> {
     for (let i = 0; i < this.baseType.length; i++) {
       const type = this.baseType[i]
-      if (traversed.has(type)) {
-        continue
-      }
       let res = type.validate(value, path)
       if (isSuccess(res)) {
         return res
@@ -68,21 +56,31 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
       input
     )
   }
-  // always validates besause otherwise input would serialize as first type in P[number]
-  public toDTO(input: TypeOf<P[number]>, path: Path = []): Result<DtoTypeOf<P[number]>> {
+
+  toDTOCyclic(
+    input: TypeOf<P[number]>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): InstanceReference | DtoTypeOf<P[number]> {
     for (let i = 0; i < this.baseType.length; i++) {
+      // find which type is in union
       const type = this.baseType[i]
-      let res = type.toDTO(input, path)
-      if (isSuccess(res)) {
-        return res
+      let resVal = type.validate(input)
+      if (isSuccess(resVal)) {
+        return type.toDTOCyclic(input, path, visitedNodes, errors, context)
       }
     }
-    return failureValidation(
-      `Value ${path}: '${input}' is not union: '${this.name}'`,
-      path,
-      this.name,
-      input
+    errors.push(
+      validationError(
+        `Value ${path}: '${input}' is not union: '${this.name}'`,
+        path,
+        this.name,
+        input
+      )
     )
+    return undefined
   }
 
   public getTypeFromValue(value: TypeOf<P[number]>): Result<Any> {
