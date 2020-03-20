@@ -3,8 +3,8 @@
  *
  */
 
-import { TypeC, Any } from '../common/Type'
-import { ObjectTypeC } from './ObjectType'
+import { TypeC, Any, InstanceReference, ConversionContext } from '../common/Type'
+import { ObjectTypeC, TypeOfKey, ObjectWithKeys } from './ObjectType'
 import {
   appendPath,
   Errors,
@@ -19,22 +19,26 @@ import {
   validationError
 } from 'aelastics-result'
 
+// You can use const assertion (added in typescript 3.4)
+// https://stackoverflow.com/questions/55570729/how-to-limit-the-keys-of-an-object-to-the-strings-of-an-array-in-typescript
+// https://www.typescriptlang.org/docs/handbook/utility-types.html
+
 export type IdentifierOfType<T extends ObjectTypeC<any>> = T extends ObjectTypeC<infer P>
   ? P
   : never
 
 const isObject = (u: any) => u !== null && typeof u === 'object'
 
-export class ObjReference<T extends ObjectTypeC<any>> extends TypeC<IdentifierOfType<T>> {
+export class ObjReference<T extends ObjectWithKeys<any, string[]>> extends TypeC<TypeOfKey<T>> {
   public readonly referencedType: T
+
   constructor(name: string, obj: T) {
     super(name)
     this.referencedType = obj
   }
 
-  // ToDo: Ivana
   // value should be of type corresponding to the identifier of the referenced type
-  validate(value: any /*IdentifierOfType<T>*/, path: Path = []): Success<boolean> | Failure {
+  validate(value: any, path: Path = []): Success<boolean> | Failure {
     const result = isObject(value)
       ? success(value)
       : failureValidation('Value is not object', path, this.name, value)
@@ -77,7 +81,6 @@ export class ObjReference<T extends ObjectTypeC<any>> extends TypeC<IdentifierOf
     return errors.length ? failures(errors) : success(true)
   }
 
-  // ToDo: Ivana
   fromDTO(value: any, path: Path = []): Success<any> | Failure {
     const result = isObject(value)
       ? success(value)
@@ -125,37 +128,35 @@ export class ObjReference<T extends ObjectTypeC<any>> extends TypeC<IdentifierOf
     return errors.length ? failures(errors) : success(a)
   }
 
-  // ToDo: Ivana
-  toDTO(value: any, path: Path = [], validate: boolean = true): Success<any> | Failure {
-    if (validate) {
-      const res = this.validate(value)
-      if (isFailure(res)) {
-        return res
-      }
-    }
-    let a = {}
+  toDTOCyclic(
+    input: any,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): InstanceReference | TypeOfKey<T> {
+    let a: { [index: string]: any } = {}
     const identifier = this.referencedType.identifier
-    const errors: Errors = []
     for (let i = 0; i < identifier.length; i++) {
       const k = identifier[i]
-      const ak = value[k]
+      const ak = input[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
+      const conversion = t.toDTOCyclic(
+        input,
+        appendPath(path, k, t.name, ak),
+        visitedNodes,
+        errors,
+        context
+      )
 
-      const conversion = t.toDTO(ak, appendPath(path, k, t.name, ak), validate)
-      if (isFailure(conversion)) {
-        errors.push(...conversion.errors)
-      } else {
-        // @ts-ignore
-        a[k] = conversion.value
-      }
+      a[k] = conversion.value
     }
-
-    return success(a)
+    return a
   }
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     return this.referencedType.validateLinks(traversed)
   }
 }
 
-export const ref = (t: ObjectTypeC<any>, name: string = `referenceTo${t.name}`) =>
+export const ref = (t: ObjectWithKeys<any, string[]>, name: string = `referenceTo${t.name}`) =>
   new ObjReference(name, t)

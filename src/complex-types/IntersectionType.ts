@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, DtoTypeOf, TypeOf } from '../common/Type'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 
@@ -20,33 +20,18 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
 > {
   public readonly _tag: 'Intersection' = 'Intersection'
 
-  validate(
-    value: UnionToIntersection<TypeOf<P[number]>>,
-    path: Path = [],
-    traversed?: Map<Any, Any>
-  ): Result<boolean> {
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
-    }
-
-    traversed.set(this, this)
-
+  validate(value: UnionToIntersection<TypeOf<P[number]>>, path: Path = []): Result<boolean> {
     const err: Error[] = []
     for (const t of this.baseType) {
-      if (traversed.has(t)) {
-        continue
-      }
       const res = t.validate(value, path)
       if (isFailure(res)) {
         err.push(...res.errors)
       }
     }
-
     const res = super.validate(value, path)
     if (isFailure(res)) {
       err.push(...res.errors)
     }
-
     if (err.length > 0) {
       return failures(err)
     } else {
@@ -73,25 +58,19 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
     return success(val)
   }
 
-  toDTO(
-    value: UnionToIntersection<TypeOf<P[number]>>,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<UnionToIntersection<DtoTypeOf<P[number]>>> {
-    if (validate) {
-      const res = this.validate(value, path)
-      if (isFailure(res)) return res
-    }
+  toDTOCyclic(
+    input: UnionToIntersection<TypeOf<P[number]>>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): InstanceReference | UnionToIntersection<DtoTypeOf<P[number]>> {
     const val = {} as UnionToIntersection<DtoTypeOf<P[number]>>
     for (const t of this.baseType) {
-      const res = t.toDTO(value, path)
-      if (isFailure(res)) {
-        return res
-      } else {
-        Object.assign(val, res.value)
-      }
+      const res = t.toDTOCyclic(input, path, visitedNodes, errors, context)
+      Object.assign(val, res.value)
     }
-    return success(val)
+    return val
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

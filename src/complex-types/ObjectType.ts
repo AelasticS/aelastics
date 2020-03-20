@@ -29,6 +29,7 @@ import {
 } from '../common/Type'
 import { OptionalTypeC } from '../common/Optional'
 import { TypeSchema } from '../common/TypeSchema'
+import * as t from '../aelastics-types'
 
 export interface Props {
   [key: string]: Any // TypeC<any>
@@ -251,6 +252,64 @@ export const object = <P extends Props>(
   }
   return obj
 }
+
+/*
+
+export const objectWithKeys = <I extends string[]>(
+  keys: I,
+): object => {
+  let key: { [k in (typeof keys)[number]]: number }
+    = {}
+
+  return key
+}
+*/
+
+export class ObjectWithKeys<P extends Props, I extends string[]> extends ObjectTypeC<P> {
+  // @ts-ignore
+  public idStruct: Pick<P, I>
+
+  //  public idStruct: { [k in (I)[number]]: number }
+
+  constructor(name: string, props: P, identifiers: I) {
+    super(name, props, identifiers)
+  }
+}
+
+export type TypeOfKey<C extends ObjectWithKeys<any, string[]>> = C['idStruct']
+
+export function testObjK<P extends Props, I extends string[]>(
+  props: P,
+  identifiers: I
+): ObjectWithKeys<P, I> {
+  let Ok = new ObjectWithKeys<P, I>('test', props, identifiers)
+  return Ok
+}
+
+const ChildType = t.object({ name: t.string }, 'Child')
+
+export function test1() {
+  let ok = testObjK({ name: t.string }, ['name'])
+  let insKey: TypeOfKey<typeof ok> = {}
+}
+
+/*
+export const objectWithKeys = <P extends Props, I extends string[]>(
+  props: P,
+  identifiers: I,
+  name: string = getNameFromProps(props),
+  schema?: TypeSchema,
+): ObjectTypeC<P> => {
+ //  let key: I[number] = 'a'
+  const obj = new ObjectWithKeys<P, I>(name, props, identifiers)
+  if (schema) {
+    schema.addType(obj)
+  }
+  let key: { [k in (typeof identifiers)[number]]: number }
+    = {id:1}
+  return obj
+}
+*/
 
 export const inverseProps = (
   firstType: ObjectTypeC<any>,
