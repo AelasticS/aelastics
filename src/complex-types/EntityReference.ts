@@ -4,7 +4,7 @@
  */
 
 import { TypeC, Any, InstanceReference, ConversionContext } from '../common/Type'
-import { ObjectTypeC, TypeOfKeyW, ObjectWithKeys } from './ObjectType'
+import { ObjectTypeC, TypeOfKey } from './ObjectType'
 import {
   appendPath,
   Errors,
@@ -23,13 +23,11 @@ import {
 // https://stackoverflow.com/questions/55570729/how-to-limit-the-keys-of-an-object-to-the-strings-of-an-array-in-typescript
 // https://www.typescriptlang.org/docs/handbook/utility-types.html
 
-export type IdentifierOfType<T extends ObjectTypeC<any>> = T extends ObjectTypeC<infer P>
-  ? P
-  : never
-
 const isObject = (u: any) => u !== null && typeof u === 'object'
 
-export class ObjReference<T extends ObjectWithKeys<any, string[]>> extends TypeC<TypeOfKeyW<T>> {
+export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> extends TypeC<
+  TypeOfKey<T>
+> {
   public readonly referencedType: T
 
   constructor(name: string, obj: T) {
@@ -134,11 +132,11 @@ export class ObjReference<T extends ObjectWithKeys<any, string[]>> extends TypeC
     visitedNodes: Map<any, any>,
     errors: Error[],
     context: ConversionContext
-  ): InstanceReference | TypeOfKeyW<T> {
+  ): InstanceReference | TypeOfKey<T> {
     let a: { [index: string]: any } = {}
-    const identifier = this.referencedType.identifier
-    for (let i = 0; i < identifier.length; i++) {
-      const k = identifier[i]
+    const key = this.referencedType.identifier
+    for (let i = 0; i < key.length; i++) {
+      const k = key[i]
       const ak = input[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
       const conversion = t.toDTOCyclic(
@@ -158,5 +156,5 @@ export class ObjReference<T extends ObjectWithKeys<any, string[]>> extends TypeC
   }
 }
 
-export const ref = (t: ObjectWithKeys<any, string[]>, name: string = `referenceTo${t.name}`) =>
-  new ObjReference(name, t)
+export const ref = (t: ObjectTypeC<any, string[]>, name: string = `referenceTo${t.name}`) =>
+  new EntityReference(name, t)

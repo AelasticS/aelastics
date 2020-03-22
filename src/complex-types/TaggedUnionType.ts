@@ -180,7 +180,9 @@ export const taggedUnion = <P extends Props>(
 ): TaggedUnionTypeC<string, P> => {
   for (let key in elements) {
     if (elements[key] instanceof ObjectTypeC) {
-      if (!((elements[key] as unknown) as ObjectTypeC<Props>).keys.includes(discr)) {
+      if (
+        !((elements[key] as unknown) as ObjectTypeC<Props, readonly string[]>).keys.includes(discr)
+      ) {
         throw new Error('Invalid value of discriminator')
       }
     }

@@ -55,9 +55,11 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   ObjectType<P>,
   DtoObjectType<P>
 > {
-  // { [K in keyof P]: TypeOf<P[K]> }> {
+  // https://stackoverflow.com/questions/55570729/how-to-limit-the-keys-of-an-object-to-the-strings-of-an-array-in-typescript
   // @ts-ignore
-  public ID: { [k in I[number]]: number }
+  public ID: { [k in I[number]]: TypeOf<P[k]> }
+  // @ts-ignore
+  public ID_DTO: { [k in I[number]]: DtoTypeOf<P[k]> }
   public readonly _tag: 'Object' = 'Object'
   public readonly keys = Object.keys(this.baseType)
   public readonly types = this.keys.map(key => this.baseType[key] as TypeC<any>)
@@ -241,87 +243,43 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   }
 }
 
-const nokeys = [] as const
-export const object = <P extends Props, I extends readonly string[]>(
+/**
+ *
+ * @param props
+ * @param name
+ * @param schema
+ */
+export const object = <P extends Props>(
   props: P,
   name: string = getNameFromProps(props),
   schema?: TypeSchema
-): ObjectTypeC<P, I> => {
-  let a: readonly string[] = ['a'] as const
-  const obj = new ObjectTypeC<P, I>(name, props, nokeys)
+): ObjectTypeC<P, []> => {
+  const obj = new ObjectTypeC<P, []>(name, props, [])
   if (schema) {
     schema.addType(obj)
   }
   return obj
 }
 
-/*
-
-export const objectWithKeys = <I extends string[]>(
+/**
+ *
+ * @param props
+ * @param keys
+ * @param name
+ * @param schema
+ */
+export const entity = <P extends Props, I extends readonly string[]>(
+  props: P,
   keys: I,
-): object => {
-  let key: { [k in (typeof keys)[number]]: number }
-    = {}
-
-  return key
-}
-*/
-
-export class ObjectWithKeys<P extends Props, I extends readonly string[]> extends ObjectTypeC<
-  P,
-  I
-> {
-  // @ts-ignore
-  //  public idStruct: Pick<P, I>
-
-  public idStruct: { [k in I[number]]: number }
-
-  constructor(name: string, props: P, identifiers: I) {
-    super(name, props, identifiers)
-  }
-}
-
-export type TypeOfKeyW<C extends ObjectWithKeys<any, readonly string[]>> = C['idStruct']
-
-export function testObjK<P extends Props, I extends readonly string[]>(
-  props: P,
-  identifiers: I
-): ObjectWithKeys<P, I> {
-  let Ok = new ObjectWithKeys<P, I>('test', props, identifiers)
-  return Ok
-}
-
-export function testNoObjK<P extends Props>(props: P): ObjectWithKeys<P, readonly []> {
-  let Ok = new ObjectWithKeys<P, []>('test', props, [])
-  return Ok
-}
-
-const ChildType = t.object({ name: t.string }, 'Child')
-
-const ident = ['name', 'id'] as const
-
-export function test1() {
-  let ok = testObjK({ name: t.string }, ident)
-  let insKey: TypeOfKeyW<typeof ok> = { name: 1, id: 2 }
-}
-
-/*
-export const objectWithKeys = <P extends Props, I extends string[]>(
-  props: P,
-  identifiers: I,
   name: string = getNameFromProps(props),
-  schema?: TypeSchema,
-): ObjectTypeC<P> => {
- //  let key: I[number] = 'a'
-  const obj = new ObjectWithKeys<P, I>(name, props, identifiers)
+  schema?: TypeSchema
+): ObjectTypeC<P, I> => {
+  const obj = new ObjectTypeC<P, I>(name, props, keys)
   if (schema) {
     schema.addType(obj)
   }
-  let key: { [k in (typeof identifiers)[number]]: number }
-    = {id:1}
   return obj
 }
-*/
 
 export const inverseProps = (
   firstType: ObjectTypeC<any, any>,

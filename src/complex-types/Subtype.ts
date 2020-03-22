@@ -23,17 +23,16 @@ import { OptionalTypeC } from '../common/Optional'
 export class SubtypeC<
   P extends Props,
   SP extends Props,
-  S extends ObjectTypeC<Props>
-> extends ObjectTypeC<P & SP> {
+  S extends ObjectTypeC<Props, any>
+> extends ObjectTypeC<P & SP, S['identifier']> {
   //    public readonly _tag: 'Subtype' = 'Subtype';
-  public readonly superType: ObjectTypeC<Props>
+  public readonly superType: ObjectTypeC<Props, S['identifier']>
   //    public readonly  extraProps:P;
   //    public readonly  superProps:SP;
   //    protected readonly superInstance: ObjectTypeC<P & SP>;
 
-  constructor(name: string, baseType: P, superType: ObjectTypeC<Props>) {
-    // ToDo Nikola: verify that there are NO!!!! overriding properties (with same name as in supertype)
-    super(name, baseType as P & SP)
+  constructor(name: string, baseType: P, superType: ObjectTypeC<Props, S['identifier']>) {
+    super(name, baseType as P & SP, [])
     this.superType = superType
   }
 
@@ -153,22 +152,22 @@ export class SubtypeC<
   }
 }
 
-const getSubtypeName = <U extends ObjectTypeC<any>>(superType: U): string => {
+const getSubtypeName = <U extends ObjectTypeC<any, any>>(superType: U): string => {
   return `subtype of ${superType.name})`
 }
 
 // @ts-ignore
-export const subtype = <P extends Props, S extends Props>(
-  superType: ObjectTypeC<S>,
+export const subtype = <P extends Props, S extends Props, I extends readonly string[]>(
+  superType: ObjectTypeC<S, I>,
   extraProps: P,
   name: string = getSubtypeName(superType),
   schema?: TypeSchema,
   superProps: S = superType['baseType']
-): SubtypeC<P, S, ObjectTypeC<Props>> => {
-  const obj: SubtypeC<P, S, ObjectTypeC<Props>> = new SubtypeC(
+): SubtypeC<P, S, ObjectTypeC<Props, I>> => {
+  const obj: SubtypeC<P, S, ObjectTypeC<Props, I>> = new SubtypeC(
     name,
     extraProps,
-    superType as ObjectTypeC<Props>
+    superType as ObjectTypeC<Props, I>
   ) // new ObjectTypeC<P>(name, props, identifier)
   if (schema) {
     schema.addType(obj)

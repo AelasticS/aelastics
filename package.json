@@ -146,7 +146,7 @@
     "tslint-config-prettier": "^1.15.0",
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.16.11",
-    "typescript": "^3.8.3"
+    "typescript": ">=^3.4.1"
   },
   "dependencies": {
     "aelastics-result": "^1.0.2"
