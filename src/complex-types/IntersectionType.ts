@@ -55,7 +55,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
     value: UnionToIntersection<DtoTypeOf<P[number]>>,
     path: Path = []
   ): Result<UnionToIntersection<TypeOf<P[number]>>> {
-    const res = this.validate(value, path)
+    const res = this.validate(value)
     if (isFailure(res)) return res
     const val = {} as UnionToIntersection<TypeOf<P[number]>>
     for (const t of this.baseType) {
@@ -76,7 +76,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
     validate: boolean = true
   ): Result<UnionToIntersection<DtoTypeOf<P[number]>>> {
     if (validate) {
-      const res = this.validate(value, path)
+      const res = this.validate(value)
       if (isFailure(res)) return res
     }
     const val = {} as UnionToIntersection<DtoTypeOf<P[number]>>

@@ -124,7 +124,7 @@ export class TaggedUnionTypeC<Tag extends string, P extends Props> extends Compl
   ): Result<DtoTypeOf<P[keyof P]>> {
     // const errors: Errors = [];
     if (validate) {
-      const res = this.validate(input, path)
+      const res = this.validate(input)
       if (isFailure(res)) {
         return failures(res.errors)
       }

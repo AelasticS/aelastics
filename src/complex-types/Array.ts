@@ -97,7 +97,7 @@ export class ArrayTypeC<
     validate: boolean = true
   ): Result<Array<DtoTypeOf<E>>> {
     if (validate) {
-      const res = this.validate(input, path)
+      const res = this.validate(input)
       if (isFailure(res)) {
         return failures(res.errors)
       }

@@ -126,7 +126,7 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     validate: boolean = true
   ): Result<Array<[K, V]>> {
     if (validate) {
-      const res = this.validate(input, path)
+      const res = this.validate(input)
       if (isFailure(res)) {
         return failures(res.errors)
       }

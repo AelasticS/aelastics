@@ -126,7 +126,7 @@ export class SubtypeC<
     validate: boolean = true
   ): Result<DtoObjectType<P & SP>> {
     if (validate) {
-      const res = this.validate(input, path)
+      const res = this.validate(input)
       if (isFailure(res)) {
         return failures(res.errors)
       }
