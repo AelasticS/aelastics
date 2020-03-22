@@ -190,7 +190,9 @@ export const taggedUnion = <P extends Props>(
 
   return new TaggedUnionTypeC(name, discr, elements)
 }
+/*
 
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralTypeC<any> }
 
 export type Tagged<Tag extends string> = ObjectType<TaggedProps<Tag>>
+*/
