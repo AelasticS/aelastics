@@ -38,6 +38,7 @@ export interface Props {
 export type ObjectType<P extends Props> = { [K in keyof P]: TypeOf<P[K]> }
 export type DtoObjectType<P extends Props> = { [K in keyof P]: DtoTypeOf<P[K]> }
 export type TypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID']
+export type DtoTypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID_DTO']
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
 export const isObject = (u: any) => u !== null && typeof u === 'object'
@@ -48,7 +49,7 @@ export const getNameFromProps = (props: Props): string =>
     .join(', ')} }`
 
 /**
- *  Object class with tree structure, i.e.  no cyclic references
+ *
  */
 export class ObjectTypeC<P extends Props, I extends readonly string[]> extends ComplexTypeC<
   P,
@@ -57,9 +58,8 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
 > {
   // https://stackoverflow.com/questions/55570729/how-to-limit-the-keys-of-an-object-to-the-strings-of-an-array-in-typescript
   // @ts-ignore
-  public ID: { [k in I[number]]: TypeOf<P[k]> }
-  // @ts-ignore
-  public ID_DTO: { [k in I[number]]: DtoTypeOf<P[k]> }
+  public ID!: { [k in I[number]]: TypeOf<P[k]> }
+  public ID_DTO!: { [k in I[number]]: DtoTypeOf<P[k]> }
   public readonly _tag: 'Object' = 'Object'
   public readonly keys = Object.keys(this.baseType)
   public readonly types = this.keys.map(key => this.baseType[key] as TypeC<any>)
@@ -280,7 +280,13 @@ export const entity = <P extends Props, I extends readonly string[]>(
   }
   return obj
 }
-
+/**
+ *
+ * @param firstType
+ * @param firstProp
+ * @param secondType
+ * @param secondProp
+ */
 export const inverseProps = (
   firstType: ObjectTypeC<any, any>,
   firstProp: string,

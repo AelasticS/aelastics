@@ -95,5 +95,6 @@ describe('toDTO tests for object type', () => {
     let insKey: TypeOfKey<typeof ok> = { name: 'ime', id: 3 }
     let subtypeKey: TypeOfKey<typeof oks> = { name: 'ime', id: 8 }
     let s: t.TypeOf<typeof oks> = { id: 1, name: 's', ekstra: 5 }
+    let s2: t.DtoTypeOfKey<typeof oks> = { id: 1, name: 's' }
   })
 })
