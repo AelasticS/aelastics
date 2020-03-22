@@ -37,6 +37,7 @@ export interface Props {
 
 export type ObjectType<P extends Props> = { [K in keyof P]: TypeOf<P[K]> }
 export type DtoObjectType<P extends Props> = { [K in keyof P]: DtoTypeOf<P[K]> }
+export type TypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID']
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
 export const isObject = (u: any) => u !== null && typeof u === 'object'
@@ -49,32 +50,32 @@ export const getNameFromProps = (props: Props): string =>
 /**
  *  Object class with tree structure, i.e.  no cyclic references
  */
-export class ObjectTypeC<P extends Props> extends ComplexTypeC<P, ObjectType<P>, DtoObjectType<P>> {
+export class ObjectTypeC<P extends Props, I extends readonly string[]> extends ComplexTypeC<
+  P,
+  ObjectType<P>,
+  DtoObjectType<P>
+> {
   // { [K in keyof P]: TypeOf<P[K]> }> {
+  // @ts-ignore
+  public ID: { [k in I[number]]: number }
   public readonly _tag: 'Object' = 'Object'
   public readonly keys = Object.keys(this.baseType)
   public readonly types = this.keys.map(key => this.baseType[key] as TypeC<any>)
   public readonly len = this.keys.length
-  public readonly identifier: Array<string> = []
-  public inverseCollection: Map<string, { prop: string; type: ObjectTypeC<any> }> = new Map<
+  public readonly identifier: I
+  public inverseCollection: Map<string, { prop: string; type: ObjectTypeC<any, []> }> = new Map<
     string,
-    { prop: string; type: ObjectTypeC<any> }
+    { prop: string; type: ObjectTypeC<any, []> }
   >()
 
-  constructor(name: string, props: P, identifier?: string | Array<string>) {
+  constructor(name: string, props: P, identifier: I) {
     super(name, props)
-    if (identifier) {
-      if (Array.isArray(identifier)) {
-        this.identifier = Array.from(identifier)
-      } else {
-        this.identifier[0] = identifier
+    this.identifier = identifier
+    this.identifier.forEach(i => {
+      if (!this.keys.includes(i)) {
+        throw new Error(`Invalid identifier:${i} is not a property of object type ${name}`)
       }
-      this.identifier.forEach(i => {
-        if (!this.keys.includes(i)) {
-          throw new Error(`Invalid identifier:${i} is not a property of obhect type ${name}`)
-        }
-      })
-    }
+    })
   }
 
   // get all properties from class hierarchy - overridden properties are not included!
@@ -240,13 +241,14 @@ export class ObjectTypeC<P extends Props> extends ComplexTypeC<P, ObjectType<P>,
   }
 }
 
-export const object = <P extends Props>(
+const nokeys = [] as const
+export const object = <P extends Props, I extends readonly string[]>(
   props: P,
   name: string = getNameFromProps(props),
-  schema?: TypeSchema,
-  identifier?: string | string[]
-): ObjectTypeC<P> => {
-  const obj = new ObjectTypeC<P>(name, props, identifier)
+  schema?: TypeSchema
+): ObjectTypeC<P, I> => {
+  let a: readonly string[] = ['a'] as const
+  const obj = new ObjectTypeC<P, I>(name, props, nokeys)
   if (schema) {
     schema.addType(obj)
   }
@@ -265,20 +267,23 @@ export const objectWithKeys = <I extends string[]>(
 }
 */
 
-export class ObjectWithKeys<P extends Props, I extends string[]> extends ObjectTypeC<P> {
+export class ObjectWithKeys<P extends Props, I extends readonly string[]> extends ObjectTypeC<
+  P,
+  I
+> {
   // @ts-ignore
-  public idStruct: Pick<P, I>
+  //  public idStruct: Pick<P, I>
 
-  //  public idStruct: { [k in (I)[number]]: number }
+  public idStruct: { [k in I[number]]: number }
 
   constructor(name: string, props: P, identifiers: I) {
     super(name, props, identifiers)
   }
 }
 
-export type TypeOfKey<C extends ObjectWithKeys<any, string[]>> = C['idStruct']
+export type TypeOfKeyW<C extends ObjectWithKeys<any, readonly string[]>> = C['idStruct']
 
-export function testObjK<P extends Props, I extends string[]>(
+export function testObjK<P extends Props, I extends readonly string[]>(
   props: P,
   identifiers: I
 ): ObjectWithKeys<P, I> {
@@ -286,11 +291,18 @@ export function testObjK<P extends Props, I extends string[]>(
   return Ok
 }
 
+export function testNoObjK<P extends Props>(props: P): ObjectWithKeys<P, readonly []> {
+  let Ok = new ObjectWithKeys<P, []>('test', props, [])
+  return Ok
+}
+
 const ChildType = t.object({ name: t.string }, 'Child')
 
+const ident = ['name', 'id'] as const
+
 export function test1() {
-  let ok = testObjK({ name: t.string }, ['name'])
-  let insKey: TypeOfKey<typeof ok> = {}
+  let ok = testObjK({ name: t.string }, ident)
+  let insKey: TypeOfKeyW<typeof ok> = { name: 1, id: 2 }
 }
 
 /*
@@ -312,9 +324,9 @@ export const objectWithKeys = <P extends Props, I extends string[]>(
 */
 
 export const inverseProps = (
-  firstType: ObjectTypeC<any>,
+  firstType: ObjectTypeC<any, any>,
   firstProp: string,
-  secondType: ObjectTypeC<any>,
+  secondType: ObjectTypeC<any, any>,
   secondProp: string
 ) => {
   // tslint:disable-next-line:no-constant-condition

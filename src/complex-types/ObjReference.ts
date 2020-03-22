@@ -4,7 +4,7 @@
  */
 
 import { TypeC, Any, InstanceReference, ConversionContext } from '../common/Type'
-import { ObjectTypeC, TypeOfKey, ObjectWithKeys } from './ObjectType'
+import { ObjectTypeC, TypeOfKeyW, ObjectWithKeys } from './ObjectType'
 import {
   appendPath,
   Errors,
@@ -29,7 +29,7 @@ export type IdentifierOfType<T extends ObjectTypeC<any>> = T extends ObjectTypeC
 
 const isObject = (u: any) => u !== null && typeof u === 'object'
 
-export class ObjReference<T extends ObjectWithKeys<any, string[]>> extends TypeC<TypeOfKey<T>> {
+export class ObjReference<T extends ObjectWithKeys<any, string[]>> extends TypeC<TypeOfKeyW<T>> {
   public readonly referencedType: T
 
   constructor(name: string, obj: T) {
@@ -134,7 +134,7 @@ export class ObjReference<T extends ObjectWithKeys<any, string[]>> extends TypeC
     visitedNodes: Map<any, any>,
     errors: Error[],
     context: ConversionContext
-  ): InstanceReference | TypeOfKey<T> {
+  ): InstanceReference | TypeOfKeyW<T> {
     let a: { [index: string]: any } = {}
     const identifier = this.referencedType.identifier
     for (let i = 0; i < identifier.length; i++) {
