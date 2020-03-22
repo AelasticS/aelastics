@@ -28,23 +28,21 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     super(name, baseType)
   }
 
-  public validate(
+  validateCyclic(
     value: TypeOf<P[number]>,
     path: Path = [],
-    traversed?: Map<Any, Any>
+    traversed: Map<any, any>
   ): Result<boolean> {
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
+    if (traversed.has(value)) {
+      return success(true)
     }
 
     traversed.set(this, this)
 
     for (let i = 0; i < this.baseType.length; i++) {
       const type = this.baseType[i]
-      if (traversed.has(type)) {
-        continue
-      }
-      let res = type.validate(value, path)
+
+      let res = type.validateCyclic(value, path, traversed)
       if (isSuccess(res)) {
         return res
       }

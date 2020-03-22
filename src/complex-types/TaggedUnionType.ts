@@ -42,11 +42,15 @@ export class TaggedUnionTypeC<Tag extends string, P extends Props> extends Compl
     super(name, elements)
   }
 
-  public validate(
-    value: TypeOf<this>,
+  validateCyclic(
+    value: TypeOf<P[keyof P]>,
     path: Path = [],
-    traversed?: Map<Any, Any>
+    traversed: Map<any, any>
   ): Result<boolean> {
+    if (traversed.has(value)) {
+      return success(true)
+    }
+
     const instance = value[this.discriminator]
     if (!instance) {
       return failure(
@@ -64,7 +68,7 @@ export class TaggedUnionTypeC<Tag extends string, P extends Props> extends Compl
         )
       } else {
         const errors: Errors = []
-        const typeValidation = type.validate(value, path)
+        const typeValidation = type.validateCyclic(value, path, traversed)
         if (isFailure(typeValidation)) {
           errors.push(...typeValidation.errors)
         }

@@ -50,14 +50,15 @@ export class SubtypeC<
     return Object.assign(this.superType.defaultValue(), super.defaultValue())
   }
 
-  public validate(
+  validateCyclic(
     input: ObjectType<P & SP>,
     path: Path = [],
-    traversed?: Map<Any, Any>
+    traversed: Map<any, any>
   ): Result<boolean> {
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
+    if (traversed.has(input)) {
+      return success(true)
     }
+
     traversed.set(this, this)
 
     let mapOfAllProperties = this.allProperties
@@ -80,12 +81,11 @@ export class SubtypeC<
           errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
           continue
         }
-        if (!traversed.has(t)) {
-          const ak = input[k]
-          const validation = t.validate(ak, appendPath(path, k, t.name, ak))
-          if (isFailure(validation)) {
-            errors.push(...validation.errors)
-          }
+
+        const ak = input[k]
+        const validation = t.validateCyclic(ak, appendPath(path, k, t.name, ak), traversed)
+        if (isFailure(validation)) {
+          errors.push(...validation.errors)
         }
       }
     }
