@@ -3,8 +3,8 @@
  *
  */
 
-import { TypeC, Any, InstanceReference, ConversionContext } from '../common/Type'
-import { ObjectTypeC, TypeOfKey } from './ObjectType'
+import { TypeC, Any, InstanceReference, ConversionContext } from './Type'
+import { ObjectTypeC, TypeOfKey } from '../complex-types/ObjectType'
 import {
   appendPath,
   Errors,
