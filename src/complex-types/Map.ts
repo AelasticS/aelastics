@@ -41,17 +41,17 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     return new Map()
   }
 
-  public validate(
+  validateCyclic(
     input: Map<TypeOf<K>, TypeOf<V>>,
     path: Path = [],
-    traversed?: Map<Any, Any>
+    traversed: Map<any, any>
   ): Result<boolean> {
     if (!(input instanceof Map)) {
       return failure(new Error(`Value ${path}: '${input}' is not valid Map`))
     }
 
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
+    if (traversed.has(input)) {
+      return success(true)
     }
 
     traversed.set(this, this)
@@ -59,21 +59,18 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     const errors: Errors = []
 
     input.forEach((value: V, key: K) => {
-      let res
-      // Is this good way to cancel undefined check?
-      // @ts-ignore
-      if (!traversed.has(value)) {
-        res = this.baseType.validate(value, appendPath(path, `[${key}]`, value.name, traversed))
-        if (isFailure(res)) {
-          errors.push(...res.errors)
-        }
+      let res = this.baseType.validateCyclic(
+        value,
+        appendPath(path, `[${key}]`, value.name),
+        traversed
+      )
+      if (isFailure(res)) {
+        errors.push(...res.errors)
       }
-      // @ts-ignore
-      if (!traversed.has(key)) {
-        res = this.keyType.validate(key, appendPath(path, `[${key}]`, key.name, traversed))
-        if (isFailure(res)) {
-          errors.push(...res.errors)
-        }
+
+      res = this.keyType.validateCyclic(key, appendPath(path, `[${key}]`, key.name), traversed)
+      if (isFailure(res)) {
+        errors.push(...res.errors)
       }
     })
 

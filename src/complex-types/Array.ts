@@ -33,17 +33,17 @@ export class ArrayTypeC<
     return []
   }
 
-  public validate(
+  validateCyclic(
     input: Array<TypeOf<E>>,
     path: Path = [],
-    traversed?: Map<Any, Any>
+    traversed: Map<any, any>
   ): Result<boolean> {
     if (!Array.isArray(input)) {
       return failure(new Error(`Value ${path}: '${input}' is not Array`))
     }
 
-    if (traversed === undefined) {
-      traversed = new Map<Any, Any>()
+    if (traversed.has(input)) {
+      return success(true)
     }
 
     traversed.set(this, this)
@@ -51,11 +51,11 @@ export class ArrayTypeC<
     const errors: Errors = []
     for (let i = 0; i < input.length; i++) {
       const x = input[i]
-      if (traversed.has(x)) {
-        continue
-      }
-
-      const validation = this.baseType.validate(x, appendPath(path, `[${i}]`, this.name, traversed))
+      const validation = this.baseType.validateCyclic(
+        x,
+        appendPath(path, `[${i}]`, this.name, x),
+        traversed
+      )
       if (isFailure(validation)) {
         errors.push(...validation.errors)
       }
