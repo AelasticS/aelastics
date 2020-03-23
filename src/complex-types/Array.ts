@@ -97,7 +97,7 @@ export class ArrayTypeC<
     if (!Array.isArray(inputArray)) {
       errors.push(new Error(`Value ${path} is not Array: '${inputArray}' `))
     }
-    let ref = this.handleGraph(inputArray, path, visitedNodes, errors, context)
+    let ref = this.serialize(inputArray, path, visitedNodes, errors, context)
     if (ref) {
       return ref
     }

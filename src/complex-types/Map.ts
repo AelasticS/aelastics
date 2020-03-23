@@ -111,7 +111,7 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     errors: Error[],
     context: ConversionContext
   ): InstanceReference | Array<[DtoTypeOf<K>, DtoTypeOf<V>]> {
-    let ref = this.handleGraph(input, path, visitedNodes, errors, context)
+    let ref = this.serialize(input, path, visitedNodes, errors, context)
     if (ref) {
       return ref
     }

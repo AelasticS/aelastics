@@ -57,7 +57,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   DtoObjectType<P>
 > {
   // https://stackoverflow.com/questions/55570729/how-to-limit-the-keys-of-an-object-to-the-strings-of-an-array-in-typescript
-  // @ts-ignore
   public ID!: { [k in I[number]]: TypeOf<P[k]> }
   public ID_DTO!: { [k in I[number]]: DtoTypeOf<P[k]> }
   public readonly _tag: 'Object' = 'Object'
@@ -105,7 +104,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     if (isFailure(result)) {
       return result
     }
-
     const errors: Errors = []
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
@@ -114,15 +112,12 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
         continue
       }
-
       const ak = input[k]
-
       const validation = t.validate(ak, appendPath(path, k, t.name, ak))
       if (isFailure(validation)) {
         errors.push(...validation.errors)
       }
     }
-
     const res = this.checkValidators(input, path)
     if (isFailure(res)) {
       errors.push(...res.errors)
@@ -130,17 +125,29 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return errors.length ? failures(errors) : success(true)
   }
 
-  public fromDTO(input: DtoObjectType<P>, path: Path = []): Result<ObjectType<P>> {
-    const result = isObject(input)
-      ? success(input)
-      : failureValidation('Value is not object', path, this.name, input)
-    if (isFailure(result)) {
-      return result
+  /** @internal */
+  fromDTOCyclic(
+    input: any,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): ObjectType<P> | undefined {
+    if (!isObject(input)) {
+      failureValidation('Input is not object', path, this.name, input)
+      return undefined
     }
-    // const o = result.value;
-    let a: ObjectType<P> = {} as ObjectType<P>
 
-    const errors: Errors = []
+    let output: ObjectType<P> = this.deserialize(
+      input,
+      path,
+      visitedNodes,
+      errors,
+      context
+    ) as ObjectType<P>
+    if (!output) {
+      output = {} as ObjectType<P>
+    }
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
       const k = this.keys[i]
@@ -148,31 +155,17 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
         continue
       }
-
       const ak = input[k]
-
-      const conversion = t.fromDTO(ak, appendPath(path, k, t.name, ak))
-      if (isFailure(conversion)) {
-        errors.push(...conversion.errors)
-      } else {
-        // const vak = conversion.value;
-        // if (vak !== ak) {
-        //
-        //     if (a === o) { // make copy
-        //         a = {...o}
-        //     }
-        //     a[k] = vak
-        // }
-        // Object.defineProperty(a, k,{value:conversion.value});
-        ;((a as unknown) as any)[k] = conversion.value
-      }
+      const conversion = t.fromDTOCyclic(
+        ak,
+        appendPath(path, k, t.name, ak),
+        visitedNodes,
+        errors,
+        context
+      )
+      ObjectTypeC.addProperty(output, k, conversion)
     }
-
-    const res = this.checkValidators(a, path)
-    if (isFailure(res)) {
-      errors.push(...res.errors)
-    }
-    return errors.length ? failures(errors) : success(a)
+    return output
   }
 
   /** @internal */
@@ -185,7 +178,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   ): DtoObjectType<P> | InstanceReference {
     let output: DtoObjectType<P> = {} as DtoObjectType<P>
     try {
-      let ref = this.handleGraph(input, path, visitedNodes, errors, context)
+      let ref = this.serialize(input, path, visitedNodes, errors, context)
       if (ref) {
         return ref
       }

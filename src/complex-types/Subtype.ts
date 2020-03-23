@@ -117,7 +117,7 @@ export class SubtypeC<
     errors: Error[],
     context: ConversionContext
   ): DtoObjectType<P & SP> | InstanceReference {
-    let ref = this.handleGraph(input, path, visitedNodes, errors, context)
+    let ref = this.serialize(input, path, visitedNodes, errors, context)
     if (ref) {
       return ref
     }

@@ -107,17 +107,38 @@ export abstract class TypeC<T, D = T> {
    *  Conversion function - validates value or plain object DTO (data transfer object) and returns either a new instance of t or errors, if validation fails;
    *  The default implementation just returns a copy of value, if it is valid. Should be overridden for more complex use cases.
    * @param value - to be converted,
-   * @param path  - the path to this value within a larger object; if root, it is empty - which is the default value
+   * @param options
    */
-  public fromDTO(value: D, path: Path = []): Result<T> {
-    const res = this.validate((value as unknown) as T, path)
-    return isSuccess(res) ? success<T>((value as unknown) as T) : res
+  public fromDTO(
+    value: D,
+    options: ConversionOptions = {
+      validate: true,
+      generateID: false,
+      typeInfo: false,
+      classInstances: false
+    }
+  ): Result<T> {
+    let convOptions = { ...options, ...{ counter: 0 } }
+    let errs: Errors = []
+    let res = this.fromDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
+    if (errs.length > 0) {
+      return failures(errs)
+    } else {
+      const resVal = this.validate(res as T, [])
+      return isSuccess(resVal) ? success<T>(res as T) : resVal
+    }
   }
 
   /** @internal */
-  public fromDTOCyclic(value: D, path: Path): Result<T> {
-    const res = this.validate((value as unknown) as T, path)
-    return isSuccess(res) ? success<T>((value as unknown) as T) : res
+  public fromDTOCyclic(
+    value: any,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): T | undefined {
+    errors.push(validationError('Internal method fromDTOCyclic not implemented', path, `${value}`))
+    return (value as any) as T
   }
 
   /**
@@ -165,12 +186,16 @@ export abstract class TypeC<T, D = T> {
   }
 
   // ToDo: override methods in subtypes!
-  public makeReference(input: any, id: number): InstanceReference {
+  public makeReference(input: any, context: ConversionContext): InstanceReference {
     return {
       className: this.name,
       typeOf: 'object',
-      id: id
+      id: ++context.counter
     }
+  }
+
+  public getReference(input: any, context: ConversionContext): InstanceReference | undefined {
+    return undefined
   }
 
   public addValidator(validator: Validator<T>): this {
