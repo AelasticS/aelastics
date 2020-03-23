@@ -61,7 +61,7 @@ export abstract class TypeC<T, D = T> {
   }
 
   /** Custom type guard - implemented using the validation  function */
-  public readonly is: Is<T> = (v: any): v is T => isSuccess(this.validate(v, []))
+  public readonly is: Is<T> = (v: any): v is T => isSuccess(this.validate(v))
 
   /**
    * Validation functions - validates the shape structure, field values and all constrains (validators)
@@ -83,13 +83,13 @@ export abstract class TypeC<T, D = T> {
    * @param path  - the path to this value within a larger object; if root, it is empty - which is the default value
    */
   public fromDTO(value: D, path: Path = []): Result<T> {
-    const res = this.validate((value as unknown) as T, path)
+    const res = this.validate((value as unknown) as T)
     return isSuccess(res) ? success<T>((value as unknown) as T) : res
   }
 
   public toDTO(value: T, path: Path = [], validate: boolean = true): Result<D> {
     if (validate) {
-      const res = this.validate(value, path)
+      const res = this.validate(value)
       return isSuccess(res) ? success<D>((value as unknown) as D) : res
     }
     return success<D>((value as unknown) as D)

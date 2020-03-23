@@ -1,7 +1,22 @@
 /*
  * Copyright (c) AelasticS 2019.
  */
+import * as t from '../../src/aelastics-types'
+import { DriverTypeLicences, DriverTypeProfession } from './types-example'
 
+export const secondLevelObject = t.object(
+  {
+    name: t.string
+  },
+  'secondLevelObject'
+)
+export const rootLevelLevelObject = t.object(
+  {
+    a: secondLevelObject,
+    b: secondLevelObject
+  },
+  'rootLevelObject'
+)
 /*
 
 
