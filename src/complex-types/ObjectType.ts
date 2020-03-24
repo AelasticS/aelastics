@@ -127,29 +127,20 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return errors.length ? failures(errors) : success(true)
   }
 
-  /** @internal */
-  fromDTOCyclic(
-    input: any,
+  makeInstanceFromDTO(
+    input: DtoObjectType<P>,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: Error[],
     context: ConversionContext
-  ): ObjectType<P> | undefined {
+  ): ObjectType<P> {
+    let output = {} as ObjectType<P>
+    let ref = this.getReference(input, context)
     if (!isObject(input)) {
-      failureValidation('Input is not object', path, this.name, input)
-      return undefined
+      errors.push(validationError('Input is not object', path, this.name, input))
+      return {} as ObjectType<P>
     }
-
-    let output: ObjectType<P> = this.deserialize(
-      input,
-      path,
-      visitedNodes,
-      errors,
-      context
-    ) as ObjectType<P>
-    if (!output) {
-      output = {} as ObjectType<P>
-    }
+    ObjectTypeC.addProperty(output, '_className_', ref?.className)
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
       const k = this.keys[i]
@@ -170,20 +161,17 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return output
   }
 
-  /** @internal */
-  toDTOCyclic(
+  makeInstanceDTO(
     input: ObjectType<P>,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: Error[],
     context: ConversionContext
-  ): DtoObjectType<P> | InstanceReference {
+  ): DtoObjectType<P> {
     let output: DtoObjectType<P> = {} as DtoObjectType<P>
+    let ref = this.makeReference(input, context)
+    ObjectTypeC.addProperty(output, '_$_Descr_$', ref)
     try {
-      let ref = this.serialize(input, path, visitedNodes, errors, context)
-      if (ref) {
-        return ref
-      }
       for (let i = 0; i < this.len; i++) {
         const t = this.types[i]
         const k = this.keys[i]
@@ -196,7 +184,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
           context
         )
         ObjectTypeC.addProperty(output, k, conversion)
-        // ((a as unknown) as any)[k] = conversion.value
       }
       return output
     } catch (e) {
