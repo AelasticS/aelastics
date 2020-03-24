@@ -21,12 +21,12 @@ describe('ObjectTest', () => {
   it("Testing if null  is 'empty object'", () => {
     const type = t.object({}, 'empty')
     let o = null
-    expect(isSuccess(type.validate((o as unknown) as t.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
   })
   it("Testing if undefined is 'empty object'", () => {
     const type = t.object({}, 'empty')
     let o = undefined
-    expect(isSuccess(type.validate((o as unknown) as t.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
   })
   // true
   it("Testing if empty array is 'empty object'", () => {
@@ -63,7 +63,7 @@ describe('ObjectTest', () => {
     const o = {
       b: 25
     }
-    expect(isSuccess(type.validate((o as unknown) as t.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
   })
   it('testing if object with literal property is valid', () => {
     const type = t.object({
@@ -84,7 +84,7 @@ describe('ObjectTest', () => {
     const o = {
       a: undefined
     }
-    expect(isSuccess(type.validate((o as unknown) as t.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
   })
   it('should not be valid Object with property String in case of empty object', () => {
     const type = t.object(
@@ -94,7 +94,7 @@ describe('ObjectTest', () => {
       'stringObject'
     )
     const o = {}
-    expect(isSuccess(type.validate((o as unknown) as t.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
   })
   it('should be valid Object with two String properties', () => {
     const type = t.object(
@@ -122,7 +122,7 @@ describe('ObjectTest', () => {
     const o = {
       a: '25'
     }
-    expect(isSuccess(type.validate((o as unknown) as t.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
   })
 
   it('should be valid Object with two String properties and some constraints', () => {
