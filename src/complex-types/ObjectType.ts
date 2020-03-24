@@ -30,6 +30,8 @@ import {
 import { OptionalTypeC } from '../common/Optional'
 import { TypeSchema } from '../common/TypeSchema'
 import * as t from '../aelastics-types'
+import { ArrayTypeC } from './Array'
+import { MapTypeC } from './Map'
 
 export interface Props {
   [key: string]: Any // TypeC<any>
@@ -290,8 +292,73 @@ export const inverseProps = (
   if (true) {
     // todo: Sinisa
     // check that props exist
-    // check that props are object types or collections
-    // check that prop already exist as an inverse, remove if true
+    let fp = firstType.baseType[firstProp] as TypeC<any>
+    if (!fp) {
+      throw new Error(`Property '${firstProp}' on type '${firstType.name}' does not extist.`)
+      return
+    }
+    let sp = secondType.baseType[secondProp] as TypeC<any>
+    if (!sp) {
+      throw new Error(`Property '${secondProp}' on type '${secondType.name}' does not extist.`)
+      return
+    }
+    // handle optional types
+    if (fp instanceof OptionalTypeC) {
+      fp = fp.base
+    }
+    if (sp instanceof OptionalTypeC) {
+      sp = sp.base
+    }
+    // handle collections
+    if (fp instanceof ArrayTypeC || fp instanceof MapTypeC) {
+      fp = fp.baseType
+    }
+    if (sp instanceof ArrayTypeC || sp instanceof MapTypeC) {
+      sp = sp.baseType
+    }
+    // check that props are object types
+    if (!(fp instanceof ObjectTypeC)) {
+      throw new Error(
+        `Property '${firstProp}' on type '${firstType.name}' not object or entity type.`
+      )
+      return
+    }
+    if (!(sp instanceof ObjectTypeC)) {
+      throw new Error(
+        `Property '${secondProp}' on type '${secondType.name}' not object or entity type.`
+      )
+      return
+    }
+    // check that props are correct inverse
+    if (fp !== secondType) {
+      throw new Error(
+        `Property '${firstProp}' on type '${firstType.name}' is not referencing '${secondType.name}' type.`
+      )
+      return
+    }
+    if (sp !== firstType) {
+      throw new Error(
+        `Property '${secondProp}' on type '${secondType.name}' is not referencing '${firstType.name}' type.`
+      )
+      return
+    }
+    // check that prop already exist as an inverse
+    for (let e of firstType.inverseCollection.values()) {
+      if (e.prop === secondProp && e.type === secondType) {
+        throw new Error(
+          `Property '${secondProp}' of type '${secondType.name}' is already inverse in '${firstType.name}' type.`
+        )
+        return
+      }
+    }
+    for (let e of secondType.inverseCollection.values()) {
+      if (e.prop === firstProp && e.type === firstType) {
+        throw new Error(
+          `Property '${firstProp}' of type '${firstType.name}' is already inverse in '${secondType.name}' type.`
+        )
+        return
+      }
+    }
     firstType.inverseCollection.set(firstProp, { prop: secondProp, type: secondType })
     secondType.inverseCollection.set(secondProp, { prop: firstProp, type: firstType })
   }
