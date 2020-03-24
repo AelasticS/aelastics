@@ -198,6 +198,10 @@ export abstract class TypeC<T, D = T> {
     return undefined
   }
 
+  public isReference(input: any, context: ConversionContext): boolean {
+    return false
+  }
+
   public addValidator(validator: Validator<T>): this {
     this.validators.push(validator)
     return this

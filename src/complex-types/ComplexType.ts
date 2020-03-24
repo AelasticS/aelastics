@@ -4,6 +4,7 @@
 
 import { ConversionContext, InstanceReference, TypeC } from '../common/Type'
 import { Error, Path } from 'aelastics-result'
+import { DtoObjectType, ObjectType } from './ObjectType'
 
 /**
  *  Complex type: a structure which is derived from some type P
@@ -13,60 +14,87 @@ export abstract class ComplexTypeC<P, T extends any, D extends any = T> extends 
     super(name)
   }
 
-  /**
-   *  can return:
-   *  1- reference, if already serialized and in cache
-   *  2 - DTO value, if not serialized before
-   *  3 - error, if only tree structure are only allowed
-   *    type serialzeResult = [1|2|3, InstanceReference, any]
-   * @param input
-   * @param path
-   * @param visitedNodes
-   * @param errors
-   * @param context
-   */
-
-  public serialize(
-    input: any,
+  abstract makeInstanceDTO(
+    input: T,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: Error[],
     context: ConversionContext
-  ): InstanceReference | undefined {
-    let ref = visitedNodes.get(input)
-    if (ref) {
+  ): D
+
+  abstract makeInstanceFromDTO(
+    input: D,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): T
+
+  toDTOCyclic(
+    input: T,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): D | InstanceReference {
+    let output = visitedNodes.get(input)
+    if (output) {
       if (!(context.typeInfo && context.generateID)) {
         errors.push(
           new Error(
             `Input data is graph. Value ${path}: '${input}' of type '${this.name}' has more then one reference!`
           )
         )
-        return undefined
       }
+      return output
     } else {
-      let ref = this.makeReference(input, context)
-      visitedNodes.set(input, ref)
-      return ref
+      output = this.makeInstanceDTO(input, path, visitedNodes, errors, context)
+      visitedNodes.set(input, this.getReference(output, context))
     }
+    return output
   }
 
-  public deserialize(
-    input: any,
+  fromDTOCyclic(
+    value: any,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: Error[],
     context: ConversionContext
-  ): any {
-    let ref = this.getReference(input, context)
-    if (!ref) {
-    } else {
-      let output = visitedNodes.get(ref.id)
-    }
-    if (output !== undefined) {
+  ): T {
+    if (this.isReference(value, context)) {
+      // a reference to a visited instance, should be in visitedNodes
+      let output = visitedNodes.get(value)
+      if (output) {
+        if (!(context.typeInfo && context.generateID)) {
+          errors.push(
+            new Error(
+              `Input data is graph. Value ${path}: '${value}' of type '${this.name}' has more then one reference!`
+            )
+          )
+        }
+      } else {
+        errors.push(
+          new Error(
+            `Value ${path}: '${value}' of type '${this.name}' is a reference to an object that does not exist!`
+          )
+        )
+      }
       return output
     } else {
-      output = this.getReference(ref)
-      visitedNodes.set(ref.id, output)
+      // an instance
+      let output = this.makeInstanceFromDTO(value, path, visitedNodes, errors, context)
+      if (output) {
+        if (!(context.typeInfo && context.generateID)) {
+          errors.push(
+            new Error(
+              `Input data is graph. Value ${path}: '${value}' of type '${this.name}' has more then one reference!`
+            )
+          )
+        }
+      } else {
+        visitedNodes.set(this.getReference(value, context), output)
+      }
+      return output
     }
   }
 }
