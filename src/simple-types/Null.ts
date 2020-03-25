@@ -33,11 +33,3 @@ nullType.addValidator({
   predicate: (value:any) => typeof value === 'null'
 })
 */
-
-// export interface test {
-//     da1:number;
-//     a2:null
-// }
-//
-//
-//  let a:test = {da1:5, a2:null}

@@ -9,6 +9,7 @@ export { Type, Any, TypeOf, DtoTypeOf } from './common/Type'
 export { boolean } from './simple-types/Boolean'
 export { voidType } from './simple-types/Void'
 export { nullType } from './simple-types/Null'
+export { never } from './simple-types/Never'
 export { date } from './simple-types/DateType'
 export { number } from './simple-types/Number'
 export { string } from './simple-types/String'
@@ -45,6 +46,7 @@ import * as sts from './simple-types/String'
 import * as stb from './simple-types/Boolean'
 import * as stv from './simple-types/Void'
 import * as stnull from './simple-types/Null'
+import * as stnev from './simple-types/Never'
 import * as stn from './simple-types/Number'
 import * as stl from './simple-types/Literal'
 import * as std from './simple-types/DateType'
@@ -117,6 +119,9 @@ export namespace types {
 
   export type NullType = stnull.NullTypeC
   export const isNullType = (v: any) => v instanceof stnull.NullTypeC
+
+  export type NeverType = stnev.NeverTypeC
+  export const isNeverType = (v: any) => v instanceof stnev.NeverTypeC
 
   export type NumberType = stn.NumberTypeC
   export const isNumberType = (v: any) => v instanceof stn.NumberTypeC

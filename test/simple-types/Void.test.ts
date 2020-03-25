@@ -19,4 +19,16 @@ describe('Test cases for void type', () => {
     let value = null
     expect(isSuccess(realVoid.validate(value, []))).toBe(false)
   })
+
+  it('should verify that function returns void.', () => {
+    const realVoid = t.voidType
+    let value = () => console.log('no return value')
+    expect(isSuccess(realVoid.validate(value(), []))).toBe(true)
+  })
+
+  it("should verify that function doesn't return void.", () => {
+    const realVoid = t.voidType
+    let value = () => 'string value'
+    expect(isSuccess(realVoid.validate(value(), []))).toBe(false)
+  })
 })
