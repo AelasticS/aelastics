@@ -4,8 +4,6 @@
  */
 
 import {
-  Errors,
-  Error,
   failure,
   failures,
   isSuccess,
@@ -14,7 +12,9 @@ import {
   Result,
   success,
   validationError,
-  isFailure
+  isFailure,
+  Errors,
+  ValidationError
 } from 'aelastics-result'
 import { IObjectDescriptor, IObjectLiteral } from '../serializer/JsonDeserializer'
 import { ObjectType } from '../complex-types/ObjectType'
@@ -37,7 +37,8 @@ export interface ConversionOptions {
   validate: boolean // should validate , because of serializing partial data
   generateID: boolean // generateID if it is graph
   typeInfo: boolean // should put meta type info
-  classInstances: boolean // put constructor name or POJO - Literal object
+  typeInfoPropName: string
+  instantiateClasses: boolean // put constructor name or POJO - Literal object
   constructors?: Map<string, Constructor> // constructors
 }
 
@@ -47,18 +48,13 @@ export const defaultConversionOptions: ConversionOptions = {
   validate: true,
   generateID: false,
   typeInfo: false,
-  classInstances: false
+  typeInfoPropName: '_$_type_$',
+  instantiateClasses: false
 }
 
 export interface Validator<T> {
   predicate: Predicate<T> // (value: t)=> boolean;
   message(value: T, label?: string, result?: any): string
-}
-
-export interface InstanceReference {
-  id: number // unique identifier within object graph
-  typeOf: string // instance category: Literal Object, or Typescript class
-  className: string // used as a class name
 }
 
 /**
@@ -70,15 +66,20 @@ export abstract class TypeC<T, D = T> {
 
   //  public derivedFrom: TypeC<T, D>
 
-  /** Unique name for this type */
-  public readonly name: string
+  /** Unique name for this type within a type schema */
+  public readonly shortName: string
+
+  // full name, e.g. /schema/sub-schema/type-name
+  get name(): string {
+    return this.shortName
+  }
 
   /** Array of functions checking constrains on values of this type */
   private validators: Validator<T>[] = []
 
   // constructor
   constructor(name: string) {
-    this.name = name
+    this.shortName = name
   }
 
   /**
@@ -115,11 +116,11 @@ export abstract class TypeC<T, D = T> {
       validate: true,
       generateID: false,
       typeInfo: false,
-      classInstances: false
+      instantiateClasses: false
     }
   ): Result<T> {
     let convOptions = { ...options, ...{ counter: 0 } }
-    let errs: Errors = []
+    let errs: ValidationError[] = []
     let res = this.fromDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
     if (errs.length > 0) {
       return failures(errs)
@@ -134,7 +135,7 @@ export abstract class TypeC<T, D = T> {
     value: any,
     path: Path,
     visitedNodes: Map<any, any>,
-    errors: Error[],
+    errors: ValidationError[],
     context: ConversionContext
   ): T | undefined {
     errors.push(validationError('Internal method fromDTOCyclic not implemented', path, `${value}`))
@@ -154,9 +155,9 @@ export abstract class TypeC<T, D = T> {
       validate: true,
       generateID: false,
       typeInfo: false,
-      classInstances: false
+      instantiateClasses: false
     }
-  ): Result<D | InstanceReference> {
+  ): Result<D> {
     if (options.validate) {
       let res = this.validate(value, [])
       if (isFailure(res)) {
@@ -164,7 +165,7 @@ export abstract class TypeC<T, D = T> {
       }
     }
     let convOptions = { ...options, ...{ counter: 0 } }
-    let errs: Errors = []
+    let errs: ValidationError[] = []
     let res = this.toDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
     if (errs.length > 0) {
       return failures(errs)
@@ -178,28 +179,11 @@ export abstract class TypeC<T, D = T> {
     input: T,
     path: Path,
     visitedNodes: Map<any, any>,
-    errors: Error[],
+    errors: ValidationError[],
     context: ConversionContext
-  ): D | InstanceReference {
+  ): D {
     errors.push(validationError('Internal method toDTOCyclic not implemented', path, `${input}`))
     return (input as any) as D
-  }
-
-  // ToDo: override methods in subtypes!
-  public makeReference(input: any, context: ConversionContext): InstanceReference {
-    return {
-      className: this.name,
-      typeOf: 'object',
-      id: ++context.counter
-    }
-  }
-
-  public getReference(input: any, context: ConversionContext): InstanceReference | undefined {
-    return undefined
-  }
-
-  public isReference(input: any, context: ConversionContext): boolean {
-    return false
   }
 
   public addValidator(validator: Validator<T>): this {
@@ -209,7 +193,7 @@ export abstract class TypeC<T, D = T> {
 
   // check validity with errorReport?
   public checkValidators(value: any, path: Path): Result<boolean> {
-    const errs: Errors = []
+    const errs: ValidationError[] = []
     let hasError: boolean = false
 
     let currentType: any = this
@@ -236,7 +220,7 @@ export abstract class TypeC<T, D = T> {
   }
 
   /** @internal */
-  private checkOneLevel(currentType: TypeC<T>, value: any, errs: Errors, path: Path) {
+  private checkOneLevel(currentType: TypeC<T>, value: any, errs: ValidationError[], path: Path) {
     let hasError: boolean = false
     for (const { predicate, message } of currentType.validators) {
       // if (value === undefined) { // no point of checking value constraint, other baseType checker will detect error

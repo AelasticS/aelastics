@@ -4,33 +4,29 @@
 
 import {
   appendPath,
-  Error,
-  Errors,
   failure,
   failures,
   isFailure,
   Path,
   success,
   Result,
-  isSuccess
+  isSuccess,
+  ValidationError,
+  validationError
 } from 'aelastics-result'
-import {
-  Any,
-  ConversionContext,
-  ConversionOptions,
-  DtoTypeOf,
-  InstanceReference,
-  TypeOf
-} from '../common/Type'
-import { ComplexTypeC } from './ComplexType'
+import { Any, ConversionContext, ConversionOptions, DtoTypeOf, TypeOf } from '../common/Type'
+import { InstanceReference, ComplexTypeC } from './ComplexType'
+import { ObjectType, Props } from './ObjectType'
 
 /**
  * Array type
  */
 
+type DtoArrayType<E extends Any> = { ref: InstanceReference; array: Array<DtoTypeOf<E>> }
+
 export class ArrayTypeC<
   E extends Any /*, T extends Array<TypeOf<E>>, D extends c*/
-> extends ComplexTypeC<E, Array<TypeOf<E>>, Array<DtoTypeOf<E>>> {
+> extends ComplexTypeC<E, Array<TypeOf<E>>, DtoArrayType<E>> {
   public readonly _tag: 'Array' = 'Array'
 
   constructor(name: string, type: E) {
@@ -46,73 +42,66 @@ export class ArrayTypeC<
       return failure(new Error(`Value ${path}: '${input}' is not Array`))
     }
 
-    const errors: Errors = []
+    const errors: ValidationError[] = []
     for (let i = 0; i < input.length; i++) {
       const x = input[i]
       const validation = this.baseType.validate(x, appendPath(path, `[${i}]`, this.name))
       if (isFailure(validation)) {
-        errors.push(...validation.errors)
+        errors.push(...(validation.errors as ValidationError[]))
       }
     }
 
     const res = this.checkValidators(input, path)
     if (isFailure(res)) {
-      errors.push(...res.errors)
+      errors.push(...(res.errors as ValidationError[]))
     }
     return errors.length ? failures(errors) : success(true)
   }
 
-  public fromDTO(input: Array<DtoTypeOf<E>>, path: Path = []): Result<Array<TypeOf<E>>> {
-    if (!Array.isArray(input)) {
-      return failure(new Error(`Value ${path}: '${input}' is not Array`))
-    }
-
-    const a: Array<TypeOf<E>> = []
-    const errors: Errors = []
-    for (let i = 0; i < input.length; i++) {
-      const x = input[i]
-      const conversion = this.baseType.fromDTO(x, [])
-      if (isFailure(conversion)) {
-        errors.push(...conversion.errors)
-      } else {
-        a.push(conversion.value)
-      }
-    }
-
-    const res = this.checkValidators(input, path)
-    if (isFailure(res)) {
-      errors.push(...res.errors)
-    }
-    return errors.length ? failures(errors) : success(a)
-  }
-
-  // todo: first array element to identify array type
-  toDTOCyclic(
-    inputArray: Array<TypeOf<E>>,
+  makeInstanceFromDTO(
+    input: DtoArrayType<E>,
     path: Path,
     visitedNodes: Map<any, any>,
-    errors: Error[],
-    context: ConversionContext
-  ): Array<DtoTypeOf<E> | InstanceReference> | InstanceReference {
-    if (!Array.isArray(inputArray)) {
-      errors.push(new Error(`Value ${path} is not Array: '${inputArray}' `))
+    errors: ValidationError[],
+    context: ConversionOptions & { counter: number }
+  ): Array<TypeOf<E>> {
+    if (!Array.isArray(input.array)) {
+      errors.push(validationError('Input is not an array', path, this.name, input))
+      return []
     }
-    let ref = this.serialize(inputArray, path, visitedNodes, errors, context)
-    if (ref) {
-      return ref
+    const output: Array<TypeOf<E>> = []
+    for (let i = 0; i < input.array.length; i++) {
+      const x = input.array[i]
+      const conversion = this.baseType.fromDTOCyclic(x, path, visitedNodes, errors, context)
+      output.push(conversion.value)
     }
-    const outputArray: Array<DtoTypeOf<E> | InstanceReference> = []
-    for (let i = 0; i < inputArray.length; i++) {
+    //    const res = this.checkValidators(input, path)
+
+    return output
+  }
+
+  makeDTOInstance(
+    input: Array<TypeOf<E>>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: ValidationError[],
+    context: ConversionOptions & { counter: number }
+  ): DtoArrayType<E> {
+    if (!Array.isArray(input)) {
+      errors.push(validationError(`Value ${path} is not Array: '${input}' `, path, this.name))
+    }
+    const output: DtoArrayType<E> = { ref: this.makeReference(input, context), array: [] }
+    for (let i = 0; i < input.length; i++) {
       const conversion = this.baseType.toDTOCyclic(
-        inputArray[i],
+        input[i],
         appendPath(path, `[${i}]`, this.name),
         visitedNodes,
         errors,
         context
       )
-      outputArray.push(conversion)
+      output.array.push(conversion)
     }
-    return outputArray
+    return output
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

@@ -5,7 +5,6 @@
 
 import {
   appendPath,
-  Errors,
   failures,
   failureValidation,
   isFailure,
@@ -13,20 +12,10 @@ import {
   validationError,
   Path,
   Result,
-  Error,
-  isSuccess,
-  failure
+  ValidationError
 } from 'aelastics-result'
-import { ComplexTypeC } from './ComplexType'
-import {
-  Any,
-  ConversionContext,
-  ConversionOptions,
-  DtoTypeOf,
-  InstanceReference,
-  TypeC,
-  TypeOf
-} from '../common/Type'
+import { ComplexTypeC, InstanceReference } from './ComplexType'
+import { Any, ConversionContext, ConversionOptions, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
 import { OptionalTypeC } from '../common/Optional'
 import { TypeSchema } from '../common/TypeSchema'
 import * as t from '../aelastics-types'
@@ -38,7 +27,12 @@ export interface Props {
 }
 
 export type ObjectType<P extends Props> = { [K in keyof P]: TypeOf<P[K]> }
-export type DtoObjectType<P extends Props> = { [K in keyof P]: DtoTypeOf<P[K]> }
+type DtoProps<P extends Props> = { [K in keyof P]: DtoTypeOf<P[K]> }
+
+export type DtoObjectType<P extends Props> = {
+  ref: InstanceReference
+  object: DtoProps<P>
+}
 export type TypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID']
 export type DtoTypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID_DTO']
 
@@ -58,7 +52,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   ObjectType<P>,
   DtoObjectType<P>
 > {
-  // https://stackoverflow.com/questions/55570729/how-to-limit-the-keys-of-an-object-to-the-strings-of-an-array-in-typescript
   public ID!: { [k in I[number]]: TypeOf<P[k]> }
   public ID_DTO!: { [k in I[number]]: DtoTypeOf<P[k]> }
   public readonly _tag: 'Object' = 'Object'
@@ -106,7 +99,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     if (isFailure(result)) {
       return result
     }
-    const errors: Errors = []
+    const errors: ValidationError[] = []
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
       const k = this.keys[i]
@@ -117,60 +110,27 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       const ak = input[k]
       const validation = t.validate(ak, appendPath(path, k, t.name, ak))
       if (isFailure(validation)) {
-        errors.push(...validation.errors)
+        errors.push(...(validation.errors as ValidationError[]))
       }
     }
     const res = this.checkValidators(input, path)
     if (isFailure(res)) {
-      errors.push(...res.errors)
+      errors.push(...(res.errors as ValidationError[]))
     }
     return errors.length ? failures(errors) : success(true)
   }
 
-  makeInstanceFromDTO(
-    input: DtoObjectType<P>,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: Error[],
-    context: ConversionContext
-  ): ObjectType<P> {
-    let output = {} as ObjectType<P>
-    let ref = this.getReference(input, context)
-    if (!isObject(input)) {
-      errors.push(validationError('Input is not object', path, this.name, input))
-      return {} as ObjectType<P>
-    }
-    ObjectTypeC.addProperty(output, '_className_', ref?.className)
-    for (let i = 0; i < this.len; i++) {
-      const t = this.types[i]
-      const k = this.keys[i]
-      if (!hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
-        errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
-        continue
-      }
-      const ak = input[k]
-      const conversion = t.fromDTOCyclic(
-        ak,
-        appendPath(path, k, t.name, ak),
-        visitedNodes,
-        errors,
-        context
-      )
-      ObjectTypeC.addProperty(output, k, conversion)
-    }
-    return output
-  }
-
-  makeInstanceDTO(
+  makeDTOInstance(
     input: ObjectType<P>,
     path: Path,
     visitedNodes: Map<any, any>,
-    errors: Error[],
+    errors: ValidationError[],
     context: ConversionContext
   ): DtoObjectType<P> {
-    let output: DtoObjectType<P> = {} as DtoObjectType<P>
-    let ref = this.makeReference(input, context)
-    ObjectTypeC.addProperty(output, '_$_Descr_$', ref)
+    let output: DtoObjectType<P> = {
+      ref: this.makeReference(input, context),
+      object: {} as DtoProps<P>
+    }
     try {
       for (let i = 0; i < this.len; i++) {
         const t = this.types[i]
@@ -183,15 +143,62 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
           errors,
           context
         )
-        ObjectTypeC.addProperty(output, k, conversion)
+        ObjectTypeC.addProperty(output.object, k, conversion)
       }
       return output
     } catch (e) {
       errors.push(
-        validationError(`Catched exception '${(e as Error).message}'`, path, this.name, input)
+        validationError(`Caught exception '${(e as Error).message}'`, path, this.name, input)
       )
       return output
     }
+  }
+
+  makeInstanceFromDTO(
+    input: DtoObjectType<P>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: ValidationError[],
+    context: ConversionContext
+  ): ObjectType<P> {
+    let output = {} as ObjectType<P>
+    if (!isObject(input.object)) {
+      errors.push(validationError('Input is not an object', path, this.name, input))
+      return {} as ObjectType<P>
+    }
+    if (input.ref.typeName !== this.name) {
+      // determine correct subtype, add context for schema
+      errors.push(
+        validationError(
+          `Types are not matching: input type is '${input.ref.typeName}' and expected type is '${this.name}'. A possible subtype cannot be handled!`,
+          path,
+          this.name,
+          input
+        )
+      )
+      return output // empty
+    }
+    if (context.typeInfo) {
+      ObjectTypeC.addProperty(output, context.typeInfoPropName, this.name)
+    }
+    for (let i = 0; i < this.len; i++) {
+      const t = this.types[i]
+      const k = this.keys[i]
+      if (!hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
+        errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
+        continue
+      }
+      const ak = input.object[k]
+      const conversion = t.fromDTOCyclic(
+        ak,
+        appendPath(path, k, t.name, ak),
+        visitedNodes,
+        errors,
+        context
+      )
+      ObjectTypeC.addProperty(output, k, conversion)
+    }
+    return output
   }
 
   private static addProperty(obj: Object, prop: string, value: any) {

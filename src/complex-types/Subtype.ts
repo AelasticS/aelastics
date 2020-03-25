@@ -16,7 +16,7 @@ import {
   validationError,
   appendPath
 } from 'aelastics-result'
-import { Any, ConversionContext, InstanceReference, TypeC } from '../common/Type'
+import { Any, ConversionContext, TypeC } from '../common/Type'
 import { TypeSchema } from '../common/TypeSchema'
 import { OptionalTypeC } from '../common/Optional'
 
@@ -86,8 +86,18 @@ export class SubtypeC<
     return errors.length ? failures(errors) : success(true)
   }
 
+  makeInstanceFromDTO(
+    input: DtoObjectType<P & SP>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: ValidationError[],
+    context: ConversionOptions & { counter: number }
+  ): ObjectType<P & SP> {
+    return super.makeInstanceFromDTO(input, path, visitedNodes, errors, context)
+  }
+
   // TODO: Consider property overriding
-  public fromDTO(input: DtoObjectType<P & SP>, path: Path = []): Result<ObjectType<P & SP>> {
+  public fromDTO1(input: DtoObjectType<P & SP>, path: Path = []): Result<ObjectType<P & SP>> {
     const resSuper = this.superType.fromDTO(input, path)
     const res = super.fromDTO(input, path)
 
@@ -116,7 +126,7 @@ export class SubtypeC<
     visitedNodes: Map<any, any>,
     errors: Error[],
     context: ConversionContext
-  ): DtoObjectType<P & SP> | InstanceReference {
+  ): DtoObjectType<P & SP> {
     let ref = this.serialize(input, path, visitedNodes, errors, context)
     if (ref) {
       return ref
