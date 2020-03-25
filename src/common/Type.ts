@@ -110,15 +110,7 @@ export abstract class TypeC<T, D = T> {
    * @param value - to be converted,
    * @param options
    */
-  public fromDTO(
-    value: D,
-    options: ConversionOptions = {
-      validate: true,
-      generateID: false,
-      typeInfo: false,
-      instantiateClasses: false
-    }
-  ): Result<T> {
+  public fromDTO(value: D, options: ConversionOptions = defaultConversionOptions): Result<T> {
     let convOptions = { ...options, ...{ counter: 0 } }
     let errs: ValidationError[] = []
     let res = this.fromDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
@@ -149,15 +141,7 @@ export abstract class TypeC<T, D = T> {
    * @param value
    * @param options
    */
-  public toDTO(
-    value: T,
-    options: ConversionOptions = {
-      validate: true,
-      generateID: false,
-      typeInfo: false,
-      instantiateClasses: false
-    }
-  ): Result<D> {
+  public toDTO(value: T, options: ConversionOptions = defaultConversionOptions): Result<D> {
     if (options.validate) {
       let res = this.validate(value, [])
       if (isFailure(res)) {
