@@ -33,8 +33,6 @@ export type DtoObjectType<P extends Props> = {
   ref: InstanceReference
   object: DtoProps<P>
 }
-export type TypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID']
-export type DtoTypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID_DTO']
 
 export const isObject = (u: any) => u !== null && typeof u === 'object'
 
@@ -201,7 +199,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   }
 
   /** @internal */
-  protected static addProperty(obj: Object, prop: string, value: any) {
+  public static addProperty(obj: Object, prop: string, value: any) {
     Object.defineProperty(obj, prop, {
       value: value,
       writable: true,
