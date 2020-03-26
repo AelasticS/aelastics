@@ -163,7 +163,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     let output = {} as ObjectType<P>
     if (!isObject(input.object)) {
       errors.push(validationError('Input is not an object', path, this.name, input))
-      return {} as ObjectType<P>
+      return output
     }
     if (input.ref.typeName !== this.name) {
       // determine correct subtype, add context for schema

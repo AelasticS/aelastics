@@ -10,13 +10,11 @@ import {
   Path,
   success,
   Result,
-  isSuccess,
   ValidationError,
   validationError
 } from 'aelastics-result'
 import { Any, ConversionContext, ConversionOptions, DtoTypeOf, TypeOf } from '../common/Type'
 import { InstanceReference, ComplexTypeC } from './ComplexType'
-import { ObjectType, Props } from './ObjectType'
 
 /**
  * Array type
