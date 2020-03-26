@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { Any, ConversionContext, InstanceReference, TypeC } from '../common/Type'
+import { Any, ConversionContext, TypeC } from '../common/Type'
 import { Error, Path, Result, success } from 'aelastics-result'
 
 export abstract class SimpleTypeC<T, D = T> extends TypeC<T, D> {
