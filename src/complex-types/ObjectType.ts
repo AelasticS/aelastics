@@ -27,7 +27,7 @@ export interface Props {
 }
 
 export type ObjectType<P extends Props> = { [K in keyof P]: TypeOf<P[K]> }
-type DtoProps<P extends Props> = { [K in keyof P]: DtoTypeOf<P[K]> }
+export type DtoProps<P extends Props> = { [K in keyof P]: DtoTypeOf<P[K]> }
 
 export type DtoObjectType<P extends Props> = {
   ref: InstanceReference
@@ -36,7 +36,6 @@ export type DtoObjectType<P extends Props> = {
 export type TypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID']
 export type DtoTypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID_DTO']
 
-const hasOwnProperty = Object.prototype.hasOwnProperty
 export const isObject = (u: any) => u !== null && typeof u === 'object'
 
 export const getNameFromProps = (props: Props): string =>
@@ -103,7 +102,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
       const k = this.keys[i]
-      if (!hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
+      if (!Object.prototype.hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
         errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
         continue
       }
@@ -184,7 +183,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
       const k = this.keys[i]
-      if (!hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
+      if (!Object.prototype.hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
         errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
         continue
       }
@@ -201,7 +200,8 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return output
   }
 
-  private static addProperty(obj: Object, prop: string, value: any) {
+  /** @internal */
+  protected static addProperty(obj: Object, prop: string, value: any) {
     Object.defineProperty(obj, prop, {
       value: value,
       writable: true,
