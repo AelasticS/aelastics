@@ -38,7 +38,6 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
 > {
   public readonly _tag: 'Map' = 'Map'
   public readonly keyType: K
-
   constructor(name: string, type: V, k: K) {
     super(name, type)
     this.keyType = k

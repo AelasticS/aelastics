@@ -3,9 +3,17 @@
  *
  */
 
-import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
-import { ComplexTypeC } from './ComplexType'
-import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
+import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
+import { ComplexTypeC, InstanceReference } from './ComplexType'
+import {
+  Error,
+  failures,
+  isFailure,
+  Path,
+  Result,
+  success,
+  ValidationError
+} from 'aelastics-result'
 
 type UnionToIntersection<U> = (U extends any
 ? (k: U) => void
@@ -13,10 +21,15 @@ type UnionToIntersection<U> = (U extends any
   ? I
   : never
 
+type DtoIntersectionType<P extends Array<Any>> = {
+  ref: InstanceReference
+  intersection: UnionToIntersection<DtoTypeOf<P[number]>>
+}
+
 export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   P,
   UnionToIntersection<TypeOf<P[number]>>,
-  UnionToIntersection<DtoTypeOf<P[number]>>
+  DtoIntersectionType<P>
 > {
   public readonly _tag: 'Intersection' = 'Intersection'
 
@@ -39,38 +52,37 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
     }
   }
 
-  fromDTO(
-    value: UnionToIntersection<DtoTypeOf<P[number]>>,
-    path: Path = []
-  ): Result<UnionToIntersection<TypeOf<P[number]>>> {
-    const res = this.validate(value, path)
-    if (isFailure(res)) return res
-    const val = {} as UnionToIntersection<TypeOf<P[number]>>
+  makeInstanceFromDTO(
+    input: DtoIntersectionType<P>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: ValidationError[],
+    context: ConversionContext
+  ): UnionToIntersection<TypeOf<P[number]>> {
+    const output = {} as UnionToIntersection<TypeOf<P[number]>>
     for (const t of this.baseType) {
-      const res = t.fromDTO(value, path)
-      if (isFailure(res)) {
-        return res
-      } else {
-        Object.assign(val, res.value)
-      }
+      const res = t.fromDTOCyclic(input, path, visitedNodes, errors, context)
+      Object.assign(output, res)
     }
-
-    return success(val)
+    return output
   }
 
-  toDTOCyclic(
+  makeDTOInstance(
     input: UnionToIntersection<TypeOf<P[number]>>,
     path: Path,
     visitedNodes: Map<any, any>,
-    errors: Error[],
+    errors: ValidationError[],
     context: ConversionContext
-  ): InstanceReference | UnionToIntersection<DtoTypeOf<P[number]>> {
-    const val = {} as UnionToIntersection<DtoTypeOf<P[number]>>
+  ): DtoIntersectionType<P> {
+    const output: DtoIntersectionType<P> = {
+      ref: this.makeReference(input, context),
+      intersection: {} as UnionToIntersection<DtoTypeOf<P[number]>>
+    }
     for (const t of this.baseType) {
       const res = t.toDTOCyclic(input, path, visitedNodes, errors, context)
-      Object.assign(val, res.value)
+      Object.assign(output.intersection, res)
     }
-    return val
+    return output
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
