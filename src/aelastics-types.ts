@@ -89,10 +89,7 @@ export namespace types {
   > = cst.SubtypeC<P, SP, S>
   export const isSubtype = (v: any) => v instanceof cst.SubtypeC
 
-  export type TaggedUnionType<Tag extends string, P extends cot.Props> = ctut.TaggedUnionTypeC<
-    Tag,
-    P
-  >
+  export type TaggedUnionType<P extends cot.Props> = ctut.TaggedUnionTypeC<P>
   export const isTaggedUnionType = (v: any) => v instanceof ctut.TaggedUnionTypeC
 
   export type UnionType<P extends Any[]> = cut.UnionTypeC<P>

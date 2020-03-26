@@ -3,25 +3,31 @@
  *
  */
 
-import { ComplexTypeC } from './ComplexType'
-import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import { ComplexTypeC, InstanceReference } from './ComplexType'
+import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import {
   Error,
   failure,
   failures,
-  failureValidation,
   isFailure,
   isSuccess,
   Path,
   Result,
   success,
+  ValidationError,
   validationError
 } from 'aelastics-result'
+
+type DtoUnionType<P extends Array<Any>> = {
+  ref: InstanceReference
+  typeInUnion: string
+  union: DtoTypeOf<P[number]>
+}
 
 export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   P,
   TypeOf<P[number]>,
-  DtoTypeOf<P[number]>
+  DtoUnionType<P>
 > {
   public readonly _tag: 'Union' = 'Union'
 
@@ -41,46 +47,52 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     return failure(new Error(`Value ${path}: '${value}' is not union: '${this.name}'`))
   }
 
-  public fromDTO(input: DtoTypeOf<P[number]>, path: Path = []): Result<TypeOf<P[number]>> {
-    for (let i = 0; i < this.baseType.length; i++) {
-      const type = this.baseType[i]
-      let res = type.fromDTO(input, path)
-      if (isSuccess(res)) {
-        return res
-      }
+  makeInstanceFromDTO(
+    input: DtoUnionType<P>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: ValidationError[],
+    context: ConversionContext
+  ): TypeOf<P[number]> {
+    let type = this.baseType.find(t => t.name === input.typeInUnion)
+    if (!type) {
+      errors.push(
+        validationError(
+          `Not existing type '${input.typeInUnion}' in union '${path}': '${input}''`,
+          path,
+          this.name,
+          input
+        )
+      )
+      return undefined
+    } else {
+      return type.fromDTOCyclic(input.union, path, visitedNodes, errors, context)
     }
-    return failureValidation(
-      `Value ${path}: '${input}' is not union: '${this.name}'`,
-      path,
-      this.name,
-      input
-    )
   }
 
-  toDTOCyclic(
+  makeDTOInstance(
     input: TypeOf<P[number]>,
     path: Path,
     visitedNodes: Map<any, any>,
-    errors: Error[],
+    errors: ValidationError[],
     context: ConversionContext
-  ): InstanceReference | DtoTypeOf<P[number]> {
+  ): DtoUnionType<P> {
+    const output: DtoUnionType<P> = {
+      ref: this.makeReference(input, context),
+      typeInUnion: 'unknown',
+      union: undefined
+    }
     for (let i = 0; i < this.baseType.length; i++) {
-      // find which type is in union
+      // find which type is in union, the first one which is validated
       const type = this.baseType[i]
       let resVal = type.validate(input)
       if (isSuccess(resVal)) {
-        return type.toDTOCyclic(input, path, visitedNodes, errors, context)
+        output.typeInUnion = type.name
+        output.union = type.toDTOCyclic(input, path, visitedNodes, errors, context)
+        return output
       }
     }
-    errors.push(
-      validationError(
-        `Value ${path}: '${input}' is not union: '${this.name}'`,
-        path,
-        this.name,
-        input
-      )
-    )
-    return undefined
+    return output
   }
 
   public getTypeFromValue(value: TypeOf<P[number]>): Result<Any> {

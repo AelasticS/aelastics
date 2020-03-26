@@ -11,12 +11,12 @@ import {
   failures,
   isFailure,
   Path,
-  success,
   Result,
+  success,
   ValidationError,
   validationError
 } from 'aelastics-result'
-import { ObjectType, Props, ObjectTypeC } from './ObjectType'
+import { ObjectTypeC, Props } from './ObjectType'
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
 
@@ -109,14 +109,13 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
         )
         return undefined
       }
-      const conversion = type.fromDTOCyclic(
+      return type.fromDTOCyclic(
         input,
         appendPath(path, instance, type.name, input),
         visitedNodes,
         errors,
         context
       )
-      return conversion
     }
   }
 
@@ -129,7 +128,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   ): DtoTaggedUnionType<P> {
     const output: DtoTaggedUnionType<P> = {
       ref: this.makeReference(input, context),
-      taggedUnion: {}
+      taggedUnion: undefined
     }
     const instance = input[this.discriminator]
     if (!instance) {
