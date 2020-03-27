@@ -9,7 +9,10 @@ describe('Tests for Array method fromDTO', () => {
    */
   it('should be valid fromDTO for array of numbers', () => {
     let arrayOfNumbers = at.arrayOf(t.number, 'arrayOfNumbers')
-    let a = arrayOfNumbers.fromDTO([5, 10, 25, 150])
+    let a = arrayOfNumbers.fromDTO({
+      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      array: [5, 10, 25, 150]
+    })
     expect(isSuccess(a)).toBe(true)
   })
   /**
@@ -17,7 +20,10 @@ describe('Tests for Array method fromDTO', () => {
    */
   it('should not be valid fromDTO for array of numbers', () => {
     let arrayOfNumbers = at.arrayOf(t.number.derive('').negative, 'arrayOfNumbers')
-    let a = arrayOfNumbers.fromDTO([5, 10, -25, -150], [])
+    let a = arrayOfNumbers.fromDTO({
+      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      array: [5, 10, -25, -150]
+    })
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
@@ -42,7 +48,10 @@ describe('Tests for Array method fromDTO', () => {
    */
   it('should not be valid fromDTO for array of strings', () => {
     let arrayOfStrings = at.arrayOf(t.string.derive('').lowercase.includes('.'), 'arrayOfStrings')
-    let a = arrayOfStrings.fromDTO(['a.bcd', 'Abc', 'a.'], [])
+    let a = arrayOfStrings.fromDTO({
+      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      array: ['a.bcd', 'Abc', 'a.']
+    })
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
@@ -68,34 +77,37 @@ describe('Tests for Array method fromDTO', () => {
    */
   it('should be valid fromDTO for array of EmployeeType objects', () => {
     let arrayOfEmployees = at.arrayOf(examples.EmployeeType, 'arrayOfEmployees')
-    let emps = [
-      {
-        name: 'Jovan',
-        employmentDate: {
-          day: 4,
-          month: 4,
-          year: 2019
+    let emps: t.DtoTypeOf<typeof arrayOfEmployees> = {
+      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      array: [
+        {
+          name: 'Jovan',
+          employmentDate: {
+            day: 4,
+            month: 4,
+            year: 2019
+          },
+          dateOfBirth: {
+            day: 10,
+            month: 5,
+            year: 2000
+          }
         },
-        dateOfBirth: {
-          day: 10,
-          month: 5,
-          year: 2000
+        {
+          name: 'Petar',
+          employmentDate: {
+            day: 13,
+            month: 5,
+            year: 2018
+          },
+          dateOfBirth: {
+            day: 10,
+            month: 5,
+            year: 2000
+          }
         }
-      },
-      {
-        name: 'Petar',
-        employmentDate: {
-          day: 13,
-          month: 5,
-          year: 2018
-        },
-        dateOfBirth: {
-          day: 10,
-          month: 5,
-          year: 2000
-        }
-      }
-    ]
+      ]
+    }
     let a = arrayOfEmployees.fromDTO(emps, [])
     expect(isSuccess(a)).toBe(true)
   })
