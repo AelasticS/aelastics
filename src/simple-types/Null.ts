@@ -23,5 +23,4 @@ export class NullTypeC extends SimpleTypeC<boolean> {
 /**
  *  Null type
  */
-
 export const nullType: NullTypeC = new NullTypeC()
