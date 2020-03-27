@@ -152,5 +152,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   }
 }
 
-export const ref = (t: ObjectTypeC<any, string[]>, name: string = `referenceTo${t.name}`) =>
-  new EntityReference(name, t)
+export const ref = <T extends ObjectTypeC<any, readonly string[]>>(
+  t: T,
+  name: string = `referenceTo${t.name}`
+) => new EntityReference<T>(name, t)

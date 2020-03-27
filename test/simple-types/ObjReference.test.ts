@@ -7,30 +7,29 @@ import * as t from '../../src/aelastics-types'
 import { isSuccess } from 'aelastics-result'
 // import {isSuccess} from "aelastics-result";
 
+const PersonTypeWithSimpleIdentifier = t.entity(
+  {
+    name: t.string,
+    age: t.number
+  },
+  ['name'] as const,
+  'person',
+  undefined
+)
+
+const PersonTypeWithComplexIdentifier = t.entity(
+  {
+    name: t.string,
+    age: t.number
+  },
+  ['name', 'age'] as const,
+  'person'
+)
+
 describe('Test identifiers for object reference', () => {
-  const PersonTypeWithSimpleIdentifier = t.object(
-    {
-      name: t.string,
-      age: t.number
-    },
-    'person',
-    undefined,
-    'name'
-  )
-
-  const PersonTypeWithComplexIdentifier = t.object(
-    {
-      name: t.string,
-      age: t.number
-    },
-    'person',
-    undefined,
-    ['name', 'age']
-  )
-
   it('should correctly verify when is given a single identifier', () => {
     let refType = t.ref(PersonTypeWithSimpleIdentifier)
-    let p: t.TypeOf<typeof refType> = { age: 6 }
+    let p = {} as t.TypeOf<typeof refType>
     expect(isSuccess(refType.validate(p))).toBeFalsy()
     p = { name: 'pera' }
     expect(refType.validate(p)).toBeTruthy()
@@ -38,7 +37,7 @@ describe('Test identifiers for object reference', () => {
 
   it('should correctly verify when is given a complex identifier', () => {
     let refType = t.ref(PersonTypeWithComplexIdentifier)
-    let p: t.TypeOf<typeof refType> = { age: 6 }
+    let p = { age: 6 } as t.TypeOf<typeof refType>
     expect(isSuccess(refType.validate(p))).toBeFalsy()
     p = { name: 'pera', age: 6 }
     expect(refType.validate(p)).toBeTruthy()
@@ -46,19 +45,9 @@ describe('Test identifiers for object reference', () => {
 })
 
 describe('Test recursive object references', () => {
-  const Person = t.object(
-    {
-      name: t.string,
-      age: t.number
-    },
-    'person',
-    undefined,
-    'name'
-  )
-
   it('should correctly verify when is given a single identifier', () => {
-    let refType = t.ref(Person)
-    let p: t.TypeOf<typeof refType> = { age: 6 }
+    let refType = t.ref(PersonTypeWithSimpleIdentifier)
+    let p = ({ age: 6 } as unknown) as t.TypeOf<typeof refType>
     expect(isSuccess(refType.validate(p))).toBeFalsy()
     p = { name: 'pera' }
     expect(refType.validate(p)).toBeTruthy()
