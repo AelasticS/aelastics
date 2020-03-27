@@ -18,6 +18,15 @@ import {
   Success,
   validationError
 } from 'aelastics-result'
+import { IntersectionTypeC } from './IntersectionType'
+import { ArrayTypeC } from './Array'
+import { OptionalTypeC } from '../simple-types/Optional'
+import { MapTypeC } from './Map'
+import { NumberTypeC } from '../simple-types/Number'
+import { StringTypeC } from '../simple-types/String'
+import { BooleanTypeC } from '../simple-types/Boolean'
+import { types } from '../aelastics-types'
+import TypeOf = types.TypeOf
 
 export type IdentifierOfType<T extends ObjectTypeC<any>> = T extends ObjectTypeC<infer P>
   ? P

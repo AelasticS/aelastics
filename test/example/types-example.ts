@@ -94,3 +94,64 @@ export const FullNameType = t.intersectionOf([
   t.object({ name: t.string.derive('').alphabetical }),
   t.object({ familyName: t.string })
 ])
+
+// genre type specialization
+export const GenreSpecialization = t.string
+  .derive('Specialization')
+  .oneOf(['Jazz', 'Classic', 'Funk', 'Rock', 'Blues'])
+
+// song duration
+export const SongDuration = t.number.derive('Song duration').int8.inRange(2, 10)
+
+// full song name
+export const FullSongName = t.intersectionOf([
+  t.object({ name: t.string }),
+  t.object({ duration: SongDuration })
+])
+// Composer type
+export const ComposerType = t.object(
+  {
+    name: FullNameType
+  },
+  'ComposerType'
+)
+// Song type
+export const SongType = t.object(
+  {
+    no: t.number,
+    name: t.string,
+    duration: SongDuration,
+    composers: t.arrayOf(ComposerType)
+  },
+  'SongType'
+)
+// Album type
+export const AlbumType = t.object(
+  {
+    name: t.string,
+    songs: t.arrayOf(SongType),
+    lyricsOfSongs: t.optional(t.mapOf(t.number, t.string, 'Lyrics')),
+    publishingHouse: t.object(
+      {
+        pib: t.number,
+        name: t.string,
+        established: t.number,
+        contact: t.string
+      },
+      'PublishingHouseType'
+    )
+  },
+  'AlbumType'
+)
+
+// singer type
+export const SingerType = t.object(
+  {
+    singerName: FullNameType,
+    nickname: t.optional(t.string),
+    albums: t.arrayOf(AlbumType),
+    genre: GenreSpecialization,
+    memberOfBand: t.boolean
+  },
+  'SingerType'
+)
