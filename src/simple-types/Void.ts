@@ -10,13 +10,12 @@ export class VoidTypeC extends SimpleTypeC<boolean> {
   constructor() {
     super('Void')
   }
-
+  // Null can be treated as void https://www.typescriptlang.org/docs/handbook/basic-types.html#void
   public validate(value: any | undefined, path: Path = []): Result<boolean> {
-    if (typeof value === 'undefined') {
+    if (typeof value === 'undefined' || value === null) {
       return this.checkValidators(value, path)
     } else {
       return failure(new Error(`Value ${path}: '${value}' is not void`))
-      //  change the Error message
     }
   }
 }
@@ -25,19 +24,3 @@ export class VoidTypeC extends SimpleTypeC<boolean> {
  *  Void type
  */
 export const voidType: VoidTypeC = new VoidTypeC()
-
-// ??
-voidType.addValidator({
-  // change any to T?
-  message: (value: any, label: string) => `Value ${label}="${value}" is not of type "${label}`,
-  predicate: (value: any) => typeof value === 'undefined'
-})
-
-/*
-export interface test {
-    da1:number;
-    a2:void
-}
-*/
-
-// let a:test = {da1:5, a2:undefined}

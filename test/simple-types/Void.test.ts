@@ -14,10 +14,10 @@ describe('Test cases for void type', () => {
     expect(isSuccess(realVoid.validate(value, []))).toBe(false)
   })
 
-  it("should verify that 'null' is not void.", () => {
+  it("should verify that 'null' is void.", () => {
     const realVoid = t.voidType
     let value = null
-    expect(isSuccess(realVoid.validate(value, []))).toBe(false)
+    expect(isSuccess(realVoid.validate(value, []))).toBe(true)
   })
 
   it('should verify that function returns void.', () => {

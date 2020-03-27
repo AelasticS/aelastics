@@ -3,7 +3,7 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
-import { Error, failure, Path, Result } from 'aelastics-result'
+import { Error, failure, Path, Result, success } from 'aelastics-result'
 
 export class NullTypeC extends SimpleTypeC<boolean> {
   public readonly _tag: 'Null' = 'Null'
@@ -13,10 +13,9 @@ export class NullTypeC extends SimpleTypeC<boolean> {
 
   public validate(value: any, path: Path = []): Result<boolean> {
     if (value === null) {
-      return this.checkValidators(value, path)
+      return success(true)
     } else {
       return failure(new Error(`Value ${path}: '${value}' must be null`))
-      //  change the Error message
     }
   }
 }
@@ -26,10 +25,3 @@ export class NullTypeC extends SimpleTypeC<boolean> {
  */
 
 export const nullType: NullTypeC = new NullTypeC()
-
-/*
-nullType.addValidator({
-  message: (value:any, label:string) => `Value ${label}="${value}" is not of type "${label}`,
-  predicate: (value:any) => typeof value === 'null'
-})
-*/
