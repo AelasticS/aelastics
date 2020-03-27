@@ -20,7 +20,7 @@ describe('Test cases for never type', () => {
     expect(isSuccess(realNever.validate(functionThrowingError, []))).toBe(false)
   })
 
-  it('should be valid never type for infinity loop', () => {
+  it('should be valid never type for infinity loop.', () => {
     const realNever = t.never
     expect(isSuccess(realNever.validate(functionInfinityLoop, []))).toBe(false)
   })
