@@ -27,7 +27,8 @@ type DtoUnionType<P extends Array<Any>> = {
 export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   P,
   TypeOf<P[number]>,
-  DtoUnionType<P>
+  DtoUnionType<P>,
+  DtoTypeOf<P[number]>
 > {
   public readonly _tag: 'Union' = 'Union'
 

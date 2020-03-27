@@ -24,7 +24,7 @@ type DtoArrayType<E extends Any> = { ref: InstanceReference; array: Array<DtoTyp
 
 export class ArrayTypeC<
   E extends Any /*, T extends Array<TypeOf<E>>, D extends c*/
-> extends ComplexTypeC<E, Array<TypeOf<E>>, DtoArrayType<E>> {
+> extends ComplexTypeC<E, Array<TypeOf<E>>, DtoArrayType<E>, Array<DtoTypeOf<E>>> {
   public readonly _tag: 'Array' = 'Array'
 
   constructor(name: string, type: E) {

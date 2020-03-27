@@ -34,7 +34,8 @@ type DtoMapType<K extends Any, V extends Any> = {
 export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
   V,
   Map<TypeOf<K>, TypeOf<V>>,
-  DtoMapType<K, V>
+  DtoMapType<K, V>,
+  Array<[DtoTypeOf<K>, DtoTypeOf<V>]>
 > {
   public readonly _tag: 'Map' = 'Map'
   public readonly keyType: K

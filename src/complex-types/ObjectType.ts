@@ -15,7 +15,15 @@ import {
   ValidationError
 } from 'aelastics-result'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
-import { Any, ConversionContext, ConversionOptions, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
+import {
+  Any,
+  ConversionContext,
+  ConversionOptions,
+  DtoTreeTypeOf,
+  DtoTypeOf,
+  TypeC,
+  TypeOf
+} from '../common/Type'
 import { OptionalTypeC } from '../common/Optional'
 import { TypeSchema } from '../common/TypeSchema'
 import * as t from '../aelastics-types'
@@ -47,10 +55,12 @@ export const getNameFromProps = (props: Props): string =>
 export class ObjectTypeC<P extends Props, I extends readonly string[]> extends ComplexTypeC<
   P,
   ObjectType<P>,
-  DtoObjectType<P>
+  DtoObjectType<P>,
+  DtoProps<P>
 > {
   public ID!: { [k in I[number]]: TypeOf<P[k]> }
   public ID_DTO!: { [k in I[number]]: DtoTypeOf<P[k]> }
+  public ID_DTO_TREE!: { [k in I[number]]: DtoTreeTypeOf<P[k]> }
   public readonly _tag: 'Object' = 'Object'
   public readonly keys = Object.keys(this.baseType)
   public readonly types = this.keys.map(key => this.baseType[key] as TypeC<any>)

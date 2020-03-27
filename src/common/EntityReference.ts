@@ -34,6 +34,7 @@ import { ComplexTypeC, InstanceReference } from '../complex-types/ComplexType'
 
 export type TypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID']
 export type DtoTypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID_DTO']
+export type DtoTreeTypeOfKey<C extends ObjectTypeC<any, readonly string[]>> = C['ID_DTO_TREE']
 
 export type DtoEntityReference<T extends ObjectTypeC<any, readonly string[]>> = {
   ref: InstanceReference

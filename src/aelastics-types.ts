@@ -5,7 +5,7 @@
 
 import { Any } from './common/Type'
 
-export { Type, Any, TypeOf, DtoTypeOf } from './common/Type'
+export { Type, Any, TypeOf, DtoTypeOf, DtoTreeTypeOf } from './common/Type'
 export { boolean } from './simple-types/Boolean'
 export { date } from './simple-types/DateType'
 export { number } from './simple-types/Number'
@@ -21,7 +21,7 @@ export { mapOf } from './complex-types/Map'
 export { fun, argsType, returnType } from './complex-types/FunctionalType'
 export { intersectionOf } from './complex-types/IntersectionType'
 export { schema, ValidateStatusEnum } from './common/TypeSchema'
-export { ref, TypeOfKey, DtoTypeOfKey } from './common/EntityReference'
+export { ref, TypeOfKey, DtoTypeOfKey, DtoTreeTypeOfKey } from './common/EntityReference'
 export { link } from './common/LinkC'
 
 // tslint:disable-next-line:no-duplicate-imports

@@ -14,7 +14,12 @@ export interface InstanceReference {
 /**
  *  Complex type: a structure which is derived from some type P
  */
-export abstract class ComplexTypeC<P, T extends any, D extends any = T> extends TypeC<T, D> {
+export abstract class ComplexTypeC<
+  P,
+  V extends any,
+  G extends any = V,
+  T extends any = V
+> extends TypeC<V, G, T> {
   constructor(name: string, readonly baseType: P) {
     super(name)
   }
@@ -37,28 +42,28 @@ export abstract class ComplexTypeC<P, T extends any, D extends any = T> extends 
   }
 
   abstract makeDTOInstance(
-    input: T,
+    input: V,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
     context: ConversionContext
-  ): D
+  ): G
 
   abstract makeInstanceFromDTO(
-    input: D,
+    input: G,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
     context: ConversionContext
-  ): T
+  ): V
 
   toDTOCyclic(
-    input: T,
+    input: V,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
     context: ConversionContext
-  ): D {
+  ): G {
     let output = visitedNodes.get(input)
     if (output) {
       if (!(context.typeInfo && context.generateID)) {
@@ -84,7 +89,7 @@ export abstract class ComplexTypeC<P, T extends any, D extends any = T> extends 
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
     context: ConversionContext
-  ): T {
+  ): V {
     let ref = this.getReference(value, context)
     let output = visitedNodes.get(ref)
 

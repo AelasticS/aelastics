@@ -39,7 +39,8 @@ type DtoTaggedUnionType<P extends Props> = {
 export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   P,
   TypeOf<P[keyof P]>,
-  DtoTaggedUnionType<P>
+  DtoTaggedUnionType<P>,
+  DtoTypeOf<P[keyof P]>
 > {
   public readonly _tag: 'TaggedUnion' = 'TaggedUnion'
   public readonly keys = Object.keys(this.baseType)

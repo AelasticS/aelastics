@@ -29,7 +29,8 @@ type DtoIntersectionType<P extends Array<Any>> = {
 export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   P,
   UnionToIntersection<TypeOf<P[number]>>,
-  DtoIntersectionType<P>
+  DtoIntersectionType<P>,
+  UnionToIntersection<DtoTypeOf<P[number]>>
 > {
   public readonly _tag: 'Intersection' = 'Intersection'
 
