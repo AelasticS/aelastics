@@ -47,10 +47,10 @@ export abstract class ComplexTypeC<
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
     context: ConversionContext
-  ): G
+  ): T | G
 
   abstract makeInstanceFromDTO(
-    input: G,
+    input: T | G,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
@@ -63,7 +63,7 @@ export abstract class ComplexTypeC<
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
     context: ConversionContext
-  ): G {
+  ): T | G {
     let output = visitedNodes.get(input)
     if (output) {
       if (!(context.includeTypeInfo && context.isTreeDTO)) {
@@ -84,7 +84,7 @@ export abstract class ComplexTypeC<
   }
 
   fromDTOCyclic(
-    value: any,
+    value: T | G,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: ValidationError[],

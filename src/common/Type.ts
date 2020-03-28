@@ -112,7 +112,7 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param value - to be converted,
    * @param options
    */
-  public fromDTO(value: G, options: ConversionOptions = defaultConversionOptions): Result<V> {
+  public fromDTO(value: T | G, options: ConversionOptions = defaultConversionOptions): Result<V> {
     let convOptions = { ...options, ...{ counter: 0 } }
     let errs: ValidationError[] = []
     let res = this.fromDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
@@ -126,7 +126,7 @@ export abstract class TypeC<V, G = V, T = V> {
 
   /** @internal */
   public fromDTOCyclic(
-    value: any,
+    value: T | G,
     path: Path,
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
@@ -143,7 +143,7 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param value
    * @param options
    */
-  public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<G> {
+  public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<T | G> {
     if (options.validate) {
       let res = this.validate(value, [])
       if (isFailure(res)) {
@@ -167,7 +167,7 @@ export abstract class TypeC<V, G = V, T = V> {
     visitedNodes: Map<any, any>,
     errors: ValidationError[],
     context: ConversionContext
-  ): G {
+  ): T | G {
     errors.push(validationError('Internal method toDTOCyclic not implemented', path, `${input}`))
     return (input as any) as G
   }
