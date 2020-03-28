@@ -26,7 +26,6 @@ import {
 } from '../common/Type'
 import { OptionalTypeC } from '../common/Optional'
 import { TypeSchema } from '../common/TypeSchema'
-import * as t from '../aelastics-types'
 import { ArrayTypeC } from './Array'
 import { MapTypeC } from './Map'
 
