@@ -54,7 +54,7 @@ export const inv1: t.TypeOf<typeof InvoiceType> = {
 }
 export const dateValue: t.DtoTypeOf<typeof t.date> = '5'
 
-export const invDTO: t.DtoTypeOf<typeof InvoiceType> = {
+export const invDTO: t.DtoTreeTypeOf<typeof InvoiceType> = {
   id: 1,
   date: '2010-03-24',
   items: [

@@ -5,15 +5,19 @@
 
 import { Any } from './common/Type'
 
-export { Type, Any, TypeOf, DtoTypeOf } from './common/Type'
+export { Type, Any, TypeOf, DtoTypeOf, DtoTreeTypeOf } from './common/Type'
 export { boolean } from './simple-types/Boolean'
+export { voidType } from './simple-types/Void'
+export { nullType } from './simple-types/Null'
+export { never } from './simple-types/Never'
+export { undefined } from './simple-types/Undefined'
 export { date } from './simple-types/DateType'
 export { number } from './simple-types/Number'
 export { string } from './simple-types/String'
-export { object, inverseProps } from './complex-types/ObjectType'
+export { object, entity, inverseProps } from './complex-types/ObjectType'
 export { literal } from './simple-types/Literal'
 export { taggedUnion } from './complex-types/TaggedUnionType'
-export { optional } from './simple-types/Optional'
+export { optional } from './common/Optional'
 export { arrayOf } from './complex-types/Array'
 export { unionOf } from './complex-types/UnionType'
 export { subtype } from './complex-types/Subtype'
@@ -21,7 +25,7 @@ export { mapOf } from './complex-types/Map'
 export { fun, argsType, returnType } from './complex-types/FunctionalType'
 export { intersectionOf } from './complex-types/IntersectionType'
 export { schema, ValidateStatusEnum } from './common/TypeSchema'
-export { ref } from './complex-types/ObjReference'
+export { ref, TypeOfKey, DtoTypeOfKey, DtoTreeTypeOfKey } from './common/EntityReference'
 export { link } from './common/LinkC'
 
 // tslint:disable-next-line:no-duplicate-imports
@@ -32,15 +36,19 @@ import * as cct from './complex-types/ComplexType'
 import * as cft from './complex-types/FunctionalType'
 import * as cit from './complex-types/IntersectionType'
 import * as cmt from './complex-types/Map'
-import * as cort from './complex-types/ObjReference'
+import * as cort from './common/EntityReference'
 import * as cst from './complex-types/Subtype'
 import * as ctut from './complex-types/TaggedUnionType'
 import * as cut from './complex-types/UnionType'
 
 import * as st from './simple-types/SimpleType'
-import * as sto from './simple-types/Optional'
+import * as sto from './common/Optional'
 import * as sts from './simple-types/String'
 import * as stb from './simple-types/Boolean'
+import * as stv from './simple-types/Void'
+import * as stnull from './simple-types/Null'
+import * as stu from './simple-types/Undefined'
+import * as stnev from './simple-types/Never'
 import * as stn from './simple-types/Number'
 import * as stl from './simple-types/Literal'
 import * as std from './simple-types/DateType'
@@ -77,20 +85,19 @@ export namespace types {
   export type MapType<K extends Any, V extends Any> = cmt.MapTypeC<K, V>
   export const isMapType = (v: any) => v instanceof cmt.MapTypeC
 
-  export type ObjReference<T extends cot.ObjectTypeC<any>> = cort.ObjReference<T>
-  export const isObjReference = (v: any) => v instanceof cort.ObjReference
+  export type ObjReference<
+    T extends cot.ObjectTypeC<any, readonly string[]>
+  > = cort.EntityReference<T>
+  export const isObjReference = (v: any) => v instanceof cort.EntityReference
 
   export type Subtype<
     P extends cot.Props,
     SP extends cot.Props,
-    S extends cot.ObjectTypeC<cot.Props>
+    S extends cot.ObjectTypeC<cot.Props, readonly string[]>
   > = cst.SubtypeC<P, SP, S>
   export const isSubtype = (v: any) => v instanceof cst.SubtypeC
 
-  export type TaggedUnionType<Tag extends string, P extends cot.Props> = ctut.TaggedUnionTypeC<
-    Tag,
-    P
-  >
+  export type TaggedUnionType<P extends cot.Props> = ctut.TaggedUnionTypeC<P>
   export const isTaggedUnionType = (v: any) => v instanceof ctut.TaggedUnionTypeC
 
   export type UnionType<P extends Any[]> = cut.UnionTypeC<P>
@@ -107,6 +114,18 @@ export namespace types {
 
   export type BooleanType = stb.BooleanTypeC
   export const isBooleanType = (v: any) => v instanceof stb.BooleanTypeC
+
+  export type VoidType = stv.VoidTypeC
+  export const isVoidType = (v: any) => v instanceof stv.VoidTypeC
+
+  export type NullType = stnull.NullTypeC
+  export const isNullType = (v: any) => v instanceof stnull.NullTypeC
+
+  export type NeverType = stnev.NeverTypeC
+  export const isNeverType = (v: any) => v instanceof stnev.NeverTypeC
+
+  export type UndefinedType = stu.UndefinedTypeC
+  export const isUndefinedType = (v: any) => v instanceof stu.UndefinedTypeC
 
   export type NumberType = stn.NumberTypeC
   export const isNumberType = (v: any) => v instanceof stn.NumberTypeC

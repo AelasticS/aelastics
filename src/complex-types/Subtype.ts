@@ -3,37 +3,36 @@
  *
  */
 
-import { ObjectType, ObjectTypeC, Props, DtoObjectType, isObject } from './ObjectType'
+import { DtoObjectType, DtoProps, isObject, ObjectType, ObjectTypeC, Props } from './ObjectType'
 import {
-  isFailure,
-  // isSuccess,
-  Result,
-  Path,
-  failures,
-  success,
-  failureValidation,
+  appendPath,
   Errors,
+  failures,
+  failureValidation,
+  isFailure,
+  Path,
+  Result,
+  success,
   validationError,
-  appendPath
+  ValidationError
 } from 'aelastics-result'
-import { Any, TypeC } from '../common/Type'
+import { Any, ConversionContext, TypeC } from '../common/Type'
 import { TypeSchema } from '../common/TypeSchema'
-import { OptionalTypeC } from '../simple-types/Optional'
+import { OptionalTypeC } from '../common/Optional'
 
 export class SubtypeC<
   P extends Props,
   SP extends Props,
-  S extends ObjectTypeC<Props>
-> extends ObjectTypeC<P & SP> {
+  S extends ObjectTypeC<Props, any>
+> extends ObjectTypeC<P & SP, S['identifier']> {
   //    public readonly _tag: 'Subtype' = 'Subtype';
-  public readonly superType: ObjectTypeC<Props>
+  public readonly superType: ObjectTypeC<Props, S['identifier']>
   //    public readonly  extraProps:P;
   //    public readonly  superProps:SP;
   //    protected readonly superInstance: ObjectTypeC<P & SP>;
 
-  constructor(name: string, baseType: P, superType: ObjectTypeC<Props>) {
-    // ToDo Nikola: verify that there are NO!!!! overriding properties (with same name as in supertype)
-    super(name, baseType as P & SP)
+  constructor(name: string, baseType: P, superType: ObjectTypeC<Props, S['identifier']>) {
+    super(name, baseType as P & SP, [])
     this.superType = superType
   }
 
@@ -53,25 +52,21 @@ export class SubtypeC<
   public validate(input: ObjectType<P & SP>, path: Path = []): Result<boolean> {
     let mapOfAllProperties = this.allProperties
     let keys = Array.from(mapOfAllProperties.keys())
-
     const result = isObject(input)
       ? success(input)
       : failureValidation('Value is not object', path, this.name, input)
     if (isFailure(result)) {
       return result
     }
-
     const errors: Errors = []
     for (let i = 0; i < keys.length; i++) {
       const k = keys[i]
       const t = mapOfAllProperties.get(k)
-
       if (t !== undefined) {
         if (!input.hasOwnProperty(k) && !(t instanceof OptionalTypeC)) {
           errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
           continue
         }
-
         const ak = input[k]
         const validation = t.validate(ak, appendPath(path, k, t.name, ak))
         if (isFailure(validation)) {
@@ -79,7 +74,6 @@ export class SubtypeC<
         }
       }
     }
-
     const res = this.checkValidators(input, path)
     if (isFailure(res)) {
       errors.push(...res.errors)
@@ -87,60 +81,109 @@ export class SubtypeC<
     return errors.length ? failures(errors) : success(true)
   }
 
-  // TODO: Consider property overriding
-  public fromDTO(input: DtoObjectType<P & SP>, path: Path = []): Result<ObjectType<P & SP>> {
-    const resSuper = this.superType.fromDTO(input, path)
-    const res = super.fromDTO(input, path)
-
-    if (isFailure(resSuper)) {
-      if (isFailure(res)) {
-        //  both failure
-        Object.assign(resSuper.errors, res.errors)
-      }
-
-      return resSuper
-    } else {
-      if (isFailure(res)) {
-        // only res failure
-        return res
-      } else {
-        // both success
-        Object.assign(resSuper.value, res.value)
-        return resSuper as Result<ObjectType<P & SP>>
-      }
+  makeInstanceFromDTO(
+    input: DtoObjectType<P & SP>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: ValidationError[],
+    context: ConversionContext
+  ): ObjectType<P & SP> {
+    let mapOfAllProperties = this.allProperties
+    let keys = Array.from(mapOfAllProperties.keys())
+    let output = {} as ObjectType<P & SP>
+    if (!isObject(input.object)) {
+      errors.push(validationError('Input is not an object', path, this.name, input))
+      return {} as ObjectType<P & SP>
     }
+    if (input.ref.typeName !== this.name) {
+      // determine correct subtype, add context for schema
+      errors.push(
+        validationError(
+          `Types are not matching: input type is '${input.ref.typeName}' and expected type is '${this.name}'. A possible subtype cannot be handled!`,
+          path,
+          this.name,
+          input
+        )
+      )
+      return output // empty
+    }
+    if (context.typeInfo) {
+      ObjectTypeC.addProperty(output, context.typeInfoPropName, this.name)
+    }
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i]
+      const t = mapOfAllProperties.get(k)
+      if (!Object.prototype.hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
+        errors.push(validationError('missing property', appendPath(path, k, t?.name), this.name))
+        continue
+      }
+      const ak = input.object[k]
+      const conversion = t?.fromDTOCyclic(
+        ak,
+        appendPath(path, k, t.name, ak),
+        visitedNodes,
+        errors,
+        context
+      )
+      ObjectTypeC.addProperty(output, k, conversion)
+    }
+    return output
   }
-  public toDTO(
+
+  makeDTOInstance(
     input: ObjectType<P & SP>,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<DtoObjectType<P & SP>> {
-    if (validate) {
-      const res = this.validate(input, path)
-      if (isFailure(res)) {
-        return failures(res.errors)
-      }
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: ValidationError[],
+    context: ConversionContext
+  ): DtoObjectType<P & SP> {
+    let output: DtoObjectType<P & SP> = {
+      ref: this.makeReference(input, context),
+      object: {} as DtoProps<P & SP>
     }
-    let resSuper = this.superType.toDTO(input, path, validate)
-    let res = super.toDTO(input, path, validate)
-    if (isFailure(resSuper)) {
-      if (isFailure(res)) {
-        //  both failure
-        Object.assign(resSuper.errors, res.errors)
+    let mapOfAllProperties = this.allProperties
+    let keys = Array.from(mapOfAllProperties.keys())
+    try {
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i]
+        const t = mapOfAllProperties.get(k)
+        const ak = input[k]
+        const conversion = t?.toDTOCyclic(
+          ak,
+          appendPath(path, k, t?.name, ak),
+          visitedNodes,
+          errors,
+          context
+        )
+        ObjectTypeC.addProperty(output.object, k, conversion)
       }
-
-      return resSuper
-    } else {
-      if (isFailure(res)) {
-        // only res failure
-        return res
-      } else {
-        // both success
-        Object.assign(resSuper.value, res.value)
-        return resSuper as Result<DtoObjectType<P & SP>>
-      }
+      return output
+    } catch (e) {
+      errors.push(
+        validationError(`Caught exception '${(e as Error).message}'`, path, this.name, input)
+      )
+      return output
     }
   }
+
+  /*
+  toDTOCyclic(
+    input: ObjectType<P & SP>,
+    path: Path,
+    visitedNodes: Map<any, any>,
+    errors: Error[],
+    context: ConversionContext
+  ): DtoObjectType<P & SP> {
+    let ref = this.serialize(input, path, visitedNodes, errors, context)
+    if (ref) {
+      return ref
+    }
+    let res = super.toDTOCyclic(input, path, visitedNodes, errors, context)
+    let resSuper = this.superType.toDTOCyclic(input, path, visitedNodes, errors, context)
+    Object.assign(res, resSuper)
+    return res as DtoObjectType<P & SP>
+  }
+*/
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     traversed.set(this, this)
@@ -167,22 +210,22 @@ export class SubtypeC<
   }
 }
 
-const getSubtypeName = <U extends ObjectTypeC<any>>(superType: U): string => {
+const getSubtypeName = <U extends ObjectTypeC<any, any>>(superType: U): string => {
   return `subtype of ${superType.name})`
 }
 
 // @ts-ignore
-export const subtype = <P extends Props, S extends Props>(
-  superType: ObjectTypeC<S>,
+export const subtype = <P extends Props, S extends Props, I extends readonly string[]>(
+  superType: ObjectTypeC<S, I>,
   extraProps: P,
   name: string = getSubtypeName(superType),
   schema?: TypeSchema,
   superProps: S = superType['baseType']
-): SubtypeC<P, S, ObjectTypeC<Props>> => {
-  const obj: SubtypeC<P, S, ObjectTypeC<Props>> = new SubtypeC(
+): SubtypeC<P, S, ObjectTypeC<Props, I>> => {
+  const obj: SubtypeC<P, S, ObjectTypeC<Props, I>> = new SubtypeC(
     name,
     extraProps,
-    superType as ObjectTypeC<Props>
+    superType as ObjectTypeC<Props, I>
   ) // new ObjectTypeC<P>(name, props, identifier)
   if (schema) {
     schema.addType(obj)

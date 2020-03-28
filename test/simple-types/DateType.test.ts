@@ -47,18 +47,18 @@ describe('DateType tests', () => {
   })
 
   it('Testing if fromDTO  is valid in case of valid format date', () => {
-    let res = t.date.fromDTO('5.05.2019.', [])
+    let res = t.date.fromDTO('5.05.2019.')
     expect(isSuccess(res)).toBe(true)
   })
 
   // new Date from number is valid date!
   it('Testing if fromDTO  is valid in case of number value', () => {
-    let res = t.date.fromDTO((55 as unknown) as any, [])
+    let res = t.date.fromDTO((55 as unknown) as any)
     expect(isSuccess(res)).toBe(true)
   })
 
   it("Testing if fromDTO errors are valid in case of 'null' value", () => {
-    let res = t.date.fromDTO((null as unknown) as any, [])
+    let res = t.date.fromDTO((null as unknown) as any)
     if (isFailure(res)) {
       expect(res.errors).toEqual([
         {
