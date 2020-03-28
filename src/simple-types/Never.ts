@@ -8,7 +8,7 @@ export class NeverTypeC extends SimpleTypeC<boolean> {
   }
 
   public validate(value: any, path: Path = []): Result<boolean> {
-    return failure(validationError('Never can never occures', path, this.name))
+    return failure(validationError('Never can never occurs', path, this.name))
   }
 }
 
