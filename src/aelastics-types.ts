@@ -7,6 +7,10 @@ import { Any } from './common/Type'
 
 export { Type, Any, TypeOf, DtoTypeOf, DtoTreeTypeOf } from './common/Type'
 export { boolean } from './simple-types/Boolean'
+export { voidType } from './simple-types/Void'
+export { nullType } from './simple-types/Null'
+export { never } from './simple-types/Never'
+export { undefined } from './simple-types/Undefined'
 export { date } from './simple-types/DateType'
 export { number } from './simple-types/Number'
 export { string } from './simple-types/String'
@@ -41,6 +45,10 @@ import * as st from './simple-types/SimpleType'
 import * as sto from './common/Optional'
 import * as sts from './simple-types/String'
 import * as stb from './simple-types/Boolean'
+import * as stv from './simple-types/Void'
+import * as stnull from './simple-types/Null'
+import * as stu from './simple-types/Undefined'
+import * as stnev from './simple-types/Never'
 import * as stn from './simple-types/Number'
 import * as stl from './simple-types/Literal'
 import * as std from './simple-types/DateType'
@@ -106,6 +114,18 @@ export namespace types {
 
   export type BooleanType = stb.BooleanTypeC
   export const isBooleanType = (v: any) => v instanceof stb.BooleanTypeC
+
+  export type VoidType = stv.VoidTypeC
+  export const isVoidType = (v: any) => v instanceof stv.VoidTypeC
+
+  export type NullType = stnull.NullTypeC
+  export const isNullType = (v: any) => v instanceof stnull.NullTypeC
+
+  export type NeverType = stnev.NeverTypeC
+  export const isNeverType = (v: any) => v instanceof stnev.NeverTypeC
+
+  export type UndefinedType = stu.UndefinedTypeC
+  export const isUndefinedType = (v: any) => v instanceof stu.UndefinedTypeC
 
   export type NumberType = stn.NumberTypeC
   export const isNumberType = (v: any) => v instanceof stn.NumberTypeC
