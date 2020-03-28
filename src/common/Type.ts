@@ -31,12 +31,15 @@ export type Conversion<In, Out> = (value: In, path: Path) => Result<Out>
 
 export type Constructor<T extends {} = {}> = new (...args: any[]) => T
 
+/**
+ *  options for conversion
+ */
 export interface ConversionOptions {
-  validate: boolean // should validate , because of serializing partial data
-  generateID: boolean // generateID if it is graph
-  typeInfo: boolean // should put meta type info
-  typeInfoPropName: string
-  instantiateClasses: boolean // put constructor name or POJO - Literal object
+  validate: boolean // should validate during conversion, because of serializing partial data
+  isTreeDTO: boolean // true if it is tree, false if it is graph
+  includeTypeInfo: boolean // should put extra property in instance about its type or class
+  typeInfoPropName: string // the name of this extra property
+  //  instantiateClasses: boolean // put constructor name or POJO - Literal object
   constructors?: Map<string, Constructor> // constructors
 }
 
@@ -44,10 +47,10 @@ export type ConversionContext = ConversionOptions & { counter: number }
 
 export const defaultConversionOptions: ConversionOptions = {
   validate: true,
-  generateID: false,
-  typeInfo: false,
-  typeInfoPropName: '_$_type_$',
-  instantiateClasses: false
+  isTreeDTO: false,
+  includeTypeInfo: false,
+  typeInfoPropName: '_$_type_$'
+  //  instantiateClasses: false
 }
 
 export interface Validator<T> {

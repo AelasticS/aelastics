@@ -107,7 +107,7 @@ export class SubtypeC<
       )
       return output // empty
     }
-    if (context.typeInfo) {
+    if (context.includeTypeInfo) {
       ObjectTypeC.addProperty(output, context.typeInfoPropName, this.name)
     }
     for (let i = 0; i < keys.length; i++) {

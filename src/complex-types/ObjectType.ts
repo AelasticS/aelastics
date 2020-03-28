@@ -184,7 +184,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       )
       return output // empty
     }
-    if (context.typeInfo) {
+    if (context.includeTypeInfo) {
       ObjectTypeC.addProperty(output, context.typeInfoPropName, this.name)
     }
     for (let i = 0; i < this.len; i++) {

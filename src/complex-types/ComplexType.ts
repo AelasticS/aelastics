@@ -66,7 +66,7 @@ export abstract class ComplexTypeC<
   ): G {
     let output = visitedNodes.get(input)
     if (output) {
-      if (!(context.typeInfo && context.generateID)) {
+      if (!(context.includeTypeInfo && context.isTreeDTO)) {
         errors.push(
           validationError(
             `Input data is graph. Value ${path}: '${input}' of type '${this.name}' has more then one reference!`,
@@ -94,7 +94,7 @@ export abstract class ComplexTypeC<
     let output = visitedNodes.get(ref)
 
     if (output) {
-      if (!(context.typeInfo && context.generateID)) {
+      if (!(context.includeTypeInfo && context.isTreeDTO)) {
         // should be tree, not graph
         errors.push(
           validationError(
@@ -109,7 +109,7 @@ export abstract class ComplexTypeC<
       // an instance not visited before
       let output = this.makeInstanceFromDTO(value, path, visitedNodes, errors, context)
       if (output) {
-        if (!(context.typeInfo && context.generateID)) {
+        if (!(context.includeTypeInfo && context.isTreeDTO)) {
           errors.push(
             validationError(
               `Input data is graph. Value ${path}: '${value}' of type '${this.name}' has more then one reference!`,
