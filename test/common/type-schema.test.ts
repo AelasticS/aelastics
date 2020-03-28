@@ -2,7 +2,7 @@ import * as ts from '../../src/common/TypeSchema'
 import * as t from '../../src/aelastics-types'
 import { isFailure, isSuccess } from 'aelastics-result'
 import * as examples from '../example/instances-example'
-import { InvoiceType, SingerType } from '../example/types-example'
+import { InvoiceType, SchemaSinger, SingerType } from '../example/types-example'
 
 describe(' TypeSchema test cases', () => {
   let schema1 = t.schema('Schema1')
@@ -81,12 +81,16 @@ describe(' TypeSchema test cases', () => {
     schema4.removeType(subtype)
   })
 
-  it('Schema4 should be valid with singer type', () => {
-    let singer = SingerType
-    schema4.addType(singer)
-    expect(isSuccess(schema4.validate())).toBe(true)
-    schema4.removeType(singer)
+  it('SchemaSinger should be valid with singer type', () => {
+    expect(isSuccess(SchemaSinger.validate())).toBe(true)
   })
+  // it('Schema4 should be valid with singer type', () => {
+  //
+  //   schema4.addType(SingerType)
+  //   expect(isSuccess(schema4.validate())).toBe(true)
+  //   schema4.removeType(SingerType)
+  // })
+
   it('Schema4 should be valid with a linkType which has a arrayType as baseType ', () => {
     let array = t.arrayOf(t.link(schema1, 'Person1'), 'array')
     schema4.addType(array)

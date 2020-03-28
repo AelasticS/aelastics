@@ -3,6 +3,7 @@
  */
 
 import * as t from '../../src/aelastics-types'
+import { schema } from '../../src/aelastics-types'
 
 export const AgeType = t.number.derive('Human age').int8.positive.inRange(1, 120)
 
@@ -95,6 +96,8 @@ export const FullNameType = t.intersectionOf([
   t.object({ familyName: t.string })
 ])
 
+export const SchemaSinger = t.schema('SchemaSinger')
+
 // genre type specialization
 export const GenreSpecialization = t.string
   .derive('Specialization')
@@ -144,6 +147,15 @@ export const AlbumType = t.object(
   'AlbumType'
 )
 
+export const BandType = t.object(
+  {
+    name: t.string,
+    members: t.arrayOf(t.link(SchemaSinger, 'SingerType'))
+  },
+  'BandType',
+  SchemaSinger
+)
+
 // singer type
 export const SingerType = t.object(
   {
@@ -151,7 +163,8 @@ export const SingerType = t.object(
     nickname: t.optional(t.string),
     albums: t.arrayOf(AlbumType),
     genre: GenreSpecialization,
-    memberOfBand: t.boolean
+    memberOfBand: BandType
   },
-  'SingerType'
+  'SingerType',
+  SchemaSinger
 )
