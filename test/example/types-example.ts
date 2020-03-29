@@ -287,6 +287,6 @@ export const CompetitorType = t.object(
     name: t.string,
     yearsOfParticipation: t.arrayOf(t.number)
   },
-  'CompetitoType',
+  'CompetitorType',
   OlympicGamesSchema
 )
