@@ -46,7 +46,7 @@ export class ArrayTypeC<
       return success(true)
     }
 
-    traversed.set(this, this)
+    traversed.set(input, input)
 
     const errors: Errors = []
     for (let i = 0; i < input.length; i++) {

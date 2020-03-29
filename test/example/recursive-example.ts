@@ -3,7 +3,6 @@
  */
 import * as t from '../../src/aelastics-types'
 import { DriverTypeLicences, DriverTypeProfession } from './types-example'
-import { inverseProps } from '../../src/aelastics-types'
 
 export const secondLevelObject = t.object(
   {
@@ -41,7 +40,25 @@ export const workerType = t.object(
   schema
 )
 
-inverseProps(companyType, 'director', workerType, 'company')
+t.inverseProps(companyType, 'director', workerType, 'company')
+
+export const arrayOfRootLevelObjects = t.arrayOf(rootLevelLevelObject)
+
+export const arraySchema = t.schema('arraySchema')
+
+export const arrayObject = t.object(
+  {
+    a: t.boolean,
+    b: t.number,
+    c: t.arrayOf(t.link(arraySchema, 'firstLevelArray', 'c'))
+  },
+  'arrayObject',
+  arraySchema
+)
+
+export const firstLevelArray = t.arrayOf(arrayObject, 'firstLevelArray')
+
+arraySchema.addType(firstLevelArray)
 
 /*
 import * as t from "../index";
