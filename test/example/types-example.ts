@@ -102,7 +102,7 @@ export const SongSchema = t.schema('SongSchema', AlbumSchema)
 
 export const MovieSchema = t.schema('MovieSchema', ArtSchema)
 export const AwardSchema = t.schema('AwardSchema', MovieSchema)
-
+export const OlympicGamesSchema = t.schema('OlympicGamesSchema')
 // genre type specialization
 export const GenreSpecialization = t.string
   .derive('Specialization')
@@ -242,4 +242,51 @@ export const AwardType = t.object(
   },
   'AwardType',
   AwardSchema
+)
+
+// n-ary tree
+
+export const OlympicGames = t.object(
+  {
+    year: t.number,
+    countries: t.arrayOf(t.link(OlympicGamesSchema, 'CountryType'))
+  },
+  'OlympicGames',
+  OlympicGamesSchema
+)
+
+export const CountryType = t.object(
+  {
+    name: t.string,
+    sports: t.arrayOf(t.link(OlympicGamesSchema, 'SportType'))
+  },
+  'CountryType',
+  OlympicGamesSchema
+)
+
+export const SportType = t.object(
+  {
+    name: t.string,
+    disciplines: t.arrayOf(t.link(OlympicGamesSchema, 'DisciplineType'))
+  },
+  'SportType',
+  OlympicGamesSchema
+)
+
+export const DisciplineType = t.object(
+  {
+    name: t.string,
+    competitors: t.arrayOf(t.link(OlympicGamesSchema, 'CompetitorType'))
+  },
+  'DisciplineType',
+  OlympicGamesSchema
+)
+
+export const CompetitorType = t.object(
+  {
+    name: t.string,
+    yearsOfParticipation: t.arrayOf(t.number)
+  },
+  'CompetitoType',
+  OlympicGamesSchema
 )
