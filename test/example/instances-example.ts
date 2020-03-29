@@ -172,5 +172,8 @@ export const singer1: t.TypeOf<typeof SingerType> = {
     }
   ],
   genre: 'Rock',
-  memberOfBand: false
+  memberOfBand: {
+    name: '',
+    members: []
+  }
 }

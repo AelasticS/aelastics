@@ -2,7 +2,17 @@ import * as ts from '../../src/common/TypeSchema'
 import * as t from '../../src/aelastics-types'
 import { isFailure, isSuccess } from 'aelastics-result'
 import * as examples from '../example/instances-example'
-import { InvoiceType, SchemaSinger, SingerType } from '../example/types-example'
+import {
+  ArtSchema,
+  AwardSchema,
+  AwardType,
+  ComposerSchema,
+  InvoiceType,
+  MovieSchema,
+  SchemaSinger,
+  SingerType,
+  SongSchema
+} from '../example/types-example'
 
 describe(' TypeSchema test cases', () => {
   let schema1 = t.schema('Schema1')
@@ -81,15 +91,32 @@ describe(' TypeSchema test cases', () => {
     schema4.removeType(subtype)
   })
 
-  it('SchemaSinger should be valid with singer type', () => {
+  it('SchemaSinger should be valid', () => {
     expect(isSuccess(SchemaSinger.validate())).toBe(true)
   })
-  // it('Schema4 should be valid with singer type', () => {
-  //
-  //   schema4.addType(SingerType)
-  //   expect(isSuccess(schema4.validate())).toBe(true)
-  //   schema4.removeType(SingerType)
-  // })
+
+  it('SchemaSinger should contain ComposerSchema', () => {
+    expect(SchemaSinger.subSchemas.includes(ComposerSchema)).toBeTruthy()
+  })
+  it('SchemaSinger should be invalid', () => {
+    let movie = t.object(
+      { name: t.string, director: t.link(ComposerSchema, 'DirectorType') },
+      'MovieType',
+      SongSchema
+    )
+    expect(isSuccess(SchemaSinger.validate())).toBe(false)
+    SongSchema.removeType(movie)
+  })
+
+  it('ArtSchema should be valid', () => {
+    expect(isSuccess(ArtSchema.validate())).toBe(true)
+  })
+  it('ArtSchema should contain AwardSchema', () => {
+    expect(ArtSchema.getType('MovieSchema/AwardSchema/AwardType')).toEqual(AwardType)
+  })
+  it('MovieSchema should not be contain AlbumType', () => {
+    expect(MovieSchema.getType('AlbumType')).not.toBeDefined()
+  })
 
   it('Schema4 should be valid with a linkType which has a arrayType as baseType ', () => {
     let array = t.arrayOf(t.link(schema1, 'Person1'), 'array')

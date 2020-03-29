@@ -3,7 +3,6 @@
  */
 
 import * as t from '../../src/aelastics-types'
-import { schema } from '../../src/aelastics-types'
 
 export const AgeType = t.number.derive('Human age').int8.positive.inRange(1, 120)
 
@@ -95,13 +94,24 @@ export const FullNameType = t.intersectionOf([
   t.object({ name: t.string.derive('').alphabetical }),
   t.object({ familyName: t.string })
 ])
+export const ArtSchema = t.schema('ArtSchema')
+export const SchemaSinger = t.schema('SchemaSinger', ArtSchema)
+export const ComposerSchema = t.schema('ComposerSchema', SchemaSinger)
+export const AlbumSchema = t.schema('AlbumSchema', ComposerSchema)
+export const SongSchema = t.schema('SongSchema', AlbumSchema)
 
-export const SchemaSinger = t.schema('SchemaSinger')
+export const MovieSchema = t.schema('MovieSchema', ArtSchema)
+export const AwardSchema = t.schema('AwardSchema', MovieSchema)
 
 // genre type specialization
 export const GenreSpecialization = t.string
   .derive('Specialization')
   .oneOf(['Jazz', 'Classic', 'Funk', 'Rock', 'Blues'])
+// movie genre
+export const MovieGenre = t.string
+  .derive('Specialization')
+  .oneOf(['Action', 'Comedy', 'Crime', 'Drama', 'Horror', 'Romance', 'Science fiction', 'Western'])
+// movie type
 
 // song duration
 export const SongDuration = t.number.derive('Song duration').int8.inRange(2, 10)
@@ -116,7 +126,8 @@ export const ComposerType = t.object(
   {
     name: FullNameType
   },
-  'ComposerType'
+  'ComposerType',
+  ComposerSchema
 )
 // Song type
 export const SongType = t.object(
@@ -124,15 +135,16 @@ export const SongType = t.object(
     no: t.number,
     name: t.string,
     duration: SongDuration,
-    composers: t.arrayOf(ComposerType)
+    composers: t.arrayOf(t.link(SchemaSinger, 'ComposerSchema/ComposerType')) // t.arrayOf(ComposerType)
   },
-  'SongType'
+  'SongType',
+  SongSchema
 )
 // Album type
 export const AlbumType = t.object(
   {
     name: t.string,
-    songs: t.arrayOf(SongType),
+    songs: t.arrayOf(t.link(SchemaSinger, 'ComposerSchema/AlbumSchema/SongSchema/SongType')), //  songs: t.arrayOf(SongType),
     lyricsOfSongs: t.optional(t.mapOf(t.number, t.string, 'Lyrics')),
     publishingHouse: t.object(
       {
@@ -141,10 +153,12 @@ export const AlbumType = t.object(
         established: t.number,
         contact: t.string
       },
-      'PublishingHouseType'
+      'PublishingHouseType',
+      ComposerSchema
     )
   },
-  'AlbumType'
+  'AlbumType',
+  AlbumSchema
 )
 
 export const BandType = t.object(
@@ -163,8 +177,69 @@ export const SingerType = t.object(
     nickname: t.optional(t.string),
     albums: t.arrayOf(AlbumType),
     genre: GenreSpecialization,
-    memberOfBand: BandType
+    memberOfBand: t.optional(BandType)
   },
   'SingerType',
   SchemaSinger
+)
+// movie type
+
+export const MovieType = t.object(
+  {
+    filmId: t.number.derive('Film id').greaterThan(0),
+    name: t.string,
+    genre: MovieGenre,
+    director: t.link(ArtSchema, 'MovieSchema/DirectorType'),
+    scenarist: t.link(ArtSchema, 'MovieSchema/ScenaristType'),
+    actors: t.arrayOf(t.link(MovieSchema, 'ActorType')),
+    musicInFilm: t.arrayOf(t.link(SchemaSinger, 'ComposerSchema/AlbumSchema/SongSchema/SongType'))
+  },
+  'MovieType',
+  MovieSchema
+)
+
+// director type
+export const DirectorType = t.object(
+  {
+    directorId: t.number,
+    name: FullNameType,
+    education: t.optional(t.string),
+    awards: t.optional(t.mapOf(t.number, t.link(ArtSchema, 'MovieSchema/AwardSchema/AwardType'))) // key in the map is filmID
+  },
+  'DirectorType',
+  MovieSchema
+)
+
+// scenarist type
+
+export const ScenaristType = t.object(
+  {
+    scenaristId: t.number,
+    name: FullNameType
+  },
+  'ScenaristType',
+  MovieSchema
+)
+
+// actor type
+
+export const ActorType = t.object(
+  {
+    actorId: t.number,
+    name: FullNameType,
+    // roles: t.mapOf(MovieType, t.string),
+    awards: t.optional(t.mapOf(t.number, t.link(ArtSchema, 'MovieSchema/AwardSchema/AwardType'))) // key in the map is filmID
+  },
+  'ActorType',
+  MovieSchema
+)
+// award type
+export const AwardType = t.object(
+  {
+    name: t.string,
+    year: t.number.positive,
+    categoiries: t.arrayOf(t.string, 'Categories')
+  },
+  'AwardType',
+  AwardSchema
 )
