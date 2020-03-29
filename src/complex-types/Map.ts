@@ -54,7 +54,7 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
       return success(true)
     }
 
-    traversed.set(this, this)
+    traversed.set(input, input)
 
     const errors: Errors = []
 

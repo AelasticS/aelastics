@@ -60,6 +60,24 @@ export const firstLevelArray = t.arrayOf(arrayObject, 'firstLevelArray')
 
 arraySchema.addType(firstLevelArray)
 
+export const mapSchema = t.schema('mapSchema')
+
+export const mapOfRootLevelObjects = t.mapOf(t.string, rootLevelLevelObject)
+
+export const rootMap = t.mapOf(
+  t.string,
+  t.object(
+    {
+      a: t.boolean,
+      b: t.number.lessThan(32),
+      c: t.optional(t.string),
+      d: t.link(mapSchema, 'rootMap', 'object')
+    },
+    'object'
+  ),
+  'rootMap'
+)
+mapSchema.addType(rootMap)
 /*
 import * as t from "../index";
 
