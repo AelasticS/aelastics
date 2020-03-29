@@ -84,13 +84,11 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   makeInstanceFromDTO(
     input: DtoTaggedUnionType<P>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): TypeOf<P[keyof P]> {
     const instance = input.taggedUnion[this.discriminator]
     if (!instance) {
-      errors.push(
+      context.errors.push(
         validationError(
           `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`,
           path,
@@ -110,21 +108,13 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
         )
         return undefined
       }
-      return type.fromDTOCyclic(
-        input,
-        appendPath(path, instance, type.name, input),
-        visitedNodes,
-        errors,
-        context
-      )
+      return type.fromDTOCyclic(input, appendPath(path, instance, type.name, input), context)
     }
   }
 
   makeDTOInstance(
     input: TypeOf<P[keyof P]>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): DtoTaggedUnionType<P> {
     const output: DtoTaggedUnionType<P> = {
@@ -154,8 +144,6 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
       output.taggedUnion = type.toDTOCyclic(
         instance,
         appendPath(path, instance, type?.name, input),
-        visitedNodes,
-        errors,
         context
       )
       return output
@@ -207,9 +195,8 @@ export const taggedUnion = <P extends Props>(
   }
   return new TaggedUnionTypeC(name, discr, elements)
 }
+
 /*
-
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralTypeC<any> }
-
 export type Tagged<Tag extends string> = ObjectType<TaggedProps<Tag>>
 */

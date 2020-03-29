@@ -140,8 +140,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   makeDTOInstance(
     input: ObjectType<P>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): DtoProps<P> | DtoObjectType<P> {
     try {
@@ -152,17 +150,10 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         const t = types[i]
         const k = keys[i]
         const ak = input[k]
-        const conversion = t.toDTOCyclic(
-          ak,
-          appendPath(path, k, t.name, ak),
-          visitedNodes,
-          errors,
-          context
-        )
+        const conversion = t.toDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
         ObjectTypeC.addProperty(outObject, k, conversion)
       }
-
-      if (context.isTreeDTO) {
+      if (context.options.isTreeDTO) {
         output = outObject
       } else {
         output = {
@@ -172,7 +163,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       }
       return output
     } catch (e) {
-      errors.push(
+      context.errors.push(
         validationError(`Caught exception '${(e as Error).message}'`, path, this.name, input)
       )
       return {} as DtoProps<P>
@@ -182,20 +173,18 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   makeInstanceFromDTO(
     input: DtoProps<P> | DtoObjectType<P>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): ObjectType<P> {
     let output = {} as ObjectType<P>
     let inputObject: DtoProps<P>
     if (!isObject(input.object)) {
-      errors.push(validationError('Input is not an object', path, this.name, input))
+      context.errors.push(validationError('Input is not an object', path, this.name, input))
       return output
     }
-    if (this.isObjRef(input) && !context.isTreeDTO) {
+    if (this.isObjRef(input) && !context.options.isTreeDTO) {
       if (input.ref.typeName !== this.name) {
         // determine correct subtype, add context for schema
-        errors.push(
+        context.errors.push(
           validationError(
             `Types are not matching: input type is '${input.ref.typeName}' and expected type is '${this.name}'. A possible subtype cannot be handled!`,
             path,
@@ -205,10 +194,10 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         )
         return output // empty
       } else inputObject = input.object
-    } else if (!this.isObjRef(input) && !context.isTreeDTO) {
+    } else if (!this.isObjRef(input) && !context.options.isTreeDTO) {
       inputObject = input
     } else {
-      errors.push(
+      context.errors.push(
         validationError(
           `Input type '${this.name} at path '${path}' is not valid:"${input.toString()}" `,
           path,
@@ -218,25 +207,21 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       )
       return output // empty
     }
-    if (context.includeTypeInfo) {
-      ObjectTypeC.addProperty(output, context.typeInfoPropName, this.name)
+    if (context.options.includeTypeInfo) {
+      ObjectTypeC.addProperty(output, context.options.typeInfoPropName, this.name)
     }
     let [keys, types, len] = this.getPropsInfo()
     for (let i = 0; i < len; i++) {
       const t = types[i]
       const k = keys[i]
       if (!Object.prototype.hasOwnProperty.call(inputObject, k) && !(t instanceof OptionalTypeC)) {
-        errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
+        context.errors.push(
+          validationError('missing property', appendPath(path, k, t.name), this.name)
+        )
         continue
       }
       const ak = inputObject[k]
-      const conversion = t.fromDTOCyclic(
-        ak,
-        appendPath(path, k, t.name, ak),
-        visitedNodes,
-        errors,
-        context
-      )
+      const conversion = t.fromDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
       ObjectTypeC.addProperty(output, k, conversion)
     }
     return output
@@ -254,22 +239,17 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
 
   validateLinks(traversed: Map<any, any>): Result<boolean> {
     traversed.set(this, this)
-
     let errors = []
-
     for (let i = 0; i < this.len; i++) {
       const t = this.types[i]
-
       if (traversed.has(t)) {
         continue
       }
       const res = t.validateLinks(traversed)
-
       if (isFailure(res)) {
         errors.push(...res.errors)
       }
     }
-
     return errors.length ? failures(errors) : success(true)
   }
 }

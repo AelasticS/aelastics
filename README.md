@@ -1,6 +1,6 @@
 # AelasticS Types
 
-> Types dynamically created at run time 
+> Types dynamically created at run time - Alpha version
 > - tree and graph data structures 
 > - data validation and serialization
 

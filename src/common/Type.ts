@@ -43,7 +43,12 @@ export interface ConversionOptions {
   constructors?: Map<string, Constructor> // constructors
 }
 
-export type ConversionContext = ConversionOptions & { counter: number }
+export type ConversionContext = {
+  options: ConversionOptions
+  visitedNodes: Map<any, any>
+  errors: ValidationError[]
+  counter: number
+}
 
 export const defaultConversionOptions: ConversionOptions = {
   validate: true,
@@ -113,9 +118,14 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param options
    */
   public fromDTO(value: T | G, options: ConversionOptions = defaultConversionOptions): Result<V> {
-    let convOptions = { ...options, ...{ counter: 0 } }
+    let context: ConversionContext = {
+      options: options,
+      errors: [],
+      visitedNodes: new Map<any, any>(),
+      counter: 0
+    }
     let errs: ValidationError[] = []
-    let res = this.fromDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
+    let res = this.fromDTOCyclic(value, [], context)
     if (errs.length > 0) {
       return failures(errs)
     } else {
@@ -125,14 +135,10 @@ export abstract class TypeC<V, G = V, T = V> {
   }
 
   /** @internal */
-  public fromDTOCyclic(
-    value: T | G,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): V | undefined {
-    errors.push(validationError('Internal method fromDTOCyclic not implemented', path, `${value}`))
+  public fromDTOCyclic(value: T | G, path: Path, context: ConversionContext): V | undefined {
+    context.errors.push(
+      validationError('Internal method fromDTOCyclic not implemented', path, `${value}`)
+    )
     return (value as any) as V
   }
 
@@ -150,25 +156,25 @@ export abstract class TypeC<V, G = V, T = V> {
         return failures(res.errors)
       }
     }
-    let convOptions = { ...options, ...{ counter: 0 } }
-    let errs: ValidationError[] = []
-    let res = this.toDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
-    if (errs.length > 0) {
-      return failures(errs)
+    let context: ConversionContext = {
+      options: options,
+      errors: [],
+      visitedNodes: new Map<any, any>(),
+      counter: 0
+    }
+    let res = this.toDTOCyclic(value, [], context)
+    if (context.errors.length > 0) {
+      return failures(context.errors)
     } else {
       return success(res)
     }
   }
 
   /** @internal */
-  public toDTOCyclic(
-    input: V,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): T | G {
-    errors.push(validationError('Internal method toDTOCyclic not implemented', path, `${input}`))
+  public toDTOCyclic(input: V, path: Path, context: ConversionContext): T | G {
+    context.errors.push(
+      validationError('Internal method toDTOCyclic not implemented', path, `${input}`)
+    )
     return (input as any) as G
   }
 

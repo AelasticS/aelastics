@@ -5,7 +5,7 @@
 import { Any, ConversionContext, TypeC } from '../common/Type'
 import { Error, Path, Result, success } from 'aelastics-result'
 
-export abstract class SimpleTypeC<T, D = T> extends TypeC<T, D> {
+export abstract class SimpleTypeC<V, G = V, T = V> extends TypeC<V, G, T> {
   //    public readonly _tagSimple: 'Simple' = 'Simple';
 
   constructor(name: string) {
@@ -13,14 +13,8 @@ export abstract class SimpleTypeC<T, D = T> extends TypeC<T, D> {
   }
 
   /** @internal */
-  public toDTOCyclic(
-    input: T,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: Error[],
-    context: ConversionContext
-  ): D {
-    return (input as any) as D
+  public toDTOCyclic(input: V, path: Path, context: ConversionContext): T | G {
+    return (input as any) as T | G
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

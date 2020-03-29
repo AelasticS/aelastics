@@ -41,33 +41,15 @@ export abstract class ComplexTypeC<
     return input.ref
   }
 
-  abstract makeDTOInstance(
-    input: V,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): T | G
+  abstract makeDTOInstance(input: V, path: Path, context: ConversionContext): T | G
 
-  abstract makeInstanceFromDTO(
-    input: T | G,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): V
+  abstract makeInstanceFromDTO(input: T | G, path: Path, context: ConversionContext): V
 
-  toDTOCyclic(
-    input: V,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): T | G {
-    let output = visitedNodes.get(input)
+  toDTOCyclic(input: V, path: Path, context: ConversionContext): T | G {
+    let output = context.visitedNodes.get(input)
     if (output) {
-      if (!(context.includeTypeInfo && context.isTreeDTO)) {
-        errors.push(
+      if (!(context.options.includeTypeInfo && context.options.isTreeDTO)) {
+        context.errors.push(
           validationError(
             `Input data is graph. Value ${path}: '${input}' of type '${this.name}' has more then one reference!`,
             path,
@@ -77,26 +59,20 @@ export abstract class ComplexTypeC<
       }
       return output
     } else {
-      output = this.makeDTOInstance(input, path, visitedNodes, errors, context)
-      visitedNodes.set(input, this.getReference(output, context))
+      output = this.makeDTOInstance(input, path, context)
+      context.visitedNodes.set(input, this.getReference(output, context))
     }
     return output
   }
 
-  fromDTOCyclic(
-    value: T | G,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): V {
+  fromDTOCyclic(value: T | G, path: Path, context: ConversionContext): V {
     let ref = this.getReference(value, context)
-    let output = visitedNodes.get(ref)
+    let output = context.visitedNodes.get(ref)
 
     if (output) {
-      if (!(context.includeTypeInfo && context.isTreeDTO)) {
+      if (!(context.options.includeTypeInfo && context.options.isTreeDTO)) {
         // should be tree, not graph
-        errors.push(
+        context.errors.push(
           validationError(
             `Input data is graph. Value ${path}: '${value}' of type '${this.name}' has more then one reference!`,
             path,
@@ -107,10 +83,10 @@ export abstract class ComplexTypeC<
       return output
     } else {
       // an instance not visited before
-      let output = this.makeInstanceFromDTO(value, path, visitedNodes, errors, context)
+      let output = this.makeInstanceFromDTO(value, path, context)
       if (output) {
-        if (!(context.includeTypeInfo && context.isTreeDTO)) {
-          errors.push(
+        if (!(context.options.includeTypeInfo && context.options.isTreeDTO)) {
+          context.errors.push(
             validationError(
               `Input data is graph. Value ${path}: '${value}' of type '${this.name}' has more then one reference!`,
               path,
@@ -119,7 +95,7 @@ export abstract class ComplexTypeC<
           )
         }
       } else {
-        visitedNodes.set(this.getReference(value, context)?.id, output)
+        context.visitedNodes.set(this.getReference(value, context)?.id, output)
       }
       return output
     }
