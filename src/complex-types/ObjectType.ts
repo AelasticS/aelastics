@@ -70,6 +70,10 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     { prop: string; type: ObjectTypeC<any, []> }
   >()
 
+  protected getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
+    return [this.keys, this.types, this.len]
+  }
+
   constructor(name: string, props: P, identifier: I) {
     super(name, props)
     this.identifier = identifier
@@ -143,9 +147,10 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     try {
       let output: DtoProps<P> | DtoObjectType<P>
       let outObject: DtoProps<P> = {} as DtoProps<P>
-      for (let i = 0; i < this.len; i++) {
-        const t = this.types[i]
-        const k = this.keys[i]
+      let [keys, types, len] = this.getPropsInfo()
+      for (let i = 0; i < len; i++) {
+        const t = types[i]
+        const k = keys[i]
         const ak = input[k]
         const conversion = t.toDTOCyclic(
           ak,
@@ -216,9 +221,10 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     if (context.includeTypeInfo) {
       ObjectTypeC.addProperty(output, context.typeInfoPropName, this.name)
     }
-    for (let i = 0; i < this.len; i++) {
-      const t = this.types[i]
-      const k = this.keys[i]
+    let [keys, types, len] = this.getPropsInfo()
+    for (let i = 0; i < len; i++) {
+      const t = types[i]
+      const k = keys[i]
       if (!Object.prototype.hasOwnProperty.call(inputObject, k) && !(t instanceof OptionalTypeC)) {
         errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
         continue
