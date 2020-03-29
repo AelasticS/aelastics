@@ -39,54 +39,54 @@ export class SubtypeC<
   // get all properties from class hierarchy - overridden properties are not included!
   get allProperties(): Map<string, TypeC<any>> {
     let mp = this.superType.allProperties
-    this.keys.forEach(key => {
+    this._keys.forEach(key => {
       mp.set(key, this.baseType[key] as TypeC<any>)
     })
     return mp
   }
 
-  protected getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
+  public getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
     let mapOfAllProperties = this.allProperties
     let keys = Array.from(mapOfAllProperties.keys())
     let types = Array.from(mapOfAllProperties.values())
     return [keys, types, keys.length]
   }
 
-  public defaultValue(): any {
-    return Object.assign(this.superType.defaultValue(), super.defaultValue())
-  }
-
-  public validate(input: ObjectType<P & SP>, path: Path = []): Result<boolean> {
-    let mapOfAllProperties = this.allProperties
-    let keys = Array.from(mapOfAllProperties.keys())
-    const result = isObject(input)
-      ? success(input)
-      : failureValidation('Value is not object', path, this.name, input)
-    if (isFailure(result)) {
-      return result
-    }
-    const errors: Errors = []
-    for (let i = 0; i < keys.length; i++) {
-      const k = keys[i]
-      const t = mapOfAllProperties.get(k)
-      if (t !== undefined) {
-        if (!input.hasOwnProperty(k) && !(t instanceof OptionalTypeC)) {
-          errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
-          continue
-        }
-        const ak = input[k]
-        const validation = t.validate(ak, appendPath(path, k, t.name, ak))
-        if (isFailure(validation)) {
-          errors.push(...validation.errors)
+  /*  public defaultValue(): any {
+      return Object.assign(this.superType.defaultValue(), super.defaultValue())
+    }*/
+  /*
+    public validate(input: ObjectType<P & SP>, path: Path = []): Result<boolean> {
+      let mapOfAllProperties = this.allProperties
+      let keys = Array.from(mapOfAllProperties.keys())
+      const result = isObject(input)
+        ? success(input)
+        : failureValidation('Value is not object', path, this.name, input)
+      if (isFailure(result)) {
+        return result
+      }
+      const errors: Errors = []
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i]
+        const t = mapOfAllProperties.get(k)
+        if (t !== undefined) {
+          if (!input.hasOwnProperty(k) && !(t instanceof OptionalTypeC)) {
+            errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
+            continue
+          }
+          const ak = input[k]
+          const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+          if (isFailure(validation)) {
+            errors.push(...validation.errors)
+          }
         }
       }
-    }
-    const res = this.checkValidators(input, path)
-    if (isFailure(res)) {
-      errors.push(...res.errors)
-    }
-    return errors.length ? failures(errors) : success(true)
-  }
+      const res = this.checkValidators(input, path)
+      if (isFailure(res)) {
+        errors.push(...res.errors)
+      }
+      return errors.length ? failures(errors) : success(true)
+    }*/
 
   /*
   toDTOCyclic(
@@ -107,29 +107,29 @@ export class SubtypeC<
   }
 */
 
-  validateLinks(traversed: Map<Any, Any>): Result<boolean> {
-    traversed.set(this, this)
+  /*  validateLinks(traversed: Map<Any, Any>): Result<boolean> {
+      traversed.set(this, this)
 
-    let mapOfAllProperties = this.allProperties
-    let values = Array.from(mapOfAllProperties.values())
+      let mapOfAllProperties = this.allProperties
+      let values = Array.from(mapOfAllProperties.values())
 
-    let errors = []
+      let errors = []
 
-    for (let i = 0; i < values.length; i++) {
-      const t = values[i]
+      for (let i = 0; i < values.length; i++) {
+        const t = values[i]
 
-      if (traversed.has(t)) {
-        continue
+        if (traversed.has(t)) {
+          continue
+        }
+        const res = t.validateLinks(traversed)
+
+        if (isFailure(res)) {
+          errors.push(...res.errors)
+        }
       }
-      const res = t.validateLinks(traversed)
 
-      if (isFailure(res)) {
-        errors.push(...res.errors)
-      }
-    }
-
-    return errors.length ? failures(errors) : success(true)
-  }
+      return errors.length ? failures(errors) : success(true)
+    }*/
 }
 
 const getSubtypeName = <U extends ObjectTypeC<any, any>>(superType: U): string => {

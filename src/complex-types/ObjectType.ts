@@ -61,24 +61,24 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   public ID_DTO!: { [k in I[number]]: DtoTypeOf<P[k]> }
   public ID_DTO_TREE!: { [k in I[number]]: DtoTreeTypeOf<P[k]> }
   public readonly _tag: 'Object' = 'Object'
-  public readonly keys = Object.keys(this.baseType)
-  public readonly types = this.keys.map(key => this.baseType[key] as TypeC<any>)
-  public readonly len = this.keys.length
+  public readonly _keys = Object.keys(this.baseType)
+  public readonly _types = this._keys.map(key => this.baseType[key] as TypeC<any>)
+  public readonly _len = this._keys.length
   public readonly identifier: I
   public inverseCollection: Map<string, { prop: string; type: ObjectTypeC<any, []> }> = new Map<
     string,
     { prop: string; type: ObjectTypeC<any, []> }
   >()
 
-  protected getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
-    return [this.keys, this.types, this.len]
+  public getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
+    return [this._keys, this._types, this._len]
   }
 
   constructor(name: string, props: P, identifier: I) {
     super(name, props)
     this.identifier = identifier
     this.identifier.forEach(i => {
-      if (!this.keys.includes(i)) {
+      if (!this._keys.includes(i)) {
         throw new Error(`Invalid identifier:${i} is not a property of object type ${name}`)
       }
     })
@@ -87,16 +87,16 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   // get all properties from class hierarchy - overridden properties are not included!
   get allProperties(): Map<string, TypeC<any>> {
     let mp = new Map<string, TypeC<any>>()
-    this.keys.forEach(key => mp.set(key, this.baseType[key] as TypeC<any>))
+    this._keys.forEach(key => mp.set(key, this.baseType[key] as TypeC<any>))
     return mp
   }
 
   public defaultValue(): any {
     const obj = {}
-    for (let i = 0; i < this.len; i++) {
+    let [keys, types, len] = this.getPropsInfo()
+    for (let i = 0; i < len; i++) {
       // @ts-ignore
-      obj[this.keys[i]] =
-        this.types[i] instanceof ObjectTypeC ? undefined : this.types[i].defaultValue()
+      obj[keys[i]] = types[i] instanceof ObjectTypeC ? undefined : types[i].defaultValue()
       // obj[this.keys[i]] = this.types[i].defaultValue();
     }
     return obj
@@ -109,10 +109,11 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     if (isFailure(result)) {
       return result
     }
+    let [keys, types, len] = this.getPropsInfo()
     const errors: ValidationError[] = []
-    for (let i = 0; i < this.len; i++) {
-      const t = this.types[i]
-      const k = this.keys[i]
+    for (let i = 0; i < len; i++) {
+      const t = types[i]
+      const k = keys[i]
       if (!Object.prototype.hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
         errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
         continue
@@ -240,8 +241,9 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   validateLinks(traversed: Map<any, any>): Result<boolean> {
     traversed.set(this, this)
     let errors = []
-    for (let i = 0; i < this.len; i++) {
-      const t = this.types[i]
+    let [keys, types, len] = this.getPropsInfo()
+    for (let i = 0; i < len; i++) {
+      const t = types[i]
       if (traversed.has(t)) {
         continue
       }
