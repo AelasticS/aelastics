@@ -3,22 +3,9 @@
  *
  */
 
-import { DtoObjectType, DtoProps, isObject, ObjectType, ObjectTypeC, Props } from './ObjectType'
-import {
-  appendPath,
-  Errors,
-  failures,
-  failureValidation,
-  isFailure,
-  Path,
-  Result,
-  success,
-  validationError,
-  ValidationError
-} from 'aelastics-result'
-import { Any, ConversionContext, TypeC } from '../common/Type'
+import { ObjectTypeC, Props } from './ObjectType'
+import { TypeC } from '../common/Type'
 import { TypeSchema } from '../common/TypeSchema'
-import { OptionalTypeC } from '../common/Optional'
 
 export class SubtypeC<
   P extends Props,

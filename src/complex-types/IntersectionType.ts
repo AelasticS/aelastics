@@ -5,15 +5,7 @@
 
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
-import {
-  Error,
-  failures,
-  isFailure,
-  Path,
-  Result,
-  success,
-  ValidationError
-} from 'aelastics-result'
+import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 
 type UnionToIntersection<U> = (U extends any
 ? (k: U) => void

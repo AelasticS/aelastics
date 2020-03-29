@@ -13,7 +13,6 @@ import {
   success,
   validationError,
   isFailure,
-  Errors,
   ValidationError
 } from 'aelastics-result'
 

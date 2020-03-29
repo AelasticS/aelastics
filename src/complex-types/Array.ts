@@ -13,7 +13,7 @@ import {
   ValidationError,
   validationError
 } from 'aelastics-result'
-import { Any, ConversionContext, ConversionOptions, DtoTypeOf, TypeOf } from '../common/Type'
+import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { InstanceReference, ComplexTypeC } from './ComplexType'
 
 /**

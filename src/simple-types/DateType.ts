@@ -3,16 +3,7 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
-import {
-  Error,
-  failure,
-  Result,
-  success,
-  Path,
-  isSuccess,
-  ValidationError,
-  validationError
-} from 'aelastics-result'
+import { Error, failure, Result, Path, validationError } from 'aelastics-result'
 import { ConversionContext } from '../common/Type'
 
 export class DateTypeC extends SimpleTypeC<Date, string, string> {

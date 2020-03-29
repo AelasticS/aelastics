@@ -14,7 +14,6 @@ import {
   Path,
   Result,
   success,
-  ValidationError,
   validationError
 } from 'aelastics-result'
 

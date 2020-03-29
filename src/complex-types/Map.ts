@@ -13,8 +13,7 @@ import {
   Path,
   success,
   validationError,
-  Result,
-  ValidationError
+  Result
 } from 'aelastics-result'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'

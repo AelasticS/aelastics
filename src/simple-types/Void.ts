@@ -3,7 +3,7 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
-import { Error, failure, Path, Result, success } from 'aelastics-result'
+import { Error, failure, Path, Result } from 'aelastics-result'
 
 export class VoidTypeC extends SimpleTypeC<boolean> {
   public readonly _tag: 'Void' = 'Void'

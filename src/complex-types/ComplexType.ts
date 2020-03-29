@@ -3,7 +3,7 @@
  */
 
 import { ConversionContext, TypeC } from '../common/Type'
-import { ValidationError, Path, validationError } from 'aelastics-result'
+import { Path, validationError } from 'aelastics-result'
 
 export interface InstanceReference {
   id: number // unique identifier within object graph

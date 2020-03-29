@@ -15,15 +15,7 @@ import {
   ValidationError
 } from 'aelastics-result'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
-import {
-  Any,
-  ConversionContext,
-  ConversionOptions,
-  DtoTreeTypeOf,
-  DtoTypeOf,
-  TypeC,
-  TypeOf
-} from '../common/Type'
+import { Any, ConversionContext, DtoTreeTypeOf, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
 import { OptionalTypeC } from '../common/Optional'
 import { TypeSchema } from '../common/TypeSchema'
 import { ArrayTypeC } from './Array'
