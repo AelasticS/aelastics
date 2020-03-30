@@ -13,7 +13,7 @@ import {
   ValidationError,
   validationError
 } from 'aelastics-result'
-import { Any, ConversionContext, ConversionOptions, DtoTypeOf, TypeOf } from '../common/Type'
+import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { InstanceReference, ComplexTypeC } from './ComplexType'
 
 /**
@@ -59,42 +59,36 @@ export class ArrayTypeC<
   makeInstanceFromDTO(
     input: DtoArrayType<E>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionOptions & { counter: number }
+    context: ConversionContext
   ): Array<TypeOf<E>> {
     if (!Array.isArray(input.array)) {
-      errors.push(validationError('Input is not an array', path, this.name, input))
+      context.errors.push(validationError('Input is not an array', path, this.name, input))
       return []
     }
     const output: Array<TypeOf<E>> = []
     for (let i = 0; i < input.array.length; i++) {
       const x = input.array[i]
-      const conversion = this.baseType.fromDTOCyclic(x, path, visitedNodes, errors, context)
+      const conversion = this.baseType.fromDTOCyclic(x, path, context)
       output.push(conversion.value)
     }
-    //    const res = this.checkValidators(input, path)
-
     return output
   }
 
   makeDTOInstance(
     input: Array<TypeOf<E>>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionOptions & { counter: number }
+    context: ConversionContext
   ): DtoArrayType<E> {
     if (!Array.isArray(input)) {
-      errors.push(validationError(`Value ${path} is not Array: '${input}' `, path, this.name))
+      context.errors.push(
+        validationError(`Value ${path} is not Array: '${input}' `, path, this.name)
+      )
     }
     const output: DtoArrayType<E> = { ref: this.makeReference(input, context), array: [] }
     for (let i = 0; i < input.length; i++) {
       const conversion = this.baseType.toDTOCyclic(
         input[i],
         appendPath(path, `[${i}]`, this.name),
-        visitedNodes,
-        errors,
         context
       )
       output.array.push(conversion)

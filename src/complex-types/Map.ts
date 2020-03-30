@@ -13,8 +13,7 @@ import {
   Path,
   success,
   validationError,
-  Result,
-  ValidationError
+  Result
 } from 'aelastics-result'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
@@ -75,13 +74,11 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
   makeInstanceFromDTO(
     input: DtoMapType<K, V>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): Map<TypeOf<K>, TypeOf<V>> {
     const output: Map<K, TypeOf<V>> = new Map<TypeOf<K>, TypeOf<V>>()
     if (!Array.isArray(input.map)) {
-      errors.push(
+      context.errors.push(
         validationError(
           `Value ${path}: '${input}' is not a map represented as an array`,
           path,
@@ -94,13 +91,13 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     for (let i = 0; i < input.map.length; i++) {
       let newPath = appendPath(path, `[${i}]`, this.name)
       if (input.map[i].length !== 2) {
-        errors.push(validationError('Invalid map element', newPath, this.name))
+        context.errors.push(validationError('Invalid map element', newPath, this.name))
         continue
       }
       const k: K = input.map[i][0]
-      const keyConversion = this.keyType.fromDTOCyclic(k, newPath, visitedNodes, errors, context)
+      const keyConversion = this.keyType.fromDTOCyclic(k, newPath, context)
       const x: V = input.map[i][1]
-      const valueConversion = this.baseType.fromDTOCyclic(x, newPath, visitedNodes, errors, context)
+      const valueConversion = this.baseType.fromDTOCyclic(x, newPath, context)
       output.set(keyConversion, valueConversion)
     }
     return output
@@ -109,15 +106,13 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
   makeDTOInstance(
     input: Map<TypeOf<K>, TypeOf<V>>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): DtoMapType<K, V> {
     const output: DtoMapType<K, V> = { ref: this.makeReference(input, context), map: [] }
     for (const [k, v] of input.entries()) {
       let newPath = appendPath(path, `[${k}]`, this.name)
-      const keyConversion = this.keyType.toDTOCyclic(k, newPath, visitedNodes, errors, context)
-      const valueConversion = this.baseType.toDTOCyclic(v, newPath, visitedNodes, errors, context)
+      const keyConversion = this.keyType.toDTOCyclic(k, newPath, context)
+      const valueConversion = this.baseType.toDTOCyclic(v, newPath, context)
       output.map.push([k, v])
     }
     return output
@@ -126,14 +121,12 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     traversed.set(this, this)
     let errors = []
-
     if (!traversed.has(this.baseType)) {
       let res = this.baseType.validateLinks(traversed)
       if (isFailure(res)) {
         errors.push(...res.errors)
       }
     }
-
     if (!traversed.has(this.keyType)) {
       let res2 = this.keyType.validateLinks(traversed)
       if (isFailure(res2)) {

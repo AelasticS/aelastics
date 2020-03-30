@@ -5,15 +5,7 @@
 
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
-import {
-  Error,
-  failures,
-  isFailure,
-  Path,
-  Result,
-  success,
-  ValidationError
-} from 'aelastics-result'
+import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 
 type UnionToIntersection<U> = (U extends any
 ? (k: U) => void
@@ -56,13 +48,11 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   makeInstanceFromDTO(
     input: DtoIntersectionType<P>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): UnionToIntersection<TypeOf<P[number]>> {
     const output = {} as UnionToIntersection<TypeOf<P[number]>>
     for (const t of this.baseType) {
-      const res = t.fromDTOCyclic(input, path, visitedNodes, errors, context)
+      const res = t.fromDTOCyclic(input, path, context)
       Object.assign(output, res)
     }
     return output
@@ -71,8 +61,6 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   makeDTOInstance(
     input: UnionToIntersection<TypeOf<P[number]>>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): DtoIntersectionType<P> {
     const output: DtoIntersectionType<P> = {
@@ -80,7 +68,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
       intersection: {} as UnionToIntersection<DtoTypeOf<P[number]>>
     }
     for (const t of this.baseType) {
-      const res = t.toDTOCyclic(input, path, visitedNodes, errors, context)
+      const res = t.toDTOCyclic(input, path, context)
       Object.assign(output.intersection, res)
     }
     return output
