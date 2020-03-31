@@ -17,6 +17,27 @@ describe('Validate Cyclic array structures', () => {
 
     expect(isSuccess(type.validate(array))).toBe(true)
   })
+
+  it('Testing if two instances in obj are same arey is valid', () => {
+    const type = examples.objectWithArrays
+    let second = {
+      name: 'Something'
+    }
+    let root = {
+      a: second,
+      b: second
+    }
+
+    let array = [root, root]
+
+    let obj = {
+      a: array,
+      b: array
+    }
+
+    expect(isSuccess(type.validate(obj))).toBe(true)
+  })
+
   it("Testing if cyclic arrey is valid'", () => {
     const type = examples.firstLevelArray
     examples.arraySchema.validate()

@@ -29,7 +29,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
       return success(true)
     }
 
-    traversed.set(this, this)
+    traversed.set(value, value)
 
     const err: Error[] = []
     for (const t of this.baseType) {

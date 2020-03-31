@@ -59,7 +59,7 @@ export class SubtypeC<
       return success(true)
     }
 
-    traversed.set(this, this)
+    traversed.set(input, input)
 
     let mapOfAllProperties = this.allProperties
     let keys = Array.from(mapOfAllProperties.keys())

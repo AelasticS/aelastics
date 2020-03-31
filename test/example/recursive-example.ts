@@ -44,6 +44,14 @@ t.inverseProps(companyType, 'director', workerType, 'company')
 
 export const arrayOfRootLevelObjects = t.arrayOf(rootLevelLevelObject)
 
+export const objectWithArrays = t.object(
+  {
+    a: arrayOfRootLevelObjects,
+    b: arrayOfRootLevelObjects
+  },
+  'object whit arrays'
+)
+
 export const arraySchema = t.schema('arraySchema')
 
 export const arrayObject = t.object(
@@ -78,6 +86,61 @@ export const rootMap = t.mapOf(
   'rootMap'
 )
 mapSchema.addType(rootMap)
+
+export const intersectionInstance = t.intersectionOf([
+  t.object({ a: t.string.derive('').alphabetical }),
+  t.object({ b: t.string })
+])
+
+export const objectWithIntersections = t.object(
+  {
+    a: intersectionInstance,
+    b: intersectionInstance
+  },
+  'object with intersection'
+)
+
+export const intersectionSchema = t.schema('intersectionSchema')
+
+export const secondLevelIntersectionObject = t.object(
+  {
+    a: t.link(intersectionSchema, 'recursiveIntersection', 'recursiveIntersection'),
+    b: t.boolean,
+    c: t.string
+  },
+  'secondLevelIntersectionObject',
+  intersectionSchema
+)
+
+export const recursiveIntersection = t.intersectionOf(
+  [t.object({ a: secondLevelIntersectionObject }), t.object({ b: t.string })],
+  'recursiveIntersection'
+)
+intersectionSchema.addType(recursiveIntersection)
+
+export const simpleObject = t.object({ a: t.string }, 'simple object')
+export const simpleSubtype = t.subtype(simpleObject, { date: t.date })
+export const objectWithSubtipes = t.object(
+  { a: simpleSubtype, b: simpleSubtype },
+  'objectWithSubtypes'
+)
+
+export const subtypeSchema = t.schema('subtypeSchema')
+export const secondLevelSybtypeObject = t.object(
+  {
+    a: t.boolean,
+    b: t.link(subtypeSchema, 'recursiveSubtype', 'recursiveSubtype')
+  },
+  'secondLevelSybtypeObject',
+  subtypeSchema
+)
+export const recursiveSubtype = t.subtype(
+  simpleObject,
+  { b: t.number.greaterThan(11), c: secondLevelSybtypeObject },
+  'recursiveSubtype',
+  subtypeSchema
+)
+
 /*
 import * as t from "../index";
 
