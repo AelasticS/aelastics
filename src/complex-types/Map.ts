@@ -47,18 +47,34 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     return new Map()
   }
 
-  public validate(input: Map<TypeOf<K>, TypeOf<V>>, path: Path = []): Result<boolean> {
+  validateCyclic(
+    input: Map<TypeOf<K>, TypeOf<V>>,
+    path: Path = [],
+    traversed: Map<any, any>
+  ): Result<boolean> {
     if (!(input instanceof Map)) {
       return failure(new Error(`Value ${path}: '${input}' is not valid Map`))
     }
+
+    if (traversed.has(input)) {
+      return success(true)
+    }
+
+    traversed.set(input, input)
+
     const errors: Errors = []
 
     input.forEach((value: V, key: K) => {
-      let res = this.baseType.validate(value, appendPath(path, `[${key}]`, value.name))
+      let res = this.baseType.validateCyclic(
+        value,
+        appendPath(path, `[${key}]`, value.name),
+        traversed
+      )
       if (isFailure(res)) {
         errors.push(...res.errors)
       }
-      res = this.keyType.validate(key, appendPath(path, `[${key}]`, key.name))
+
+      res = this.keyType.validateCyclic(key, appendPath(path, `[${key}]`, key.name), traversed)
       if (isFailure(res)) {
         errors.push(...res.errors)
       }

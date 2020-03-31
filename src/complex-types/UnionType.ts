@@ -35,10 +35,21 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     super(name, baseType)
   }
 
-  public validate(value: TypeOf<P[number]>, path: Path = []): Result<boolean> {
+  validateCyclic(
+    value: TypeOf<P[number]>,
+    path: Path = [],
+    traversed: Map<any, any>
+  ): Result<boolean> {
+    if (traversed.has(value)) {
+      return success(true)
+    }
+
+    traversed.set(this, this)
+
     for (let i = 0; i < this.baseType.length; i++) {
       const type = this.baseType[i]
-      let res = type.validate(value, path)
+
+      let res = type.validateCyclic(value, path, traversed)
       if (isSuccess(res)) {
         return res
       }
