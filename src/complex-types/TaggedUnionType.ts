@@ -11,13 +11,14 @@ import {
   failures,
   isFailure,
   Path,
+  Result,
   success,
-  Result
+  ValidationError,
+  validationError
 } from 'aelastics-result'
-import { ObjectType, Props, ObjectTypeC } from './ObjectType'
-import { Any, DtoTypeOf, TypeOf } from '../common/Type'
-import { ComplexTypeC } from './ComplexType'
-import { LiteralTypeC } from '../simple-types/Literal'
+import { ObjectTypeC, Props } from './ObjectType'
+import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
+import { ComplexTypeC, InstanceReference } from './ComplexType'
 
 // export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralTypeC<Tag> }
 
@@ -30,9 +31,15 @@ const findTypeFromDiscriminator = (d: string, t: Props): Any | undefined => {
   return undefined
 }
 
-export class TaggedUnionTypeC<Tag extends string, P extends Props> extends ComplexTypeC<
+type DtoTaggedUnionType<P extends Props> = {
+  ref: InstanceReference
+  taggedUnion: DtoTypeOf<P[keyof P]>
+}
+
+export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   P,
   TypeOf<P[keyof P]>,
+  DtoTaggedUnionType<P>,
   DtoTypeOf<P[keyof P]>
 > {
   public readonly _tag: 'TaggedUnion' = 'TaggedUnion'
@@ -82,85 +89,72 @@ export class TaggedUnionTypeC<Tag extends string, P extends Props> extends Compl
     }
   }
 
-  public fromDTO(input: DtoTypeOf<P[keyof P]>, path: Path = []): Result<P[keyof P]> {
-    const errors: Errors = []
-
-    const instance = input[this.discriminator]
+  makeInstanceFromDTO(
+    input: DtoTaggedUnionType<P>,
+    path: Path,
+    context: ConversionContext
+  ): TypeOf<P[keyof P]> {
+    const instance = input.taggedUnion[this.discriminator]
     if (!instance) {
-      return failure(
-        new Error(
-          `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`
+      context.errors.push(
+        validationError(
+          `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`,
+          path,
+          this.name,
+          input
         )
       )
+      return undefined
     } else {
       const type = findTypeFromDiscriminator(instance, this.baseType)
       if (!type) {
-        return failure(
-          new Error(
-            `Value ${path}: '${input}' - there is no type in tagged union named: '${instance}'`
-          )
+        validationError(
+          `Value ${path}: '${input}' - there is no type in tagged union named: '${instance}'`,
+          path,
+          this.name,
+          input
         )
+        return undefined
       }
-
-      const conversion = type.fromDTO(input, appendPath(path, instance, type.name, input))
-
-      if (isFailure(conversion)) {
-        return conversion
-      }
-
-      const res = this.checkValidators(conversion.value, path)
-      if (isFailure(res)) {
-        return res
-      }
-
-      return errors.length ? failures(errors) : success(conversion.value)
+      return type.fromDTOCyclic(input, appendPath(path, instance, type.name, input), context)
     }
   }
 
-  public toDTO(
-    input: TypeOf<this>,
-    path: Path = [],
-    validate: boolean = true
-  ): Result<DtoTypeOf<P[keyof P]>> {
-    // const errors: Errors = [];
-    if (validate) {
-      const res = this.validate(input)
-      if (isFailure(res)) {
-        return failures(res.errors)
-      }
+  makeDTOInstance(
+    input: TypeOf<P[keyof P]>,
+    path: Path,
+    context: ConversionContext
+  ): DtoTaggedUnionType<P> {
+    const output: DtoTaggedUnionType<P> = {
+      ref: this.makeReference(input, context),
+      taggedUnion: undefined
     }
-
     const instance = input[this.discriminator]
     if (!instance) {
-      return failure(
-        new Error(
-          `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`
-        )
+      validationError(
+        `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`,
+        path,
+        this.name,
+        input
       )
+      return output
     } else {
       const type = findTypeFromDiscriminator(instance, this.baseType)
       if (!type) {
-        return failure(
-          new Error(
-            `Value ${path}: '${input}' - there is no type in tagged union named: '${instance}'`
-          )
+        validationError(
+          `Value ${path}: '${input}' - there is no type in tagged union named: '${instance}'`,
+          path,
+          this.name,
+          input
         )
+        return output
       }
-
-      const conversion = type.toDTO(input, appendPath(path, instance, type.name, input), validate)
-
-      if (isFailure(conversion)) {
-        return conversion
-      }
-      /*
-            const res = this.checkValidators(conversion.value, path);
-            if (isFailure(res)) {
-                return res;
-            }
-        */
-      //            return errors.length ? failures(errors) : success(conversion.value);
-
-      return success(conversion.value)
+      output.taggedUnion = type.toDTOCyclic(
+        instance,
+        appendPath(path, instance, type?.name, input),
+        context
+      )
+      return output
     }
   }
 
@@ -197,18 +191,20 @@ export const taggedUnion = <P extends Props>(
   elements: P,
   discr: string,
   name: string = getUnionName(elements)
-): TaggedUnionTypeC<string, P> => {
+): TaggedUnionTypeC<P> => {
   for (let key in elements) {
-    if (elements[key] instanceof ObjectTypeC) {
-      if (!((elements[key] as unknown) as ObjectTypeC<Props>).keys.includes(discr)) {
+    let elem = elements[key]
+    if (elem instanceof ObjectTypeC) {
+      let [keys, types, len] = elem.getPropsInfo()
+      if (!keys.includes(discr)) {
         throw new Error('Invalid value of discriminator')
       }
     }
   }
-
   return new TaggedUnionTypeC(name, discr, elements)
 }
 
+/*
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralTypeC<any> }
-
 export type Tagged<Tag extends string> = ObjectType<TaggedProps<Tag>>
+*/

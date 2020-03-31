@@ -1,3 +1,4 @@
+require('dotenv').config()
 const { cd, exec, echo, touch } = require("shelljs")
 const { readFileSync } = require("fs")
 const url = require("url")
@@ -15,15 +16,16 @@ if (typeof pkg.repository === "object") {
 
 let parsedUrl = url.parse(repoUrl)
 let repository = (parsedUrl.host || '') + (parsedUrl.path || '')
-let ghToken = 'Sinisa-Neskovic' // process.env.GH_TOKEN
+let ghToken = process.env.GH_TOKEN
+let ghEmail = process.env.GH_EMAIL
 
 echo('Deploying docs!!!')
 cd('docs')
 touch('.nojekyll')
 exec('git init')
 exec('git add .')
-exec('git config user.name "Sinisa-Neskovic"')
-exec('git config user.email "sinisa_neskovic@yahoo.com"')
+exec(`git config user.name "${ghToken}"`)
+exec(`git config user.email "${ghEmail}"`)
 exec('git commit -m "docs(docs): update gh-pages"')
 exec(
   `git push --force --quiet "https://${ghToken}@${repository}" master:gh-pages`

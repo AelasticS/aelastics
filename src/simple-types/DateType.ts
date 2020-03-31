@@ -3,10 +3,12 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
-import { Error, failure, Result, success, Path, isSuccess } from 'aelastics-result'
+import { Error, failure, Result, Path, validationError } from 'aelastics-result'
+import { ConversionContext } from '../common/Type'
 
-export class DateTypeC extends SimpleTypeC<Date, string> {
+export class DateTypeC extends SimpleTypeC<Date, string, string> {
   public readonly _tag: 'Date' = 'Date'
+
   constructor() {
     super('Date')
   }
@@ -18,22 +20,20 @@ export class DateTypeC extends SimpleTypeC<Date, string> {
     return failure(new Error(`Value ${path}: '${input}' is not valid Date`))
   }
 
-  public fromDTO(value: string, path: Path = []): Result<Date> {
+  fromDTOCyclic(value: string, path: Path, context: ConversionContext): Date | undefined {
     try {
       const d = new Date(value)
-      const res = this.validate(d, path)
-      if (isSuccess(res)) {
-        return success(d)
-      } else {
-        return res
-      }
+      return d
     } catch (e) {
-      return failure(new Error(`Value ${path}: '${value}' is not valid Date`))
+      context.errors.push(
+        validationError(`Value ${path}: '${value}' is not valid Date`, path, this.name)
+      )
+      return undefined
     }
   }
 
-  public toDTO(d: Date): Result<string> {
-    return success(d.toJSON())
+  toDTOCyclic(input: Date, path: Path, context: ConversionContext): string {
+    return input.toJSON()
   }
 }
 

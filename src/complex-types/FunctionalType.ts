@@ -3,8 +3,8 @@
  *
  */
 
-import { Any, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
-import { DtoObjectType, ObjectType, Props } from './ObjectType'
+import { Any, DtoTreeTypeOf, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
+import { DtoObjectType, DtoProps, ObjectType, Props } from './ObjectType'
 import { failures, isFailure, Result, success } from 'aelastics-result'
 
 export type FunDecl<A, R> = {
@@ -14,7 +14,8 @@ export type FunDecl<A, R> = {
 
 export class FunctionalTypeC<P extends Props, R extends Any> extends TypeC<
   FunDecl<ObjectType<P>, TypeOf<R>>,
-  FunDecl<DtoObjectType<P>, DtoTypeOf<R>>
+  FunDecl<DtoObjectType<P>, DtoTypeOf<R>>,
+  FunDecl<DtoProps<P>, DtoTreeTypeOf<R>>
 > {
   constructor(name: string, readonly args: P, readonly returns: R) {
     super(name)

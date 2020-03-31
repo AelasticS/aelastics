@@ -1,5 +1,6 @@
 import * as t from '../../../src/aelastics-types'
 import { isSuccess } from 'aelastics-result'
+import { entity, TypeOfKey } from '../../../src/complex-types/ObjectType'
 
 describe('toDTO tests for object type', () => {
   const objectWithObjectPropertyType = t.object({
@@ -86,5 +87,14 @@ describe('toDTO tests for object type', () => {
     }
     const res = objectWithObjectPropertyType.toDTO(o, [], false)
     expect(isSuccess(res)).toBe(true)
+  })
+  test('object with keys', () => {
+    const ident = ['name', 'id'] as const
+    let ok = entity({ name: t.string, id: t.number }, ident)
+    let oks = t.subtype(ok, { ekstra: t.number })
+    let insKey: TypeOfKey<typeof ok> = { name: 'ime', id: 3 }
+    let subtypeKey: TypeOfKey<typeof oks> = { name: 'ime', id: 8 }
+    let s: t.TypeOf<typeof oks> = { id: 1, name: 's', ekstra: 5 }
+    let s2: t.DtoTypeOfKey<typeof oks> = { id: 1, name: 's' }
   })
 })
