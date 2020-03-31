@@ -196,13 +196,6 @@ export abstract class TypeC<V, G = V, T = V> {
     return hasError ? failures(errs) : success(true)
   }
 
-  public get Required(): this {
-    return this.addValidator({
-      message: (value, label) => `Value of ${label} is required`,
-      predicate: value => value === undefined
-    })
-  }
-
   public derive(name: string = `derived from ${this.name}`): this {
     const derived = new (this.constructor as any)(name)
     derived.derivedFrom = this
