@@ -4,6 +4,8 @@
  */
 
 import {
+  Errors,
+  Error,
   failure,
   failures,
   isSuccess,
@@ -103,10 +105,11 @@ export abstract class TypeC<V, G = V, T = V> {
    *  The default implementation just check all validators. Should be overridden for more complex use cases.
    */
 
-  public validate(value: V, path: Path = []): Result<boolean> {
-    if (typeof value === 'undefined') {
-      return failure(new Error(`Value ${path}: '${value}' is undefined`))
-    }
+  public validate(value: T): Result<boolean> {
+    return this.validateCyclic(value, [], new Map<any, any>())
+  }
+
+  public validateCyclic(value: T, path: Path = [], traversed: Map<any, any>): Result<boolean> {
     return this.checkValidators(value, path) // (this as TypeC<any>).checkValidators(input, []);
   }
 

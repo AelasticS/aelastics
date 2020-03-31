@@ -66,6 +66,46 @@ export class SubtypeC<
           if (isFailure(validation)) {
             errors.push(...validation.errors)
           }
+  public defaultValue(): any {
+    return Object.assign(this.superType.defaultValue(), super.defaultValue())
+  }
+
+  validateCyclic(
+    input: ObjectType<P & SP>,
+    path: Path = [],
+    traversed: Map<any, any>
+  ): Result<boolean> {
+    if (traversed.has(input)) {
+      return success(true)
+    }
+
+    traversed.set(input, input)
+
+    let mapOfAllProperties = this.allProperties
+    let keys = Array.from(mapOfAllProperties.keys())
+
+    const result = isObject(input)
+      ? success(input)
+      : failureValidation('Value is not object', path, this.name, input)
+    if (isFailure(result)) {
+      return result
+    }
+
+    const errors: Errors = []
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i]
+      const t = mapOfAllProperties.get(k)
+
+      if (t !== undefined) {
+        if (!input.hasOwnProperty(k) && !(t instanceof OptionalTypeC)) {
+          errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
+          continue
+        }
+
+        const ak = input[k]
+        const validation = t.validateCyclic(ak, appendPath(path, k, t.name, ak), traversed)
+        if (isFailure(validation)) {
+          errors.push(...validation.errors)
         }
       }
       const res = this.checkValidators(input, path)

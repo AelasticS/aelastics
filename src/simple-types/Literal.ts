@@ -22,7 +22,7 @@ export class LiteralTypeC<V extends LiteralValue> extends SimpleTypeC<V> {
     // });
   }
 
-  public validate(input: LiteralValue, path: Path): Result<boolean> {
+  public validate(input: LiteralValue, path?: Path): Result<boolean> {
     if (input === this.value) {
       return success(true)
     }

@@ -45,7 +45,14 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   }
 
   // value should be of type corresponding to the identifier of the referenced type
-  validate(value: any, path: Path = []): Success<boolean> | Failure {
+
+  // TODO: Fix ValidateCyclic method to include visited instances
+
+  validateCyclic(
+    value: TypeOfKey<T>,
+    path: Path = [],
+    traversed: Map<any, any>
+  ): Success<boolean> | Failure {
     const result = isObject(value)
       ? success(value)
       : failureValidation('Value is not object', path, this.name, value)
@@ -75,7 +82,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       const ak = value[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
 
-      const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+      const validation = t.validateCyclic(ak, appendPath(path, k, t.name, ak), traversed)
       if (isFailure(validation)) {
         errors.push(...validation.errors)
       }
