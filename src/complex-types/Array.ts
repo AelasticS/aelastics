@@ -11,7 +11,8 @@ import {
   success,
   Result,
   ValidationError,
-  validationError
+  validationError,
+  Errors
 } from 'aelastics-result'
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { InstanceReference, ComplexTypeC } from './ComplexType'

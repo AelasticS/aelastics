@@ -11,6 +11,10 @@ export class NullTypeC extends SimpleTypeC<boolean> {
     super('Null')
   }
 
+  validateCyclic(value: any, path: Path = [], traversed: Map<any, any>): Result<boolean> {
+    return this.validate(value, path)
+  }
+
   public validate(value: any, path: Path = []): Result<boolean> {
     if (value === null) {
       return success(true)

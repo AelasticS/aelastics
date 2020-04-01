@@ -98,18 +98,18 @@ export abstract class TypeC<V, G = V, T = V> {
   }
 
   /** Custom type guard - implemented using the validation  function */
-  public readonly is: Is<V> = (v: any): v is V => isSuccess(this.validate(v, []))
+  public readonly is: Is<V> = (v: any): v is V => isSuccess(this.validate(v))
 
   /**
    * Validation functions - validates the shape structure, field values and all constrains (validators)
    *  The default implementation just check all validators. Should be overridden for more complex use cases.
    */
 
-  public validate(value: T): Result<boolean> {
+  public validate(value: V): Result<boolean> {
     return this.validateCyclic(value, [], new Map<any, any>())
   }
 
-  public validateCyclic(value: T, path: Path = [], traversed: Map<any, any>): Result<boolean> {
+  public validateCyclic(value: V, path: Path = [], traversed: Map<any, any>): Result<boolean> {
     return this.checkValidators(value, path) // (this as TypeC<any>).checkValidators(input, []);
   }
 
@@ -131,7 +131,7 @@ export abstract class TypeC<V, G = V, T = V> {
     if (errs.length > 0) {
       return failures(errs)
     } else {
-      const resVal = this.validate(res as V, [])
+      const resVal = this.validate(res as V)
       return isSuccess(resVal) ? success<V>(res as V) : resVal
     }
   }
@@ -153,7 +153,7 @@ export abstract class TypeC<V, G = V, T = V> {
    */
   public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<T | G> {
     if (options.validate) {
-      let res = this.validate(value, [])
+      let res = this.validate(value)
       if (isFailure(res)) {
         return failures(res.errors)
       }

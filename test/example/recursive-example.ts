@@ -141,6 +141,20 @@ export const recursiveSubtype = t.subtype(
   subtypeSchema
 )
 
+export const simpleUnion = t.unionOf([t.string, t.number], 'simpleUnion')
+export const objectWithUnion = t.object({ a: simpleUnion, b: simpleUnion }, 'objectWithUnion')
+
+export const unionSchema = t.schema('unionSchema')
+export const secondLevelUnionObject = t.object(
+  {
+    a: t.boolean,
+    b: t.link(unionSchema, 'recursiveUnion', 'recursiveUnion')
+  },
+  'secondLevelUnionObject',
+  unionSchema
+)
+export const recursiveUnion = t.unionOf([secondLevelUnionObject, simpleUnion], 'recursiveUnion')
+unionSchema.addType(recursiveUnion)
 /*
 import * as t from "../index";
 
