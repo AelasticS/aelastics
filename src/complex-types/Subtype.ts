@@ -3,22 +3,9 @@
  *
  */
 
-import { DtoObjectType, DtoProps, isObject, ObjectType, ObjectTypeC, Props } from './ObjectType'
-import {
-  appendPath,
-  Errors,
-  failures,
-  failureValidation,
-  isFailure,
-  Path,
-  Result,
-  success,
-  validationError,
-  ValidationError
-} from 'aelastics-result'
-import { Any, ConversionContext, TypeC } from '../common/Type'
+import { ObjectTypeC, Props } from './ObjectType'
+import { TypeC } from '../common/Type'
 import { TypeSchema } from '../common/TypeSchema'
-import { OptionalTypeC } from '../common/Optional'
 
 export class SubtypeC<
   P extends Props,
@@ -39,132 +26,94 @@ export class SubtypeC<
   // get all properties from class hierarchy - overridden properties are not included!
   get allProperties(): Map<string, TypeC<any>> {
     let mp = this.superType.allProperties
-    this.keys.forEach(key => {
+    this._keys.forEach(key => {
       mp.set(key, this.baseType[key] as TypeC<any>)
     })
     return mp
   }
 
+  public getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
+    let mapOfAllProperties = this.allProperties
+    let keys = Array.from(mapOfAllProperties.keys())
+    let types = Array.from(mapOfAllProperties.values())
+    return [keys, types, keys.length]
+  }
+
+  /*  public defaultValue(): any {
+      return Object.assign(this.superType.defaultValue(), super.defaultValue())
+    }*/
+  /*
+    public validate(input: ObjectType<P & SP>, path: Path = []): Result<boolean> {
+      let mapOfAllProperties = this.allProperties
+      let keys = Array.from(mapOfAllProperties.keys())
+      const result = isObject(input)
+        ? success(input)
+        : failureValidation('Value is not object', path, this.name, input)
+      if (isFailure(result)) {
+        return result
+      }
+      const errors: Errors = []
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i]
+        const t = mapOfAllProperties.get(k)
+        if (t !== undefined) {
+          if (!input.hasOwnProperty(k) && !(t instanceof OptionalTypeC)) {
+            errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
+            continue
+          }
+          const ak = input[k]
+          const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+          if (isFailure(validation)) {
+            errors.push(...validation.errors)
+          }
   public defaultValue(): any {
     return Object.assign(this.superType.defaultValue(), super.defaultValue())
   }
 
-  public validate(input: ObjectType<P & SP>, path: Path = []): Result<boolean> {
+  validateCyclic(
+    input: ObjectType<P & SP>,
+    path: Path = [],
+    traversed: Map<any, any>
+  ): Result<boolean> {
+    if (traversed.has(input)) {
+      return success(true)
+    }
+
+    traversed.set(input, input)
+
     let mapOfAllProperties = this.allProperties
     let keys = Array.from(mapOfAllProperties.keys())
+
     const result = isObject(input)
       ? success(input)
       : failureValidation('Value is not object', path, this.name, input)
     if (isFailure(result)) {
       return result
     }
+
     const errors: Errors = []
     for (let i = 0; i < keys.length; i++) {
       const k = keys[i]
       const t = mapOfAllProperties.get(k)
+
       if (t !== undefined) {
         if (!input.hasOwnProperty(k) && !(t instanceof OptionalTypeC)) {
           errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
           continue
         }
+
         const ak = input[k]
-        const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+        const validation = t.validateCyclic(ak, appendPath(path, k, t.name, ak), traversed)
         if (isFailure(validation)) {
           errors.push(...validation.errors)
         }
       }
-    }
-    const res = this.checkValidators(input, path)
-    if (isFailure(res)) {
-      errors.push(...res.errors)
-    }
-    return errors.length ? failures(errors) : success(true)
-  }
-
-  makeInstanceFromDTO(
-    input: DtoObjectType<P & SP>,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): ObjectType<P & SP> {
-    let mapOfAllProperties = this.allProperties
-    let keys = Array.from(mapOfAllProperties.keys())
-    let output = {} as ObjectType<P & SP>
-    if (!isObject(input.object)) {
-      errors.push(validationError('Input is not an object', path, this.name, input))
-      return {} as ObjectType<P & SP>
-    }
-    if (input.ref.typeName !== this.name) {
-      // determine correct subtype, add context for schema
-      errors.push(
-        validationError(
-          `Types are not matching: input type is '${input.ref.typeName}' and expected type is '${this.name}'. A possible subtype cannot be handled!`,
-          path,
-          this.name,
-          input
-        )
-      )
-      return output // empty
-    }
-    if (context.typeInfo) {
-      ObjectTypeC.addProperty(output, context.typeInfoPropName, this.name)
-    }
-    for (let i = 0; i < keys.length; i++) {
-      const k = keys[i]
-      const t = mapOfAllProperties.get(k)
-      if (!Object.prototype.hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
-        errors.push(validationError('missing property', appendPath(path, k, t?.name), this.name))
-        continue
+      const res = this.checkValidators(input, path)
+      if (isFailure(res)) {
+        errors.push(...res.errors)
       }
-      const ak = input.object[k]
-      const conversion = t?.fromDTOCyclic(
-        ak,
-        appendPath(path, k, t.name, ak),
-        visitedNodes,
-        errors,
-        context
-      )
-      ObjectTypeC.addProperty(output, k, conversion)
-    }
-    return output
-  }
-
-  makeDTOInstance(
-    input: ObjectType<P & SP>,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): DtoObjectType<P & SP> {
-    let output: DtoObjectType<P & SP> = {
-      ref: this.makeReference(input, context),
-      object: {} as DtoProps<P & SP>
-    }
-    let mapOfAllProperties = this.allProperties
-    let keys = Array.from(mapOfAllProperties.keys())
-    try {
-      for (let i = 0; i < keys.length; i++) {
-        const k = keys[i]
-        const t = mapOfAllProperties.get(k)
-        const ak = input[k]
-        const conversion = t?.toDTOCyclic(
-          ak,
-          appendPath(path, k, t?.name, ak),
-          visitedNodes,
-          errors,
-          context
-        )
-        ObjectTypeC.addProperty(output.object, k, conversion)
-      }
-      return output
-    } catch (e) {
-      errors.push(
-        validationError(`Caught exception '${(e as Error).message}'`, path, this.name, input)
-      )
-      return output
-    }
-  }
+      return errors.length ? failures(errors) : success(true)
+    }*/
 
   /*
   toDTOCyclic(
@@ -185,29 +134,29 @@ export class SubtypeC<
   }
 */
 
-  validateLinks(traversed: Map<Any, Any>): Result<boolean> {
-    traversed.set(this, this)
+  /*  validateLinks(traversed: Map<Any, Any>): Result<boolean> {
+      traversed.set(this, this)
 
-    let mapOfAllProperties = this.allProperties
-    let values = Array.from(mapOfAllProperties.values())
+      let mapOfAllProperties = this.allProperties
+      let values = Array.from(mapOfAllProperties.values())
 
-    let errors = []
+      let errors = []
 
-    for (let i = 0; i < values.length; i++) {
-      const t = values[i]
+      for (let i = 0; i < values.length; i++) {
+        const t = values[i]
 
-      if (traversed.has(t)) {
-        continue
+        if (traversed.has(t)) {
+          continue
+        }
+        const res = t.validateLinks(traversed)
+
+        if (isFailure(res)) {
+          errors.push(...res.errors)
+        }
       }
-      const res = t.validateLinks(traversed)
 
-      if (isFailure(res)) {
-        errors.push(...res.errors)
-      }
-    }
-
-    return errors.length ? failures(errors) : success(true)
-  }
+      return errors.length ? failures(errors) : success(true)
+    }*/
 }
 
 const getSubtypeName = <U extends ObjectTypeC<any, any>>(superType: U): string => {

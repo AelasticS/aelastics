@@ -22,7 +22,11 @@ export class LiteralTypeC<V extends LiteralValue> extends SimpleTypeC<V> {
     // });
   }
 
-  public validate(input: LiteralValue, path: Path): Result<boolean> {
+  validateCyclic(value: V, path: Path = [], traversed: Map<any, any>): Result<boolean> {
+    return this.validate(value, path)
+  }
+
+  public validate(input: LiteralValue, path?: Path): Result<boolean> {
     if (input === this.value) {
       return success(true)
     }

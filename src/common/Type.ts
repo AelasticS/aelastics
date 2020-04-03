@@ -4,6 +4,8 @@
  */
 
 import {
+  Errors,
+  Error,
   failure,
   failures,
   isSuccess,
@@ -13,7 +15,6 @@ import {
   success,
   validationError,
   isFailure,
-  Errors,
   ValidationError
 } from 'aelastics-result'
 
@@ -31,23 +32,31 @@ export type Conversion<In, Out> = (value: In, path: Path) => Result<Out>
 
 export type Constructor<T extends {} = {}> = new (...args: any[]) => T
 
+/**
+ *  options for conversion
+ */
 export interface ConversionOptions {
-  validate: boolean // should validate , because of serializing partial data
-  generateID: boolean // generateID if it is graph
-  typeInfo: boolean // should put meta type info
-  typeInfoPropName: string
-  instantiateClasses: boolean // put constructor name or POJO - Literal object
+  validate: boolean // should validate during conversion, because of serializing partial data
+  isTreeDTO: boolean // true if it is tree, false if it is graph
+  includeTypeInfo: boolean // should put extra property in instance about its type or class
+  typeInfoPropName: string // the name of this extra property
+  //  instantiateClasses: boolean // put constructor name or POJO - Literal object
   constructors?: Map<string, Constructor> // constructors
 }
 
-export type ConversionContext = ConversionOptions & { counter: number }
+export type ConversionContext = {
+  options: ConversionOptions
+  visitedNodes: Map<any, any>
+  errors: ValidationError[]
+  counter: number
+}
 
 export const defaultConversionOptions: ConversionOptions = {
   validate: true,
-  generateID: false,
-  typeInfo: false,
-  typeInfoPropName: '_$_type_$',
-  instantiateClasses: false
+  isTreeDTO: false,
+  includeTypeInfo: false,
+  typeInfoPropName: '_$_type_$'
+  //  instantiateClasses: false
 }
 
 export interface Validator<T> {
@@ -89,17 +98,18 @@ export abstract class TypeC<V, G = V, T = V> {
   }
 
   /** Custom type guard - implemented using the validation  function */
-  public readonly is: Is<V> = (v: any): v is V => isSuccess(this.validate(v, []))
+  public readonly is: Is<V> = (v: any): v is V => isSuccess(this.validate(v))
 
   /**
    * Validation functions - validates the shape structure, field values and all constrains (validators)
    *  The default implementation just check all validators. Should be overridden for more complex use cases.
    */
 
-  public validate(value: V, path: Path = []): Result<boolean> {
-    if (typeof value === 'undefined') {
-      return failure(new Error(`Value ${path}: '${value}' is undefined`))
-    }
+  public validate(value: V): Result<boolean> {
+    return this.validateCyclic(value, [], new Map<any, any>())
+  }
+
+  public validateCyclic(value: V, path: Path = [], traversed: Map<any, any>): Result<boolean> {
     return this.checkValidators(value, path) // (this as TypeC<any>).checkValidators(input, []);
   }
 
@@ -109,27 +119,28 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param value - to be converted,
    * @param options
    */
-  public fromDTO(value: G, options: ConversionOptions = defaultConversionOptions): Result<V> {
-    let convOptions = { ...options, ...{ counter: 0 } }
+  public fromDTO(value: T | G, options: ConversionOptions = defaultConversionOptions): Result<V> {
+    let context: ConversionContext = {
+      options: options,
+      errors: [],
+      visitedNodes: new Map<any, any>(),
+      counter: 0
+    }
     let errs: ValidationError[] = []
-    let res = this.fromDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
+    let res = this.fromDTOCyclic(value, [], context)
     if (errs.length > 0) {
       return failures(errs)
     } else {
-      const resVal = this.validate(res as V, [])
+      const resVal = this.validate(res as V)
       return isSuccess(resVal) ? success<V>(res as V) : resVal
     }
   }
 
   /** @internal */
-  public fromDTOCyclic(
-    value: any,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): V | undefined {
-    errors.push(validationError('Internal method fromDTOCyclic not implemented', path, `${value}`))
+  public fromDTOCyclic(value: T | G, path: Path, context: ConversionContext): V | undefined {
+    context.errors.push(
+      validationError('Internal method fromDTOCyclic not implemented', path, `${value}`)
+    )
     return (value as any) as V
   }
 
@@ -140,32 +151,32 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param value
    * @param options
    */
-  public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<G> {
+  public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<T | G> {
     if (options.validate) {
-      let res = this.validate(value, [])
+      let res = this.validate(value)
       if (isFailure(res)) {
         return failures(res.errors)
       }
     }
-    let convOptions = { ...options, ...{ counter: 0 } }
-    let errs: ValidationError[] = []
-    let res = this.toDTOCyclic(value, [], new Map<any, any>(), errs, convOptions)
-    if (errs.length > 0) {
-      return failures(errs)
+    let context: ConversionContext = {
+      options: options,
+      errors: [],
+      visitedNodes: new Map<any, any>(),
+      counter: 0
+    }
+    let res = this.toDTOCyclic(value, [], context)
+    if (context.errors.length > 0) {
+      return failures(context.errors)
     } else {
       return success(res)
     }
   }
 
   /** @internal */
-  public toDTOCyclic(
-    input: V,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): G {
-    errors.push(validationError('Internal method toDTOCyclic not implemented', path, `${input}`))
+  public toDTOCyclic(input: V, path: Path, context: ConversionContext): T | G {
+    context.errors.push(
+      validationError('Internal method toDTOCyclic not implemented', path, `${input}`)
+    )
     return (input as any) as G
   }
 
@@ -186,13 +197,6 @@ export abstract class TypeC<V, G = V, T = V> {
     }
 
     return hasError ? failures(errs) : success(true)
-  }
-
-  public get Required(): this {
-    return this.addValidator({
-      message: (value, label) => `Value of ${label} is required`,
-      predicate: value => value === undefined
-    })
   }
 
   public derive(name: string = `derived from ${this.name}`): this {

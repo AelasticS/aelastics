@@ -3,15 +3,8 @@
  *
  */
 
-import { TypeC, Any, ConversionContext } from './Type'
-import {
-  DtoObjectType,
-  DtoProps,
-  isObject,
-  ObjectType,
-  ObjectTypeC,
-  Props
-} from '../complex-types/ObjectType'
+import { Any, ConversionContext, TypeC } from './Type'
+import { isObject, ObjectTypeC, Props } from '../complex-types/ObjectType'
 import {
   appendPath,
   Errors,
@@ -23,7 +16,6 @@ import {
   Result,
   success,
   Success,
-  ValidationError,
   validationError
 } from 'aelastics-result'
 import { ComplexTypeC, InstanceReference } from '../complex-types/ComplexType'
@@ -53,7 +45,14 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   }
 
   // value should be of type corresponding to the identifier of the referenced type
-  validate(value: any, path: Path = []): Success<boolean> | Failure {
+
+  // TODO: Fix ValidateCyclic method to include visited instances
+
+  validateCyclic(
+    value: TypeOfKey<T>,
+    path: Path = [],
+    traversed: Map<any, any>
+  ): Success<boolean> | Failure {
     const result = isObject(value)
       ? success(value)
       : failureValidation('Value is not object', path, this.name, value)
@@ -83,7 +82,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       const ak = value[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
 
-      const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+      const validation = t.validateCyclic(ak, appendPath(path, k, t.name, ak), traversed)
       if (isFailure(validation)) {
         errors.push(...validation.errors)
       }
@@ -94,13 +93,11 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   makeInstanceFromDTO(
     input: DtoEntityReference<T>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): TypeOfKey<T> {
     let output: Props = {}
     if (!isObject(input.reference)) {
-      errors.push(validationError('Reference is not valid', path, this.name, input))
+      context.errors.push(validationError('Reference is not valid', path, this.name, input))
       return output
     }
     const identifier = this.referencedType.identifier
@@ -108,14 +105,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       const k: string = identifier[i]
       const ak = output[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
-
-      const conversion = t.fromDTOCyclic(
-        ak,
-        appendPath(path, k, t.name, ak),
-        visitedNodes,
-        errors,
-        context
-      )
+      const conversion = t.fromDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
       output[k] = conversion.value
     }
     return output as TypeOfKey<T>
@@ -124,8 +114,6 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   makeDTOInstance(
     input: TypeOfKey<T>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): DtoEntityReference<T> {
     let output: DtoEntityReference<T> = {
@@ -137,17 +125,12 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       const k = key[i]
       const ak = input[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
-      const conversion = t.toDTOCyclic(
-        input,
-        appendPath(path, k, t.name, ak),
-        visitedNodes,
-        errors,
-        context
-      )
+      const conversion = t.toDTOCyclic(input, appendPath(path, k, t.name, ak), context)
       ObjectTypeC.addProperty(output.reference, k, conversion)
     }
     return output
   }
+
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     return this.referencedType.validateLinks(traversed)
   }

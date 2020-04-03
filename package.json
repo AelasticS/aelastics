@@ -1,6 +1,6 @@
 {
   "name": "aelastics-types",
-  "version": "0.4.0",
+  "version": "0.4.3",
   "description": "Type system dynamically created at run time",
   "keywords": [
     "runtime type definitions",
@@ -146,9 +146,11 @@
     "tslint-config-prettier": "^1.15.0",
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.16.11",
-    "typescript": ">=^3.4.1"
+    "typescript": ">=3.4.1"
   },
   "dependencies": {
-    "aelastics-result": "^1.0.2"
+    "@types/dotenv": "^8.2.0",
+    "aelastics-result": "^1.0.2",
+    "dotenv": "^8.2.0"
   }
 }

@@ -14,7 +14,6 @@ import {
   Path,
   Result,
   success,
-  ValidationError,
   validationError
 } from 'aelastics-result'
 
@@ -36,10 +35,21 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     super(name, baseType)
   }
 
-  public validate(value: TypeOf<P[number]>, path: Path = []): Result<boolean> {
+  validateCyclic(
+    value: TypeOf<P[number]>,
+    path: Path = [],
+    traversed: Map<any, any>
+  ): Result<boolean> {
+    if (traversed.has(value)) {
+      return success(true)
+    }
+
+    traversed.set(this, this)
+
     for (let i = 0; i < this.baseType.length; i++) {
       const type = this.baseType[i]
-      let res = type.validate(value, path)
+
+      let res = type.validateCyclic(value, path, traversed)
       if (isSuccess(res)) {
         return res
       }
@@ -51,13 +61,11 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   makeInstanceFromDTO(
     input: DtoUnionType<P>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): TypeOf<P[number]> {
     let type = this.baseType.find(t => t.name === input.typeInUnion)
     if (!type) {
-      errors.push(
+      context.errors.push(
         validationError(
           `Not existing type '${input.typeInUnion}' in union '${path}': '${input}''`,
           path,
@@ -67,15 +75,13 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
       )
       return undefined
     } else {
-      return type.fromDTOCyclic(input.union, path, visitedNodes, errors, context)
+      return type.fromDTOCyclic(input.union, path, context)
     }
   }
 
   makeDTOInstance(
     input: TypeOf<P[number]>,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): DtoUnionType<P> {
     const output: DtoUnionType<P> = {
@@ -89,7 +95,7 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
       let resVal = type.validate(input)
       if (isSuccess(resVal)) {
         output.typeInUnion = type.name
-        output.union = type.toDTOCyclic(input, path, visitedNodes, errors, context)
+        output.union = type.toDTOCyclic(input, path, context)
         return output
       }
     }

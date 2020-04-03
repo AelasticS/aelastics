@@ -23,35 +23,27 @@ export class OptionalTypeC<T extends TypeC<any>> extends TypeC<
     if (typeof value === 'undefined') {
       return success(true)
     } else {
-      return this.base.validate(value, path)
+      return this.base.validate(value)
     }
   }
 
-  fromDTOCyclic(
-    value: any,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
-    context: ConversionContext
-  ): TypeOf<T> | undefined {
+  fromDTOCyclic(value: any, path: Path, context: ConversionContext): TypeOf<T> | undefined {
     if (typeof value === 'undefined') {
       return undefined
     } else {
-      return this.base.fromDTOCyclic(value, path, visitedNodes, errors, context)
+      return this.base.fromDTOCyclic(value, path, context)
     }
   }
 
   toDTOCyclic(
     input: TypeOf<T> | undefined,
     path: Path,
-    visitedNodes: Map<any, any>,
-    errors: ValidationError[],
     context: ConversionContext
   ): DtoTypeOf<T> | undefined {
     if (typeof input === 'undefined') {
       return undefined
     } else {
-      return this.base.toDTOCyclic(input, path, visitedNodes, errors, context)
+      return this.base.toDTOCyclic(input, path, context)
     }
   }
 

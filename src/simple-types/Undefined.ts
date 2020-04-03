@@ -10,6 +10,9 @@ export class UndefinedTypeC extends SimpleTypeC<boolean> {
   constructor() {
     super('Undefined')
   }
+  validateCyclic(value: any, path: Path = [], traversed: Map<any, any>): Result<boolean> {
+    return this.validate(value, path)
+  }
 
   public validate(value: any, path: Path = []): Result<boolean> {
     if (typeof value === 'undefined') {
