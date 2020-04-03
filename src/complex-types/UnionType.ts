@@ -14,8 +14,13 @@ import {
   Path,
   Result,
   success,
+  ValidationError,
   validationError
 } from 'aelastics-result'
+import { UnionType } from 'typedoc/dist/lib/models'
+import { types } from '../aelastics-types'
+import isUnionType = types.isUnionType
+import { DtoObjectType } from './ObjectType'
 
 type DtoUnionType<P extends Array<Any>> = {
   ref: InstanceReference
@@ -47,49 +52,120 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     return failure(new Error(`Value ${path}: '${value}' is not union: '${this.name}'`))
   }
 
+  protected isUnionRef(input: any): input is DtoUnionType<P> {
+    if (input.ref && input.typeInUnion && input.union) {
+      return true
+    }
+    return false
+  }
+
   makeInstanceFromDTO(
-    input: DtoUnionType<P>,
+    input: DtoTypeOf<P[number]> | DtoUnionType<P>,
     path: Path,
     context: ConversionContext
   ): TypeOf<P[number]> {
-    let type = this.baseType.find(t => t.name === input.typeInUnion)
-    if (!type) {
-      context.errors.push(
-        validationError(
-          `Not existing type '${input.typeInUnion}' in union '${path}': '${input}''`,
-          path,
-          this.name,
-          input
+    const output: TypeOf<P[number]> = {}
+    let inputUnion: DtoTypeOf<P[number]>
+
+    if (this.isUnionRef(input)) {
+      let type = this.baseType.find(t => t.name === input.typeInUnion)
+      if (!type) {
+        context.errors.push(
+          validationError(
+            `Not existing type '${input.typeInUnion}' in union '${path}': '${input}''`,
+            path,
+            this.name,
+            input
+          )
         )
-      )
-      return undefined
+        return undefined
+      } else {
+        return type.fromDTOCyclic(input.union, path, context)
+      }
     } else {
-      return type.fromDTOCyclic(input.union, path, context)
+      let result = this.getTypeFromValue(input)
+      if (isSuccess(result)) {
+        return result.value.fromDTOCyclic(input, path, context)
+      } else {
+        context.errors.push(...(result.errors as ValidationError[]))
+      }
     }
+
+    return undefined
   }
+
+  // makeInstanceFromDTO1(
+  //   input: DtoUnionType<P>,
+  //   path: Path,
+  //   context: ConversionContext
+  // ): TypeOf<P[number]> {
+  //   let type = this.baseType.find(t => t.name === input.typeInUnion)
+  //   if (!type) {
+  //     context.errors.push(
+  //       validationError(
+  //         `Not existing type '${input.typeInUnion}' in union '${path}': '${input}''`,
+  //         path,
+  //         this.name,
+  //         input
+  //       )
+  //     )
+  //     return undefined
+  //   } else {
+  //     return type.fromDTOCyclic(input.union, path, context)
+  //   }
+  // }
 
   makeDTOInstance(
     input: TypeOf<P[number]>,
     path: Path,
     context: ConversionContext
-  ): DtoUnionType<P> {
-    const output: DtoUnionType<P> = {
-      ref: this.makeReference(input, context),
-      typeInUnion: 'unknown',
-      union: undefined
-    }
+  ): DtoTypeOf<P[number]> | DtoUnionType<P> {
+    let output: DtoTypeOf<P[number]> | DtoUnionType<P>
+    let outputUnion: DtoTypeOf<P[number]> = {} as DtoTypeOf<P[number]>
+    let typeInUnion
     for (let i = 0; i < this.baseType.length; i++) {
-      // find which type is in union, the first one which is validated
       const type = this.baseType[i]
       let resVal = type.validate(input)
       if (isSuccess(resVal)) {
-        output.typeInUnion = type.name
-        output.union = type.toDTOCyclic(input, path, context)
-        return output
+        typeInUnion = type.name
+        outputUnion = type.toDTOCyclic(input, path, context)
+        break
+      }
+    }
+    if (context.options.isTreeDTO) {
+      output = outputUnion
+    } else {
+      output = {
+        ref: this.makeReference(input, context),
+        typeInUnion: typeInUnion,
+        union: outputUnion
       }
     }
     return output
   }
+
+  // makeDTOInstance1(
+  //   input: TypeOf<P[number]>,
+  //   path: Path,
+  //   context: ConversionContext
+  // ): DtoUnionType<P> {
+  //   const output: DtoUnionType<P> = {
+  //     ref: this.makeReference(input, context),
+  //     typeInUnion: 'unknown',
+  //     union: undefined
+  //   }
+  //   for (let i = 0; i < this.baseType.length; i++) {
+  //     // find which type is in union, the first one which is validated
+  //     const type = this.baseType[i]
+  //     let resVal = type.validate(input)
+  //     if (isSuccess(resVal)) {
+  //       output.typeInUnion = type.name
+  //       output.union = type.toDTOCyclic(input, path, context)
+  //       return output
+  //     }
+  //   }
+  //   return output
+  // }
 
   public getTypeFromValue(value: TypeOf<P[number]>): Result<Any> {
     for (let i = 0; i < this.baseType.length; i++) {
