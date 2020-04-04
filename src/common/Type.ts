@@ -17,6 +17,7 @@ import {
   isFailure,
   ValidationError
 } from 'aelastics-result'
+import { VisitedNodes } from './VisitedNodes'
 
 export type Predicate<T> = (value: T) => boolean
 
@@ -106,10 +107,10 @@ export abstract class TypeC<V, G = V, T = V> {
    */
 
   public validate(value: V): Result<boolean> {
-    return this.validateCyclic(value, [], new Map<any, any>())
+    return this.validateCyclic(value, [], new VisitedNodes())
   }
 
-  public validateCyclic(value: V, path: Path = [], traversed: Map<any, any>): Result<boolean> {
+  public validateCyclic(value: V, path: Path = [], traversed: VisitedNodes): Result<boolean> {
     return this.checkValidators(value, path) // (this as TypeC<any>).checkValidators(input, []);
   }
 

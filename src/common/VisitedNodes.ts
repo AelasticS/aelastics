@@ -1,6 +1,6 @@
 import { TypeC } from './Type'
 
-export type TypeInstancePair = [TypeC<any>, object]
+export type TypeInstancePair = [TypeC<any>, any]
 
 export class VisitedNodes {
   private mapOfTypes: Map<TypeC<any>, Map<object, object>> = new Map<

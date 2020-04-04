@@ -17,6 +17,7 @@ import {
 } from 'aelastics-result'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 /**
  * Map type
@@ -50,17 +51,17 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
   validateCyclic(
     input: Map<TypeOf<K>, TypeOf<V>>,
     path: Path = [],
-    traversed: Map<any, any>
+    traversed: VisitedNodes
   ): Result<boolean> {
     if (!(input instanceof Map)) {
       return failure(new Error(`Value ${path}: '${input}' is not valid Map`))
     }
-
-    if (traversed.has(input)) {
+    let pair: TypeInstancePair = [this, input]
+    if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(input, input)
+    traversed.set(pair)
 
     const errors: Errors = []
 
