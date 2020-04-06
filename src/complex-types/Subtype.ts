@@ -3,9 +3,24 @@
  *
  */
 
-import { ObjectTypeC, Props } from './ObjectType'
-import { TypeC } from '../common/Type'
+import { DtoObjectType, isObject, ObjectType, ObjectTypeC, Props } from './ObjectType'
+import { Any, ConversionContext, TypeC } from '../common/Type'
 import { TypeSchema } from '../common/TypeSchema'
+import {
+  appendPath,
+  Errors,
+  Failure,
+  failures,
+  failureValidation,
+  isFailure,
+  Path,
+  Result,
+  Success,
+  success,
+  validationError
+} from 'aelastics-result'
+import { OptionalTypeC } from '../common/Optional'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 export class SubtypeC<
   P extends Props,
@@ -39,33 +54,6 @@ export class SubtypeC<
     return [keys, types, keys.length]
   }
 
-  /*  public defaultValue(): any {
-      return Object.assign(this.superType.defaultValue(), super.defaultValue())
-    }*/
-  /*
-    public validate(input: ObjectType<P & SP>, path: Path = []): Result<boolean> {
-      let mapOfAllProperties = this.allProperties
-      let keys = Array.from(mapOfAllProperties.keys())
-      const result = isObject(input)
-        ? success(input)
-        : failureValidation('Value is not object', path, this.name, input)
-      if (isFailure(result)) {
-        return result
-      }
-      const errors: Errors = []
-      for (let i = 0; i < keys.length; i++) {
-        const k = keys[i]
-        const t = mapOfAllProperties.get(k)
-        if (t !== undefined) {
-          if (!input.hasOwnProperty(k) && !(t instanceof OptionalTypeC)) {
-            errors.push(validationError('missing property', appendPath(path, k, t.name), this.name))
-            continue
-          }
-          const ak = input[k]
-          const validation = t.validate(ak, appendPath(path, k, t.name, ak))
-          if (isFailure(validation)) {
-            errors.push(...validation.errors)
-          }
   public defaultValue(): any {
     return Object.assign(this.superType.defaultValue(), super.defaultValue())
   }
@@ -73,13 +61,15 @@ export class SubtypeC<
   validateCyclic(
     input: ObjectType<P & SP>,
     path: Path = [],
-    traversed: Map<any, any>
+    traversed: VisitedNodes
   ): Result<boolean> {
-    if (traversed.has(input)) {
+    let pair: TypeInstancePair = [this, input]
+
+    if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(input, input)
+    traversed.set(pair)
 
     let mapOfAllProperties = this.allProperties
     let keys = Array.from(mapOfAllProperties.keys())
@@ -112,51 +102,50 @@ export class SubtypeC<
       if (isFailure(res)) {
         errors.push(...res.errors)
       }
-      return errors.length ? failures(errors) : success(true)
-    }*/
-
-  /*
-  toDTOCyclic(
-    input: ObjectType<P & SP>,
-    path: Path,
-    visitedNodes: Map<any, any>,
-    errors: Error[],
-    context: ConversionContext
-  ): DtoObjectType<P & SP> {
-    let ref = this.serialize(input, path, visitedNodes, errors, context)
-    if (ref) {
-      return ref
     }
-    let res = super.toDTOCyclic(input, path, visitedNodes, errors, context)
-    let resSuper = this.superType.toDTOCyclic(input, path, visitedNodes, errors, context)
-    Object.assign(res, resSuper)
-    return res as DtoObjectType<P & SP>
+    return errors.length ? failures(errors) : success(true)
   }
-*/
 
-  /*  validateLinks(traversed: Map<Any, Any>): Result<boolean> {
-      traversed.set(this, this)
+  // toDTOCyclic(
+  //   input: ObjectType<P & SP>,
+  //   path: Path,
+  //   visitedNodes: Map<any, any>,
+  //   errors: Error[],
+  //   context: ConversionContext
+  // ): DtoObjectType<P & SP> {
+  //   let ref = this.serialize(input, path, visitedNodes, errors, context)
+  //   if (ref) {
+  //     return ref
+  //   }
+  //   let res = super.toDTOCyclic(input, path, visitedNodes, errors, context)
+  //   let resSuper = this.superType.toDTOCyclic(input, path, visitedNodes, errors, context)
+  //   Object.assign(res, resSuper)
+  //   return res as DtoObjectType<P & SP>
+  // }
 
-      let mapOfAllProperties = this.allProperties
-      let values = Array.from(mapOfAllProperties.values())
+  validateLinks(traversed: Map<Any, Any>): Result<boolean> {
+    traversed.set(this, this)
 
-      let errors = []
+    let mapOfAllProperties = this.allProperties
+    let values = Array.from(mapOfAllProperties.values())
 
-      for (let i = 0; i < values.length; i++) {
-        const t = values[i]
+    let errors = []
 
-        if (traversed.has(t)) {
-          continue
-        }
-        const res = t.validateLinks(traversed)
+    for (let i = 0; i < values.length; i++) {
+      const t = values[i]
 
-        if (isFailure(res)) {
-          errors.push(...res.errors)
-        }
+      if (traversed.has(t)) {
+        continue
       }
+      const res = t.validateLinks(traversed)
 
-      return errors.length ? failures(errors) : success(true)
-    }*/
+      if (isFailure(res)) {
+        errors.push(...res.errors)
+      }
+    }
+
+    return errors.length ? failures(errors) : success(true)
+  }
 }
 
 const getSubtypeName = <U extends ObjectTypeC<any, any>>(superType: U): string => {

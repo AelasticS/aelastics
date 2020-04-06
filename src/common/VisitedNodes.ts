@@ -3,10 +3,7 @@ import { TypeC } from './Type'
 export type TypeInstancePair = [TypeC<any>, any]
 
 export class VisitedNodes {
-  private mapOfTypes: Map<TypeC<any>, Map<object, object>> = new Map<
-    TypeC<any>,
-    Map<object, object>
-  >()
+  private mapOfTypes: Map<TypeC<any>, Map<object, object>> = new Map<TypeC<any>, Map<any, any>>()
 
   delete(pair: TypeInstancePair): boolean {
     let mapOFInstances = this.mapOfTypes.get(pair[0])
