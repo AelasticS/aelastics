@@ -82,11 +82,16 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   }
 
   makeInstanceFromDTO(
-    input: DtoTaggedUnionType<P>,
+    input: DtoTypeOf<P[keyof P]> | DtoTaggedUnionType<P>,
     path: Path,
     context: ConversionContext
   ): TypeOf<P[keyof P]> {
-    const instance = input.taggedUnion[this.discriminator]
+    let instance
+    if (this.isTaggedUnionRef(input)) {
+      instance = input.taggedUnion[this.discriminator]
+    } else {
+      instance = input[this.discriminator]
+    }
     if (!instance) {
       context.errors.push(
         validationError(
@@ -108,19 +113,48 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
         )
         return undefined
       }
-      return type.fromDTOCyclic(input, appendPath(path, instance, type.name, input), context)
+      return type.fromDTOCyclic(instance, appendPath(path, instance, type.name, input), context)
     }
   }
+
+  // makeInstanceFromDTO1(
+  //   //   input: DtoTaggedUnionType<P>,
+  //   //   path: Path,
+  //   //   context: ConversionContext
+  //   // ): TypeOf<P[keyof P]> {
+  //   //   const instance = input.taggedUnion[this.discriminator]
+  //   //   if (!instance) {
+  //   //     context.errors.push(
+  //   //       validationError(
+  //   //         `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`,
+  //   //         path,
+  //   //         this.name,
+  //   //         input
+  //   //       )
+  //   //     )
+  //   //     return undefined
+  //   //   } else {
+  //   //     const type = findTypeFromDiscriminator(instance, this.baseType)
+  //   //     if (!type) {
+  //   //       validationError(
+  //   //         `Value ${path}: '${input}' - there is no type in tagged union named: '${instance}'`,
+  //   //         path,
+  //   //         this.name,
+  //   //         input
+  //   //       )
+  //   //       return undefined
+  //   //     }
+  //   //     return type.fromDTOCyclic(input, appendPath(path, instance, type.name, input), context)
+  //   //   }
+  //   // }
 
   makeDTOInstance(
     input: TypeOf<P[keyof P]>,
     path: Path,
     context: ConversionContext
-  ): DtoTaggedUnionType<P> {
-    const output: DtoTaggedUnionType<P> = {
-      ref: this.makeReference(input, context),
-      taggedUnion: undefined
-    }
+  ): DtoTypeOf<P[keyof P]> | DtoTaggedUnionType<P> {
+    let output: DtoTypeOf<P[number]> | DtoTaggedUnionType<P>
+    let outputTaggedUnion: DtoTypeOf<P[number]> = {} as DtoTypeOf<P[number]>
     const instance = input[this.discriminator]
     if (!instance) {
       validationError(
@@ -129,7 +163,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
         this.name,
         input
       )
-      return output
+      return undefined
     } else {
       const type = findTypeFromDiscriminator(instance, this.baseType)
       if (!type) {
@@ -139,15 +173,69 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
           this.name,
           input
         )
+        return undefined
+      } else {
+        outputTaggedUnion = type.toDTOCyclic(
+          instance,
+          appendPath(path, instance, type?.name, input),
+          context
+        )
+        if (context.options.isTreeDTO) {
+          output = outputTaggedUnion
+        } else {
+          output = {
+            ref: this.makeReference(input, context),
+            taggedUnion: outputTaggedUnion
+          }
+        }
         return output
       }
-      output.taggedUnion = type.toDTOCyclic(
-        instance,
-        appendPath(path, instance, type?.name, input),
-        context
-      )
-      return output
     }
+  }
+
+  // makeDTOInstance1(
+  //   input: TypeOf<P[keyof P]>,
+  //   path: Path,
+  //   context: ConversionContext
+  // ): DtoTaggedUnionType<P> {
+  //   const output: DtoTaggedUnionType<P> = {
+  //     ref: this.makeReference(input, context),
+  //     taggedUnion: undefined
+  //   }
+  //   const instance = input[this.discriminator]
+  //   if (!instance) {
+  //     validationError(
+  //       `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`,
+  //       path,
+  //       this.name,
+  //       input
+  //     )
+  //     return output
+  //   } else {
+  //     const type = findTypeFromDiscriminator(instance, this.baseType)
+  //     if (!type) {
+  //       validationError(
+  //         `Value ${path}: '${input}' - there is no type in tagged union named: '${instance}'`,
+  //         path,
+  //         this.name,
+  //         input
+  //       )
+  //       return output
+  //     }
+  //     output.taggedUnion = type.toDTOCyclic(
+  //       instance,
+  //       appendPath(path, instance, type?.name, input),
+  //       context
+  //     )
+  //     return output
+  //   }
+  // }
+
+  protected isTaggedUnionRef(input: any): input is DtoTaggedUnionType<P> {
+    if (input.ref && input.taggedUnion) {
+      return true
+    }
+    return false
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
