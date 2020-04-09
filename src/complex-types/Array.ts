@@ -16,6 +16,7 @@ import {
 } from 'aelastics-result'
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { InstanceReference, ComplexTypeC } from './ComplexType'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 /**
  * Array type
@@ -39,17 +40,19 @@ export class ArrayTypeC<
   validateCyclic(
     input: Array<TypeOf<E>>,
     path: Path = [],
-    traversed: Map<any, any>
+    traversed: VisitedNodes
   ): Result<boolean> {
     if (!Array.isArray(input)) {
       return failure(new Error(`Value ${path}: '${input}' is not Array`))
     }
 
-    if (traversed.has(input)) {
+    let pair: TypeInstancePair = [this, input]
+
+    if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(input, input)
+    traversed.set(pair)
 
     const errors: Errors = []
     for (let i = 0; i < input.length; i++) {

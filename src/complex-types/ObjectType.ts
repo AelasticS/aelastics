@@ -20,6 +20,7 @@ import { OptionalTypeC } from '../common/Optional'
 import { TypeSchema } from '../common/TypeSchema'
 import { ArrayTypeC } from './Array'
 import { MapTypeC } from './Map'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 export interface Props {
   [key: string]: Any // TypeC<any>
@@ -94,13 +95,19 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return obj
   }
 
-  public validate(input: ObjectType<P>, path: Path = []): Result<boolean> {
+  validateCyclic(input: ObjectType<P>, path: Path = [], traversed: VisitedNodes): Result<boolean> {
     const result = isObject(input)
       ? success(input)
       : failureValidation('Value is not object', path, this.name, input)
     if (isFailure(result)) {
       return result
     }
+    let pair: TypeInstancePair = [this, input]
+
+    if (traversed.has(pair)) {
+      return success(true)
+    }
+
     let [keys, types, len] = this.getPropsInfo()
     const errors: ValidationError[] = []
     for (let i = 0; i < len; i++) {

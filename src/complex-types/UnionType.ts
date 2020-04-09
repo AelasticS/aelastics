@@ -16,6 +16,7 @@ import {
   success,
   validationError
 } from 'aelastics-result'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 type DtoUnionType<P extends Array<Any>> = {
   ref: InstanceReference
@@ -38,13 +39,15 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   validateCyclic(
     value: TypeOf<P[number]>,
     path: Path = [],
-    traversed: Map<any, any>
+    traversed: VisitedNodes
   ): Result<boolean> {
-    if (traversed.has(value)) {
+    let pair: TypeInstancePair = [this, value]
+
+    if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(this, this)
+    traversed.set(pair)
 
     for (let i = 0; i < this.baseType.length; i++) {
       const type = this.baseType[i]

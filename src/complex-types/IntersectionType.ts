@@ -6,6 +6,7 @@
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 type UnionToIntersection<U> = (U extends any
 ? (k: U) => void
@@ -29,13 +30,15 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   validateCyclic(
     value: UnionToIntersection<TypeOf<P[number]>>,
     path: Path = [],
-    traversed: Map<any, any>
+    traversed: VisitedNodes
   ): Result<boolean> {
-    if (traversed.has(value)) {
+    let pair: TypeInstancePair = [this, value]
+
+    if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(value, value)
+    traversed.set(pair)
 
     const err: Error[] = []
     for (const t of this.baseType) {

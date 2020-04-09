@@ -19,6 +19,7 @@ import {
 import { ObjectTypeC, Props } from './ObjectType'
 import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
 import { ComplexTypeC, InstanceReference } from './ComplexType'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 // export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralTypeC<Tag> }
 
@@ -48,15 +49,18 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   constructor(name: string, readonly discriminator: string, elements: P) {
     super(name, elements)
   }
-
   validateCyclic(
     value: TypeOf<P[keyof P]>,
     path: Path = [],
-    traversed: Map<any, any>
+    traversed: VisitedNodes
   ): Result<boolean> {
-    if (traversed.has(value)) {
+    let pair: TypeInstancePair = [this, value]
+
+    if (traversed.has(pair)) {
       return success(true)
     }
+
+    traversed.set(pair)
 
     const instance = value[this.discriminator]
     if (!instance) {
