@@ -11,7 +11,7 @@ const person = t.entity(
     name: t.string,
     age: t.number
   },
-  ['name'],
+  ['name'] as const,
   'person'
 )
 
