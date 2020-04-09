@@ -13,7 +13,7 @@ export class NullTypeC extends SimpleTypeC<null> {
     super('Null')
   }
 
-  validateCyclic(value: null, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+  validateCyclic(value: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
     if (value === null) {
       return success(true)
     } else {
@@ -21,7 +21,7 @@ export class NullTypeC extends SimpleTypeC<null> {
     }
   }
 
-  validate(value: null): Result<boolean> {
+  validate(value: any): Result<boolean> {
     if (value === null) {
       return success(true)
     } else {
