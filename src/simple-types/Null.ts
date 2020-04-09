@@ -3,23 +3,29 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
-import { Error, failure, Path, Result, success } from 'aelastics-result'
+import { Error, failure, Path, pathToString, Result, success } from 'aelastics-result'
+import { VisitedNodes } from '../common/VisitedNodes'
 
-export class NullTypeC extends SimpleTypeC<boolean> {
+export class NullTypeC extends SimpleTypeC<null> {
   public readonly _tag: 'Null' = 'Null'
+
   constructor() {
     super('Null')
   }
 
-  validateCyclic(value: any, path: Path = [], traversed: Map<any, any>): Result<boolean> {
-    return this.validate(value, path)
-  }
-
-  public validate(value: any, path: Path = []): Result<boolean> {
+  validateCyclic(value: null, path: Path = [], traversed: VisitedNodes): Result<boolean> {
     if (value === null) {
       return success(true)
     } else {
-      return failure(new Error(`Value ${path}: '${value}' must be null`))
+      return failure(new Error(`Value '${value}' at path:'${pathToString(path)}' is not null`))
+    }
+  }
+
+  validate(value: null): Result<boolean> {
+    if (value === null) {
+      return success(true)
+    } else {
+      return failure(new Error(`Value '${value}' is not null`))
     }
   }
 }

@@ -6,6 +6,7 @@
 import { Any, TypeC } from './Type'
 import { TypeSchema, ValidateStatusEnum } from './TypeSchema'
 import { failure, failures, Path, Result, success } from 'aelastics-result'
+import { VisitedNodes } from './VisitedNodes'
 
 export class LinkC extends TypeC<any> {
   public readonly schema: TypeSchema
@@ -18,7 +19,7 @@ export class LinkC extends TypeC<any> {
     this.path = path
   }
 
-  validateCyclic(value: any, path: Path = [], traversed: Map<any, any>): Result<boolean> {
+  validateCyclic(value: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
     return this.resolvedType
       ? this.resolvedType.validateCyclic(value, path, traversed)
       : failures([new Error('Resolved Type is udndefined')])

@@ -242,7 +242,7 @@ export abstract class TypeC<V, G = V, T = V> {
 export interface Any extends TypeC<any> {}
 */
 
-export type Any = TypeC<any>
+export type Any = TypeC<any, any, any>
 
 export type Type<V, G = V> = TypeC<V, G>
 

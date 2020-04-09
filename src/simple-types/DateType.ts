@@ -3,8 +3,9 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
-import { Error, failure, Result, Path, validationError } from 'aelastics-result'
+import { Error, failure, Result, Path, validationError, pathToString } from 'aelastics-result'
 import { ConversionContext } from '../common/Type'
+import { VisitedNodes } from '../common/VisitedNodes'
 
 export class DateTypeC extends SimpleTypeC<Date, string, string> {
   public readonly _tag: 'Date' = 'Date'
@@ -13,15 +14,18 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
     super('Date')
   }
 
-  validateCyclic(value: Date, path: Path = [], traversed: Map<any, any>): Result<boolean> {
-    return this.validate(value, path)
-  }
-
-  public validate(input: Date, path: Path = []): Result<boolean> {
+  validateCyclic(input: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
     if (input instanceof Date && !isNaN(input.getTime())) {
       return super.validate(input)
     }
-    return failure(new Error(`Value ${path}: '${input}' is not valid Date`))
+    return failure(new Error(`Value: '${input}' at path:${pathToString(path)} is not valid Date`))
+  }
+
+  public validate1(input: any): Result<boolean> {
+    if (input instanceof Date && !isNaN(input.getTime())) {
+      return super.validate(input)
+    }
+    return failure(new Error(`Value: '${input}' is not valid Date`))
   }
 
   fromDTOCyclic(value: string, path: Path, context: ConversionContext): Date | undefined {

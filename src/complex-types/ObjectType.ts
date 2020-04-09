@@ -118,7 +118,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         continue
       }
       const ak = input[k]
-      const validation = t.validate(ak, appendPath(path, k, t.name, ak))
+      const validation = t.validateCyclic(ak, appendPath(path, k, t.name, ak), traversed)
       if (isFailure(validation)) {
         errors.push(...(validation.errors as ValidationError[]))
       }

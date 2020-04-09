@@ -3,7 +3,8 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
-import { Error, failure, success, Path, Result } from 'aelastics-result'
+import { Error, failure, success, Path, Result, pathToString } from 'aelastics-result'
+import { VisitedNodes } from '../common/VisitedNodes'
 
 export type LiteralValue = string | number | boolean
 
@@ -12,6 +13,7 @@ export type LiteralValue = string | number | boolean
  */
 export class LiteralTypeC<V extends LiteralValue> extends SimpleTypeC<V> {
   public readonly _tag: 'Literal' = 'Literal'
+
   //   readonly _tag: 'LiteralTypeC' = 'LiteralTypeC';
   constructor(readonly value: V, name: string) {
     super(name)
@@ -22,16 +24,20 @@ export class LiteralTypeC<V extends LiteralValue> extends SimpleTypeC<V> {
     // });
   }
 
-  validateCyclic(value: V, path: Path = [], traversed: Map<any, any>): Result<boolean> {
-    return this.validate(value, path)
-  }
-
-  public validate(input: LiteralValue, path?: Path): Result<boolean> {
+  validateCyclic(input: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
     if (input === this.value) {
       return success(true)
     }
+    return failure(
+      new Error(`Value '${input}' at path:'${pathToString(path)}' is not valid Literal type`)
+    )
+  }
 
-    return failure(new Error(`Value ${path}: '${input}' is not valid Literal type`))
+  public validate(input: any): Result<boolean> {
+    if (input === this.value) {
+      return success(true)
+    }
+    return failure(new Error(`Value ${input}' is not valid Literal type`))
   }
 }
 

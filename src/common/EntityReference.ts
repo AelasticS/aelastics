@@ -19,6 +19,7 @@ import {
   validationError
 } from 'aelastics-result'
 import { ComplexTypeC, InstanceReference } from '../complex-types/ComplexType'
+import { VisitedNodes } from './VisitedNodes'
 
 // You can use const assertion (added in typescript 3.4)
 // https://stackoverflow.com/questions/55570729/how-to-limit-the-keys-of-an-object-to-the-strings-of-an-array-in-typescript
@@ -45,13 +46,10 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   }
 
   // value should be of type corresponding to the identifier of the referenced type
-
-  // TODO: Fix ValidateCyclic method to include visited instances
-
   validateCyclic(
     value: TypeOfKey<T>,
     path: Path = [],
-    traversed: Map<any, any>
+    traversed: VisitedNodes
   ): Success<boolean> | Failure {
     const result = isObject(value)
       ? success(value)
