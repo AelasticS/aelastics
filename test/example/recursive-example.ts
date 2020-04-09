@@ -2,7 +2,23 @@
  * Copyright (c) AelasticS 2019.
  */
 import * as t from '../../src/aelastics-types'
-import { DriverTypeLicences, DriverTypeProfession } from './types-example'
+import { AgeType, SexType, BirthPlaceType } from './types-example'
+
+const MySchema = t.schema('MySchema')
+
+const PersonType = t.object(
+  {
+    name: t.string,
+    age: t.optional(AgeType),
+    sex: SexType,
+    birthPlace: t.optional(BirthPlaceType),
+    parent: t.link(MySchema, 'PersonType'),
+    children: t.arrayOf(t.link(MySchema, 'PersonType'))
+  },
+  'PersonType',
+  MySchema
+)
+t.inverseProps(PersonType, 'parent', PersonType, 'children')
 
 export const secondLevelObject = t.object(
   {
