@@ -39,6 +39,7 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
 > {
   public readonly _tag: 'Map' = 'Map'
   public readonly keyType: K
+
   constructor(name: string, type: V, k: K) {
     super(name, type)
     this.keyType = k
@@ -88,52 +89,122 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     return errors.length ? failures(errors) : success(true)
   }
 
+  protected isMapRef(input: any): input is DtoMapType<K, V> {
+    if (input.ref && input.map) {
+      return true
+    }
+    return false
+  }
+
   makeInstanceFromDTO(
-    input: DtoMapType<K, V>,
+    input: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V>,
     path: Path,
     context: ConversionContext
   ): Map<TypeOf<K>, TypeOf<V>> {
-    const output: Map<K, TypeOf<V>> = new Map<TypeOf<K>, TypeOf<V>>()
-    if (!Array.isArray(input.map)) {
-      context.errors.push(
-        validationError(
-          `Value ${path}: '${input}' is not a map represented as an array`,
-          path,
-          this.name,
-          input
+    let inputMapArray: Array<[DtoTypeOf<K>, DtoTypeOf<V>]>
+    if (this.isMapRef(input)) {
+      if (!Array.isArray(input.map)) {
+        context.errors.push(
+          validationError('Input is not a map represented as an array', path, this.name, input)
         )
-      )
-      return output
+        return new Map<TypeOf<K>, TypeOf<V>>()
+      }
+      inputMapArray = input.map
+    } else {
+      inputMapArray = input
     }
-    for (let i = 0; i < input.map.length; i++) {
+    const output: Map<K, TypeOf<V>> = new Map<TypeOf<K>, TypeOf<V>>()
+    for (let i = 0; i < inputMapArray.length; i++) {
       let newPath = appendPath(path, `[${i}]`, this.name)
-      if (input.map[i].length !== 2) {
+      if (inputMapArray[i].length !== 2) {
         context.errors.push(validationError('Invalid map element', newPath, this.name))
         continue
       }
-      const k: K = input.map[i][0]
+      const k: K = inputMapArray[i][0]
       const keyConversion = this.keyType.fromDTOCyclic(k, newPath, context)
-      const x: V = input.map[i][1]
+      const x: V = inputMapArray[i][1]
       const valueConversion = this.baseType.fromDTOCyclic(x, newPath, context)
       output.set(keyConversion, valueConversion)
     }
+
     return output
   }
+
+  // makeInstanceFromDTO1(
+  //   input: DtoMapType<K, V>,
+  //   path: Path,
+  //   context: ConversionContext
+  // ): Map<TypeOf<K>, TypeOf<V>> {
+  //   const output: Map<K, TypeOf<V>> = new Map<TypeOf<K>, TypeOf<V>>()
+  //   if (!Array.isArray(input.map)) {
+  //     context.errors.push(
+  //       validationError(
+  //         `Value ${path}: '${input}' is not a map represented as an array`,
+  //         path,
+  //         this.name,
+  //         input
+  //       )
+  //     )
+  //     return output
+  //   }
+  //   for (let i = 0; i < input.map.length; i++) {
+  //     let newPath = appendPath(path, `[${i}]`, this.name)
+  //     if (input.map[i].length !== 2) {
+  //       context.errors.push(validationError('Invalid map element', newPath, this.name))
+  //       continue
+  //     }
+  //     const k: K = input.map[i][0]
+  //     const keyConversion = this.keyType.fromDTOCyclic(k, newPath, context)
+  //     const x: V = input.map[i][1]
+  //     const valueConversion = this.baseType.fromDTOCyclic(x, newPath, context)
+  //     output.set(keyConversion, valueConversion)
+  //   }
+  //   return output
+  // }
+  //
 
   makeDTOInstance(
     input: Map<TypeOf<K>, TypeOf<V>>,
     path: Path,
     context: ConversionContext
-  ): DtoMapType<K, V> {
-    const output: DtoMapType<K, V> = { ref: this.makeReference(input, context), map: [] }
+  ): Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V> {
+    let output: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V>
+    const outputMapArray: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> = []
     for (const [k, v] of input.entries()) {
-      let newPath = appendPath(path, `[${k}]`, this.name)
-      const keyConversion = this.keyType.toDTOCyclic(k, newPath, context)
-      const valueConversion = this.baseType.toDTOCyclic(v, newPath, context)
-      output.map.push([k, v])
+      const kConversion = this.baseType.toDTOCyclic(
+        k,
+        appendPath(path, `[${k}]`, this.name),
+        context
+      )
+      const vConversion = this.baseType.toDTOCyclic(
+        v,
+        appendPath(path, `[${v}]`, this.name),
+        context
+      )
+      outputMapArray.push([k, v])
+    }
+    if (context.options.isTreeDTO) {
+      output = outputMapArray
+    } else {
+      output = { ref: this.makeReference(input, context), map: outputMapArray }
     }
     return output
   }
+
+  // makeDTOInstance1(
+  //   input: Map<TypeOf<K>, TypeOf<V>>,
+  //   path: Path,
+  //   context: ConversionContext
+  // ): DtoMapType<K, V> {
+  //   const output: DtoMapType<K, V> = { ref: this.makeReference(input, context), map: [] }
+  //   for (const [k, v] of input.entries()) {
+  //     let newPath = appendPath(path, `[${k}]`, this.name)
+  //     const keyConversion = this.keyType.toDTOCyclic(k, newPath, context)
+  //     const valueConversion = this.baseType.toDTOCyclic(v, newPath, context)
+  //     output.map.push([k, v])
+  //   }
+  //   return output
+  // }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     traversed.set(this, this)
