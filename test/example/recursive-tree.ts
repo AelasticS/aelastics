@@ -2,7 +2,8 @@ import * as t from '../../src/aelastics-types'
 import { DirectorType } from './types-example'
 
 export const FileSystemSchema = t.schema('FileSystemSchema')
-export const Item = t.object({
+export const Item = t.object(
+  {
     name: t.string,
     creationDate: t.date,
     parentDirectory: t.optional(t.link(FileSystemSchema, 'Directory'))
@@ -11,14 +12,23 @@ export const Item = t.object({
   FileSystemSchema
 )
 
-export const File = t.subtype(Item, {
-  fileType: t.string
-}, 'File', FileSystemSchema)
+export const File = t.subtype(
+  Item,
+  {
+    fileType: t.string
+  },
+  'File',
+  FileSystemSchema
+)
 
-export const directory = t.subtype(Item, {
-  items: t.arrayOf(Item)
-}, 'Directory', FileSystemSchema)
-
+export const directory = t.subtype(
+  Item,
+  {
+    items: t.arrayOf(Item)
+  },
+  'Directory',
+  FileSystemSchema
+)
 
 export const myFileSystem: t.TypeOf<typeof File> = {
   name: 'My file',

@@ -57,10 +57,25 @@ export const dateValue: t.DtoTypeOf<typeof t.date> = '5'
 export const invDTO: t.DtoTreeTypeOf<typeof InvoiceType> = {
   id: 1,
   date: '2010-03-24',
-  items: [
-    [1, { id: 1, name: 'p1' }],
-    [2, { id: 1, name: '4' }]
-  ]
+  items: {
+    ref: { id: 1, category: 'Map', typeName: 'InvoiceType' },
+    map: [
+      [
+        1,
+        {
+          ref: { id: 2, category: 'Object', typeName: 'InvoiceItemType' },
+          object: { id: 1, name: 'p1' }
+        }
+      ],
+      [
+        2,
+        {
+          ref: { id: 2, category: 'Object', typeName: 'InvoiceItemType' },
+          object: { id: 2, name: 'p2' }
+        }
+      ]
+    ]
+  }
 }
 
 export const fullName: t.TypeOf<typeof FullNameType> = { name: 'Peter', familyName: 'Johnson' }
