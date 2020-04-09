@@ -1,6 +1,5 @@
 import * as t from '../../../src/aelastics-types'
 import { isSuccess } from 'aelastics-result'
-import { entity, TypeOfKey } from '../../../src/complex-types/ObjectType'
 
 describe('toDTO tests for object type', () => {
   const objectWithObjectPropertyType = t.object({
@@ -19,7 +18,7 @@ describe('toDTO tests for object type', () => {
       a: -5,
       b: 3
     }
-    const res = numbersObjectType.toDTO(o, [])
+    const res = numbersObjectType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value.a === -5 && res.value.b === 3).toBe(true)
     }
@@ -29,7 +28,7 @@ describe('toDTO tests for object type', () => {
       a: 5,
       b: 3
     }
-    const res = numbersObjectType.toDTO(o, [])
+    const res = numbersObjectType.toDTO(o)
     expect(isSuccess(res)).toBe(false)
   })
   it("Testing toDTO for some object which has 2 where first doesn't comply with restrictions (validation =false)", () => {
@@ -37,7 +36,7 @@ describe('toDTO tests for object type', () => {
       a: 5,
       b: 3
     }
-    const res = numbersObjectType.toDTO(o, [], false)
+    const res = numbersObjectType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         a: 5,
@@ -48,7 +47,7 @@ describe('toDTO tests for object type', () => {
   it('Testing toDTO for empty object', () => {
     const emptyObjectType = t.object({})
     const o: t.TypeOf<typeof emptyObjectType> = {}
-    const res = emptyObjectType.toDTO(o, [])
+    const res = emptyObjectType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value).toEqual({})
     }
@@ -61,7 +60,7 @@ describe('toDTO tests for object type', () => {
         b2: 'Af'
       }
     }
-    const res = objectWithObjectPropertyType.toDTO(o, [])
+    const res = objectWithObjectPropertyType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value.b.b2).toEqual('Af')
     }
@@ -74,7 +73,7 @@ describe('toDTO tests for object type', () => {
         b2: 'Af243 '
       }
     }
-    const res = objectWithObjectPropertyType.toDTO(o, [])
+    const res = objectWithObjectPropertyType.toDTO(o)
     expect(isSuccess(res)).toBe(false)
   })
   it("Testing toDTO for object with  object property whose property doesn't comply with restrictions (validation =false)", () => {
@@ -85,15 +84,15 @@ describe('toDTO tests for object type', () => {
         b2: 'Af243 '
       }
     }
-    const res = objectWithObjectPropertyType.toDTO(o, [], false)
+    const res = objectWithObjectPropertyType.toDTO(o)
     expect(isSuccess(res)).toBe(true)
   })
   test('object with keys', () => {
     const ident = ['name', 'id'] as const
-    let ok = entity({ name: t.string, id: t.number }, ident)
+    let ok = t.entity({ name: t.string, id: t.number }, ident)
     let oks = t.subtype(ok, { ekstra: t.number })
-    let insKey: TypeOfKey<typeof ok> = { name: 'ime', id: 3 }
-    let subtypeKey: TypeOfKey<typeof oks> = { name: 'ime', id: 8 }
+    let insKey: t.TypeOfKey<typeof ok> = { name: 'ime', id: 3 }
+    let subtypeKey: t.TypeOfKey<typeof oks> = { name: 'ime', id: 8 }
     let s: t.TypeOf<typeof oks> = { id: 1, name: 's', ekstra: 5 }
     let s2: t.DtoTypeOfKey<typeof oks> = { id: 1, name: 's' }
   })

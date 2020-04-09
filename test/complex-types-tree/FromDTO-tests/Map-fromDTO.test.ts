@@ -19,7 +19,7 @@ describe('fromDTO tests for Map', () => {
         }
       ]
     ]
-    let map = examples.MapofPeople.fromDTO(DTOObject, [])
+    let map = examples.MapofPeople.fromDTO(DTOObject as any)
     expect(isSuccess(map)).toBe(true)
   })
   it("testing fromDTO with some values that don't comply with restrictions (name)", () => {
@@ -39,7 +39,7 @@ describe('fromDTO tests for Map', () => {
         }
       ]
     ]
-    let map = examples.MapofPeople.fromDTO(DTOObject, [])
+    let map = examples.MapofPeople.fromDTO(DTOObject as any)
     if (isFailure(map)) {
       let s = examples.errorMessages(map)
       expect(s).toEqual('Expected [0]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n')
@@ -86,7 +86,7 @@ describe('fromDTO tests for Map', () => {
         }
       ]
     ]
-    let map = examples.MapOfCountries.fromDTO(DTOObject, [])
+    let map = examples.MapOfCountries.fromDTO(DTOObject as any)
     expect(isSuccess(map)).toBe(true)
   })
 
@@ -130,7 +130,7 @@ describe('fromDTO tests for Map', () => {
         }
       ]
     ]
-    let map = examples.MapOfCountries.fromDTO(DTOObject, [])
+    let map = examples.MapOfCountries.fromDTO(DTOObject as any)
     if (isFailure(map)) {
       let s = examples.errorMessages(map)
       expect(s).toEqual(

@@ -23,7 +23,7 @@ describe('Map tests', () => {
       [1, { name: 'Ivan34', age: 21 }],
       [2, { name: 'Stefan', age: 33 }]
     ])
-    let f = examples.MapofPeople.validate(people, [])
+    let f = examples.MapofPeople.validate(people)
     if (isFailure(f)) {
       let s = examples.errorMessages(f)
       expect(s).toEqual('Expected [1]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n')
@@ -34,7 +34,7 @@ describe('Map tests', () => {
       [1, { name: 'Ivan34', age: 21.3 }],
       [2, { name: 'Stefan', age: 33 }]
     ])
-    let f = examples.MapofPeople.validate(people, [])
+    let f = examples.MapofPeople.validate(people)
     if (isFailure(f)) {
       let s = examples.errorMessages(f)
       expect(s).toEqual(
@@ -47,14 +47,14 @@ describe('Map tests', () => {
       [1, { name: 'Ivan', age: 21, married: true }],
       [2, { name: 'Stefan', age: 33 }]
     ])
-    expect(isSuccess(examples.MapofPeople.validate(people, []))).toBe(true)
+    expect(isSuccess(examples.MapofPeople.validate(people))).toBe(true)
   })
   it('Testing if  map whose key is not integer is of type examples.MapofPeople', () => {
     let people = new Map([
       [1, { name: 'Ivan', age: 21, married: true }],
       [2.3, { name: 'Stefan', age: 33 }]
     ])
-    expect(isSuccess(examples.MapofPeople.validate(people, []))).toBe(false)
+    expect(isSuccess(examples.MapofPeople.validate(people))).toBe(false)
   })
   it('Testing if regular map is of type examples.MapOfCountries', () => {
     let countries = new Map([
@@ -96,7 +96,7 @@ describe('Map tests', () => {
         }
       ]
     ])
-    expect(isSuccess(examples.MapOfCountries.validate(countries, []))).toBe(true)
+    expect(isSuccess(examples.MapOfCountries.validate(countries))).toBe(true)
   })
 
   it("Testing if regular map whose values don't comply with restrictions is of type examples.MapOfCountries", () => {
@@ -121,7 +121,7 @@ describe('Map tests', () => {
         }
       ]
     ])
-    let f = examples.MapOfCountries.validate(countries, [])
+    let f = examples.MapOfCountries.validate(countries)
     if (isFailure(f)) {
       let s = examples.errorMessages(f)
       expect(s).toEqual(
@@ -158,6 +158,6 @@ describe('Map tests', () => {
         }
       ]
     ])
-    expect(isSuccess(examples.MapOfCountries.validate(countries, []))).toBe(true)
+    expect(isSuccess(examples.MapOfCountries.validate(countries))).toBe(true)
   })
 })

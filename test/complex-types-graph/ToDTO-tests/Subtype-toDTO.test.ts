@@ -16,7 +16,7 @@ describe('Testing toDTO for Subtype', () => {
       a: 5,
       b: 'something'
     }
-    const res = numbersAndStringObjectType.toDTO(o, [])
+    const res = numbersAndStringObjectType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value.a === 5 && res.value.b === 'something').toBe(true)
     }
@@ -27,7 +27,7 @@ describe('Testing toDTO for Subtype', () => {
       a: -5,
       b: 'something'
     }
-    const res = numbersAndStringObjectType.toDTO(o, [])
+    const res = numbersAndStringObjectType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value.a === -5 && res.value.b === 'something').toBe(false)
     }
@@ -38,7 +38,7 @@ describe('Testing toDTO for Subtype', () => {
       a: 5,
       bb: 'something'
     }
-    const res = numbersAndStringObjectType.toDTO((o as unknown) as any, [])
+    const res = numbersAndStringObjectType.toDTO((o as unknown) as any)
     if (isSuccess(res)) {
       expect(res.value.a === 5 && res.value.b === 'something').toBe(false)
     }
@@ -50,7 +50,7 @@ describe('Testing toDTO for Subtype', () => {
       b: 'something',
       c: 10
     }
-    const res = numbersAndStringObjectType.toDTO(o, [])
+    const res = numbersAndStringObjectType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value.a === 5 && res.value.b === 'something').toBe(true)
     }
@@ -61,7 +61,7 @@ describe('Testing toDTO for Subtype', () => {
       name: 'John',
       university: 'Stanford'
     }
-    const res = StudentType.toDTO(Student, [])
+    const res = StudentType.toDTO(Student)
     if (isSuccess(res)) {
       expect(res.value.name === 'John' && res.value.university === 'Stanford').toBe(true)
     }
@@ -72,7 +72,7 @@ describe('Testing toDTO for Subtype', () => {
       name: 'John',
       university: 5
     }
-    const res = StudentType.toDTO((Student as unknown) as any, [])
+    const res = StudentType.toDTO((Student as unknown) as any)
     if (isSuccess(res)) {
       expect(res.value.name === 'John' && res.value.university === 'Stanford').toBe(false)
     }
@@ -82,7 +82,7 @@ describe('Testing toDTO for Subtype', () => {
     const Student = {
       name: 'John'
     }
-    const res = StudentType.toDTO((Student as unknown) as any, [])
+    const res = StudentType.toDTO((Student as unknown) as any)
     if (isSuccess(res)) {
       expect(res.value.name === 'John' && res.value.university === 'Stanford').toBe(false)
     }

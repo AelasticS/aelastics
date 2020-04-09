@@ -4,26 +4,20 @@ import * as t from '../../../src/aelastics-types'
 
 describe('Testing fromDTO method of ObjectType', () => {
   it('should be valid fromDTO for examples.DateType', () => {
-    let d = examples.DateType.fromDTO(
-      {
-        day: 10,
-        month: 5,
-        year: 2000
-      },
-      []
-    )
+    let d = examples.DateType.fromDTO({
+      day: 10,
+      month: 5,
+      year: 2000
+    })
 
     expect(isSuccess(d)).toBe(true)
   })
   it('should not be valid fromDTO for examples.DateType', () => {
-    let d = examples.DateType.fromDTO(
-      {
-        day: 10,
-        month: 15,
-        year: 2000
-      },
-      []
-    )
+    let d = examples.DateType.fromDTO({
+      day: 10,
+      month: 15,
+      year: 2000
+    })
 
     expect(isSuccess(d)).toBe(false)
   })
@@ -33,14 +27,11 @@ describe('Testing fromDTO method of ObjectType', () => {
    */
 
   it('should be valid error message fromDTO for invalid examples.DateType object', () => {
-    let d = examples.DateType.fromDTO(
-      {
-        day: 10,
-        month: 15,
-        year: 2000
-      },
-      []
-    )
+    let d = examples.DateType.fromDTO({
+      day: 10,
+      month: 15,
+      year: 2000
+    })
     if (isFailure(d)) {
       expect(d.errors).toEqual([
         {
@@ -86,7 +77,7 @@ describe('Testing fromDTO method of ObjectType', () => {
       }
     }
 
-    let emp = examples.EmployeeType.fromDTO(e, [])
+    let emp = examples.EmployeeType.fromDTO(e as any)
     if (isFailure(emp)) {
       expect(emp.errors).toEqual([
         {
@@ -121,7 +112,7 @@ describe('Testing fromDTO method of ObjectType', () => {
       }
     }
 
-    let emp = examples.EmployeeType.fromDTO(e, [])
+    let emp = examples.EmployeeType.fromDTO(e as any)
     if (isFailure(emp)) {
       expect(emp.errors).not.toEqual([
         {
@@ -155,7 +146,7 @@ describe('Testing fromDTO method of ObjectType', () => {
       }
     }
 
-    let emp = examples.EmployeeType.fromDTO(e, [])
+    let emp = examples.EmployeeType.fromDTO(e as any)
     if (isFailure(emp)) {
       let s = examples.errorMessages(emp)
       expect(s).toEqual(
@@ -173,7 +164,7 @@ describe('Testing fromDTO method of ObjectType', () => {
   it('should be valid fromDTO for empty Object', () => {
     let emptyObj = t.object({})
 
-    let emp = emptyObj.fromDTO({}, [])
+    let emp = emptyObj.fromDTO({})
     expect(isSuccess(emp)).toBe(true)
   })
 })

@@ -7,21 +7,21 @@ import { london } from '../../example/instances-example'
 describe('ToDTO tests for union type', () => {
   it('Testing toDTO for grade 7 for gradeType', () => {
     const g: t.TypeOf<typeof examples.gradeType> = 7
-    const res = examples.gradeType.toDTO(g, [])
+    const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
       expect(res.value).toBe(7)
     }
   })
   it('Testing toDTO for grade failed for gradeType', () => {
     const g: t.TypeOf<typeof examples.gradeType> = 'failed'
-    const res = examples.gradeType.toDTO(g, [])
+    const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
       expect(res.value).toBe('failed')
     }
   })
   it('Testing toDTO for grade 11 for gradeType', () => {
     const g: t.TypeOf<typeof examples.gradeType> = 11
-    const res = examples.gradeType.toDTO(g, [])
+    const res = examples.gradeType.toDTO(g)
     expect(isSuccess(res)).toBe(false)
   })
 
@@ -30,7 +30,7 @@ describe('ToDTO tests for union type', () => {
       profession: 'Doctor',
       specialization: 'Cardiologist'
     }
-    const res = OccupationType.toDTO(Doctor, [])
+    const res = OccupationType.toDTO(Doctor)
     if (isSuccess(res)) {
       expect(res.value.profession === 'Doctor' && res.value.specialization === 'Cardiologist').toBe(
         true
@@ -44,7 +44,7 @@ describe('ToDTO tests for union type', () => {
       specialization: 'Cardiologist',
       age: 22
     }
-    const res = OccupationType.toDTO((Doctor as unknown) as any, [])
+    const res = OccupationType.toDTO((Doctor as unknown) as any)
     if (isSuccess(res)) {
       expect(res.value.profession === 'Doctor' && res.value.specialization === 'Cardiologist').toBe(
         true
@@ -58,7 +58,7 @@ describe('ToDTO tests for union type', () => {
       specialization: 'Dentist',
       age: 22
     }
-    const res = OccupationType.toDTO((Doctor as unknown) as any, [])
+    const res = OccupationType.toDTO((Doctor as unknown) as any)
     expect(isSuccess(res)).toBe(false)
   })
 
@@ -71,7 +71,7 @@ describe('ToDTO tests for union type', () => {
       occupation: { profession: 'Driver', licences: ['B', 'C'] },
       children: [{ name: 'Peter' }, { name: 'Helen' }]
     }
-    const res = WorkerType.toDTO(john, [])
+    const res = WorkerType.toDTO(john)
     if (isSuccess(res)) {
       expect(res.value.occupation).toBe({ profession: 'Driver', licences: ['B', 'C'] })
     }
@@ -86,7 +86,7 @@ describe('ToDTO tests for union type', () => {
       occupation: { profession: 'Driver1', licences: ['B', 'C'] },
       children: [{ name: 'Peter' }, { name: 'Helen' }]
     }
-    const res = WorkerType.toDTO((john as unknown) as any, [])
+    const res = WorkerType.toDTO((john as unknown) as any)
 
     expect(isSuccess(res)).toBe(false)
   })

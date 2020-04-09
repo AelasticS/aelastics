@@ -11,7 +11,7 @@ export type LiteralValue = string | number | boolean
 /**
  *  Literal TypeC
  */
-export class LiteralTypeC<V extends LiteralValue> extends SimpleTypeC<V> {
+export class LiteralTypeC<V extends LiteralValue> extends SimpleTypeC<V, any, any> {
   public readonly _tag: 'Literal' = 'Literal'
 
   //   readonly _tag: 'LiteralTypeC' = 'LiteralTypeC';

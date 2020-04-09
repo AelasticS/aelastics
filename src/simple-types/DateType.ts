@@ -21,7 +21,7 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
     return failure(new Error(`Value: '${input}' at path:${pathToString(path)} is not valid Date`))
   }
 
-  public validate1(input: any): Result<boolean> {
+  public validate(input: any): Result<boolean> {
     if (input instanceof Date && !isNaN(input.getTime())) {
       return super.validate(input)
     }

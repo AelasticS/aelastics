@@ -48,7 +48,7 @@ describe('toDTO test cases for TaggedUnion', () => {
       masterDegree: true,
       worksAt: ''
     }
-    const res = examples.employeeType.toDTO(doc, [], false)
+    const res = examples.employeeType.toDTO(doc)
     expect(isSuccess(res)).toBe(true)
   })
   it('', () => {

@@ -6,7 +6,7 @@ describe('ObjectTest', () => {
   it("Testing if empty object is 'empty object'", () => {
     const type = t.object({}, 'empty')
     let o = {}
-    expect(isSuccess(type.validate(o, []))).toBe(true)
+    expect(isSuccess(type.validate(o))).toBe(true)
   })
 
   // failed
@@ -15,30 +15,30 @@ describe('ObjectTest', () => {
     let o = {
       a: t.number
     }
-    expect(isSuccess(type.validate(o, []))).toBe(true)
+    expect(isSuccess(type.validate(o))).toBe(true)
   })
 
   it("Testing if null  is 'empty object'", () => {
     const type = t.object({}, 'empty')
     let o = null
-    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>))).toBe(false)
   })
   it("Testing if undefined is 'empty object'", () => {
     const type = t.object({}, 'empty')
     let o = undefined
-    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>))).toBe(false)
   })
   // true
   it("Testing if empty array is 'empty object'", () => {
     const type = t.object({}, 'empty')
     let o: any = []
-    expect(isSuccess(type.validate(o, []))).toBe(true)
+    expect(isSuccess(type.validate(o))).toBe(true)
   })
 
   it("Testing if function is 'empty object'", () => {
     const type = t.object({}, 'empty')
     let o = (a: number) => 2 * a
-    expect(isSuccess(type.validate(o, []))).toBe(false)
+    expect(isSuccess(type.validate(o))).toBe(false)
   })
 
   it('should be valid Object with property Number', () => {
@@ -51,7 +51,7 @@ describe('ObjectTest', () => {
     const o = {
       a: 25
     }
-    expect(isSuccess(type.validate(o, []))).toBe(true)
+    expect(isSuccess(type.validate(o))).toBe(true)
   })
   it('should not be valid Object with property Number in case of different field name', () => {
     const type = t.object(
@@ -63,7 +63,7 @@ describe('ObjectTest', () => {
     const o = {
       b: 25
     }
-    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>))).toBe(false)
   })
   it('testing if object with literal property is valid', () => {
     const type = t.object({
@@ -72,7 +72,7 @@ describe('ObjectTest', () => {
     let o: t.TypeOf<typeof type> = {
       a: 'doctor'
     }
-    expect(isSuccess(type.validate(o, []))).toBe(true)
+    expect(isSuccess(type.validate(o))).toBe(true)
   })
   it("should not be valid Object with property Number in case of 'undefined' value", () => {
     const type = t.object(
@@ -84,7 +84,7 @@ describe('ObjectTest', () => {
     const o = {
       a: undefined
     }
-    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>))).toBe(false)
   })
   it('should not be valid Object with property String in case of empty object', () => {
     const type = t.object(
@@ -94,7 +94,7 @@ describe('ObjectTest', () => {
       'stringObject'
     )
     const o = {}
-    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>))).toBe(false)
   })
   it('should be valid Object with two String properties', () => {
     const type = t.object(
@@ -122,7 +122,7 @@ describe('ObjectTest', () => {
     const o = {
       a: '25'
     }
-    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>, []))).toBe(false)
+    expect(isSuccess(type.validate((o as unknown) as t.types.ObjectType<any>))).toBe(false)
   })
 
   it('should be valid Object with two String properties and some constraints', () => {
@@ -137,7 +137,7 @@ describe('ObjectTest', () => {
       a: 'afrg',
       b: 'aSfgvic'
     }
-    expect(isSuccess(type.validate(o, []))).toBe(true)
+    expect(isSuccess(type.validate(o))).toBe(true)
   })
   it('should not be valid Object with two String properties and some constraints', () => {
     const type = t.object(
@@ -151,7 +151,7 @@ describe('ObjectTest', () => {
       a: 'afrg',
       b: 'aSfgv'
     }
-    expect(isSuccess(type.validate(o, []))).toBe(false)
+    expect(isSuccess(type.validate(o))).toBe(false)
   })
 
   it('should be valid Object with two Number properties and validation', () => {
@@ -171,7 +171,7 @@ describe('ObjectTest', () => {
       a: 8,
       b: 4
     }
-    expect(isSuccess(type.validate(o, []))).toBe(true)
+    expect(isSuccess(type.validate(o))).toBe(true)
   })
   it('should not be valid Object with two Number properties and validation', () => {
     const type = t
@@ -191,7 +191,7 @@ describe('ObjectTest', () => {
       a: 3,
       b: 2
     }
-    expect(isSuccess(type.validate(o, []))).toBe(false)
+    expect(isSuccess(type.validate(o))).toBe(false)
   })
 
   it('should be valid Object type', () => {
@@ -215,7 +215,7 @@ describe('ObjectTest', () => {
       },
       postalCode: 11000
     }
-    expect(isSuccess(type.validate(o, []))).toBe(true)
+    expect(isSuccess(type.validate(o))).toBe(true)
   })
 
   it('should be valid example of EmployeeType object', () => {
@@ -232,7 +232,7 @@ describe('ObjectTest', () => {
         year: 1997
       }
     }
-    expect(isSuccess(examples.EmployeeType.validate(emp, []))).toBe(true)
+    expect(isSuccess(examples.EmployeeType.validate(emp))).toBe(true)
   })
 
   it('should not be valid examples.EmployeeType object in case of invalid value for month', () => {
@@ -249,7 +249,7 @@ describe('ObjectTest', () => {
         year: 1996
       }
     }
-    let f = examples.EmployeeType.validate(emp, [])
+    let f = examples.EmployeeType.validate(emp)
     if (isFailure(f)) {
       let s = errorMessages(f)
       expect(s).toEqual(
@@ -272,7 +272,7 @@ describe('ObjectTest', () => {
         year: 1996
       }
     }
-    let f = examples.EmployeeType.validate(emp, [])
+    let f = examples.EmployeeType.validate(emp)
     if (isFailure(f)) {
       let s = errorMessages(f)
       expect(s).toEqual(
@@ -294,7 +294,7 @@ describe('ObjectTest', () => {
         year: 1996
       }
     }
-    let f = examples.EmployeeType.validate(emp, [])
+    let f = examples.EmployeeType.validate(emp)
     expect(isSuccess(f)).toBe(false)
   })
 
@@ -312,7 +312,7 @@ describe('ObjectTest', () => {
         year: 1996
       }
     }
-    let f = examples.EmployeeType.validate(emp, [])
+    let f = examples.EmployeeType.validate(emp)
     if (isFailure(f)) {
       let s = errorMessages(f)
       expect(s).toEqual(
@@ -363,7 +363,7 @@ describe('ObjectTest', () => {
       index: '122/2016'
     }
 
-    expect(isSuccess(examples.studentType.validate(student, []))).toBe(true)
+    expect(isSuccess(examples.studentType.validate(student))).toBe(true)
   })
 
   it('should not be valid examples.studentType object in case of invalid entrance year', () => {
@@ -406,7 +406,7 @@ describe('ObjectTest', () => {
       index: '0122/2016'
     }
 
-    let f = examples.studentType.validate(student, [])
+    let f = examples.studentType.validate(student)
 
     expect(isSuccess(f)).toBe(false)
   })
@@ -451,7 +451,7 @@ describe('ObjectTest', () => {
       index: '122/2016'
     }
 
-    let f = examples.studentType.validate(student, [])
+    let f = examples.studentType.validate(student)
     // if(isFailure(f)){
     //     //let s=errorMessages(f);
     //     expect(f.errors).toEqual(
@@ -501,7 +501,7 @@ describe('ObjectTest', () => {
       index: '558/2015'
     }
 
-    let f = examples.studentType.validate(student, [])
+    let f = examples.studentType.validate(student)
     expect(isSuccess(f)).toBe(false)
   })
 
@@ -545,7 +545,7 @@ describe('ObjectTest', () => {
       index: '5/2015'
     }
 
-    expect(isSuccess(examples.studentType.validate(student, []))).toBe(false)
+    expect(isSuccess(examples.studentType.validate(student))).toBe(false)
   })
 })
 
