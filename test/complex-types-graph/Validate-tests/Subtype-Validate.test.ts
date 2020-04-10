@@ -13,7 +13,7 @@ describe('Subtype test', () => {
       age: 22,
       average: 7
     }
-    let f = examples.student.validate(s, [])
+    let f = examples.student.validate(s)
     if (isFailure(f)) {
       expect(f.errors).toEqual([])
     }
@@ -24,7 +24,7 @@ describe('Subtype test', () => {
       age: 22.5,
       average: 7
     }
-    expect(isSuccess(examples.student.validate(s, []))).toBe(false)
+    expect(isSuccess(examples.student.validate(s))).toBe(false)
   })
 
   it('Testing if examples.professor object who has 2 field with same name is of type examples.professor. We consider only subtype restrictions', () => {
@@ -33,7 +33,7 @@ describe('Subtype test', () => {
       age: 40,
       title: 'Phd'
     }
-    expect(isSuccess(examples.professor.validate(s, []))).toBe(false)
+    expect(isSuccess(examples.professor.validate(s))).toBe(false)
   })
   it('Testing if examples.professor object who has 2 field with same name is of type examples.professor. We consider only subtype restrictions', () => {
     let s = {
@@ -41,7 +41,7 @@ describe('Subtype test', () => {
       age: 40,
       title: 'Phd'
     }
-    expect(isSuccess(examples.professor.validate(s, []))).toBe(true)
+    expect(isSuccess(examples.professor.validate(s))).toBe(true)
   })
   it('Testing if examples.professor object who has 2 field with same name is of type examples.professor.We consider all restrictions', () => {
     let s = {
@@ -49,7 +49,7 @@ describe('Subtype test', () => {
       age: 40,
       title: 'Phd'
     }
-    expect(isSuccess(examples.professor.validate(s, []))).toBe(true)
+    expect(isSuccess(examples.professor.validate(s))).toBe(true)
   })
   // compiler says type number is not compatibile with type string&number
   it('Testing if worker is subtype of person (worker has field age of type string), it is false because we consider subtype restrictions ', () => {
@@ -57,6 +57,6 @@ describe('Subtype test', () => {
       name: 'Zika',
       age: 22
     }
-    expect(isSuccess(examples.worker.validate((s as unknown) as any, []))).toBe(false)
+    expect(isSuccess(examples.worker.validate((s as unknown) as any))).toBe(false)
   })
 })

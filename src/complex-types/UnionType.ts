@@ -17,6 +17,7 @@ import {
   ValidationError,
   validationError
 } from 'aelastics-result'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { UnionType } from 'typedoc/dist/lib/models'
 import { types } from '../aelastics-types'
 import isUnionType = types.isUnionType
@@ -40,10 +41,23 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     super(name, baseType)
   }
 
-  public validate(value: TypeOf<P[number]>, path: Path = []): Result<boolean> {
+  validateCyclic(
+    value: TypeOf<P[number]>,
+    path: Path = [],
+    traversed: VisitedNodes
+  ): Result<boolean> {
+    let pair: TypeInstancePair = [this, value]
+
+    if (traversed.has(pair)) {
+      return success(true)
+    }
+
+    traversed.set(pair)
+
     for (let i = 0; i < this.baseType.length; i++) {
       const type = this.baseType[i]
-      let res = type.validate(value, path)
+
+      let res = type.validateCyclic(value, path, traversed)
       if (isSuccess(res)) {
         return res
       }

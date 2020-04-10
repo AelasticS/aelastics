@@ -4,6 +4,8 @@
  */
 
 import {
+  Errors,
+  Error,
   failure,
   failures,
   isSuccess,
@@ -15,6 +17,7 @@ import {
   isFailure,
   ValidationError
 } from 'aelastics-result'
+import { VisitedNodes } from './VisitedNodes'
 
 export type Predicate<T> = (value: T) => boolean
 
@@ -96,17 +99,18 @@ export abstract class TypeC<V, G = V, T = V> {
   }
 
   /** Custom type guard - implemented using the validation  function */
-  public readonly is: Is<V> = (v: any): v is V => isSuccess(this.validate(v, []))
+  public readonly is: Is<V> = (v: any): v is V => isSuccess(this.validate(v))
 
   /**
    * Validation functions - validates the shape structure, field values and all constrains (validators)
    *  The default implementation just check all validators. Should be overridden for more complex use cases.
    */
 
-  public validate(value: V, path: Path = []): Result<boolean> {
-    if (typeof value === 'undefined') {
-      return failure(new Error(`Value ${path}: '${value}' is undefined`))
-    }
+  public validate(value: V): Result<boolean> {
+    return this.validateCyclic(value, [], new VisitedNodes())
+  }
+
+  public validateCyclic(value: V, path: Path = [], traversed: VisitedNodes): Result<boolean> {
     return this.checkValidators(value, path) // (this as TypeC<any>).checkValidators(input, []);
   }
 
@@ -128,9 +132,19 @@ export abstract class TypeC<V, G = V, T = V> {
     if (errs.length > 0) {
       return failures(errs)
     } else {
-      const resVal = this.validate(res as V, [])
+      const resVal = this.validate(res as V)
       return isSuccess(resVal) ? success<V>(res as V) : resVal
     }
+  }
+
+  public fromDTOtree(value: T, options: ConversionOptions = defaultConversionOptions): Result<V> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: true } }
+    return this.fromDTO(value, options) as Result<V>
+  }
+
+  public fromDTOgraph(value: G, options: ConversionOptions = defaultConversionOptions): Result<V> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: false } }
+    return this.fromDTO(value, options) as Result<V>
   }
 
   /** @internal */
@@ -150,7 +164,7 @@ export abstract class TypeC<V, G = V, T = V> {
    */
   public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<T | G> {
     if (options.validate) {
-      let res = this.validate(value, [])
+      let res = this.validate(value)
       if (isFailure(res)) {
         return failures(res.errors)
       }
@@ -167,6 +181,16 @@ export abstract class TypeC<V, G = V, T = V> {
     } else {
       return success(res)
     }
+  }
+
+  public toDTOtree(value: V, options: ConversionOptions = defaultConversionOptions): Result<T> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: true } }
+    return this.toDTO(value, options) as Result<T>
+  }
+
+  public toDTOgraph(value: V, options: ConversionOptions = defaultConversionOptions): Result<G> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: false } }
+    return this.toDTO(value, options) as Result<G>
   }
 
   /** @internal */
@@ -194,13 +218,6 @@ export abstract class TypeC<V, G = V, T = V> {
     }
 
     return hasError ? failures(errs) : success(true)
-  }
-
-  public get Required(): this {
-    return this.addValidator({
-      message: (value, label) => `Value of ${label} is required`,
-      predicate: value => value === undefined
-    })
   }
 
   public derive(name: string = `derived from ${this.name}`): this {
@@ -245,7 +262,7 @@ export abstract class TypeC<V, G = V, T = V> {
 export interface Any extends TypeC<any> {}
 */
 
-export type Any = TypeC<any>
+export type Any = TypeC<any, any, any>
 
 export type Type<V, G = V> = TypeC<V, G>
 

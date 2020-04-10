@@ -4,13 +4,13 @@ import { arrayOfNumbers, arrayOfPeople, errorMessages } from '../testing-types'
 describe('ToDTO tests for Array type', () => {
   it('should be valid toDTO for arrayOfNumbers', () => {
     const a = [15, 12, 25, 60]
-    const res = arrayOfNumbers.toDTO(a, [])
+    const res = arrayOfNumbers.toDTO(a)
     expect(isSuccess(res)).toBe(true)
   })
 
   it('should be valid toDTO value for arrayOfNumbers with satisfied constraints', () => {
     const a = [15, 12, 25, 60]
-    const res = arrayOfNumbers.toDTO(a, [])
+    const res = arrayOfNumbers.toDTO(a)
     if (isSuccess(res)) {
       expect(res.value).toEqual([15, 12, 25, 60])
     }
@@ -18,7 +18,7 @@ describe('ToDTO tests for Array type', () => {
 
   it('should not be valid toDTO for arrayOfNumbers in case of unsatisfied constraints', () => {
     const a = [-15, 12, 25, 60]
-    const res = arrayOfNumbers.toDTO(a, [])
+    const res = arrayOfNumbers.toDTO(a)
     expect(isSuccess(res)).toBe(false)
   })
 
@@ -31,7 +31,7 @@ describe('ToDTO tests for Array type', () => {
         age: 29
       }
     ]
-    const res = arrayOfPeople.toDTO(a, [])
+    const res = arrayOfPeople.toDTO(a)
     if (isSuccess(res)) {
       expect(res.value).toEqual([
         { name: 'Nick', age: 25 },
@@ -54,7 +54,7 @@ describe('ToDTO tests for Array type', () => {
       },
       { name: 'Tim', age: 29 }
     ]
-    const res = arrayOfPeople.toDTO(a, [])
+    const res = arrayOfPeople.toDTO(a)
     if (isSuccess(res)) {
       expect(res.value).toEqual([
         { name: 'Nick', age: 25 },
@@ -76,7 +76,7 @@ describe('ToDTO tests for Array type', () => {
         age: 29
       }
     ]
-    const res = arrayOfPeople.toDTO(a, [])
+    const res = arrayOfPeople.toDTO(a)
     if (isFailure(res)) {
       expect(errorMessages(res)).toEqual(
         'Expected [1]:undefined/name:Astrid121 to be alphabetical, got `Astrid121`\n'
@@ -93,7 +93,7 @@ describe('ToDTO tests for Array type', () => {
         age: 29
       }
     ]
-    const res = arrayOfPeople.toDTO(a, [], false)
+    const res = arrayOfPeople.toDTO(a)
     expect(isSuccess(res)).toBe(true)
   })
 })

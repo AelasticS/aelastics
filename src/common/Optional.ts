@@ -23,7 +23,7 @@ export class OptionalTypeC<T extends TypeC<any>> extends TypeC<
     if (typeof value === 'undefined') {
       return success(true)
     } else {
-      return this.base.validate(value, path)
+      return this.base.validate(value)
     }
   }
 

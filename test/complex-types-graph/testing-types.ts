@@ -222,10 +222,13 @@ export const EmployeeUnionType = t.unionOf([profesorType, janitorType], 'employe
 export const MapOfPeopleKey = t.number.derive('integer').integer
 export const MapOfPeoplePropName = t.string.derive('name').alphabetical
 export const MapOfPeoplePropAge = t.number.derive('age').integer
-export const MapOfPeopleValue = t.object({
-  name: MapOfPeoplePropName,
-  age: MapOfPeoplePropAge
-})
+export const MapOfPeopleValue = t.object(
+  {
+    name: MapOfPeoplePropName,
+    age: MapOfPeoplePropAge
+  },
+  'person'
+)
 export const MapofPeople = t.mapOf(MapOfPeopleKey, MapOfPeopleValue, 'people').addValidator({
   message: () => `Expected keys to be successive numbers`,
   predicate: value => {
@@ -246,14 +249,23 @@ export const MapOfCountries = t.mapOf(
       name: t.string.derive('name').alphabetical.nonEmpty.maxLength(20),
       cities: t.mapOf(
         t.number,
-        t.object({
-          name: t.string.derive('name').alphabetical.maxLength(20),
-          languages: t.mapOf(t.number, t.string.derive('name').alphabetical.nonEmpty)
-        })
+        t.object(
+          {
+            name: t.string.derive('name').alphabetical.maxLength(20),
+            languages: t.mapOf(
+              t.number,
+              t.string.derive('name').alphabetical.nonEmpty,
+              'map of languages'
+            )
+          },
+          'city'
+        ),
+        'map of cities'
       )
     },
-    'countries'
-  )
+    'country'
+  ),
+  'map of countries'
 )
 
 // subtypes

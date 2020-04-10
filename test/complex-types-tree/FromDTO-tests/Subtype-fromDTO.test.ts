@@ -8,7 +8,7 @@ describe('Testing fromDTO for subtype', () => {
       age: 22,
       average: 9.5
     }
-    let res = examples.student.fromDTO(s, [])
+    let res = examples.student.fromDTO(s)
     expect(isSuccess(res)).toBe(true)
   })
 
@@ -18,7 +18,7 @@ describe('Testing fromDTO for subtype', () => {
       age: 22,
       average: 12
     }
-    let res = examples.student.fromDTO(s, [])
+    let res = examples.student.fromDTO(s)
     expect(isSuccess(res)).toBe(false)
   })
 
@@ -28,7 +28,7 @@ describe('Testing fromDTO for subtype', () => {
       age: 22.5,
       average: 12
     }
-    let res = examples.student.fromDTO(s, [])
+    let res = examples.student.fromDTO(s)
     if (isFailure(res)) {
       expect(res.errors).toEqual([
         {
@@ -53,7 +53,7 @@ describe('Testing fromDTO for subtype', () => {
       age: 40,
       title: 'Phd'
     }
-    let res = examples.professor.fromDTO(s, [])
+    let res = examples.professor.fromDTO(s)
     expect(isSuccess(res)).toBe(true)
   })
 
@@ -63,7 +63,7 @@ describe('Testing fromDTO for subtype', () => {
       age: 40,
       title: 'Phd'
     }
-    let res = examples.professor.fromDTO(s, [])
+    let res = examples.professor.fromDTO(s)
     expect(isSuccess(res)).toBe(false)
   })
 
@@ -73,7 +73,7 @@ describe('Testing fromDTO for subtype', () => {
       age: '40',
       title: 'Phd'
     }
-    let res = examples.professor.fromDTO((s as unknown) as any, [])
+    let res = examples.professor.fromDTO((s as unknown) as any)
     if (isFailure(res)) {
       expect(res.errors).toEqual([
         {

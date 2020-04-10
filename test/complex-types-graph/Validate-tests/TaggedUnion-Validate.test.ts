@@ -23,7 +23,7 @@ describe('TaggedUnion tests', () => {
       worksAt: 'Anave medica'
     }
 
-    let res = TU.validate((e as unknown) as any, [])
+    let res = TU.validate((e as unknown) as any)
 
     expect(isSuccess(res)).toBe(true)
   })
@@ -34,7 +34,7 @@ describe('TaggedUnion tests', () => {
       specialization: true,
       worksAt: 'Anave medica'
     }
-    expect(isSuccess(examples.employeeType.validate(e, []))).toBe(true)
+    expect(isSuccess(examples.employeeType.validate(e))).toBe(true)
   })
 
   it('should verify that lawyer is an employee', () => {
@@ -43,12 +43,12 @@ describe('TaggedUnion tests', () => {
       masterDegree: true,
       worksAt: 'Kirkland and Ellis'
     }
-    expect(isSuccess(examples.employeeType.validate(e, []))).toBe(true)
+    expect(isSuccess(examples.employeeType.validate(e))).toBe(true)
   })
 
   it('should verify that programmer is not an employee', () => {
     const e = { profession: 'programmer', masterDegree: true, worksAt: 'Microsoft' }
-    expect(isSuccess(examples.employeeType.validate((e as unknown) as any, []))).toBe(false)
+    expect(isSuccess(examples.employeeType.validate((e as unknown) as any))).toBe(false)
   })
 
   // Wanted to check whether the validators will work at the second level of object.
@@ -63,7 +63,7 @@ describe('TaggedUnion tests', () => {
         worksAt: 'Kirkland and Ellis'
       }
     }
-    expect(isSuccess(examples.personType.validate(e, []))).toBe(true)
+    expect(isSuccess(examples.personType.validate(e))).toBe(true)
   })
 
   it('should verify that Dinklage is person with invalid profession', () => {
@@ -76,7 +76,7 @@ describe('TaggedUnion tests', () => {
         worksAt: 'Hollywood'
       }
     }
-    expect(isSuccess(examples.personType.validate((e as unknown) as any, []))).toBe(false)
+    expect(isSuccess(examples.personType.validate((e as unknown) as any))).toBe(false)
   })
 
   // Wanted to check whether the validators will work at the third level of object.
@@ -107,7 +107,7 @@ describe('TaggedUnion tests', () => {
       ]
     }
 
-    expect(isSuccess(examples.politicalOrganisationType.validate(e, []))).toBe(true)
+    expect(isSuccess(examples.politicalOrganisationType.validate(e))).toBe(true)
   })
 
   it('should verify that New Politics is political organisation with members with invalid profession', () => {
@@ -136,7 +136,7 @@ describe('TaggedUnion tests', () => {
       ]
     }
 
-    expect(isSuccess(examples.politicalOrganisationType.validate((e as unknown) as any, []))).toBe(
+    expect(isSuccess(examples.politicalOrganisationType.validate((e as unknown) as any))).toBe(
       false
     )
   })

@@ -11,10 +11,12 @@ import {
   success,
   Result,
   ValidationError,
-  validationError
+  validationError,
+  Errors
 } from 'aelastics-result'
-import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
+import { Any, ConversionContext, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
 import { InstanceReference, ComplexTypeC } from './ComplexType'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { DtoObjectType } from './ObjectType'
 
 /**
@@ -36,23 +38,39 @@ export class ArrayTypeC<
     return []
   }
 
-  public validate(input: Array<TypeOf<E>>, path: Path = []): Result<boolean> {
+  validateCyclic(
+    input: Array<TypeOf<E>>,
+    path: Path = [],
+    traversed: VisitedNodes
+  ): Result<boolean> {
     if (!Array.isArray(input)) {
       return failure(new Error(`Value ${path}: '${input}' is not Array`))
     }
 
-    const errors: ValidationError[] = []
+    let pair: TypeInstancePair = [this, input]
+
+    if (traversed.has(pair)) {
+      return success(true)
+    }
+
+    traversed.set(pair)
+
+    const errors: Errors = []
     for (let i = 0; i < input.length; i++) {
       const x = input[i]
-      const validation = this.baseType.validate(x, appendPath(path, `[${i}]`, this.name))
+      const validation = this.baseType.validateCyclic(
+        x,
+        appendPath(path, `[${i}]`, this.name, x),
+        traversed
+      )
       if (isFailure(validation)) {
-        errors.push(...(validation.errors as ValidationError[]))
+        errors.push(...validation.errors)
       }
     }
 
     const res = this.checkValidators(input, path)
     if (isFailure(res)) {
-      errors.push(...(res.errors as ValidationError[]))
+      errors.push(...res.errors)
     }
     return errors.length ? failures(errors) : success(true)
   }

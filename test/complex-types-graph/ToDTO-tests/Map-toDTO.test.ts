@@ -30,7 +30,7 @@ describe('toDTO test cases for Map', () => {
       [5.3, { name: 'Ivan', age: 21 }],
       [2, { name: 'Stefan', age: 33 }]
     ])
-    const res = examples.MapofPeople.toDTO(a, [], true)
+    const res = examples.MapofPeople.toDTO(a)
     if (isFailure(res)) {
       expect(examples.errorMessages(res)).toEqual(
         'Expected [5.3]:undefined to be an integer, got 5.3\nExpected keys to be successive numbers\n'
@@ -43,7 +43,7 @@ describe('toDTO test cases for Map', () => {
       [5.3, { name: 'Ivan', age: 21 }],
       [2, { name: 'Stefan', age: 33 }]
     ])
-    const res = examples.MapofPeople.toDTO(a, [], false)
+    const res = examples.MapofPeople.toDTO(a)
     if (isSuccess(res)) {
       expect(res.value).toEqual([
         [5.3, { name: 'Ivan', age: 21 }],
@@ -56,7 +56,7 @@ describe('toDTO test cases for Map', () => {
       [1, { name: 'Ivan', age: 21 }],
       [2, { name: 'Stefan', age: 33.8 }]
     ])
-    const res = examples.MapofPeople.toDTO(a, [], false)
+    const res = examples.MapofPeople.toDTO(a)
     expect(isSuccess(res)).toBe(true)
   })
   it('Testing for some valid map of countries', () => {

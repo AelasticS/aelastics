@@ -11,7 +11,7 @@ describe('Array test cases', () => {
   it("should not be Array of Number values in case of 'null' value", () => {
     let arrayOfNumbers = at.arrayOf(t.number, 'arrayOfNumbers')
     let a = null
-    expect(isSuccess(arrayOfNumbers.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfNumbers.validate((a as unknown) as []))).toBe(false)
   })
 
   /**
@@ -20,7 +20,7 @@ describe('Array test cases', () => {
   it("should not be Array of Number values in case of array of 'null' values", () => {
     let arrayOfNumbers = at.arrayOf(t.number, 'arrayOfNumbers')
     let a = [null, null, null]
-    expect(isSuccess(arrayOfNumbers.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfNumbers.validate((a as unknown) as []))).toBe(false)
   })
 
   /**
@@ -29,7 +29,7 @@ describe('Array test cases', () => {
   it("should not be Array of Number values in case of 'undefined' value", () => {
     let arrayOfNumbers = at.arrayOf(t.number.derive(''), 'arrayOfNumbers')
     let a = undefined
-    expect(isSuccess(arrayOfNumbers.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfNumbers.validate((a as unknown) as []))).toBe(false)
   })
   /**
    * Testing if array of numbers is array of undefined values
@@ -38,7 +38,7 @@ describe('Array test cases', () => {
   it("should not be Array of Number values in case of array of 'undefined' values", () => {
     let arrayOfNumbers = at.arrayOf(t.number, 'arrayOfNumbers')
     let a = [undefined, undefined]
-    expect(isSuccess(arrayOfNumbers.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfNumbers.validate((a as unknown) as []))).toBe(false)
   })
   /**
    * Testing if array of numbers is valid
@@ -46,7 +46,7 @@ describe('Array test cases', () => {
   it('should be Array of Number values', () => {
     let arrayOfNumbers = at.arrayOf(t.number.derive(''), 'arrayOfNumbers')
     let a = [5, 5, 2]
-    expect(isSuccess(arrayOfNumbers.validate(a, []))).toBe(true)
+    expect(isSuccess(arrayOfNumbers.validate(a))).toBe(true)
   })
   /**
    * Testing if array of numbers with constraints for type number is valid
@@ -54,7 +54,7 @@ describe('Array test cases', () => {
   it('should be Array of positive and in range Number values ', () => {
     let arrayOfNumbers = at.arrayOf(t.number.derive('').positive.inRange(1, 15), 'arrayOfNumbers')
     let a = [5, 15, 2]
-    expect(isSuccess(arrayOfNumbers.validate(a, []))).toBe(true)
+    expect(isSuccess(arrayOfNumbers.validate(a))).toBe(true)
   })
   /**
    * Testing if array of numbers with constraints for type number is valid. Case when constraints are not fulfilled
@@ -62,7 +62,7 @@ describe('Array test cases', () => {
   it('should not be Array of positive and in range Number values in case of array with negative values', () => {
     let arrayOfNumbers = at.arrayOf(t.number.derive('').positive.inRange(1, 15), 'arrayOfNumbers')
     let a = [5, 15, -2]
-    expect(isSuccess(arrayOfNumbers.validate(a, []))).toBe(false)
+    expect(isSuccess(arrayOfNumbers.validate(a))).toBe(false)
   })
   /**
    * Testing if array of strings is valid
@@ -70,7 +70,7 @@ describe('Array test cases', () => {
   it('should be Array of String values', () => {
     let arrayOfStrings = at.arrayOf(t.string, 'arrayOfStrings')
     let a = ['a', 'abcd']
-    expect(isSuccess(arrayOfStrings.validate(a, []))).toBe(true)
+    expect(isSuccess(arrayOfStrings.validate(a))).toBe(true)
   })
   /**
    * Testing if array of strings is valid. Case when it isn't
@@ -78,7 +78,7 @@ describe('Array test cases', () => {
   it('should not be Array of String values in case of array of number values', () => {
     let arrayOfStrings = at.arrayOf(t.string.derive(''), 'arrayOfStrings')
     let a = ['5', 15, -2]
-    expect(isSuccess(arrayOfStrings.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfStrings.validate((a as unknown) as []))).toBe(false)
   })
   /**
    * Testing if array of strings with constraints for type string is valid
@@ -93,7 +93,7 @@ describe('Array test cases', () => {
       'arrayOfStrings'
     )
     let a = ['ab.cd', ',.', 'a.a']
-    expect(isSuccess(arrayOfStrings.validate(a, []))).toBe(true)
+    expect(isSuccess(arrayOfStrings.validate(a))).toBe(true)
   })
   /**
    * Testing if array of strings with constraints for type string is valid. Case when constraints are not fulfilled
@@ -108,7 +108,7 @@ describe('Array test cases', () => {
       'arrayOfStrings'
     )
     let a = ['abc.d', ',', 'A.']
-    expect(isSuccess(arrayOfStrings.validate(a, []))).toBe(false)
+    expect(isSuccess(arrayOfStrings.validate(a))).toBe(false)
   })
   /**
    * Testing if array of bool values is valid.
@@ -116,7 +116,7 @@ describe('Array test cases', () => {
   it('should be Array of Boolean values', () => {
     let arrayOfBoolV = at.arrayOf(t.boolean, 'arrayOfBoolV')
     let a = [true, false, true]
-    expect(isSuccess(arrayOfBoolV.validate(a, []))).toBe(true)
+    expect(isSuccess(arrayOfBoolV.validate(a))).toBe(true)
   })
   /**
    * Testing if array of boolean values is valid. Case when it isn't
@@ -124,7 +124,7 @@ describe('Array test cases', () => {
   it('should not be Array of Boolean values in case of array of string values', () => {
     let arrayOfBoolV = at.arrayOf(t.boolean, 'arrayOfBoolV')
     let a = ['true']
-    expect(isSuccess(arrayOfBoolV.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfBoolV.validate((a as unknown) as []))).toBe(false)
   })
   /**
    * Testing if array of boolean values is valid
@@ -134,7 +134,7 @@ describe('Array test cases', () => {
     let a = function(): never {
       throw new Error()
     }
-    expect(isSuccess(arrayOfBoolV.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfBoolV.validate((a as unknown) as []))).toBe(false)
   })
   /**
    * Testing if array of empty objects is valid
@@ -142,7 +142,7 @@ describe('Array test cases', () => {
   it('should be Array of empty Object values', () => {
     let arrayOfObjects = at.arrayOf(t.object({}), 'arrayOfObjects')
     let a = [{}, {}]
-    expect(isSuccess(arrayOfObjects.validate(a, []))).toBe(true)
+    expect(isSuccess(arrayOfObjects.validate(a))).toBe(true)
   })
 
   /**
@@ -151,7 +151,7 @@ describe('Array test cases', () => {
   it("should not be Array of empty Object values in case of array of 'undefined' values", () => {
     let arrayOfObjects = at.arrayOf(t.object({}), 'arrayOfObjects')
     let a = [undefined, undefined]
-    expect(isSuccess(arrayOfObjects.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfObjects.validate((a as unknown) as []))).toBe(false)
   })
   /**
    * Testing if array of objects is array of null values
@@ -159,7 +159,7 @@ describe('Array test cases', () => {
   it("should not be Array of empty Object values in case of array of 'null' values", () => {
     let arrayOfObjects = at.arrayOf(t.object({}), 'arrayOfObjects')
     let a = [null, null]
-    expect(isSuccess(arrayOfObjects.validate((a as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfObjects.validate((a as unknown) as []))).toBe(false)
   })
   /**
    * Testing if array of objects is array of strings
@@ -167,7 +167,7 @@ describe('Array test cases', () => {
   it('should not be Array of empty Object values in case of array of string values', () => {
     let arrayOfObjects = at.arrayOf(t.object({}), 'arrayOfObjects')
     let a = ['abcd', 'ab']
-    expect(isSuccess(arrayOfObjects.validate(a, []))).toBe(false)
+    expect(isSuccess(arrayOfObjects.validate(a))).toBe(false)
   })
   /**
    * Testing if array of objects is array of numbers
@@ -175,7 +175,7 @@ describe('Array test cases', () => {
   it('should not be Array of empty Object values in case of array of number values', () => {
     let arrayOfObjects = at.arrayOf(t.object({}), 'arrayOfObjects')
     let a = [5, 10]
-    expect(isSuccess(arrayOfObjects.validate(a, []))).toBe(false)
+    expect(isSuccess(arrayOfObjects.validate(a))).toBe(false)
   })
 
   /**
@@ -195,7 +195,7 @@ describe('Array test cases', () => {
         year: 2000
       }
     ]
-    expect(isSuccess(arrayOfObjects.validate(a, []))).toBe(true)
+    expect(isSuccess(arrayOfObjects.validate(a))).toBe(true)
   })
   /**
    * Testing if array of DateType objects is valid. Case when it's not valid.
@@ -214,7 +214,7 @@ describe('Array test cases', () => {
         year: 2000
       }
     ]
-    expect(isSuccess(arrayOfObjects.validate(a, []))).toBe(false)
+    expect(isSuccess(arrayOfObjects.validate(a))).toBe(false)
   })
 
   /**
@@ -250,7 +250,7 @@ describe('Array test cases', () => {
         }
       }
     ]
-    expect(isSuccess(arrayOfObjects.validate(emp, []))).toBe(true)
+    expect(isSuccess(arrayOfObjects.validate(emp))).toBe(true)
   })
   /**
    * Testing if array of EmployeeType objects is valid. Case with incorrect proprety values.
@@ -285,7 +285,7 @@ describe('Array test cases', () => {
         }
       }
     ]
-    expect(isSuccess(arrayOfObjects.validate(emp, []))).toBe(false)
+    expect(isSuccess(arrayOfObjects.validate(emp))).toBe(false)
   })
   /**
    * Testing if array of EmployeeType objects is array of empty objects.
@@ -293,7 +293,7 @@ describe('Array test cases', () => {
   it("should not be Array of Object 'EmployeeType' values in case of array of empty objects", () => {
     let arrayOfObjects = at.arrayOf(examples.EmployeeType, 'arrayOfObjects')
     let emp = [{}, {}]
-    expect(isSuccess(arrayOfObjects.validate((emp as unknown) as [], []))).toBe(false)
+    expect(isSuccess(arrayOfObjects.validate((emp as unknown) as []))).toBe(false)
   })
 
   /**
@@ -313,7 +313,7 @@ describe('Array test cases', () => {
       [-6, -10],
       [-12, -10]
     ]
-    expect(isSuccess(matrix.validate(a, []))).toBe(true)
+    expect(isSuccess(matrix.validate(a))).toBe(true)
   })
   /**
    * Testing if matrix of number values with constraints for type number is valid. Case when constraints are not fulfilled
@@ -332,6 +332,6 @@ describe('Array test cases', () => {
       [-5, 10],
       [-12, -10]
     ]
-    expect(isSuccess(matrix.validate(a, []))).toBe(false)
+    expect(isSuccess(matrix.validate(a))).toBe(false)
   })
 })

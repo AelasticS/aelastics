@@ -3,19 +3,29 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
-import { Error, failure, Path, Result, success } from 'aelastics-result'
+import { Error, failure, Path, pathToString, Result, success } from 'aelastics-result'
+import { VisitedNodes } from '../common/VisitedNodes'
 
-export class UndefinedTypeC extends SimpleTypeC<boolean> {
+export class UndefinedTypeC extends SimpleTypeC<undefined> {
   public readonly _tag: 'Undefined' = 'Undefined'
+
   constructor() {
     super('Undefined')
   }
 
-  public validate(value: any, path: Path = []): Result<boolean> {
-    if (typeof value === 'undefined') {
+  validateCyclic(value: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+    if (value === undefined) {
       return success(true)
     } else {
-      return failure(new Error(`Value ${path}: '${value}' is not undefined`))
+      return failure(new Error(`Value '${value}' at path:'${pathToString(path)}' is not undefined`))
+    }
+  }
+
+  validate(value: any): Result<boolean> {
+    if (value === undefined) {
+      return success(true)
+    } else {
+      return failure(new Error(`Value '${value}' is not undefined`))
     }
   }
 }

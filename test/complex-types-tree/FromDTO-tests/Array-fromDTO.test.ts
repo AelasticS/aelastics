@@ -17,7 +17,7 @@ describe('Tests for Array method fromDTO', () => {
    */
   it('should not be valid fromDTO for array of numbers', () => {
     let arrayOfNumbers = at.arrayOf(t.number.derive('').negative, 'arrayOfNumbers')
-    let a = arrayOfNumbers.fromDTO([5, 10, -25, -150], [])
+    let a = arrayOfNumbers.fromDTO([5, 10, -25, -150])
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
@@ -42,7 +42,7 @@ describe('Tests for Array method fromDTO', () => {
    */
   it('should not be valid fromDTO for array of strings', () => {
     let arrayOfStrings = at.arrayOf(t.string.derive('').lowercase.includes('.'), 'arrayOfStrings')
-    let a = arrayOfStrings.fromDTO(['a.bcd', 'Abc', 'a.'], [])
+    let a = arrayOfStrings.fromDTO(['a.bcd', 'Abc', 'a.'])
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
@@ -96,7 +96,7 @@ describe('Tests for Array method fromDTO', () => {
         }
       }
     ]
-    let a = arrayOfEmployees.fromDTO(emps, [])
+    let a = arrayOfEmployees.fromDTO(emps as any)
     expect(isSuccess(a)).toBe(true)
   })
 
@@ -105,7 +105,7 @@ describe('Tests for Array method fromDTO', () => {
    */
   it('should not be valid fromDTO for array of EmployeeType objects in case of empty object', () => {
     let arrayOfEmployees = at.arrayOf(t.object({}), 'arrayOfEmployees')
-    let a = arrayOfEmployees.fromDTO([{}, {}, {}], [])
+    let a = arrayOfEmployees.fromDTO([{}, {}, {}] as any)
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
@@ -140,7 +140,7 @@ describe('Tests for Array method fromDTO', () => {
         }
       }
     ]
-    let a = arrayOfEmployees.fromDTO(emps, [])
+    let a = arrayOfEmployees.fromDTO((emps as any) as t.DtoTreeTypeOf<typeof arrayOfEmployees>)
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
