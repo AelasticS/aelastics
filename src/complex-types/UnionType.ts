@@ -64,9 +64,6 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     path: Path,
     context: ConversionContext
   ): TypeOf<P[number]> {
-    const output: TypeOf<P[number]> = {}
-    let inputUnion: DtoTypeOf<P[number]>
-
     if (this.isUnionRef(input)) {
       let type = this.baseType.find(t => t.name === input.typeInUnion)
       if (!type) {
