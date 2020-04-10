@@ -137,6 +137,11 @@ export abstract class TypeC<V, G = V, T = V> {
     }
   }
 
+  public toDTOgraph(value: V, options: ConversionOptions = defaultConversionOptions): Result<G> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: false } }
+    return this.toDTO(value, options) as Result<G>
+  }
+
   /** @internal */
   public fromDTOCyclic(value: T | G, path: Path, context: ConversionContext): V | undefined {
     context.errors.push(
@@ -171,6 +176,11 @@ export abstract class TypeC<V, G = V, T = V> {
     } else {
       return success(res)
     }
+  }
+
+  public toDTOtree(value: V, options: ConversionOptions = defaultConversionOptions): Result<T> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: true } }
+    return this.toDTO(value, options) as Result<T>
   }
 
   /** @internal */
