@@ -7,7 +7,7 @@ describe('fromDTO tests for Union type', () => {
       name: 'Nick',
       title: 'Msc'
     }
-    let p = examples.EmployeeUnionType.fromDTO(pDTO, [])
+    let p = examples.EmployeeUnionType.fromDTO((pDTO as unknown) as any)
     expect(isSuccess(p)).toBe(true)
   })
 
@@ -16,7 +16,7 @@ describe('fromDTO tests for Union type', () => {
       name: 'Nick',
       surname: 'Msc'
     }
-    let p = examples.EmployeeUnionType.fromDTO((pDTO as unknown) as any, [])
+    let p = examples.EmployeeUnionType.fromDTO((pDTO as unknown) as any)
     expect(isSuccess(p)).toBe(false)
   })
 
@@ -25,7 +25,7 @@ describe('fromDTO tests for Union type', () => {
       name: 'Nick11',
       title: 'Msc'
     }
-    let p = examples.EmployeeUnionType.fromDTO(pDTO, [])
+    let p = examples.EmployeeUnionType.fromDTO((pDTO as unknown) as any)
     if (isFailure(p)) {
       expect(examples.errorMessages(p)).toBe("Value : '[object Object]' is not union: 'employee'\n")
     }
@@ -37,17 +37,17 @@ describe('fromDTO tests for Union type', () => {
       title: 'Msc',
       surname: 'Scott'
     }
-    let p = examples.EmployeeUnionType.fromDTO(pDTO, [])
+    let p = examples.EmployeeUnionType.fromDTO((pDTO as unknown) as any)
     expect(isSuccess(p)).toBe(true)
   })
 
   it('Testing fromDTO with literal, should be true', () => {
-    let g = examples.gradeType.fromDTO('failed', [])
+    let g = examples.gradeType.fromDTO('failed')
     expect(isSuccess(g)).toBe(true)
   })
 
   it('Testing fromDTO message for gradeType in case of unsatisfied constraint for fields', () => {
-    let g = examples.gradeType.fromDTO(11, [])
+    let g = examples.gradeType.fromDTO(11)
     if (isFailure(g)) {
       expect(examples.errorMessages(g)).toBe("Value : '11' is not union: 'grade'\n")
     }
