@@ -11,7 +11,7 @@ const person = t.entity(
     name: t.string,
     age: t.number
   },
-  ['name'] as const,
+  ['age'] as const,
   'person'
 )
 
@@ -61,7 +61,7 @@ describe('Test cases for object identifier', () => {
 
   it('should be valid reference', () => {
     const refPerson = t.ref(person, 'personRef')
-    const o = { name: 'John' }
+    const o = { age: 12 }
     expect(isSuccess(refPerson.validate(o))).toBe(true)
   })
 
@@ -161,10 +161,10 @@ describe('Test cases for testing fromDTO of object identifier', () => {
   it('should be valid fromDTO', () => {
     const refPerson = t.ref(person, 'personRef')
     const o: t.DtoTypeOf<typeof refPerson> = {
-      ref: { id: 1, category: 'Object', typeName: 'personRef' },
-      reference: { name: 'John' }
+      ref: { id: 1, category: 'EntityReference', typeName: 'personRef' },
+      reference: { age: 25 }
     }
-    const exm = { name: 'John' }
+    const exm = { age: 25 }
     const resToDTO = refPerson.toDTO(exm)
     if (isSuccess(resToDTO)) {
       expect(isSuccess(refPerson.fromDTO(resToDTO.value))).toBe(true)
@@ -174,7 +174,7 @@ describe('Test cases for testing fromDTO of object identifier', () => {
   it('should not be valid fromDTO when constraints of values are not satisfied', () => {
     const refStudent = t.ref(student, 'personRef')
     const o = {
-      ref: { id: 1, category: 'Object', typeName: 'personRef' },
+      ref: { id: 1, category: '', typeName: 'personRef' },
       reference: { name: 'John', id: '11Ad' }
     }
     const res = refStudent.fromDTO(o)
@@ -282,13 +282,13 @@ describe('Test cases for testing toDTO of object identifier', () => {
 
   it('should be valid toDTO', () => {
     const refPerson = t.ref(person, 'personRef')
-    const o = { name: 'John' }
+    const o = { age: 25 }
     expect(isSuccess(refPerson.toDTO(o))).toBe(true)
   })
 
   it('should be valid toDTO value', () => {
     const refPerson = t.ref(person, 'personRef')
-    const o = { name: 'John' }
+    const o = { age: 25 }
     const res = refPerson.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value).toEqual({

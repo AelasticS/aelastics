@@ -40,7 +40,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   DtoEntityReference<T>
 > {
   public readonly referencedType: T = this.baseType
-
+  public readonly _tag: 'EntityReference' = 'EntityReference'
   constructor(name: string, obj: T) {
     super(name, obj)
   }
@@ -123,7 +123,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       const k = key[i]
       const ak = input[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
-      const conversion = t.toDTOCyclic(input, appendPath(path, k, t.name, ak), context)
+      const conversion = t.toDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
       ObjectTypeC.addProperty(output.reference, k, conversion)
     }
     return output
