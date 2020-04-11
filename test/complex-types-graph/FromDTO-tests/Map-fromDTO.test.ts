@@ -41,7 +41,7 @@ describe('fromDTO tests for Map', () => {
           {
             ref: { id: 2, category: 'Object', typeName: 'person' },
             object: {
-              name: 'Ivan25',
+              name: 'Ivan34',
               age: 21
             }
           }
@@ -61,7 +61,7 @@ describe('fromDTO tests for Map', () => {
     let map = examples.MapofPeople.fromDTO(DTOObject)
     if (isFailure(map)) {
       let s = examples.errorMessages(map)
-      expect(s).toEqual('Expected [0]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n')
+      expect(s).toEqual('Expected [1]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n')
     }
   })
 
@@ -148,7 +148,6 @@ describe('fromDTO tests for Map', () => {
     expect(isSuccess(map)).toBe(true)
   })
 
-  // CHECK !!! SOME ERROR
   it("testing fromDTO with some values that don't comply with restrictions for type examples.MapOfCountries ", () => {
     let DTOObject: t.DtoTypeOf<typeof examples.MapOfCountries> = {
       ref: { id: 1, category: 'Map', typeName: 'map of countries' },
@@ -200,11 +199,15 @@ describe('fromDTO tests for Map', () => {
     }
 
     let map = examples.MapOfCountries.fromDTO(DTOObject)
-    expect(isSuccess(map)).toBe(true)
-    // This shouldn't be true
+    expect(isFailure(map)).toBe(true)
     if (isFailure(map)) {
-      //  let s = examples.errorMessages(map)
-      expect(map.errors).toEqual('')
+      let s = examples.errorMessages(map)
+      expect(s).toEqual(
+        'Expected [1]:undefined/name: to not be empty\n' +
+          'Expected [1]:undefined/name: to be alphabetical, got ``\n' +
+          'Expected [1]:undefined/cities:[object Map]/[1]:undefined/name:Belgrade154 to be alphabetical, got `Belgrade154`\n' +
+          'Expected [1]:undefined/cities:[object Map]/[1]:undefined/languages:[object Map]/[1]:undefined to be alphabetical, got `Serbian1122`\n'
+      )
     }
   })
 })

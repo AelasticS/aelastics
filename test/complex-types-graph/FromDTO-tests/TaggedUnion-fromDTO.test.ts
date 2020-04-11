@@ -4,16 +4,26 @@ import { isFailure, isSuccess } from 'aelastics-result'
 
 describe('Testing fromDTO for Tagged union', () => {
   it('should be valid fromDto for employeeType', () => {
-    const d: DtoTypeOf<typeof examples.doctorType> = {
-      ref: { id: 1, category: 'Object', typeName: 'doctorObject' },
-      object: {
-        profession: 'doctor',
-        specialization: true,
-        worksAt: 'Bel Medic'
+    const d: DtoTypeOf<typeof examples.employeeType> = {
+      ref: { id: 2, category: 'TaggedUnion', typeName: 'employee' },
+      taggedUnion: {
+        object: {
+          profession: 'doctor',
+          specialization: true,
+          worksAt: 'Bel Medic'
+        },
+        ref: { id: 1, category: 'Object', typeName: 'doctorObject' }
       }
     }
+    // const realDTO = examples.employeeType.toDTO({ profession: 'doctor',
+    //   specialization: true,
+    //   worksAt: 'Bel Medic'})
     const res = examples.employeeType.fromDTO(d)
     expect(isSuccess(res)).toBe(true)
+    // if(isSuccess(realDTO))
+    // {
+    //    expect(isSuccess(examples.employeeType.fromDTO(realDTO.value))).toBe(true)
+    // }
   })
 
   it('should not be valid fromDTO for employeeType in case of unsatisfied constraints', () => {

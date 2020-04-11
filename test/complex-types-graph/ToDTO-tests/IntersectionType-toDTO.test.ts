@@ -8,6 +8,9 @@ describe('toDTO test cases for IntersectionType', () => {
     // Doesn't work!!
     const fullName: TypeOf<typeof FullNameType> = { name: 'John', familyName: 'Brown' }
     const res = FullNameType.toDTO(fullName)
+    // if(isSuccess(res)) {
+    //   expect(res.value).toEqual({})
+    // }
     // if(isFailure(res))
     // {
     //   expect(res.errors).toEqual('')
@@ -32,6 +35,7 @@ describe('toDTO test cases for IntersectionType', () => {
   it('should be valid error message toDTO for FullNameType', () => {
     const fullName = { name: 2, familyName: 'Brown' }
     const res = FullNameType.toDTO((fullName as unknown) as any)
+    expect(isFailure(res)).toBe(true)
     if (isFailure(res)) {
       expect(errorMessages(res)).toEqual('Expected name:2 to be alphabetical, got `2`\n')
     }
