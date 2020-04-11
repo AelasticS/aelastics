@@ -20,6 +20,8 @@ export const PersonType = t.object(
 )
 t.inverseProps(PersonType, 'parent', PersonType, 'children')
 
+MySchema.validate()
+
 export const GrandpaRobert: t.TypeOf<typeof PersonType> = {
   name: 'Robert',
   age: 88,
@@ -177,6 +179,17 @@ export const rootMap = t.mapOf(
 )
 mapSchema.addType(rootMap)
 
+// rootMapGraph za testiranje Mape sa graf strukturom
+
+export const rootMapGraph = t.mapOf(
+  t.string,
+  t.arrayOf(t.link(mapSchema, 'rootMapGraph')),
+  // t.mapOf(t.string, t.link(mapSchema, 'rootMapGraph')),
+  'rootMapGraph'
+)
+mapSchema.addType(rootMapGraph)
+
+mapSchema.validate()
 export const intersectionInstance = t.intersectionOf([
   t.object({ a: t.string.derive('').alphabetical }),
   t.object({ b: t.string })

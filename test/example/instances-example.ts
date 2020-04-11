@@ -16,6 +16,7 @@ import {
   FullNameType,
   SingerType
 } from './types-example'
+import { Place } from './travel-network'
 
 export const london: t.TypeOf<typeof BirthPlaceType> = { name: 'London', state: 'UK' }
 export const s: t.TypeOf<typeof StringOrNumberType> = 5

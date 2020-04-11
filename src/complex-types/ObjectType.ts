@@ -196,7 +196,8 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       } else {
         inputObject = input.object
       }
-    } else if (!this.isObjRef(input) && !context.options.isTreeDTO) {
+    } else if (!this.isObjRef(input) && context.options.isTreeDTO) {
+      // sklonila negaciju kod drugog
       inputObject = input
     } else {
       context.errors.push(

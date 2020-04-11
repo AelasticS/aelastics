@@ -1,4 +1,6 @@
 import * as t from '../../src/aelastics-types'
+import { Result } from 'aelastics-result'
+import { ConversionOptions, defaultConversionOptions } from '../../src/common/Type'
 
 export const TravelSchema = t.schema('TravelSchema')
 
@@ -10,22 +12,19 @@ export const Place = t.object(
   'Place',
   TravelSchema
 )
+TravelSchema.validate()
 
-export const Zrenjanin: t.TypeOf<typeof Place> = {
-  name: 'Zrenjanin',
-  neighbor: []
-}
-export const StaraPazova: t.TypeOf<typeof Place> = {
-  name: 'Stara Pazova',
-  neighbor: []
-}
+export type IPlace = t.TypeOf<typeof Place>
+export type IPlaceGraph = t.DtoTypeOf<typeof Place>
+export type IPlaceTree = t.DtoTreeTypeOf<typeof Place>
+
 export const NoviSad: t.TypeOf<typeof Place> = {
   name: 'Novi Sad',
-  neighbor: [Zrenjanin, StaraPazova]
-}
-export const Belgrade: t.TypeOf<typeof Place> = {
-  name: 'Belgrade',
   neighbor: []
+}
+export const Belgrade: IPlace = {
+  name: 'Belgrade',
+  neighbor: [NoviSad]
 }
 export const Nis: t.TypeOf<typeof Place> = {
   name: 'Nis',
@@ -37,7 +36,5 @@ export const Kraljevo: t.TypeOf<typeof Place> = {
 }
 
 NoviSad.neighbor.push(Belgrade)
-Belgrade.neighbor.push(Kraljevo, Nis, Zrenjanin, NoviSad, StaraPazova)
+Belgrade.neighbor.push(Kraljevo, Nis)
 Nis.neighbor.push(Kraljevo)
-StaraPazova.neighbor.push(NoviSad, Belgrade)
-Zrenjanin.neighbor.push(Belgrade, NoviSad)
