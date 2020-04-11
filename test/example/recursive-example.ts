@@ -6,7 +6,7 @@ import { AgeType, SexType, BirthPlaceType } from './types-example'
 
 const MySchema = t.schema('MySchema')
 
-const PersonType = t.object(
+export const PersonType = t.object(
   {
     name: t.string,
     age: t.optional(AgeType),
@@ -20,6 +20,80 @@ const PersonType = t.object(
 )
 t.inverseProps(PersonType, 'parent', PersonType, 'children')
 
+export const GrandpaRobert: t.TypeOf<typeof PersonType> = {
+  name: 'Robert',
+  age: 88,
+  sex: 'male',
+  birthPlace: {
+    name: 'Belgrade',
+    state: 'Serbia'
+  },
+  parent: undefined,
+  children: []
+}
+
+export const SonDavid: t.TypeOf<typeof PersonType> = {
+  name: 'David',
+  age: 55,
+  sex: 'male',
+  birthPlace: {
+    name: 'Belgrade',
+    state: 'Serbia'
+  },
+  parent: GrandpaRobert,
+  children: []
+}
+GrandpaRobert.children.push(SonDavid)
+
+export const SonMark: t.TypeOf<typeof PersonType> = {
+  name: 'Mark',
+  age: 35,
+  sex: 'male',
+  birthPlace: {
+    name: 'Novi Sad',
+    state: 'Serbia'
+  },
+  parent: SonDavid,
+  children: []
+}
+
+export const DaugtherDora: t.TypeOf<typeof PersonType> = {
+  name: 'Dora',
+  age: 32,
+  sex: 'female',
+  birthPlace: {
+    name: 'Novi Sad',
+    state: 'Serbia'
+  },
+  parent: SonDavid,
+  children: []
+}
+SonDavid.children.push(SonMark, DaugtherDora)
+
+export const DaugtherSarah: t.TypeOf<typeof PersonType> = {
+  name: 'Sarah',
+  age: 30,
+  sex: 'female',
+  birthPlace: {
+    name: 'Belgrade',
+    state: 'Serbia'
+  },
+  parent: GrandpaRobert,
+  children: []
+}
+GrandpaRobert.children.push(DaugtherSarah)
+
+export const SonJohn: t.TypeOf<typeof PersonType> = {
+  name: 'John',
+  age: 3,
+  sex: 'male',
+  birthPlace: {
+    name: 'Belgrade',
+    state: 'Serbia'
+  },
+  parent: SonMark,
+  children: []
+}
 export const secondLevelObject = t.object(
   {
     name: t.string
