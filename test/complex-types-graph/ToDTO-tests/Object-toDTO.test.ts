@@ -29,6 +29,7 @@ describe('toDTO tests for object type', () => {
       b: 3
     }
     const res = numbersObjectType.toDTO(o)
+    expect(isSuccess(res)).toBe(true)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         ref: { category: 'Object', id: 1, typeName: 'Numbers object type' },

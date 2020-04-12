@@ -35,7 +35,7 @@ describe('toDTO test cases for TaggedUnion', () => {
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         taggedUnion: {
-          object: { profession: undefined, masterDegree: undefined, worksAt: undefined },
+          object: { profession: 'lawyer', masterDegree: true, worksAt: 'Goliath National Bank' },
           ref: { id: 1, category: 'Object', typeName: 'lawyerObject' }
         },
         ref: { id: 2, category: 'TaggedUnion', typeName: 'employee' }
@@ -53,15 +53,16 @@ describe('toDTO test cases for TaggedUnion', () => {
     expect(isSuccess(res)).toBe(false)
   })
 
-  it('Testing if invalid lawyer will serialize into dto of employee type(validation=false)', () => {
+  it('Testing if invalid lawyer will serialize into dto of employee type', () => {
     const doc: t.TypeOf<typeof examples.lawyerType> = {
       profession: 'lawyer',
       masterDegree: true,
       worksAt: ''
     }
     const res = examples.employeeType.toDTO(doc)
-    expect(isSuccess(res)).toBe(true)
+    expect(isSuccess(res)).toBe(false)
   })
+
   it('', () => {
     const t1 = t.object({
       a: t.literal('a'),

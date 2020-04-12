@@ -124,7 +124,14 @@ describe('toDTO test cases for Map', () => {
     const res = examples.MapOfCountries.toDTO(countries)
     // expect(isSuccess(res)).toBe(true)
     if (isFailure(res)) {
-      expect(examples.errorMessages(res)).toEqual('')
+      expect(examples.errorMessages(res)).toEqual(
+        "Caught exception 'Cannot read property 'entries' of undefined'\n" +
+          "Caught exception 'Cannot read property 'entries' of undefined'\n" +
+          "Caught exception 'Cannot read property 'entries' of undefined'\n" +
+          "Caught exception 'Cannot read property 'entries' of undefined'\n" +
+          "Caught exception 'Cannot read property 'entries' of undefined'\n" +
+          "Caught exception 'Cannot read property 'entries' of undefined'\n"
+      )
     }
   })
 

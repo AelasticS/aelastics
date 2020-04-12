@@ -15,15 +15,8 @@ describe('Testing fromDTO for Tagged union', () => {
         ref: { id: 1, category: 'Object', typeName: 'doctorObject' }
       }
     }
-    // const realDTO = examples.employeeType.toDTO({ profession: 'doctor',
-    //   specialization: true,
-    //   worksAt: 'Bel Medic'})
     const res = examples.employeeType.fromDTO(d)
     expect(isSuccess(res)).toBe(true)
-    // if(isSuccess(realDTO))
-    // {
-    //    expect(isSuccess(examples.employeeType.fromDTO(realDTO.value))).toBe(true)
-    // }
   })
 
   it('should not be valid fromDTO for employeeType in case of unsatisfied constraints', () => {
