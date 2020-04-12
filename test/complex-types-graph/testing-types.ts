@@ -5,6 +5,7 @@
 
 import * as t from '../../src/aelastics-types'
 import { Failure } from 'aelastics-result'
+import { DoctorType, DriverType } from '../example/types-example'
 // function that returns only error messages from failure
 export const errorMessages = (emp: Failure) => {
   let s = ''
@@ -217,6 +218,10 @@ export const janitorType = t.object(
   'janitor'
 )
 export const EmployeeUnionType = t.unionOf([profesorType, janitorType], 'employee')
+
+export const Union3 = t.unionOf([DriverType, janitorType], 'union3')
+export const Union2 = t.unionOf([DoctorType, janitorType], 'union2')
+export const Union1 = t.unionOf([DoctorType, DriverType, Union2, Union3], 'union1')
 
 // Maps
 export const MapOfPeopleKey = t.number.derive('integer').integer

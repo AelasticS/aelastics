@@ -20,7 +20,7 @@ export const PersonType = t.object(
 )
 t.inverseProps(PersonType, 'parent', PersonType, 'children')
 
-MySchema.validate()
+// MySchema.validate()
 
 export const GrandpaRobert: t.TypeOf<typeof PersonType> = {
   name: 'Robert',
@@ -30,7 +30,7 @@ export const GrandpaRobert: t.TypeOf<typeof PersonType> = {
     name: 'Belgrade',
     state: 'Serbia'
   },
-  parent: undefined,
+  parent: {},
   children: []
 }
 
@@ -183,8 +183,8 @@ mapSchema.addType(rootMap)
 
 export const rootMapGraph = t.mapOf(
   t.number,
-  t.arrayOf(t.link(mapSchema, 'rootMapGraph')),
-  // t.mapOf(t.number, t.link(mapSchema, 'rootMapGraph')),
+  // t.arrayOf(t.link(mapSchema, 'rootMapGraph')),
+  t.mapOf(t.number, t.link(mapSchema, 'rootMapGraph')),
   'rootMapGraph'
 )
 mapSchema.addType(rootMapGraph)
