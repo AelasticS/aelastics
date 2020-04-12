@@ -98,13 +98,16 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
     path: Path,
     context: ConversionContext
   ): TypeOf<P[keyof P]> {
-    let instance
+    let inputObject
+    let discrValue
     if (this.isTaggedUnionRef(input)) {
-      instance = input.taggedUnion[this.discriminator]
+      inputObject = input.taggedUnion
+      discrValue = inputObject.object[this.discriminator]
     } else {
-      instance = input[this.discriminator]
+      inputObject = input
+      discrValue = inputObject[this.discriminator]
     }
-    if (!instance) {
+    if (!discrValue) {
       context.errors.push(
         validationError(
           `Value ${path}: '${input}' is not a proper union, no discriminator property: '${this.discriminator}'`,
@@ -115,17 +118,21 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
       )
       return undefined
     } else {
-      const type = findTypeFromDiscriminator(instance, this.baseType)
+      const type = findTypeFromDiscriminator(discrValue, this.baseType)
       if (!type) {
         validationError(
-          `Value ${path}: '${input}' - there is no type in tagged union named: '${instance}'`,
+          `Value ${path}: '${input}' - there is no type in tagged union named: '${discrValue}'`,
           path,
           this.name,
           input
         )
         return undefined
       }
-      return type.fromDTOCyclic(input, appendPath(path, instance, type.name, input), context)
+      return type.fromDTOCyclic(
+        inputObject,
+        appendPath(path, discrValue, type.name, input),
+        context
+      )
     }
   }
 
