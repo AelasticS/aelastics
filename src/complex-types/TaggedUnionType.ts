@@ -125,7 +125,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
         )
         return undefined
       }
-      return type.fromDTOCyclic(instance, appendPath(path, instance, type.name, input), context)
+      return type.fromDTOCyclic(input, appendPath(path, instance, type.name, input), context)
     }
   }
 
@@ -188,7 +188,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
         return undefined
       } else {
         outputTaggedUnion = type.toDTOCyclic(
-          instance,
+          input,
           appendPath(path, instance, type?.name, input),
           context
         )

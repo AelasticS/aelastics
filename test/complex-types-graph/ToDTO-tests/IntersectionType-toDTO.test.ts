@@ -11,10 +11,9 @@ describe('toDTO test cases for IntersectionType', () => {
     // if(isSuccess(res)) {
     //   expect(res.value).toEqual({})
     // }
-    // if(isFailure(res))
-    // {
-    //   expect(res.errors).toEqual('')
-    // }
+    if (isFailure(res)) {
+      expect(res.errors).toEqual('')
+    }
     // expect(isSuccess(res)).toBe(true)
   })
   // Missing ref and map
