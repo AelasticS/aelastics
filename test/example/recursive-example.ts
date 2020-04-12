@@ -182,9 +182,9 @@ mapSchema.addType(rootMap)
 // rootMapGraph za testiranje Mape sa graf strukturom
 
 export const rootMapGraph = t.mapOf(
-  t.string,
+  t.number,
   t.arrayOf(t.link(mapSchema, 'rootMapGraph')),
-  // t.mapOf(t.string, t.link(mapSchema, 'rootMapGraph')),
+  // t.mapOf(t.number, t.link(mapSchema, 'rootMapGraph')),
   'rootMapGraph'
 )
 mapSchema.addType(rootMapGraph)
@@ -220,7 +220,7 @@ export const recursiveIntersection = t.intersectionOf(
   'recursiveIntersection'
 )
 intersectionSchema.addType(recursiveIntersection)
-
+intersectionSchema.validate()
 export const simpleObject = t.object({ a: t.string }, 'simple object')
 export const simpleSubtype = t.subtype(simpleObject, { date: t.date })
 export const objectWithSubtipes = t.object(
