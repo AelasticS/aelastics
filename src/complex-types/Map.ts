@@ -52,17 +52,17 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
   validateCyclic(
     input: Map<TypeOf<K>, TypeOf<V>>,
     path: Path = [],
-    traversed: VisitedNodes
+    traversed: VisitedNodes<Any, any, any>
   ): Result<boolean> {
     if (!(input instanceof Map)) {
       return failure(new Error(`Value ${path}: '${input}' is not valid Map`))
     }
-    let pair: TypeInstancePair = [this, input]
+    let pair: TypeInstancePair<Any, any> = [this, input]
     if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(pair)
+    traversed.set(pair, undefined)
 
     const errors: Errors = []
 

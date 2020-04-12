@@ -49,15 +49,15 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   validateCyclic(
     value: UnionToIntersection<TypeOf<P[number]>>,
     path: Path = [],
-    traversed: VisitedNodes
+    traversed: VisitedNodes<Any, any, any>
   ): Result<boolean> {
-    let pair: TypeInstancePair = [this, value]
+    let pair: TypeInstancePair<Any, any> = [this, value]
 
     if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(pair)
+    traversed.set(pair, undefined)
 
     const err: Error[] = []
     for (const t of this.baseType) {

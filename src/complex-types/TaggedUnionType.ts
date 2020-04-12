@@ -52,15 +52,15 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   validateCyclic(
     value: TypeOf<P[keyof P]>,
     path: Path = [],
-    traversed: VisitedNodes
+    traversed: VisitedNodes<Any, any, any>
   ): Result<boolean> {
-    let pair: TypeInstancePair = [this, value]
+    let pair: TypeInstancePair<Any, any> = [this, value]
 
     if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(pair)
+    traversed.set(pair, undefined)
 
     const instance = value[this.discriminator]
     if (!instance) {

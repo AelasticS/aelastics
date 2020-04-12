@@ -52,7 +52,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   validateCyclic(
     value: TypeOfKey<T>,
     path: Path = [],
-    traversed: VisitedNodes
+    traversed: VisitedNodes<Any, any, any>
   ): Success<boolean> | Failure {
     const result = isObject(value)
       ? success(value)

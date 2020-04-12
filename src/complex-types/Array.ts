@@ -41,19 +41,19 @@ export class ArrayTypeC<
   validateCyclic(
     input: Array<TypeOf<E>>,
     path: Path = [],
-    traversed: VisitedNodes
+    traversed: VisitedNodes<any, any, any>
   ): Result<boolean> {
     if (!Array.isArray(input)) {
       return failure(new Error(`Value ${path}: '${input}' is not Array`))
     }
 
-    let pair: TypeInstancePair = [this, input]
+    let pair: TypeInstancePair<Any, any> = [this, input]
 
     if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(pair)
+    traversed.set(pair, undefined)
 
     const errors: Errors = []
     for (let i = 0; i < input.length; i++) {

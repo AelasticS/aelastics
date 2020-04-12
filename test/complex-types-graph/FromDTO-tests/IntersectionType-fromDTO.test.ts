@@ -15,6 +15,7 @@ describe('fromDTO test cases for IntersectionType', () => {
           }
         }
       Below is a NEW WAY!
+
     */
 
     const fullName: DtoTypeOf<typeof FullNameType> = {

@@ -5,6 +5,7 @@
 import { SimpleTypeC } from './SimpleType'
 import { appendPath, Error, failure, Path, pathToString, Result, success } from 'aelastics-result'
 import { VisitedNodes } from '../common/VisitedNodes'
+import { Any } from '../common/Type'
 
 /**
  *  Void type
@@ -16,7 +17,11 @@ export class VoidTypeC extends SimpleTypeC<void> {
     super('Void')
   }
 
-  validateCyclic(value: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+  validateCyclic(
+    value: any,
+    path: Path = [],
+    traversed: VisitedNodes<Any, any, any>
+  ): Result<boolean> {
     if (typeof value === 'undefined' || value === null) {
       return success(true)
     } else {

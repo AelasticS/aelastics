@@ -44,15 +44,15 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   validateCyclic(
     value: TypeOf<P[number]>,
     path: Path = [],
-    traversed: VisitedNodes
+    traversed: VisitedNodes<Any, any, any>
   ): Result<boolean> {
-    let pair: TypeInstancePair = [this, value]
+    let pair: TypeInstancePair<Any, any> = [this, value]
 
     if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(pair)
+    traversed.set(pair, undefined)
 
     for (let i = 0; i < this.baseType.length; i++) {
       const type = this.baseType[i]

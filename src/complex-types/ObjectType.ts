@@ -95,14 +95,18 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return obj
   }
 
-  validateCyclic(input: ObjectType<P>, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+  validateCyclic(
+    input: ObjectType<P>,
+    path: Path = [],
+    traversed: VisitedNodes<Any, any, any>
+  ): Result<boolean> {
     const result = isObject(input)
       ? success(input)
       : failureValidation('Value is not object', path, this.name, input)
     if (isFailure(result)) {
       return result
     }
-    let pair: TypeInstancePair = [this, input]
+    let pair: TypeInstancePair<Any, any> = [this, input]
 
     if (traversed.has(pair)) {
       return success(true)

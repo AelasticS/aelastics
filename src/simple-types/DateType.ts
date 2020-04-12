@@ -14,7 +14,11 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
     super('Date')
   }
 
-  validateCyclic(input: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+  validateCyclic(
+    input: any,
+    path: Path = [],
+    traversed: VisitedNodes<any, any, any>
+  ): Result<boolean> {
     if (input instanceof Date && !isNaN(input.getTime())) {
       return super.validate(input)
     }
