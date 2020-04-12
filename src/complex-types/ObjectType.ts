@@ -193,7 +193,9 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
           )
         )
         return output // empty
-      } else inputObject = input.object
+      } else {
+        inputObject = input.object
+      }
     } else if (!this.isObjRef(input) && !context.options.isTreeDTO) {
       inputObject = input
     } else {
