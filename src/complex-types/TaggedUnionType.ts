@@ -17,7 +17,7 @@ import {
   validationError
 } from 'aelastics-result'
 import { ObjectTypeC, Props } from './ObjectType'
-import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
@@ -34,7 +34,7 @@ const findTypeFromDiscriminator = (d: string, t: Props): Any | undefined => {
 
 type DtoTaggedUnionType<P extends Props> = {
   ref: InstanceReference
-  taggedUnion: DtoTypeOf<P[keyof P]>
+  taggedUnion?: DtoTypeOf<P[keyof P]>
 }
 
 export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
@@ -96,13 +96,13 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   makeInstanceFromDTO(
     input: DtoTypeOf<P[keyof P]> | DtoTaggedUnionType<P>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): TypeOf<P[keyof P]> {
     let inputObject
     let discrValue
     if (this.isTaggedUnionRef(input)) {
       inputObject = input.taggedUnion
-      discrValue = inputObject.object[this.discriminator]
+      discrValue = inputObject!.object[this.discriminator]
     } else {
       inputObject = input
       discrValue = inputObject[this.discriminator]
@@ -170,7 +170,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   makeDTOInstance(
     input: TypeOf<P[keyof P]>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): DtoTypeOf<P[keyof P]> | DtoTaggedUnionType<P> {
     let output: DtoTypeOf<P[number]> | DtoTaggedUnionType<P>
     let outputTaggedUnion: DtoTypeOf<P[number]> = {} as DtoTypeOf<P[number]>

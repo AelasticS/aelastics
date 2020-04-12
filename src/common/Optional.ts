@@ -3,7 +3,7 @@
  */
 
 import { success, Path, Result, failures, isFailure, ValidationError } from 'aelastics-result'
-import { Any, ConversionContext, DtoTypeOf, TypeC, TypeOf } from './Type'
+import { Any, ToDtoContext, DtoTypeOf, TypeC, TypeOf } from './Type'
 
 const getOptionalName = (base: Any): string => `optional ${base.name}`
 
@@ -27,7 +27,7 @@ export class OptionalTypeC<T extends TypeC<any>> extends TypeC<
     }
   }
 
-  fromDTOCyclic(value: any, path: Path, context: ConversionContext): TypeOf<T> | undefined {
+  fromDTOCyclic(value: any, path: Path, context: ToDtoContext): TypeOf<T> | undefined {
     if (typeof value === 'undefined') {
       return undefined
     } else {
@@ -38,7 +38,7 @@ export class OptionalTypeC<T extends TypeC<any>> extends TypeC<
   toDTOCyclic(
     input: TypeOf<T> | undefined,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): DtoTypeOf<T> | undefined {
     if (typeof input === 'undefined') {
       return undefined

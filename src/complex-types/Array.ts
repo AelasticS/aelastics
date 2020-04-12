@@ -14,7 +14,7 @@ import {
   validationError,
   Errors
 } from 'aelastics-result'
-import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeC, TypeOf } from '../common/Type'
+import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeC, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
@@ -22,7 +22,7 @@ import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
  * Array type
  */
 
-type DtoArrayType<E extends Any> = { ref: InstanceReference; array: Array<DtoTypeOf<E>> }
+type DtoArrayType<E extends Any> = { ref: InstanceReference; array?: Array<DtoTypeOf<E>> }
 
 export class ArrayTypeC<
   E extends Any /*, T extends Array<TypeOf<E>>, D extends c*/
@@ -84,7 +84,7 @@ export class ArrayTypeC<
   makeInstanceFromDTO(
     input: Array<DtoTypeOf<E>> | DtoArrayType<E>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): Array<TypeOf<E>> {
     let inputArray: Array<DtoTypeOf<E>>
     if (this.isArrayRef(input)) {
@@ -109,7 +109,7 @@ export class ArrayTypeC<
   makeDTOInstance(
     input: Array<TypeOf<E>>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): Array<DtoTypeOf<E>> | DtoArrayType<E> {
     if (!Array.isArray(input)) {
       context.errors.push(

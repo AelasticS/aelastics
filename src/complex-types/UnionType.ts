@@ -4,7 +4,7 @@
  */
 
 import { ComplexTypeC } from './ComplexType'
-import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
 import {
   Error,
   failure,
@@ -25,8 +25,7 @@ import { DtoObjectType } from './ObjectType'
 
 type DtoUnionType<P extends Array<Any>> = {
   ref: InstanceReference
-  typeInUnion: string
-  union: DtoTypeOf<P[number]>
+  union?: DtoTypeOf<P[number]>
 }
 
 export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
@@ -76,14 +75,14 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   makeInstanceFromDTO(
     input: DtoTypeOf<P[number]> | DtoUnionType<P>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): TypeOf<P[number]> {
     if (this.isUnionRef(input)) {
-      let type = this.baseType.find(t => t.name === input.typeInUnion)
+      let type = this.baseType.find(t => t.name === input.ref.specificTypeName)
       if (!type) {
         context.errors.push(
           validationError(
-            `Not existing type '${input.typeInUnion}' in union '${path}': '${input}''`,
+            `Not existing type '${input.ref.specificTypeName}' in union '${path}': '${input}''`,
             path,
             this.name,
             input
@@ -105,31 +104,10 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     return undefined
   }
 
-  // makeInstanceFromDTO1(
-  //   input: DtoUnionType<P>,
-  //   path: Path,
-  //   context: ConversionContext
-  // ): TypeOf<P[number]> {
-  //   let type = this.baseType.find(t => t.name === input.typeInUnion)
-  //   if (!type) {
-  //     context.errors.push(
-  //       validationError(
-  //         `Not existing type '${input.typeInUnion}' in union '${path}': '${input}''`,
-  //         path,
-  //         this.name,
-  //         input
-  //       )
-  //     )
-  //     return undefined
-  //   } else {
-  //     return type.fromDTOCyclic(input.union, path, context)
-  //   }
-  // }
-
   makeDTOInstance(
     input: TypeOf<P[number]>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): DtoTypeOf<P[number]> | DtoUnionType<P> {
     let output: DtoTypeOf<P[number]> | DtoUnionType<P>
     let outputUnion: DtoTypeOf<P[number]> = {} as DtoTypeOf<P[number]>
@@ -147,36 +125,12 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
       output = outputUnion
     } else {
       output = {
-        ref: this.makeReference(input, context),
-        typeInUnion: typeInUnion,
+        ref: { ...this.makeReference(input, context), ...{ typeInUnion: typeInUnion } },
         union: outputUnion
       }
     }
     return output
   }
-
-  // makeDTOInstance1(
-  //   input: TypeOf<P[number]>,
-  //   path: Path,
-  //   context: ConversionContext
-  // ): DtoUnionType<P> {
-  //   const output: DtoUnionType<P> = {
-  //     ref: this.makeReference(input, context),
-  //     typeInUnion: 'unknown',
-  //     union: undefined
-  //   }
-  //   for (let i = 0; i < this.baseType.length; i++) {
-  //     // find which type is in union, the first one which is validated
-  //     const type = this.baseType[i]
-  //     let resVal = type.validate(input)
-  //     if (isSuccess(resVal)) {
-  //       output.typeInUnion = type.name
-  //       output.union = type.toDTOCyclic(input, path, context)
-  //       return output
-  //     }
-  //   }
-  //   return output
-  // }
 
   public getTypeFromValue(value: TypeOf<P[number]>): Result<Any> {
     for (let i = 0; i < this.baseType.length; i++) {

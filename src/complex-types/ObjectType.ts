@@ -17,7 +17,7 @@ import {
 import { ComplexTypeC } from './ComplexType'
 import {
   Any,
-  ConversionContext,
+  ToDtoContext,
   DtoTreeTypeOf,
   DtoTypeOf,
   InstanceReference,
@@ -39,7 +39,7 @@ export type DtoProps<P extends Props> = { [K in keyof P]: DtoTypeOf<P[K]> }
 
 export type DtoObjectType<P extends Props> = {
   ref: InstanceReference
-  object: DtoProps<P>
+  object?: DtoProps<P>
 }
 
 export const isObject = (u: any) => u !== null && typeof u === 'object'
@@ -152,7 +152,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   makeDTOInstance(
     input: ObjectType<P>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): DtoProps<P> | DtoObjectType<P> {
     try {
       let output: DtoProps<P> | DtoObjectType<P>
@@ -185,7 +185,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   makeInstanceFromDTO(
     input: DtoProps<P> | DtoObjectType<P>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): ObjectType<P> {
     let output = {} as ObjectType<P>
     let inputObject: DtoProps<P>
@@ -206,7 +206,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         )
         return output // empty
       } else {
-        inputObject = input.object
+        inputObject = input.object as DtoProps<P>
       }
     } else if (!this.isObjRef(input) && !context.options.isTreeDTO) {
       inputObject = input

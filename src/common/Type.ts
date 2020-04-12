@@ -37,13 +37,15 @@ export type Constructor<T extends {} = {}> = new (...args: any[]) => T
 export interface InstanceReference {
   id: number // unique identifier within object graph
   category: string // instance category
-  typeName: string // used as a class name
+  typeName: string // basic type name
+  specificTypeName?: string // used as a the most specific type/class name in type hierarchy
 }
 
 /**
  *  options for conversion
  */
-export interface ToDtoOptions {
+
+export interface ConversionOptions {
   validate: boolean // should validate during conversion, because of serializing partial data
   isTreeDTO: boolean // true if it is tree, false if it is graph
   includeTypeInfo: boolean // should put extra property in instance about its type or class
@@ -52,14 +54,25 @@ export interface ToDtoOptions {
   constructors?: Map<string, Constructor> // constructors
 }
 
-export type ConversionContext = {
-  options: ToDtoOptions
-  visitedNodes: Map<any, any>
+const createVisitedNodesToDTO = () => new VisitedNodes<Any, any, InstanceReference>()
+
+export type ToDtoContext = {
+  options: ConversionOptions
+  visitedNodes: VisitedNodes<Any, any, InstanceReference>
   errors: ValidationError[]
   counter: number
 }
 
-export const defaultConversionOptions: ToDtoOptions = {
+const createVisitedNodesFromDTO = () => new VisitedNodes<Any, number, any>()
+
+export type FromDtoContext = {
+  options: ConversionOptions
+  visitedNodes: VisitedNodes<Any, number, any>
+  errors: ValidationError[]
+  //  counter: number
+}
+
+export const defaultConversionOptions: ConversionOptions = {
   validate: true,
   isTreeDTO: false,
   includeTypeInfo: false,
@@ -131,12 +144,11 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param value - to be converted,
    * @param options
    */
-  public fromDTO(value: T | G, options: ToDtoOptions = defaultConversionOptions): Result<V> {
-    let context: ConversionContext = {
+  public fromDTO(value: T | G, options: ConversionOptions = defaultConversionOptions): Result<V> {
+    let context: FromDtoContext = {
       options: options,
       errors: [],
-      visitedNodes: new Map<any, any>(),
-      counter: 0
+      visitedNodes: createVisitedNodesFromDTO()
     }
     let errs: ValidationError[] = []
     let res = this.fromDTOCyclic(value, [], context)
@@ -148,18 +160,18 @@ export abstract class TypeC<V, G = V, T = V> {
     }
   }
 
-  public fromDTOtree(value: T, options: ToDtoOptions = defaultConversionOptions): Result<V> {
-    let newOptions: ToDtoOptions = { ...options, ...{ isTreeDTO: true } }
+  public fromDTOtree(value: T, options: ConversionOptions = defaultConversionOptions): Result<V> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: true } }
     return this.fromDTO(value, options) as Result<V>
   }
 
-  public fromDTOgraph(value: G, options: ToDtoOptions = defaultConversionOptions): Result<V> {
-    let newOptions: ToDtoOptions = { ...options, ...{ isTreeDTO: false } }
+  public fromDTOgraph(value: G, options: ConversionOptions = defaultConversionOptions): Result<V> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: false } }
     return this.fromDTO(value, options) as Result<V>
   }
 
   /** @internal */
-  public fromDTOCyclic(value: T | G, path: Path, context: ConversionContext): V | undefined {
+  public fromDTOCyclic(value: T | G, path: Path, context: FromDtoContext): V | undefined {
     context.errors.push(
       validationError('Internal method fromDTOCyclic not implemented', path, `${value}`)
     )
@@ -173,17 +185,17 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param value
    * @param options
    */
-  public toDTO(value: V, options: ToDtoOptions = defaultConversionOptions): Result<T | G> {
+  public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<T | G> {
     if (options.validate) {
       let res = this.validate(value)
       if (isFailure(res)) {
         return failures(res.errors)
       }
     }
-    let context: ConversionContext = {
+    let context: ToDtoContext = {
       options: options,
       errors: [],
-      visitedNodes: new Map<any, any>(),
+      visitedNodes: createVisitedNodesToDTO(),
       counter: 0
     }
     let res = this.toDTOCyclic(value, [], context)
@@ -194,18 +206,18 @@ export abstract class TypeC<V, G = V, T = V> {
     }
   }
 
-  public toDTOtree(value: V, options: ToDtoOptions = defaultConversionOptions): Result<T> {
-    let newOptions: ToDtoOptions = { ...options, ...{ isTreeDTO: true } }
+  public toDTOtree(value: V, options: ConversionOptions = defaultConversionOptions): Result<T> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: true } }
     return this.toDTO(value, newOptions) as Result<T>
   }
 
-  public toDTOgraph(value: V, options: ToDtoOptions = defaultConversionOptions): Result<G> {
-    let newOptions: ToDtoOptions = { ...options, ...{ isTreeDTO: false } }
+  public toDTOgraph(value: V, options: ConversionOptions = defaultConversionOptions): Result<G> {
+    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: false } }
     return this.toDTO(value, newOptions) as Result<G>
   }
 
   /** @internal */
-  public toDTOCyclic(input: V, path: Path, context: ConversionContext): T | G {
+  public toDTOCyclic(input: V, path: Path, context: ToDtoContext): T | G {
     context.errors.push(
       validationError('Internal method toDTOCyclic not implemented', path, `${input}`)
     )

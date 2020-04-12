@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeC } from './Type'
+import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeC } from './Type'
 import { isObject, ObjectTypeC, Props } from '../complex-types/ObjectType'
 import {
   appendPath,
@@ -101,7 +101,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   makeInstanceFromDTO(
     input: DtoTypeOfKey<T> | DtoEntityReference<T>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): TypeOfKey<T> {
     let inputReference: DtoTypeOfKey<T>
     if (this.isEnityRef(input)) {
@@ -128,7 +128,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   makeDTOInstance(
     input: TypeOfKey<T>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): DtoTypeOfKey<T> | DtoEntityReference<T> {
     let output: DtoEntityReference<T> | TypeOfKey<T>
     let outReference: DtoTypeOfKey<T> = {}

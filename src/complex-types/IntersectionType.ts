@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
@@ -35,7 +35,7 @@ export type DtoIntersectionType<P extends Array<Any>> = {
 
 export type DtoIntersectionType2<P extends Array<Any>> = {
   ref: InstanceReference
-  intersection: Array<DtoTypeOf<P[number]>> // [K in keyof P[number]]
+  intersection?: Array<DtoTypeOf<P[number]>> // [K in keyof P[number]]
 }
 
 export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
@@ -82,7 +82,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   makeInstanceFromDTO(
     input: UnionToIntersection<DtoTypeOf<P[number]>> | DtoIntersectionType<P>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): UnionToIntersection<TypeOf<P[number]>> {
     const output = {} as UnionToIntersection<TypeOf<P[number]>>
     if (this.isIntersectionRef(input)) {
@@ -102,7 +102,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   makeDTOInstance(
     input: UnionToIntersection<TypeOf<P[number]>>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): UnionToIntersection<DtoTypeOf<P[number]>> | DtoIntersectionType<P> {
     if (context.options.isTreeDTO) {
       const outputIntersection: UnionToIntersection<DtoTypeOf<

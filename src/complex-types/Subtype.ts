@@ -4,7 +4,7 @@
  */
 
 import { DtoObjectType, isObject, ObjectType, ObjectTypeC, Props } from './ObjectType'
-import { Any, ConversionContext, TypeC } from '../common/Type'
+import { Any, ToDtoContext, TypeC } from '../common/Type'
 import { TypeSchema } from '../common/TypeSchema'
 import {
   appendPath,

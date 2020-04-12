@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { ConversionContext, InstanceReference, TypeC } from '../common/Type'
+import { ToDtoContext, InstanceReference, TypeC, FromDtoContext } from '../common/Type'
 import { Path, validationError } from 'aelastics-result'
 
 /**
@@ -23,7 +23,7 @@ export abstract class ComplexTypeC<
     return this['_tag']
   }
 
-  public makeReference(input: any, context: ConversionContext): InstanceReference {
+  public makeReference(input: any, context: ToDtoContext): InstanceReference {
     return {
       typeName: this.name,
       category: this.category,
@@ -31,18 +31,18 @@ export abstract class ComplexTypeC<
     }
   }
 
-  public getReference(input: any, context: ConversionContext): InstanceReference | undefined {
+  public getReference(input: any): InstanceReference {
     return input.ref
   }
 
-  abstract makeDTOInstance(input: V, path: Path, context: ConversionContext): T | G
+  abstract makeDTOInstance(input: V, path: Path, context: ToDtoContext): T | G
 
-  abstract makeInstanceFromDTO(input: T | G, path: Path, context: ConversionContext): V
+  abstract makeInstanceFromDTO(input: T | G, path: Path, context: FromDtoContext): V
 
-  toDTOCyclic(input: V, path: Path, context: ConversionContext): T | G {
-    let output = context.visitedNodes.get(input)
-    if (output) {
-      if (!(context.options.includeTypeInfo && context.options.isTreeDTO)) {
+  toDTOCyclic(input: V, path: Path, context: ToDtoContext): T | G {
+    let outputRef = context.visitedNodes.get([this, input])
+    if (outputRef) {
+      if (!context.options.isTreeDTO) {
         context.errors.push(
           validationError(
             `Input data is graph. Value ${path}: '${input}' of type '${this.name}' has more then one reference!`,
@@ -51,20 +51,21 @@ export abstract class ComplexTypeC<
           )
         )
       }
-      return output
+      return { ref: outputRef } as any
     } else {
+      let output: T | G
       output = this.makeDTOInstance(input, path, context)
-      context.visitedNodes.set(input, this.getReference(output, context))
+      context.visitedNodes.set([this, input], this.getReference(output))
+      return output
     }
-    return output
   }
 
-  fromDTOCyclic(value: T | G, path: Path, context: ConversionContext): V {
-    let ref = this.getReference(value, context)
-    let output = context.visitedNodes.get(ref)
-
+  fromDTOCyclic(value: T | G, path: Path, context: FromDtoContext): V {
+    let ref = this.getReference(value)
+    let output = context.visitedNodes.get([this, ref.id])
     if (output) {
-      if (!(context.options.includeTypeInfo && context.options.isTreeDTO)) {
+      // visited before, return from cache
+      if (!context.options.isTreeDTO) {
         // should be tree, not graph
         context.errors.push(
           validationError(
@@ -78,7 +79,7 @@ export abstract class ComplexTypeC<
     } else {
       // an instance not visited before
       let output = this.makeInstanceFromDTO(value, path, context)
-      if (output) {
+      if (output === undefined) {
         if (!(context.options.includeTypeInfo && context.options.isTreeDTO)) {
           context.errors.push(
             validationError(
@@ -88,9 +89,9 @@ export abstract class ComplexTypeC<
             )
           )
         }
-      } else {
-        context.visitedNodes.set(this.getReference(value, context)?.id, output)
+        return output
       }
+      context.visitedNodes.set([this, this.getReference(value).id], output)
       return output
     }
   }
