@@ -1,17 +1,36 @@
 import { FullNameType } from '../../example/types-example'
-import { isSuccess, isFailure } from 'aelastics-result'
+import { isFailure, isSuccess } from 'aelastics-result'
 import { errorMessages, ProfessorIntersectionType } from '../testing-types'
 import { DtoTypeOf } from '../../../src/common/Type'
 
 describe('fromDTO test cases for IntersectionType', () => {
   it('should be valid fromDTO for FullNameType', () => {
+    /* OLD WAY!!!!
+
+        const fullName: DtoTypeOf<typeof FullNameType> = {
+          ref : { id : 1 , category : 'Intersection' , typeName : '' } ,
+          intersection : {
+            ref : { id : 2 , category : 'Object' , typeName : '' } ,
+            object : { name : 'John' , familyName : 'Brown' }
+          }
+        }
+      Below is a NEW WAY!
+    */
+
     const fullName: DtoTypeOf<typeof FullNameType> = {
-      ref: { id: 1, category: 'Intersection', typeName: '' },
+      ref: { id: 3, category: 'intersection', typeName: 'FullNameType' },
       intersection: {
-        ref: { id: 2, category: 'Object', typeName: '' },
-        object: { name: 'John', familyName: 'Brown' }
+        name: {
+          ref: { id: 1, category: 'object', typeName: 'nam' },
+          object: { name: 'sima' }
+        },
+        familyName: {
+          ref: { id: 2, category: 'object', typeName: 'nam' },
+          object: { name: 'sima' }
+        }
       }
     }
+
     const res = FullNameType.fromDTO(fullName)
     expect(isSuccess(res)).toBe(true)
   })

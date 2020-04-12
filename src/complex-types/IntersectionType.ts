@@ -14,9 +14,28 @@ type UnionToIntersection<U> = (U extends any
   ? I
   : never
 
-type DtoIntersectionType<P extends Array<Any>> = {
+/*
+type DtoIntersectionType_old<P extends Array<Any>> = {
   ref: InstanceReference
   intersection: UnionToIntersection<DtoTypeOf<P[number]>>
+}
+
+
+// to change Intersection definition form Array to Props
+export type DtoIntersectionType0<P extends Array<Any>> = {
+  ref: InstanceReference
+  intersection: {[K in keyof P[number]]:DtoTypeOf<P[number]>} //
+}
+*/
+
+export type DtoIntersectionType<P extends Array<Any>> = {
+  ref: InstanceReference
+  intersection: { [key: string]: DtoTypeOf<P[number]> } // [K in keyof P[number]]
+}
+
+export type DtoIntersectionType2<P extends Array<Any>> = {
+  ref: InstanceReference
+  intersection: Array<DtoTypeOf<P[number]>> // [K in keyof P[number]]
 }
 
 export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
@@ -65,79 +84,47 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
     path: Path,
     context: ConversionContext
   ): UnionToIntersection<TypeOf<P[number]>> {
-    let inputIntersectionType: UnionToIntersection<DtoTypeOf<P[number]>>
-    if (this.isIntersectionRef(input)) {
-      inputIntersectionType = input.intersection
-    } else {
-      inputIntersectionType = input
-    }
     const output = {} as UnionToIntersection<TypeOf<P[number]>>
-    for (const t of this.baseType) {
-      const res = t.fromDTOCyclic(inputIntersectionType, path, context)
-      Object.assign(output, res)
+    if (this.isIntersectionRef(input)) {
+      for (const t of this.baseType) {
+        const res = t.fromDTOCyclic(input.intersection[t.shortName], path, context)
+        Object.assign(output, res)
+      }
+    } else {
+      for (const t of this.baseType) {
+        const res = t.fromDTOCyclic(input, path, context)
+        Object.assign(output, res)
+      }
     }
     return output
   }
-
-  // makeInstanceFromDTO1(
-  //   input: DtoIntersectionType<P>,
-  //   path: Path,
-  //   context: ConversionContext
-  // ): UnionToIntersection<TypeOf<P[number]>> {
-  //   const output = {} as UnionToIntersection<TypeOf<P[number]>>
-  //   for (const t of this.baseType) {
-  //     const res = t.fromDTOCyclic(input, path, context)
-  //     Object.assign(output, res)
-  //   }
-  //   return output
-  // }
 
   makeDTOInstance(
     input: UnionToIntersection<TypeOf<P[number]>>,
     path: Path,
     context: ConversionContext
   ): UnionToIntersection<DtoTypeOf<P[number]>> | DtoIntersectionType<P> {
-    let output: UnionToIntersection<DtoTypeOf<P[number]>> | DtoIntersectionType<P>
-    const outputIntersection: UnionToIntersection<DtoTypeOf<P[number]>> = {} as UnionToIntersection<
-      DtoTypeOf<P[number]>
-    >
-    for (const t of this.baseType) {
-      const res = t.toDTOCyclic(input, path, context)
-      Object.assign(outputIntersection, res)
-    }
     if (context.options.isTreeDTO) {
-      output = outputIntersection
-    } else {
-      output = {
-        ref: this.makeReference(input, context),
-        intersection: outputIntersection
+      const outputIntersection: UnionToIntersection<DtoTypeOf<
+        P[number]
+      >> = {} as UnionToIntersection<DtoTypeOf<P[number]>>
+      for (const t of this.baseType) {
+        const res = t.toDTOCyclic(input, path, context)
+        Object.assign(outputIntersection, res)
       }
+      return outputIntersection
+    } else {
+      let output: DtoIntersectionType<P> = {
+        ref: this.makeReference(input, context),
+        intersection: {}
+      }
+      for (const t of this.baseType) {
+        output.intersection[t.shortName] = t.toDTOCyclic(input, path, context)
+      }
+      return output
     }
-    return output
   }
 
-  // makeDTOInstance1(
-  //   input: UnionToIntersection<TypeOf<P[number]>>,
-  //   path: Path,
-  //   context: ConversionContext
-  // ): DtoIntersectionType<P> {
-  //   const output: DtoIntersectionType<P> = {
-  //     ref: this.makeReference(input, context),
-  //     intersection: {} as UnionToIntersection<DtoTypeOf<P[number]>>
-  //   }
-  //   for (const t of this.baseType) {
-  //     const res = t.toDTOCyclic(input, path, context)
-  //     Object.assign(output.intersection, res)
-  //   }
-  //   return output
-  // }
-
-  protected isIntersectionRef(input: any): input is DtoIntersectionType<P> {
-    if (input.ref && input.intersection) {
-      return true
-    }
-    return false
-  }
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     traversed.set(this, this)
 
@@ -153,6 +140,13 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
     }
 
     return errors.length ? failures(errors) : success(true)
+  }
+
+  protected isIntersectionRef(input: any): input is DtoIntersectionType<P> {
+    if (input.ref && input.intersection) {
+      return true
+    }
+    return false
   }
 }
 
