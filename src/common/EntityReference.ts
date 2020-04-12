@@ -120,7 +120,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       const ak = inputReference[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
       const conversion = t.fromDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
-      output[k] = conversion.value
+      output[k] = conversion
     }
     return output as TypeOfKey<T>
   }

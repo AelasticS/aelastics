@@ -102,7 +102,7 @@ export class ArrayTypeC<
     for (let i = 0; i < inputArray.length; i++) {
       const x = inputArray[i]
       const conversion = this.baseType.fromDTOCyclic(x, path, context)
-      output.push(conversion.value)
+      output.push(conversion)
     }
     return output
   }
