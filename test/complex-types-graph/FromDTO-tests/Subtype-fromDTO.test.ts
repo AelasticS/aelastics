@@ -43,15 +43,15 @@ describe('Testing fromDTO for subtype', () => {
       expect(res.errors).toEqual([
         {
           code: 'ValidationError',
-          message: 'Expected  to be an integer, got 22.5',
-          path: [],
+          message: 'Expected age:22.5 to be an integer, got 22.5',
+          path: [{ actual: 22.5, segment: 'age' }],
           type: 'age',
           value: '22.5'
         },
         {
           code: 'ValidationError',
-          message: 'Expected  to be in range [6..10], got 12',
-          path: [],
+          message: 'Expected average:12 to be in range [6..10], got 12',
+          path: [{ actual: 12, segment: 'average' }],
           type: 'averageGrade',
           value: '12'
         }
@@ -99,8 +99,8 @@ describe('Testing fromDTO for subtype', () => {
       expect(res.errors).toEqual([
         {
           code: 'ValidationError',
-          message: 'Expected  to be an integer, got 40',
-          path: [],
+          message: 'Expected age:40 to be an integer, got 40',
+          path: [{ actual: '40', segment: 'age' }],
           type: 'age',
           value: '"40"'
         }

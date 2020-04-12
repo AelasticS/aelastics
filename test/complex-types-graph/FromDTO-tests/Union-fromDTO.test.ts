@@ -74,14 +74,22 @@ describe('fromDTO tests for Union type', () => {
     // let DtoType: t.DtoTypeOf<typeof examples.gradeType> = {
     //   ref:{id:1, category:'Union', typeName:'grade'},
     //   typeInUnion:'',
-    //   union:{}
+    //   union:'failed'
     //   };
     let g = examples.gradeType.fromDTO('failed')
     expect(isSuccess(g)).toBe(true)
+    // if(isFailure(g))
+    // {
+    //   expect(g.errors).toEqual('')
+    // }
   })
 
   it('Testing fromDTO message for gradeType in case of unsatisfied constraint for fields', () => {
-    let g = examples.gradeType.fromDTO(11)
+    let g = examples.gradeType.fromDTO({
+      ref: { id: 1, category: 'Union', typeName: 'grade' },
+      typeInUnion: 'PassingGrade',
+      union: 11
+    })
     if (isFailure(g)) {
       expect(examples.errorMessages(g)).toBe("Value : '11' is not union: 'grade'\n")
     }

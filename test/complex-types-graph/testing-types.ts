@@ -347,7 +347,7 @@ export const politicalOrganisationType = t.object(
 
 export const ElemOfArrayOfNumbers = t.number.derive('arrayOfNumbers').positive.greaterThan(10)
   .finite
-export const arrayOfNumbers = t.arrayOf(ElemOfArrayOfNumbers)
+export const arrayOfNumbers = t.arrayOf(ElemOfArrayOfNumbers, 'array of num')
 export const arrayOfPeople = t.arrayOf(person)
 
 export const ProfessorIntersectionType = t.intersectionOf([person, profesorType], 'professor')

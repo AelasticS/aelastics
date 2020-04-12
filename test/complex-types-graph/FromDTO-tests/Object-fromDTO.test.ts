@@ -45,33 +45,18 @@ describe('Testing fromDTO method of ObjectType', () => {
     if (isFailure(d)) {
       expect(d.errors).toEqual([
         {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'day' }],
-          type: 'date',
-          value: undefined
+          code: 'ValidationError',
+          message: 'Expected month:15 to be in range [1..12], got 15',
+          path: [{ actual: 15, segment: 'month' }],
+          type: '',
+          value: '15'
         },
         {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'month' }],
-          type: 'date',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'year' }],
-          type: 'date',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message:
-            "Input data is graph. Value : '[object Object]' of type 'date' has more then one reference!",
+          code: 'ValidationError',
+          message: 'Expected  to be correct value of date, got [object Object]',
           path: [],
           type: 'date',
-          value: undefined
+          value: '{"day":10,"month":15,"year":2000}'
         }
       ])
     }
@@ -110,33 +95,13 @@ describe('Testing fromDTO method of ObjectType', () => {
     if (isFailure(emp)) {
       expect(emp.errors).toEqual([
         {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'name' }],
-          type: 'Worker',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'employmentDate' }],
-          type: 'Worker',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'dateOfBirth' }],
-          type: 'Worker',
-          value: undefined
-        },
-        {
-          code: undefined,
+          code: 'ValidationError',
           message:
-            "Input data is graph. Value : '[object Object]' of type 'Worker' has more then one reference!",
+            'Expected  date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]',
           path: [],
           type: 'Worker',
-          value: undefined
+          value:
+            '{"name":"Nick Ruffalo","employmentDate":{"day":25,"month":3,"year":2016},"dateOfBirth":{"day":10,"month":5,"year":2000}}'
         }
       ])
     }
@@ -217,7 +182,9 @@ describe('Testing fromDTO method of ObjectType', () => {
     if (isFailure(emp)) {
       let s = examples.errorMessages(emp)
       expect(s).toEqual(
-        "missing property\nmissing property\nmissing property\nInput data is graph. Value : '[object Object]' of type 'Worker' has more then one reference!\n"
+        'Expected dateOfBirth:[object Object]/month:15 to be in range [1..12], got 15\n' +
+          'Expected dateOfBirth:[object Object] to be correct value of date, got [object Object]\n' +
+          'Expected  date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]\n'
       )
     }
   })

@@ -19,7 +19,11 @@ export class LinkC extends TypeC<any> {
     this.path = path
   }
 
-  validateCyclic(value: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+  validateCyclic(
+    value: any,
+    path: Path = [],
+    traversed: VisitedNodes<Any, any, any>
+  ): Result<boolean> {
     return this.resolvedType
       ? this.resolvedType.validateCyclic(value, path, traversed)
       : failures([new Error('Resolved Type is udndefined')])

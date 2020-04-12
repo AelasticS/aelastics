@@ -9,14 +9,22 @@ describe('ToDTO tests for union type', () => {
     const g: t.TypeOf<typeof examples.gradeType> = 7
     const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
-      expect(res.value).toBe(7)
+      expect(res.value).toEqual({
+        ref: { id: 1, category: 'Union', typeName: 'grade' },
+        typeInUnion: 'PassingGrade',
+        union: 7
+      })
     }
   })
   it('Testing toDTO for grade failed for gradeType', () => {
     const g: t.TypeOf<typeof examples.gradeType> = 'failed'
     const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
-      expect(res.value).toBe('failed')
+      expect(res.value).toEqual({
+        ref: { id: 1, category: 'Union', typeName: 'grade' },
+        typeInUnion: '"failed"',
+        union: 'failed'
+      })
     }
   })
   it('Testing toDTO for grade 11 for gradeType', () => {
@@ -32,9 +40,14 @@ describe('ToDTO tests for union type', () => {
     }
     const res = OccupationType.toDTO(Doctor)
     if (isSuccess(res)) {
-      expect(res.value.profession === 'Doctor' && res.value.specialization === 'Cardiologist').toBe(
-        true
-      )
+      expect(res.value).toEqual({
+        ref: { id: 2, category: 'Union', typeName: '(DriverType | DoctorType)' },
+        typeInUnion: 'DoctorType',
+        union: {
+          object: { profession: 'Doctor', specialization: 'Cardiologist' },
+          ref: { id: 1, category: 'Object', typeName: 'DoctorType' }
+        }
+      })
     }
   })
 
@@ -46,9 +59,14 @@ describe('ToDTO tests for union type', () => {
     }
     const res = OccupationType.toDTO((Doctor as unknown) as any)
     if (isSuccess(res)) {
-      expect(res.value.profession === 'Doctor' && res.value.specialization === 'Cardiologist').toBe(
-        true
-      )
+      expect(res.value).toEqual({
+        ref: { id: 2, category: 'Union', typeName: '(DriverType | DoctorType)' },
+        typeInUnion: 'DoctorType',
+        union: {
+          object: { profession: 'Doctor', specialization: 'Cardiologist' },
+          ref: { id: 1, category: 'Object', typeName: 'DoctorType' }
+        }
+      })
     }
   })
 
@@ -73,7 +91,7 @@ describe('ToDTO tests for union type', () => {
     }
     const res = WorkerType.toDTO(john)
     if (isSuccess(res)) {
-      expect(res.value.occupation).toBe({ profession: 'Driver', licences: ['B', 'C'] })
+      expect(res.value).toEqual('')
     }
   })
 

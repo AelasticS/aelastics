@@ -1,5 +1,5 @@
 import * as t from '../../../src/aelastics-types'
-import { isSuccess } from 'aelastics-result'
+import { isFailure, isSuccess } from 'aelastics-result'
 import { StudentType } from '../../example/types-example'
 
 describe('Testing toDTO for Subtype', () => {
@@ -18,7 +18,10 @@ describe('Testing toDTO for Subtype', () => {
     }
     const res = numbersAndStringObjectType.toDTO(o)
     if (isSuccess(res)) {
-      expect(res.value.a === 5 && res.value.b === 'something').toBe(true)
+      expect(res.value).toEqual({
+        ref: { id: 1, category: 'Object', typeName: 'subtype of { a: positive })' },
+        object: { a: 5, b: 'something' }
+      })
     }
   })
 
@@ -28,9 +31,7 @@ describe('Testing toDTO for Subtype', () => {
       b: 'something'
     }
     const res = numbersAndStringObjectType.toDTO(o)
-    if (isSuccess(res)) {
-      expect(res.value.a === -5 && res.value.b === 'something').toBe(false)
-    }
+    expect(isSuccess(res)).toBe(false)
   })
 
   it('Testing toDTO for invalid property name in object.', () => {
@@ -39,8 +40,16 @@ describe('Testing toDTO for Subtype', () => {
       bb: 'something'
     }
     const res = numbersAndStringObjectType.toDTO((o as unknown) as any)
-    if (isSuccess(res)) {
-      expect(res.value.a === 5 && res.value.b === 'something').toBe(false)
+    if (isFailure(res)) {
+      expect(res.errors).toEqual([
+        {
+          code: undefined,
+          message: 'missing property',
+          path: [{ actual: undefined, segment: 'b' }],
+          type: 'subtype of { a: positive })',
+          value: undefined
+        }
+      ])
     }
   })
 
@@ -52,7 +61,10 @@ describe('Testing toDTO for Subtype', () => {
     }
     const res = numbersAndStringObjectType.toDTO(o)
     if (isSuccess(res)) {
-      expect(res.value.a === 5 && res.value.b === 'something').toBe(true)
+      expect(res.value).toEqual({
+        ref: { id: 1, category: 'Object', typeName: 'subtype of { a: positive })' },
+        object: { a: 5, b: 'something' }
+      })
     }
   })
 
@@ -63,7 +75,11 @@ describe('Testing toDTO for Subtype', () => {
     }
     const res = StudentType.toDTO(Student)
     if (isSuccess(res)) {
-      expect(res.value.name === 'John' && res.value.university === 'Stanford').toBe(true)
+      // expect(res.value.name === 'John' && res.value.university === 'Stanford').toBe(true)
+      expect(res.value).toEqual({
+        ref: { id: 1, category: 'Object', typeName: 'StudentType' },
+        object: { name: 'John', university: 'Stanford' }
+      })
     }
   })
 
@@ -73,9 +89,7 @@ describe('Testing toDTO for Subtype', () => {
       university: 5
     }
     const res = StudentType.toDTO((Student as unknown) as any)
-    if (isSuccess(res)) {
-      expect(res.value.name === 'John' && res.value.university === 'Stanford').toBe(false)
-    }
+    expect(isSuccess(res)).toBe(false)
   })
 
   it("Testing if student without property 'university' is not valid dto subtype of child.", () => {
@@ -83,8 +97,6 @@ describe('Testing toDTO for Subtype', () => {
       name: 'John'
     }
     const res = StudentType.toDTO((Student as unknown) as any)
-    if (isSuccess(res)) {
-      expect(res.value.name === 'John' && res.value.university === 'Stanford').toBe(false)
-    }
+    expect(isFailure(res)).toBe(true)
   })
 })

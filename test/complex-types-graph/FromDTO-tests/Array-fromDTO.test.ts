@@ -27,40 +27,18 @@ describe('Tests for Array method fromDTO', () => {
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
-          code: undefined,
-          message: 'Internal method fromDTOCyclic not implemented',
-          path: [],
-          type: '5',
-          value: undefined
+          code: 'ValidationError',
+          message: 'Expected [0]:5 to be negative, got 5',
+          path: [{ actual: 5, segment: '[0]' }],
+          type: '',
+          value: '5'
         },
         {
-          code: undefined,
-          message: 'Internal method fromDTOCyclic not implemented',
-          path: [],
-          type: '10',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message: 'Internal method fromDTOCyclic not implemented',
-          path: [],
-          type: '-25',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message: 'Internal method fromDTOCyclic not implemented',
-          path: [],
-          type: '-150',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message:
-            "Input data is graph. Value : '[object Object]' of type 'arrayOfNumbers' has more then one reference!",
-          path: [],
-          type: 'arrayOfNumbers',
-          value: undefined
+          code: 'ValidationError',
+          message: 'Expected [1]:10 to be negative, got 10',
+          path: [{ actual: 10, segment: '[1]' }],
+          type: '',
+          value: '10'
         }
       ])
     }
@@ -77,33 +55,18 @@ describe('Tests for Array method fromDTO', () => {
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
-          code: undefined,
-          message: 'Internal method fromDTOCyclic not implemented',
-          path: [],
-          type: 'a.bcd',
-          value: undefined
+          code: 'ValidationError',
+          message: 'Expected [1]:Abc to include `.`, got `Abc`',
+          path: [{ actual: 'Abc', segment: '[1]' }],
+          type: '',
+          value: '"Abc"'
         },
         {
-          code: undefined,
-          message: 'Internal method fromDTOCyclic not implemented',
-          path: [],
-          type: 'Abc',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message: 'Internal method fromDTOCyclic not implemented',
-          path: [],
-          type: 'a.',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message:
-            "Input data is graph. Value : '[object Object]' of type 'arrayOfStrings' has more then one reference!",
-          path: [],
-          type: 'arrayOfStrings',
-          value: undefined
+          code: 'ValidationError',
+          message: 'Expected [1]:Abc to be lowercase, got `Abc`',
+          path: [{ actual: 'Abc', segment: '[1]' }],
+          type: '',
+          value: '"Abc"'
         }
       ])
     }
@@ -112,10 +75,6 @@ describe('Tests for Array method fromDTO', () => {
   /**
    * Testing fromDTO for array of EmployeeType objects
    */
-
-  // Potrazi f-je da su jednaki po dubini i sadrzaju, a ne isti objekti -Jest mozda
-
-  // toDto daje result!!!
   it('should be valid fromDTO for array of EmployeeType objects', () => {
     let arrayOfEmployees = at.arrayOf(examples.EmployeeType, 'arrayOfEmployees')
     let emps: t.TypeOf<typeof arrayOfEmployees> = [
@@ -258,41 +217,22 @@ describe('Tests for Array method fromDTO', () => {
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'name' }],
-          type: 'Worker',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'employmentDate' }],
-          type: 'Worker',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'dateOfBirth' }],
-          type: 'Worker',
-          value: undefined
-        },
-        {
-          code: undefined,
+          code: 'ValidationError',
           message:
-            "Input data is graph. Value : '[object Object]' of type 'Worker' has more then one reference!",
-          path: [],
+            'Expected [0]:[object Object] date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]',
+          path: [
+            {
+              actual: {
+                dateOfBirth: { day: 10, month: 5, year: 2000 },
+                employmentDate: { day: 25, month: 3, year: 2016 },
+                name: 'John'
+              },
+              segment: '[0]'
+            }
+          ],
           type: 'Worker',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message:
-            "Input data is graph. Value : '[object Object]' of type 'arrayOfEmployees' has more then one reference!",
-          path: [],
-          type: 'arrayOfEmployees',
-          value: undefined
+          value:
+            '{"name":"John","employmentDate":{"day":25,"month":3,"year":2016},"dateOfBirth":{"day":10,"month":5,"year":2000}}'
         }
       ])
     }
