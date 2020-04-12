@@ -14,10 +14,9 @@ import {
   validationError,
   Errors
 } from 'aelastics-result'
-import { Any, ConversionContext, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
-import { InstanceReference, ComplexTypeC } from './ComplexType'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeC, TypeOf } from '../common/Type'
+import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
-import { DtoObjectType } from './ObjectType'
 
 /**
  * Array type

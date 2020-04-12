@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, ConversionContext, DtoTypeOf, TypeC } from './Type'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeC } from './Type'
 import { isObject, ObjectTypeC, Props } from '../complex-types/ObjectType'
 import {
   appendPath,
@@ -19,7 +19,7 @@ import {
   Success,
   validationError
 } from 'aelastics-result'
-import { ComplexTypeC, InstanceReference } from '../complex-types/ComplexType'
+import { ComplexTypeC } from '../complex-types/ComplexType'
 import { VisitedNodes } from './VisitedNodes'
 
 // You can use const assertion (added in typescript 3.4)

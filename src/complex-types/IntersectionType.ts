@@ -3,8 +3,8 @@
  *
  */
 
-import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
-import { ComplexTypeC, InstanceReference } from './ComplexType'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 

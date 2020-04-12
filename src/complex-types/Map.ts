@@ -15,8 +15,8 @@ import {
   validationError,
   Result
 } from 'aelastics-result'
-import { ComplexTypeC, InstanceReference } from './ComplexType'
-import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
+import { ComplexTypeC } from './ComplexType'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 /**

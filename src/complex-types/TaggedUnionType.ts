@@ -17,8 +17,8 @@ import {
   validationError
 } from 'aelastics-result'
 import { ObjectTypeC, Props } from './ObjectType'
-import { Any, ConversionContext, DtoTypeOf, TypeOf } from '../common/Type'
-import { ComplexTypeC, InstanceReference } from './ComplexType'
+import { Any, ConversionContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 // export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralTypeC<Tag> }

@@ -33,10 +33,17 @@ export type Conversion<In, Out> = (value: In, path: Path) => Result<Out>
 
 export type Constructor<T extends {} = {}> = new (...args: any[]) => T
 
+// Reference metadata for instances of complex  types
+export interface InstanceReference {
+  id: number // unique identifier within object graph
+  category: string // instance category
+  typeName: string // used as a class name
+}
+
 /**
  *  options for conversion
  */
-export interface ConversionOptions {
+export interface ToDtoOptions {
   validate: boolean // should validate during conversion, because of serializing partial data
   isTreeDTO: boolean // true if it is tree, false if it is graph
   includeTypeInfo: boolean // should put extra property in instance about its type or class
@@ -46,13 +53,13 @@ export interface ConversionOptions {
 }
 
 export type ConversionContext = {
-  options: ConversionOptions
+  options: ToDtoOptions
   visitedNodes: Map<any, any>
   errors: ValidationError[]
   counter: number
 }
 
-export const defaultConversionOptions: ConversionOptions = {
+export const defaultConversionOptions: ToDtoOptions = {
   validate: true,
   isTreeDTO: false,
   includeTypeInfo: false,
@@ -124,7 +131,7 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param value - to be converted,
    * @param options
    */
-  public fromDTO(value: T | G, options: ConversionOptions = defaultConversionOptions): Result<V> {
+  public fromDTO(value: T | G, options: ToDtoOptions = defaultConversionOptions): Result<V> {
     let context: ConversionContext = {
       options: options,
       errors: [],
@@ -141,13 +148,13 @@ export abstract class TypeC<V, G = V, T = V> {
     }
   }
 
-  public fromDTOtree(value: T, options: ConversionOptions = defaultConversionOptions): Result<V> {
-    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: true } }
+  public fromDTOtree(value: T, options: ToDtoOptions = defaultConversionOptions): Result<V> {
+    let newOptions: ToDtoOptions = { ...options, ...{ isTreeDTO: true } }
     return this.fromDTO(value, options) as Result<V>
   }
 
-  public fromDTOgraph(value: G, options: ConversionOptions = defaultConversionOptions): Result<V> {
-    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: false } }
+  public fromDTOgraph(value: G, options: ToDtoOptions = defaultConversionOptions): Result<V> {
+    let newOptions: ToDtoOptions = { ...options, ...{ isTreeDTO: false } }
     return this.fromDTO(value, options) as Result<V>
   }
 
@@ -166,7 +173,7 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param value
    * @param options
    */
-  public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<T | G> {
+  public toDTO(value: V, options: ToDtoOptions = defaultConversionOptions): Result<T | G> {
     if (options.validate) {
       let res = this.validate(value)
       if (isFailure(res)) {
@@ -187,13 +194,13 @@ export abstract class TypeC<V, G = V, T = V> {
     }
   }
 
-  public toDTOtree(value: V, options: ConversionOptions = defaultConversionOptions): Result<T> {
-    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: true } }
+  public toDTOtree(value: V, options: ToDtoOptions = defaultConversionOptions): Result<T> {
+    let newOptions: ToDtoOptions = { ...options, ...{ isTreeDTO: true } }
     return this.toDTO(value, newOptions) as Result<T>
   }
 
-  public toDTOgraph(value: V, options: ConversionOptions = defaultConversionOptions): Result<G> {
-    let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: false } }
+  public toDTOgraph(value: V, options: ToDtoOptions = defaultConversionOptions): Result<G> {
+    let newOptions: ToDtoOptions = { ...options, ...{ isTreeDTO: false } }
     return this.toDTO(value, newOptions) as Result<G>
   }
 

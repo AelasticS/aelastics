@@ -2,14 +2,8 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { ConversionContext, TypeC } from '../common/Type'
+import { ConversionContext, InstanceReference, TypeC } from '../common/Type'
 import { Path, validationError } from 'aelastics-result'
-
-export interface InstanceReference {
-  id: number // unique identifier within object graph
-  category: string // instance category
-  typeName: string // used as a class name
-}
 
 /**
  *  Complex type: a structure which is derived from some type P
