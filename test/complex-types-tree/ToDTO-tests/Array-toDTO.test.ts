@@ -8,6 +8,14 @@ describe('ToDTO tests for Array type', () => {
     expect(isSuccess(res)).toBe(true)
   })
 
+  it('should be valid toDTOtree value for arrayOfNumbers with satisfied constraints', () => {
+    const a = [15, 12, 25, 60]
+    const res = arrayOfNumbers.toDTOtree(a)
+    if (isSuccess(res)) {
+      expect(res.value).toEqual([15, 12, 25, 60])
+    }
+  })
+
   it('should be valid toDTO value for arrayOfNumbers with satisfied constraints', () => {
     const a = [15, 12, 25, 60]
     const res = arrayOfNumbers.toDTO(a)
