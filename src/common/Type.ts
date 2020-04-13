@@ -151,10 +151,9 @@ export abstract class TypeC<V, G = V, T = V> {
       counter: 0,
       visitedNodes: options.isTreeDTO ? undefined : createVisitedNodesFromDTO()
     }
-    let errs: ValidationError[] = []
     let res = this.fromDTOCyclic(value, [], context)
-    if (errs.length > 0) {
-      return failures(errs)
+    if (context.errors.length > 0) {
+      return failures(context.errors)
     } else {
       const resVal = this.validate(res as V)
       return isSuccess(resVal) ? success<V>(res as V) : resVal
