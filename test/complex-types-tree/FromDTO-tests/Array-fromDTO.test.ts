@@ -146,8 +146,17 @@ describe('Tests for Array method fromDTOtree', () => {
         {
           code: 'ValidationError',
           message:
-            'Expected  date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]',
-          path: [],
+            'Expected [0]:[object Object] date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]',
+          path: [
+            {
+              actual: {
+                dateOfBirth: { day: 10, month: 5, year: 2000 },
+                employmentDate: { day: 25, month: 3, year: 2016 },
+                name: 'John'
+              },
+              segment: '[0]'
+            }
+          ],
           type: 'Worker',
           value:
             '{"name":"John","employmentDate":{"day":25,"month":3,"year":2016},"dateOfBirth":{"day":10,"month":5,"year":2000}}'

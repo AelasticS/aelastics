@@ -20,10 +20,7 @@ describe('fromDTOtree tests for Map', () => {
       ]
     ]
     let map = examples.MapofPeople.fromDTOtree(DTOObject as any)
-    // expect(isSuccess(map)).toBe(true)
-    if (isFailure(map)) {
-      expect(map.errors).toEqual('')
-    }
+    expect(isSuccess(map)).toBe(true)
   })
   it("testing fromDTOtree with some values that don't comply with restrictions (name)", () => {
     let DTOObject = [
@@ -45,7 +42,7 @@ describe('fromDTOtree tests for Map', () => {
     let map = examples.MapofPeople.fromDTOtree(DTOObject as any)
     if (isFailure(map)) {
       let s = examples.errorMessages(map)
-      expect(s).toEqual('Expected [0]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n')
+      expect(s).toEqual('Expected [1]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n')
     }
   })
 
@@ -137,7 +134,8 @@ describe('fromDTOtree tests for Map', () => {
     if (isFailure(map)) {
       let s = examples.errorMessages(map)
       expect(s).toEqual(
-        'Expected [0]:undefined/cities:1,[object Object],2,[object Object]/[0]:undefined/name:Belgrade. to be alphabetical, got `Belgrade.`\nExpected [0]:undefined/cities:1,[object Object],2,[object Object]/[0]:undefined/languages:1,Serbian1/[0]:undefined to be alphabetical, got `Serbian1`\n'
+        'Expected [1]:undefined/cities:[object Map]/[1]:undefined/name:Belgrade. to be alphabetical, got `Belgrade.`\n' +
+          'Expected [1]:undefined/cities:[object Map]/[1]:undefined/languages:[object Map]/[1]:undefined to be alphabetical, got `Serbian1`\n'
       )
     }
   })
