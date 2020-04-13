@@ -5,7 +5,6 @@ import { TypeOf } from '../../../src/common/Type'
 
 describe('toDTO test cases for IntersectionType', () => {
   it('should be valid toDTO for FullNameType', () => {
-    // Doesn't work!!
     const fullName: TypeOf<typeof FullNameType> = { name: 'John', familyName: 'Brown' }
     const res = FullNameType.toDTO(fullName)
     expect(isSuccess(res)).toBe(true)
@@ -17,16 +16,16 @@ describe('toDTO test cases for IntersectionType', () => {
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         intersection: {
-          '{ familyName: string }': {
+          famName: {
             object: { familyName: 'Brown' },
-            ref: { category: 'Object', id: 3, typeName: '{ familyName: string }' }
+            ref: { category: 'Object', id: 3, typeName: 'famName' }
           },
-          '{ name:  }': {
+          name: {
             object: { name: 'John' },
-            ref: { category: 'Object', id: 2, typeName: '{ name:  }' }
+            ref: { category: 'Object', id: 2, typeName: 'name' }
           }
         },
-        ref: { category: 'Intersection', id: 1, typeName: '({ name:  } | { familyName: string })' }
+        ref: { category: 'Intersection', id: 1, typeName: '(name | famName)' }
       })
     }
   })

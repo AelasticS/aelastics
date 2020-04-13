@@ -15,10 +15,7 @@ describe('fromDTO tests for Union type', () => {
       }
     }
     let p = examples.EmployeeUnionType.fromDTO(pDTO)
-    if (isFailure(p)) {
-      expect(p.errors).toEqual({})
-    }
-    // expect(isSuccess(p)).toBe(true)
+    expect(isSuccess(p)).toBe(true)
   })
 
   it('Testing fromDTO for EmployeeUnionType for wrong property value, should be false', () => {
@@ -70,17 +67,12 @@ describe('fromDTO tests for Union type', () => {
   })
 
   it('Testing fromDTO with literal, should be true', () => {
-    // let DtoType: t.DtoTypeOf<typeof examples.gradeType> = {
-    //   ref:{id:1, category:'Union', typeName:'grade'},
-    //   specificTypeName:'',
-    //   union:'failed'
-    //   };
-    let g = examples.gradeType.fromDTO('failed')
+    let DtoType: t.DtoTypeOf<typeof examples.gradeType> = {
+      ref: { id: 1, category: 'Union', specificTypeName: '"failed"', typeName: 'grade' },
+      union: 'failed'
+    }
+    let g = examples.gradeType.fromDTO(DtoType)
     expect(isSuccess(g)).toBe(true)
-    // if(isFailure(g))
-    // {
-    //   expect(g.errors).toEqual('')
-    // }
   })
 
   it('Testing fromDTO message for gradeType in case of unsatisfied constraint for fields', () => {
@@ -88,6 +80,7 @@ describe('fromDTO tests for Union type', () => {
       ref: { id: 1, category: 'Union', specificTypeName: 'PassingGrade', typeName: 'grade' },
       union: 11
     })
+    expect(isFailure(g)).toBe(true)
     if (isFailure(g)) {
       expect(examples.errorMessages(g)).toBe("Value : '11' is not union: 'grade'\n")
     }
