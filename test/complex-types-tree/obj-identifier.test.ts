@@ -6,55 +6,52 @@
 import * as t from '../../src/aelastics-types'
 import { isFailure, isSuccess } from 'aelastics-result'
 
-const person = t.object(
+const person = t.entity(
   {
     name: t.string,
     age: t.number
   },
-  'person',
-  undefined,
-  'name'
+  ['name'],
+  'person'
 )
 
 describe('Test cases for object identifier', () => {
   it('should throw error when wrong property name name is given as single identifier', () => {
     expect(() => {
-      t.object(
+      t.entity(
         {
           name: t.string,
           age: t.number
         },
-        'person',
-        undefined,
-        'wrong_name'
+        ['wrong_name'],
+        'person'
       )
     }).toThrow(Error)
   })
 
   it('should throw error when wrong identifier name is given in case in case of complex identifier spec', () => {
     expect(() => {
-      t.object(
+      t.entity(
         {
           name: t.string,
           age: t.number
         },
-        'person',
-        undefined,
-        ['name', 'age', 'wrong_name']
+        ['name', 'age', 'wrong_name'],
+        'person'
       )
     }).toThrow(Error)
   })
 
   it('should accept when identifier is correctly given', () => {
     expect(() => {
-      t.object(
+      t.entity(
         {
           name: t.string,
           age: t.number
         },
+        ['name'],
         'person',
-        undefined,
-        'name'
+        undefined
       )
     }).toBeDefined()
   })
@@ -66,14 +63,14 @@ describe('Test cases for object identifier', () => {
   })
 
   it('should not be valid reference when constraints of values are not satisfied', () => {
-    const student = t.object(
+    const student = t.entity(
       {
         id: t.string.derive('student').nonEmpty.alphabetical,
         name: t.string
       },
+      ['id'],
       'student',
-      undefined,
-      'id'
+      undefined
     )
     const refStudent = t.ref(student, 'personRef')
     const o = { id: '11Ad' }
@@ -81,15 +78,15 @@ describe('Test cases for object identifier', () => {
   })
 
   it('should not be valid reference when identifier has more properties then reference', () => {
-    const student = t.object(
+    const student = t.entity(
       {
         name: t.string,
         id: t.string,
         age: t.number
       },
+      ['name', 'id'],
       'student',
-      undefined,
-      ['name', 'id']
+      undefined
     )
     const refStudent = t.ref(student, 'studentRef')
     const o = { name: 'John' }
@@ -97,15 +94,15 @@ describe('Test cases for object identifier', () => {
   })
 
   it('should not be valid reference when identifier has less properties then reference', () => {
-    const student = t.object(
+    const student = t.entity(
       {
         name: t.string,
         id: t.string,
         age: t.number
       },
+      ['id'],
       'student',
-      undefined,
-      ['id']
+      undefined
     )
     const refStudent = t.ref(student, 'studentRef')
     const o = { id: '113A', name: 'John' }
@@ -113,15 +110,15 @@ describe('Test cases for object identifier', () => {
   })
 
   it('should not be valid when reference has incorrect type of values', () => {
-    const student = t.object(
+    const student = t.entity(
       {
         name: t.string,
         id: t.string,
         age: t.number
       },
+      ['id', 'name'],
       'student',
-      undefined,
-      ['id', 'name']
+      undefined
     )
     const refStudent = t.ref(student, 'studentRef')
     const o = { id: 12, name: 'John' }
@@ -129,15 +126,15 @@ describe('Test cases for object identifier', () => {
   })
 
   it('should be valid reference when complex identifier is correctly given', () => {
-    const student = t.object(
+    const student = t.entity(
       {
         name: t.string,
         id: t.string,
         age: t.number
       },
+      ['id', 'name'],
       'student',
-      undefined,
-      ['id', 'name']
+      undefined
     )
     const refStudent = t.ref(student, 'studentRef')
     const o = { id: '1231', name: 'John' }
@@ -146,15 +143,15 @@ describe('Test cases for object identifier', () => {
 })
 
 describe('Test cases for testing fromDTO of object identifier', () => {
-  const student = t.object(
+  const student = t.entity(
     {
       name: t.string,
       id: t.string.derive('student').nonEmpty.uppercase,
       age: t.number
     },
+    ['name', 'id'],
     'student',
-    undefined,
-    ['name', 'id']
+    undefined
   )
 
   it('should be valid fromDTO', () => {
@@ -246,15 +243,15 @@ describe('Test cases for testing fromDTO of object identifier', () => {
 })
 
 describe('Test cases for testing toDTO of object identifier', () => {
-  const student = t.object(
+  const student = t.entity(
     {
       name: t.string,
       id: t.string.derive('student').nonEmpty.uppercase,
       age: t.number
     },
+    ['name', 'id'],
     'student',
-    undefined,
-    ['name', 'id']
+    undefined
   )
 
   it('should be valid toDTO', () => {
