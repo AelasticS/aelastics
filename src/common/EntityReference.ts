@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeC } from './Type'
+import { Any, InstanceReference, ToDtoContext, TypeC } from './Type'
 import { isObject, ObjectTypeC, Props } from '../complex-types/ObjectType'
 import {
   appendPath,
@@ -163,6 +163,17 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     return this.referencedType.validateLinks(traversed)
+  }
+
+  defaultValue(): TypeOfKey<T> {
+    const output: { [key: string]: any } = {}
+    const identifier = this.referencedType.identifier
+    for (let i = 0; i < identifier.length; i++) {
+      const k: string = identifier[i]
+      const t = this.referencedType.baseType[k] as TypeC<any>
+      output[k] = t.defaultValue()
+    }
+    return output
   }
 }
 

@@ -97,7 +97,10 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     let [keys, types, len] = this.getPropsInfo()
     for (let i = 0; i < len; i++) {
       // @ts-ignore
-      obj[keys[i]] = types[i] instanceof ObjectTypeC ? undefined : types[i].defaultValue()
+      obj[keys[i]] =
+        types[i] instanceof ObjectTypeC
+          ? undefined // default object property is undefined
+          : types[i].defaultValue()
       // obj[this.keys[i]] = this.types[i].defaultValue();
     }
     return obj

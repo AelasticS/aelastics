@@ -33,6 +33,10 @@ export class NullTypeC extends SimpleTypeC<null> {
       return failure(new Error(`Value '${value}' is not null`))
     }
   }
+
+  defaultValue(): null {
+    return null
+  }
 }
 
 /**
