@@ -138,7 +138,7 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     let output: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V>
     const outputMapArray: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> = []
     for (const [k, v] of input.entries()) {
-      const kConversion = this.baseType.toDTOCyclic(
+      const kConversion = this.keyType.toDTOCyclic(
         k,
         appendPath(path, `[${k}]`, this.name),
         context
