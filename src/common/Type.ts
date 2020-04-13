@@ -54,23 +54,23 @@ export interface ConversionOptions {
   constructors?: Map<string, Constructor> // constructors
 }
 
-const createVisitedNodesToDTO = () => new VisitedNodes<Any, any, InstanceReference>()
-
-export type ToDtoContext = {
+export interface ConversionContext {
   options: ConversionOptions
-  visitedNodes: VisitedNodes<Any, any, InstanceReference>
   errors: ValidationError[]
   counter: number
 }
 
+export interface FromDtoContext extends ConversionContext {
+  visitedNodes?: VisitedNodes<Any, number, any> // in case of tree, we do not need cache
+}
+
 const createVisitedNodesFromDTO = () => new VisitedNodes<Any, number, any>()
 
-export type FromDtoContext = {
-  options: ConversionOptions
-  visitedNodes: VisitedNodes<Any, number, any>
-  errors: ValidationError[]
-  //  counter: number
+export interface ToDtoContext extends ConversionContext {
+  visitedNodes: VisitedNodes<Any, any, InstanceReference>
 }
+
+const createVisitedNodesToDTO = () => new VisitedNodes<Any, any, InstanceReference>()
 
 export const defaultConversionOptions: ConversionOptions = {
   validate: true,
@@ -148,7 +148,8 @@ export abstract class TypeC<V, G = V, T = V> {
     let context: FromDtoContext = {
       options: options,
       errors: [],
-      visitedNodes: createVisitedNodesFromDTO()
+      counter: 0,
+      visitedNodes: options.isTreeDTO ? undefined : createVisitedNodesFromDTO()
     }
     let errs: ValidationError[] = []
     let res = this.fromDTOCyclic(value, [], context)
