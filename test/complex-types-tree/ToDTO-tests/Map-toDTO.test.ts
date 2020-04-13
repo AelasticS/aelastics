@@ -17,6 +17,7 @@ describe('toDTOtree test cases for Map', () => {
       ])
     }
   })
+
   it("testing for some map  where value of one element doesn't comply with restrictions", () => {
     const a: TypeOf<typeof examples.MapofPeople> = new Map([
       [1, { name: 'Ivan', age: 21 }],
@@ -25,7 +26,8 @@ describe('toDTOtree test cases for Map', () => {
     const res = examples.MapofPeople.toDTOtree(a)
     expect(isFailure(res)).toBe(true)
   })
-  it("testing for some map  where key of one element doesn't comply with restrictions", () => {
+
+  it("testing error message for some map  where key of one element doesn't comply with restrictions", () => {
     const a: TypeOf<typeof examples.MapofPeople> = new Map([
       [5.3, { name: 'Ivan', age: 21 }],
       [2, { name: 'Stefan', age: 33 }]
@@ -38,27 +40,15 @@ describe('toDTOtree test cases for Map', () => {
     }
   })
 
-  it("testing for some map  where key of one element doesn't comply with restrictions(validator false)", () => {
-    const a: TypeOf<typeof examples.MapofPeople> = new Map([
-      [5.3, { name: 'Ivan', age: 21 }],
-      [2, { name: 'Stefan', age: 33 }]
-    ])
-    const res = examples.MapofPeople.toDTOtree(a)
-    if (isSuccess(res)) {
-      expect(res.value).toEqual([
-        [5.3, { name: 'Ivan', age: 21 }],
-        [2, { name: 'Stefan', age: 33 }]
-      ])
-    }
-  })
-  it("testing for some map  where value of one element doesn't comply with restrictions(validator false)", () => {
+  it("testing for some map  where value of one element doesn't comply with restrictions", () => {
     const a: TypeOf<typeof examples.MapofPeople> = new Map([
       [1, { name: 'Ivan', age: 21 }],
       [2, { name: 'Stefan', age: 33.8 }]
     ])
     const res = examples.MapofPeople.toDTOtree(a)
-    expect(isSuccess(res)).toBe(true)
+    expect(isSuccess(res)).toBe(false)
   })
+
   it('Testing for some valid map of countries', () => {
     const countries: TypeOf<typeof examples.MapOfCountries> = new Map([
       [

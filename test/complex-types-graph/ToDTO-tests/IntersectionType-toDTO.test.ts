@@ -8,20 +8,26 @@ describe('toDTO test cases for IntersectionType', () => {
     // Doesn't work!!
     const fullName: TypeOf<typeof FullNameType> = { name: 'John', familyName: 'Brown' }
     const res = FullNameType.toDTO(fullName)
-    // if(isSuccess(res)) {
-    //   expect(res.value).toEqual({})
-    // }
-    if (isFailure(res)) {
-      expect(res.errors).toEqual('')
-    }
-    // expect(isSuccess(res)).toBe(true)
+    expect(isSuccess(res)).toBe(true)
   })
-  // Missing ref and map
+
   it('should be valid toDTO value for FullNameType', () => {
     const fullName = { name: 'John', familyName: 'Brown' }
     const res = FullNameType.toDTO(fullName)
     if (isSuccess(res)) {
-      expect(res.value).toEqual({ familyName: 'Brown', name: 'John' })
+      expect(res.value).toEqual({
+        intersection: {
+          '{ familyName: string }': {
+            object: { familyName: 'Brown' },
+            ref: { category: 'Object', id: 3, typeName: '{ familyName: string }' }
+          },
+          '{ name:  }': {
+            object: { name: 'John' },
+            ref: { category: 'Object', id: 2, typeName: '{ name:  }' }
+          }
+        },
+        ref: { category: 'Intersection', id: 1, typeName: '({ name:  } | { familyName: string })' }
+      })
     }
   })
 

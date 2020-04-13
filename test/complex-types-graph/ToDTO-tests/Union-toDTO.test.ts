@@ -9,8 +9,7 @@ describe('ToDTO tests for union type', () => {
     const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Union', typeName: 'grade' },
-        typeInUnion: 'PassingGrade',
+        ref: { id: 1, category: 'Union', specificTypeName: 'PassingGrade', typeName: 'grade' },
         union: 7
       })
     }
@@ -20,8 +19,7 @@ describe('ToDTO tests for union type', () => {
     const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Union', typeName: 'grade' },
-        typeInUnion: '"failed"',
+        ref: { id: 1, category: 'Union', specificTypeName: '"failed"', typeName: 'grade' },
         union: 'failed'
       })
     }
@@ -40,8 +38,12 @@ describe('ToDTO tests for union type', () => {
     const res = OccupationType.toDTO(Doctor)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 2, category: 'Union', typeName: '(DriverType | DoctorType)' },
-        typeInUnion: 'DoctorType',
+        ref: {
+          id: 2,
+          category: 'Union',
+          specificTypeName: 'DoctorType',
+          typeName: '(DriverType | DoctorType)'
+        },
         union: {
           object: { profession: 'Doctor', specialization: 'Cardiologist' },
           ref: { id: 1, category: 'Object', typeName: 'DoctorType' }
@@ -59,8 +61,12 @@ describe('ToDTO tests for union type', () => {
     const res = OccupationType.toDTO((Doctor as unknown) as any)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 2, category: 'Union', typeName: '(DriverType | DoctorType)' },
-        typeInUnion: 'DoctorType',
+        ref: {
+          id: 2,
+          category: 'Union',
+          specificTypeName: 'DoctorType',
+          typeName: '(DriverType | DoctorType)'
+        },
         union: {
           object: { profession: 'Doctor', specialization: 'Cardiologist' },
           ref: { id: 1, category: 'Object', typeName: 'DoctorType' }

@@ -5,8 +5,7 @@ import * as t from '../../../src/aelastics-types'
 describe('fromDTO tests for Union type', () => {
   it('Testing fromDTO with basic case, should be true', () => {
     let pDTO: t.DtoTypeOf<typeof examples.EmployeeUnionType> = {
-      ref: { id: 1, category: 'Union', typeName: 'employee' },
-      typeInUnion: 'profesor',
+      ref: { id: 1, category: 'Union', specificTypeName: 'profesor', typeName: 'employee' },
       union: {
         ref: { id: 2, category: 'Object', typeName: 'profesor' },
         object: {
@@ -16,13 +15,15 @@ describe('fromDTO tests for Union type', () => {
       }
     }
     let p = examples.EmployeeUnionType.fromDTO(pDTO)
-    expect(isSuccess(p)).toBe(true)
+    if (isFailure(p)) {
+      expect(p.errors).toEqual({})
+    }
+    // expect(isSuccess(p)).toBe(true)
   })
 
   it('Testing fromDTO for EmployeeUnionType for wrong property value, should be false', () => {
     let pDTO: t.DtoTypeOf<typeof examples.EmployeeUnionType> = {
-      ref: { id: 1, category: 'Union', typeName: 'employee' },
-      typeInUnion: 'janitor',
+      ref: { id: 1, category: 'Union', specificTypeName: 'janitor', typeName: 'employee' },
       union: {
         ref: { id: 2, category: 'Object', typeName: 'janitor' },
         object: {
@@ -37,8 +38,7 @@ describe('fromDTO tests for Union type', () => {
 
   it('Testing fromDTO message for EmployeeUnionType in case of unsatisfied constraint for fields', () => {
     let pDTO: t.DtoTypeOf<typeof examples.EmployeeUnionType> = {
-      ref: { id: 1, category: 'Union', typeName: 'employee' },
-      typeInUnion: 'profesor',
+      ref: { id: 1, category: 'Union', specificTypeName: 'profesor', typeName: 'employee' },
       union: {
         ref: { id: 2, category: 'Object', typeName: 'profesor' },
         object: {
@@ -55,8 +55,7 @@ describe('fromDTO tests for Union type', () => {
 
   it('Testing fromDTO for EmployeeUnionType with extra fields, should be true', () => {
     let pDTO = {
-      ref: { id: 1, category: 'Union', typeName: 'employee' },
-      typeInUnion: 'profesor',
+      ref: { id: 1, category: 'Union', specificTypeName: 'profesor', typeName: 'employee' },
       union: {
         ref: { id: 2, category: 'Object', typeName: 'profesor' },
         object: {
@@ -73,7 +72,7 @@ describe('fromDTO tests for Union type', () => {
   it('Testing fromDTO with literal, should be true', () => {
     // let DtoType: t.DtoTypeOf<typeof examples.gradeType> = {
     //   ref:{id:1, category:'Union', typeName:'grade'},
-    //   typeInUnion:'',
+    //   specificTypeName:'',
     //   union:'failed'
     //   };
     let g = examples.gradeType.fromDTO('failed')
@@ -86,8 +85,7 @@ describe('fromDTO tests for Union type', () => {
 
   it('Testing fromDTO message for gradeType in case of unsatisfied constraint for fields', () => {
     let g = examples.gradeType.fromDTO({
-      ref: { id: 1, category: 'Union', typeName: 'grade' },
-      typeInUnion: 'PassingGrade',
+      ref: { id: 1, category: 'Union', specificTypeName: 'PassingGrade', typeName: 'grade' },
       union: 11
     })
     if (isFailure(g)) {
