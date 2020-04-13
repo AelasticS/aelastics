@@ -189,7 +189,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   ): ObjectType<P> {
     let output = {} as ObjectType<P>
     let inputObject: DtoProps<P>
-    if (!isObject(input.object)) {
+    if (!isObject(input)) {
       context.errors.push(validationError('Input is not an object', path, this.name, input))
       return output
     }
@@ -208,7 +208,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       } else {
         inputObject = input.object as DtoProps<P>
       }
-    } else if (!this.isObjRef(input) && !context.options.isTreeDTO) {
+    } else if (!this.isObjRef(input) && context.options.isTreeDTO) {
       inputObject = input
     } else {
       context.errors.push(
