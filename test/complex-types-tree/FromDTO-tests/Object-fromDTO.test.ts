@@ -2,18 +2,21 @@ import { isFailure, isSuccess } from 'aelastics-result'
 import * as examples from '../testing-types'
 import * as t from '../../../src/aelastics-types'
 
-describe('Testing fromDTO method of ObjectType', () => {
-  it('should be valid fromDTO for examples.DateType', () => {
-    let d = examples.DateType.fromDTO({
+describe('Testing fromDTOtree method of ObjectType', () => {
+  it('should be valid fromDTOtree for examples.DateType', () => {
+    let d = examples.DateType.fromDTOtree({
       day: 10,
       month: 5,
       year: 2000
     })
 
-    expect(isSuccess(d)).toBe(true)
+    // expect(isSuccess(d)).toBe(true)
+    if (isFailure(d)) {
+      expect(d).toEqual('')
+    }
   })
-  it('should not be valid fromDTO for examples.DateType', () => {
-    let d = examples.DateType.fromDTO({
+  it('should not be valid fromDTOtree for examples.DateType', () => {
+    let d = examples.DateType.fromDTOtree({
       day: 10,
       month: 15,
       year: 2000
@@ -22,12 +25,12 @@ describe('Testing fromDTO method of ObjectType', () => {
     expect(isSuccess(d)).toBe(false)
   })
   /**
-   *  Testing wrong error message for function examples.DateType.fromDTO with input object
+   *  Testing wrong error message for function examples.DateType.fromDTOtree with input object
    * which has incorrect values of property month
    */
 
-  it('should be valid error message fromDTO for invalid examples.DateType object', () => {
-    let d = examples.DateType.fromDTO({
+  it('should be valid error message fromDTOtree for invalid examples.DateType object', () => {
+    let d = examples.DateType.fromDTOtree({
       day: 10,
       month: 15,
       year: 2000
@@ -58,11 +61,11 @@ describe('Testing fromDTO method of ObjectType', () => {
   })
 
   /**
-   * Testing correct error message for function examples.EmployeeType.fromDTO with input object
+   * Testing correct error message for function examples.EmployeeType.fromDTOtree with input object
    * which has incorrect relation between values of properties age and dateOfBirth
    */
   // here works correctly
-  it('should be valid error message fromDTO for invalid examples.EmployeeType object', () => {
+  it('should be valid error message fromDTOtree for invalid examples.EmployeeType object', () => {
     let e = {
       name: 'Nick Ruffalo',
       employmentDate: {
@@ -77,7 +80,7 @@ describe('Testing fromDTO method of ObjectType', () => {
       }
     }
 
-    let emp = examples.EmployeeType.fromDTO(e as any)
+    let emp = examples.EmployeeType.fromDTOtree(e as any)
     if (isFailure(emp)) {
       expect(emp.errors).toEqual([
         {
@@ -94,10 +97,10 @@ describe('Testing fromDTO method of ObjectType', () => {
   })
 
   /*
-   *Testing wrong error message for function examples.EmployeeType.fromDTO with input object
+   *Testing wrong error message for function examples.EmployeeType.fromDTOtree with input object
    * which has incorrect value of property dateOfBirth - more than one error
    */
-  it('should not be valid error message fromDTO for invalid examples.EmployeeType object', () => {
+  it('should not be valid error message fromDTOtree for invalid examples.EmployeeType object', () => {
     let e = {
       name: 'Nikola Nikolic',
       employmentDate: {
@@ -112,7 +115,7 @@ describe('Testing fromDTO method of ObjectType', () => {
       }
     }
 
-    let emp = examples.EmployeeType.fromDTO(e as any)
+    let emp = examples.EmployeeType.fromDTOtree(e as any)
     if (isFailure(emp)) {
       expect(emp.errors).not.toEqual([
         {
@@ -128,10 +131,10 @@ describe('Testing fromDTO method of ObjectType', () => {
   })
 
   /*
-   *Testing correct error message for function examples.EmployeeType.fromDTO with input object
+   *Testing correct error message for function examples.EmployeeType.fromDTOtree with input object
    * which has incorrect value of property dateOfBirth - more than one error
    */
-  it('should be valid error message fromDTO for invalid examples.EmployeeType object with more than one error', () => {
+  it('should be valid error message fromDTOtree for invalid examples.EmployeeType object with more than one error', () => {
     let e = {
       name: 'Nick Ruffalo',
       employmentDate: {
@@ -146,7 +149,7 @@ describe('Testing fromDTO method of ObjectType', () => {
       }
     }
 
-    let emp = examples.EmployeeType.fromDTO(e as any)
+    let emp = examples.EmployeeType.fromDTOtree(e as any)
     if (isFailure(emp)) {
       let s = examples.errorMessages(emp)
       expect(s).toEqual(
@@ -159,12 +162,12 @@ describe('Testing fromDTO method of ObjectType', () => {
   })
 
   /*
-   *Testing correct error message for function fromDTO with empty object as input
+   *Testing correct error message for function fromDTOtree with empty object as input
    */
-  it('should be valid fromDTO for empty Object', () => {
+  it('should be valid fromDTOtree for empty Object', () => {
     let emptyObj = t.object({})
 
-    let emp = emptyObj.fromDTO({})
+    let emp = emptyObj.fromDTOtree({})
     expect(isSuccess(emp)).toBe(true)
   })
 })

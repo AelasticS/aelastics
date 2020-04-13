@@ -139,12 +139,12 @@ export abstract class TypeC<V, G = V, T = V> {
 
   public fromDTOtree(value: T, options: ConversionOptions = defaultConversionOptions): Result<V> {
     let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: true } }
-    return this.fromDTO(value, options) as Result<V>
+    return this.fromDTO(value, newOptions) as Result<V>
   }
 
   public fromDTOgraph(value: G, options: ConversionOptions = defaultConversionOptions): Result<V> {
     let newOptions: ConversionOptions = { ...options, ...{ isTreeDTO: false } }
-    return this.fromDTO(value, options) as Result<V>
+    return this.fromDTO(value, newOptions) as Result<V>
   }
 
   /** @internal */
