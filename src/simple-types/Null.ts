@@ -5,6 +5,7 @@
 import { SimpleTypeC } from './SimpleType'
 import { Error, failure, Path, pathToString, Result, success } from 'aelastics-result'
 import { VisitedNodes } from '../common/VisitedNodes'
+import { Any } from '../common/Type'
 
 export class NullTypeC extends SimpleTypeC<null> {
   public readonly _tag: 'Null' = 'Null'
@@ -13,7 +14,11 @@ export class NullTypeC extends SimpleTypeC<null> {
     super('Null')
   }
 
-  validateCyclic(value: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+  validateCyclic(
+    value: any,
+    path: Path = [],
+    traversed: VisitedNodes<Any, any, any>
+  ): Result<boolean> {
     if (value === null) {
       return success(true)
     } else {

@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { Any, ConversionContext, TypeC } from '../common/Type'
+import { Any, ToDtoContext, TypeC } from '../common/Type'
 import { Path, Result, success } from 'aelastics-result'
 
 export abstract class SimpleTypeC<V, G = V, T = V> extends TypeC<V, G, T> {
@@ -13,7 +13,7 @@ export abstract class SimpleTypeC<V, G = V, T = V> extends TypeC<V, G, T> {
   }
 
   /** @internal */
-  public toDTOCyclic(input: V, path: Path, context: ConversionContext): T | G {
+  public toDTOCyclic(input: V, path: Path, context: ToDtoContext): T | G {
     return (input as any) as T | G
   }
 

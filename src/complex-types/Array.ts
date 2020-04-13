@@ -14,16 +14,15 @@ import {
   validationError,
   Errors
 } from 'aelastics-result'
-import { Any, ConversionContext, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
-import { InstanceReference, ComplexTypeC } from './ComplexType'
+import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeC, TypeOf } from '../common/Type'
+import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
-import { DtoObjectType } from './ObjectType'
 
 /**
  * Array type
  */
 
-type DtoArrayType<E extends Any> = { ref: InstanceReference; array: Array<DtoTypeOf<E>> }
+type DtoArrayType<E extends Any> = { ref: InstanceReference; array?: Array<DtoTypeOf<E>> }
 
 export class ArrayTypeC<
   E extends Any /*, T extends Array<TypeOf<E>>, D extends c*/
@@ -41,19 +40,19 @@ export class ArrayTypeC<
   validateCyclic(
     input: Array<TypeOf<E>>,
     path: Path = [],
-    traversed: VisitedNodes
+    traversed: VisitedNodes<any, any, any>
   ): Result<boolean> {
     if (!Array.isArray(input)) {
       return failure(new Error(`Value ${path}: '${input}' is not Array`))
     }
 
-    let pair: TypeInstancePair = [this, input]
+    let pair: TypeInstancePair<Any, any> = [this, input]
 
     if (traversed.has(pair)) {
       return success(true)
     }
 
-    traversed.set(pair)
+    traversed.set(pair, undefined)
 
     const errors: Errors = []
     for (let i = 0; i < input.length; i++) {
@@ -85,7 +84,7 @@ export class ArrayTypeC<
   makeInstanceFromDTO(
     input: Array<DtoTypeOf<E>> | DtoArrayType<E>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): Array<TypeOf<E>> {
     let inputArray: Array<DtoTypeOf<E>>
     if (this.isArrayRef(input)) {
@@ -110,7 +109,7 @@ export class ArrayTypeC<
   makeDTOInstance(
     input: Array<TypeOf<E>>,
     path: Path,
-    context: ConversionContext
+    context: ToDtoContext
   ): Array<DtoTypeOf<E>> | DtoArrayType<E> {
     if (!Array.isArray(input)) {
       context.errors.push(

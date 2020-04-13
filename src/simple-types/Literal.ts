@@ -5,6 +5,7 @@
 import { SimpleTypeC } from './SimpleType'
 import { Error, failure, success, Path, Result, pathToString } from 'aelastics-result'
 import { VisitedNodes } from '../common/VisitedNodes'
+import { Any } from '../common/Type'
 
 export type LiteralValue = string | number | boolean
 
@@ -24,7 +25,11 @@ export class LiteralTypeC<V extends LiteralValue> extends SimpleTypeC<V, any, an
     // });
   }
 
-  validateCyclic(input: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+  validateCyclic(
+    input: any,
+    path: Path = [],
+    traversed: VisitedNodes<Any, any, any>
+  ): Result<boolean> {
     if (input === this.value) {
       return success(true)
     }

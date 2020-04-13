@@ -4,7 +4,7 @@
 
 import { SimpleTypeC } from './SimpleType'
 import { Error, failure, Result, Path, validationError, pathToString } from 'aelastics-result'
-import { ConversionContext } from '../common/Type'
+import { ToDtoContext } from '../common/Type'
 import { VisitedNodes } from '../common/VisitedNodes'
 
 export class DateTypeC extends SimpleTypeC<Date, string, string> {
@@ -14,7 +14,11 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
     super('Date')
   }
 
-  validateCyclic(input: any, path: Path = [], traversed: VisitedNodes): Result<boolean> {
+  validateCyclic(
+    input: any,
+    path: Path = [],
+    traversed: VisitedNodes<any, any, any>
+  ): Result<boolean> {
     if (input instanceof Date && !isNaN(input.getTime())) {
       return super.validate(input)
     }
@@ -28,7 +32,7 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
     return failure(new Error(`Value: '${input}' is not valid Date`))
   }
 
-  fromDTOCyclic(value: string, path: Path, context: ConversionContext): Date | undefined {
+  fromDTOCyclic(value: string, path: Path, context: ToDtoContext): Date | undefined {
     try {
       const d = new Date(value)
       return d
@@ -40,7 +44,7 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
     }
   }
 
-  toDTOCyclic(input: Date, path: Path, context: ConversionContext): string {
+  toDTOCyclic(input: Date, path: Path, context: ToDtoContext): string {
     return input.toJSON()
   }
 }
