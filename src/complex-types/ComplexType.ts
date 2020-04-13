@@ -2,7 +2,13 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { ToDtoContext, InstanceReference, TypeC, FromDtoContext } from '../common/Type'
+import {
+  ToDtoContext,
+  InstanceReference,
+  TypeC,
+  FromDtoContext,
+  ConversionContext
+} from '../common/Type'
 import { Path, validationError } from 'aelastics-result'
 
 /**
@@ -32,7 +38,7 @@ export abstract class ComplexTypeC<
   }
 
   public getReference(input: any): InstanceReference {
-    return input.ref
+    return input.ref === undefined ? 0 : input.ref
   }
 
   abstract makeDTOInstance(input: V, path: Path, context: ToDtoContext): T | G
@@ -61,37 +67,23 @@ export abstract class ComplexTypeC<
   }
 
   fromDTOCyclic(value: T | G, path: Path, context: FromDtoContext): V {
-    let ref = this.getReference(value)
-    let output = context.visitedNodes.get([this, ref.id])
-    if (output) {
-      // visited before, return from cache
-      if (!context.options.isTreeDTO) {
-        // should be tree, not graph
-        context.errors.push(
-          validationError(
-            `Input data is graph. Value ${path}: '${value}' of type '${this.name}' has more then one reference!`,
-            path,
-            this.name
-          )
-        )
-      }
-      return output
-    } else {
-      // an instance not visited before
-      let output = this.makeInstanceFromDTO(value, path, context)
-      if (output === undefined) {
-        if (!(context.options.includeTypeInfo && context.options.isTreeDTO)) {
-          context.errors.push(
-            validationError(
-              `Input data is graph. Value ${path}: '${value}' of type '${this.name}' has more then one reference!`,
-              path,
-              this.name
-            )
-          )
-        }
+    // test if it is graph or tree!
+    if (context.options.isTreeDTO === false) {
+      // graph!
+      let ref = this.getReference(value)
+      let output = context.visitedNodes?.get([this, ref.id])
+      if (output) {
+        // already in cache
+        return output
+      } else {
+        // put output in cache
+        output = this.makeInstanceFromDTO(value, path, context)
+        context.visitedNodes?.set([this, this.getReference(value).id], output)
         return output
       }
-      context.visitedNodes.set([this, this.getReference(value).id], output)
+    } else {
+      // tree!
+      let output = this.makeInstanceFromDTO(value, path, context)
       return output
     }
   }
