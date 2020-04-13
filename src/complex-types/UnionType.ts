@@ -66,7 +66,7 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   }
 
   protected isUnionRef(input: any): input is DtoUnionType<P> {
-    if (input.ref && input.typeInUnion && input.union) {
+    if (input.ref && input.specificTypeName && input.union) {
       return true
     }
     return false
