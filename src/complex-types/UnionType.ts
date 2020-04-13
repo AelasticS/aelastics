@@ -125,7 +125,7 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
       output = outputUnion
     } else {
       output = {
-        ref: { ...this.makeReference(input, context), ...{ typeInUnion: typeInUnion } },
+        ref: { ...this.makeReference(input, context), ...{ specificTypeName: typeInUnion } },
         union: outputUnion
       }
     }
