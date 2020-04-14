@@ -122,6 +122,8 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
 
     if (traversed.has(pair)) {
       return success(true)
+    } else {
+      traversed.set(pair, input)
     }
 
     let [keys, types, len] = this.getPropsInfo()
