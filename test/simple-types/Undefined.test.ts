@@ -14,18 +14,6 @@ describe('Test cases for undefined type', () => {
     expect(isSuccess(realUndefined.validate(value))).toBe(false)
   })
 
-  it('should be valid undefined type for function returning void.', () => {
-    const realUndefined = t.undefinedType
-    let value = () => console.log('g')
-    expect(isSuccess(realUndefined.validate(value()))).toBe(true)
-  })
-
-  it('should be valid undefined type for function returning undefined.', () => {
-    const realUndefined = t.undefinedType
-    let value = () => undefined
-    expect(isSuccess(realUndefined.validate(value()))).toBe(true)
-  })
-
   it('should verify that string is not undefined type.', () => {
     const realUndefined = t.undefinedType
     let value = 'some string'
