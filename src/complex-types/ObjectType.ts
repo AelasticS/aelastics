@@ -8,19 +8,19 @@ import {
   failures,
   failureValidation,
   isFailure,
-  success,
-  validationError,
   Path,
   Result,
+  success,
+  validationError,
   ValidationError
 } from 'aelastics-result'
 import { ComplexTypeC } from './ComplexType'
 import {
   Any,
-  ToDtoContext,
   DtoTreeTypeOf,
   DtoTypeOf,
   InstanceReference,
+  ToDtoContext,
   TypeC,
   TypeOf
 } from '../common/Type'
@@ -72,10 +72,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     { prop: string; type: ObjectTypeC<any, []> }
   >()
 
-  public getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
-    return [this._keys, this._types, this._len]
-  }
-
   constructor(name: string, props: P, identifier: I) {
     super(name, props)
     this.identifier = identifier
@@ -91,6 +87,20 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     let mp = new Map<string, TypeC<any>>()
     this._keys.forEach(key => mp.set(key, this.baseType[key] as TypeC<any>))
     return mp
+  }
+
+  /** @internal */
+  public static addProperty(obj: Object, prop: string, value: any) {
+    Object.defineProperty(obj, prop, {
+      value: value,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    })
+  }
+
+  public getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
+    return [this._keys, this._types, this._len]
   }
 
   public defaultValue(): any {
@@ -148,13 +158,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return errors.length ? failures(errors) : success(true)
   }
 
-  protected isObjRef(input: any): input is DtoObjectType<P> {
-    if (input.ref && input.object) {
-      return true
-    }
-    return false
-  }
-
   makeDTOInstance(
     input: ObjectType<P>,
     path: Path,
@@ -174,9 +177,16 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       if (context.options.isTreeDTO) {
         output = outObject
       } else {
-        output = {
-          ref: this.makeReference(input, context),
-          object: outObject
+        let ref = context.visitedNodes.get([this, input])
+        if (ref !== undefined) {
+          output = {
+            ref: ref,
+            object: outObject
+          }
+        } else {
+          throw new Error(
+            `System Error in MakeDTOInstance: not in VisitedNodes value '${path}: '${input}' of type '${this.name}'!`
+          )
         }
       }
       return output
@@ -247,16 +257,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return output
   }
 
-  /** @internal */
-  public static addProperty(obj: Object, prop: string, value: any) {
-    Object.defineProperty(obj, prop, {
-      value: value,
-      writable: true,
-      enumerable: true,
-      configurable: true
-    })
-  }
-
   validateLinks(traversed: Map<any, any>): Result<boolean> {
     traversed.set(this, this)
     let errors = []
@@ -272,6 +272,13 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       }
     }
     return errors.length ? failures(errors) : success(true)
+  }
+
+  protected isObjRef(input: any): input is DtoObjectType<P> {
+    if (input.ref && input.object) {
+      return true
+    }
+    return false
   }
 }
 

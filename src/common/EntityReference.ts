@@ -144,7 +144,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       if (context.options.isTreeDTO) {
         output = outReference
       } else {
-        output = { ref: this.makeReference(input, context), reference: outReference }
+        output = { ref: this.retrieveRefFromVisited(input, context), reference: outReference }
       }
       return output
     } catch (e) {

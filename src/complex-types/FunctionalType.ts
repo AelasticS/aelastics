@@ -3,9 +3,17 @@
  *
  */
 
-import { Any, DtoTreeTypeOf, DtoTypeOf, TypeC, TypeOf } from '../common/Type'
+import {
+  Any,
+  DtoTreeTypeOf,
+  DtoTypeOf,
+  FromDtoContext,
+  ToDtoContext,
+  TypeC,
+  TypeOf
+} from '../common/Type'
 import { DtoObjectType, DtoProps, ObjectType, Props } from './ObjectType'
-import { failures, isFailure, Result, success } from 'aelastics-result'
+import { failures, isFailure, Path, Result, success } from 'aelastics-result'
 
 export type FunDecl<A, R> = {
   args: A
@@ -19,6 +27,22 @@ export class FunctionalTypeC<P extends Props, R extends Any> extends TypeC<
 > {
   constructor(name: string, readonly args: P, readonly returns: R) {
     super(name)
+  }
+
+  toDTOCyclic(
+    input: FunDecl<ObjectType<P>, TypeOf<R>>,
+    path: Path,
+    context: ToDtoContext
+  ): FunDecl<DtoProps<P>, DtoTreeTypeOf<R>> | FunDecl<DtoObjectType<P>, DtoTypeOf<R>> {
+    return undefined as any
+  }
+
+  fromDTOCyclic(
+    value: FunDecl<DtoProps<P>, DtoTreeTypeOf<R>> | FunDecl<DtoObjectType<P>, DtoTypeOf<R>>,
+    path: Path,
+    context: FromDtoContext
+  ): FunDecl<ObjectType<P>, TypeOf<R>> | undefined {
+    return undefined
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

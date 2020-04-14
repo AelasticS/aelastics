@@ -171,7 +171,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
           output = outputTaggedUnion
         } else {
           output = {
-            ref: this.makeReference(input, context),
+            ref: this.retrieveRefFromVisited(input, context),
             taggedUnion: outputTaggedUnion
           }
         }

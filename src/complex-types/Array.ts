@@ -129,7 +129,7 @@ export class ArrayTypeC<
     if (context.options.isTreeDTO) {
       output = outArray
     } else {
-      output = { ref: this.makeReference(input, context), array: outArray }
+      output = { ref: this.retrieveRefFromVisited(input, context), array: outArray }
     }
     return output
   }

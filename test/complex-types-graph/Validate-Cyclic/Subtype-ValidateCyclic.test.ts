@@ -28,4 +28,16 @@ describe('Validate Cyclic subtype structures', () => {
     objectInstance.c.b = objectInstance
     expect(isSuccess(type.validate(objectInstance as any))).toBe(true)
   })
+
+  it("Testing if cyclic subtype is dto'", () => {
+    const type = examples.recursiveSubtype
+    examples.subtypeSchema.validate()
+    let objectInstance = {
+      a: 'first level',
+      b: 12,
+      c: { a: false, b: {} }
+    }
+    objectInstance.c.b = objectInstance
+    expect(isSuccess(type.toDTO(objectInstance as any))).toBe(true)
+  })
 })

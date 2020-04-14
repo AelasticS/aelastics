@@ -173,12 +173,18 @@ export abstract class TypeC<V, G = V, T = V> {
   }
 
   /** @internal */
-  public fromDTOCyclic(value: T | G, path: Path, context: FromDtoContext): V | undefined {
+  public abstract fromDTOCyclic(
+    value: T | G,
+    path: Path,
+    context: FromDtoContext
+  ):
+    | V
+    | undefined /*{
     context.errors.push(
       validationError('Internal method fromDTOCyclic not implemented', path, `${value}`)
     )
     return (value as any) as V
-  }
+  }*/
 
   /**
    *  Conversion function - validates value of type T and converts it to DTO (data transfer object) of type D.
@@ -219,12 +225,18 @@ export abstract class TypeC<V, G = V, T = V> {
   }
 
   /** @internal */
-  public toDTOCyclic(input: V, path: Path, context: ToDtoContext): T | G {
+  public abstract toDTOCyclic(
+    input: V,
+    path: Path,
+    context: ToDtoContext
+  ):
+    | T
+    | G /*{
     context.errors.push(
       validationError('Internal method toDTOCyclic not implemented', path, `${input}`)
     )
     return (input as any) as G
-  }
+  }*/
 
   public addValidator(validator: Validator<V>): this {
     this.validators.push(validator)

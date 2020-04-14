@@ -115,7 +115,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
       return outputIntersection
     } else {
       let output: DtoIntersectionType<P> = {
-        ref: this.makeReference(input, context),
+        ref: this.retrieveRefFromVisited(input, context),
         intersection: {}
       }
       for (const t of this.baseType) {

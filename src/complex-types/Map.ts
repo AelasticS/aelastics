@@ -153,7 +153,7 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     if (context.options.isTreeDTO) {
       output = outputMapArray
     } else {
-      output = { ref: this.makeReference(input, context), map: outputMapArray }
+      output = { ref: this.retrieveRefFromVisited(input, context), map: outputMapArray }
     }
     return output
   }
