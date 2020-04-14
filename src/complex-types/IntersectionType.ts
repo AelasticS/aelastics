@@ -3,7 +3,14 @@
  *
  */
 
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import {
+  Any,
+  ToDtoContext,
+  DtoTypeOf,
+  InstanceReference,
+  TypeOf,
+  FromDtoContext
+} from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
@@ -115,7 +122,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
       return outputIntersection
     } else {
       let output: DtoIntersectionType<P> = {
-        ref: this.retrieveRefFromVisited(input, context),
+        ref: this.retrieveRefFromVisited(input, context.visitedNodes),
         intersection: {}
       }
       for (const t of this.baseType) {
@@ -155,6 +162,14 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
       Object.assign(value, t.defaultValue())
     }
     return value
+  }
+
+  protected makeEmptyInstance(
+    value: UnionToIntersection<DtoTypeOf<P[number]>> | DtoIntersectionType<P>,
+    path: Path,
+    context: FromDtoContext
+  ): UnionToIntersection<TypeOf<P[number]>> {
+    return undefined as any
   }
 }
 

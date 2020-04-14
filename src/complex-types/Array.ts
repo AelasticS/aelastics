@@ -14,7 +14,15 @@ import {
   validationError,
   Errors
 } from 'aelastics-result'
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeC, TypeOf } from '../common/Type'
+import {
+  Any,
+  ToDtoContext,
+  DtoTypeOf,
+  InstanceReference,
+  TypeC,
+  TypeOf,
+  FromDtoContext
+} from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
@@ -34,6 +42,14 @@ export class ArrayTypeC<
   }
 
   public defaultValue(): any {
+    return []
+  }
+
+  protected makeEmptyInstance(
+    value: Array<DtoTypeOf<E>> | DtoArrayType<E>,
+    path: Path,
+    context: FromDtoContext
+  ): Array<TypeOf<E>> {
     return []
   }
 
@@ -129,7 +145,10 @@ export class ArrayTypeC<
     if (context.options.isTreeDTO) {
       output = outArray
     } else {
-      output = { ref: this.retrieveRefFromVisited(input, context), array: outArray }
+      output = {
+        ref: this.retrieveRefFromVisited(input, context.visitedNodes),
+        array: outArray
+      }
     }
     return output
   }

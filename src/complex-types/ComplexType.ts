@@ -11,6 +11,7 @@ import {
 } from '../common/Type'
 import { Path, validationError } from 'aelastics-result'
 import { Props } from './ObjectType'
+import { VisitedNodes } from '../common/VisitedNodes'
 
 interface GraphNode {
   ref: InstanceReference
@@ -38,13 +39,13 @@ export abstract class ComplexTypeC<
 
   abstract makeInstanceFromDTO(input: T | G, path: Path, context: FromDtoContext): V
 
-  public retrieveRefFromVisited(input: any, context: ToDtoContext): InstanceReference {
-    let ref = context.visitedNodes.get([this, input])
+  public retrieveRefFromVisited<S, T>(key: S, visitedNodes: VisitedNodes<TypeC<any>, S, T>): T {
+    let ref = visitedNodes.get([this, key])
     if (ref === undefined) {
       throw new Error(
-        `System Error in retrieveRefFromVisited: not in VisitedNodes value '${input}' of type '${this.name}'!`
+        `System Error in retrieveRefFromVisited: not in VisitedNodes for type '${this.name}'!`
       )
-    } else return ref
+    } else return ref as any
   }
 
   public makeReference(input: any, context: ToDtoContext): InstanceReference {
@@ -55,7 +56,9 @@ export abstract class ComplexTypeC<
     }
   }
 
-  private getIdFromNode(input: any): InstanceReference {
+  protected abstract makeEmptyInstance(value: T | G, path: Path, context: FromDtoContext): V
+
+  protected getIdFromNode(input: any): InstanceReference {
     return input.ref === undefined ? 0 : input.ref
   }
 
@@ -91,8 +94,9 @@ export abstract class ComplexTypeC<
         return output
       } else {
         // put output in cache
-        output = this.makeInstanceFromDTO(value, path, context)
+        output = this.makeEmptyInstance(value, path, context)
         context.visitedNodes?.set([this, this.getIdFromNode(value).id], output)
+        output = this.makeInstanceFromDTO(value, path, context)
         return output
       }
     } else {

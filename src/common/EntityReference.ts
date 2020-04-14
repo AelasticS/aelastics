@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, InstanceReference, ToDtoContext, TypeC } from './Type'
+import { Any, FromDtoContext, InstanceReference, ToDtoContext, TypeC } from './Type'
 import { isObject, ObjectTypeC, Props } from '../complex-types/ObjectType'
 import {
   appendPath,
@@ -144,7 +144,10 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       if (context.options.isTreeDTO) {
         output = outReference
       } else {
-        output = { ref: this.retrieveRefFromVisited(input, context), reference: outReference }
+        output = {
+          ref: this.retrieveRefFromVisited(input, context.visitedNodes),
+          reference: outReference
+        }
       }
       return output
     } catch (e) {
@@ -174,6 +177,14 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       output[k] = t.defaultValue()
     }
     return output
+  }
+
+  protected makeEmptyInstance(
+    value: DtoTypeOfKey<T> | DtoEntityReference<T>,
+    path: Path,
+    context: FromDtoContext
+  ): TypeOfKey<T> {
+    return {}
   }
 }
 

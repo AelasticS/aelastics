@@ -16,7 +16,14 @@ import {
   Result
 } from 'aelastics-result'
 import { ComplexTypeC } from './ComplexType'
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import {
+  Any,
+  ToDtoContext,
+  DtoTypeOf,
+  InstanceReference,
+  TypeOf,
+  FromDtoContext
+} from '../common/Type'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
 /**
@@ -46,6 +53,14 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
   }
 
   public defaultValue(): any {
+    return new Map()
+  }
+
+  protected makeEmptyInstance(
+    value: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V>,
+    path: Path,
+    context: FromDtoContext
+  ): Map<TypeOf<K>, TypeOf<V>> {
     return new Map()
   }
 
@@ -153,7 +168,10 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     if (context.options.isTreeDTO) {
       output = outputMapArray
     } else {
-      output = { ref: this.retrieveRefFromVisited(input, context), map: outputMapArray }
+      output = {
+        ref: this.retrieveRefFromVisited(input, context.visitedNodes),
+        map: outputMapArray
+      }
     }
     return output
   }

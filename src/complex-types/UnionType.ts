@@ -4,7 +4,14 @@
  */
 
 import { ComplexTypeC } from './ComplexType'
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import {
+  Any,
+  ToDtoContext,
+  DtoTypeOf,
+  InstanceReference,
+  TypeOf,
+  FromDtoContext
+} from '../common/Type'
 import {
   Error,
   failure,
@@ -126,7 +133,7 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     } else {
       output = {
         ref: {
-          ...this.retrieveRefFromVisited(input, context),
+          ...this.retrieveRefFromVisited(input, context.visitedNodes),
           ...{ specificTypeName: typeInUnion }
         },
         union: outputUnion
@@ -167,6 +174,14 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   }
 
   defaultValue(): any {
+    return undefined
+  }
+
+  protected makeEmptyInstance(
+    value: DtoTypeOf<P[number]> | DtoUnionType<P>,
+    path: Path,
+    context: FromDtoContext
+  ): TypeOf<P[number]> {
     return undefined
   }
 }

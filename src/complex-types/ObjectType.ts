@@ -19,6 +19,7 @@ import {
   Any,
   DtoTreeTypeOf,
   DtoTypeOf,
+  FromDtoContext,
   InstanceReference,
   ToDtoContext,
   TypeC,
@@ -198,12 +199,28 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     }
   }
 
+  protected makeEmptyInstance(
+    value: DtoProps<P> | DtoObjectType<P>,
+    path: Path,
+    context: FromDtoContext
+  ): ObjectType<P> {
+    return {} as any
+  }
+
   makeInstanceFromDTO(
     input: DtoProps<P> | DtoObjectType<P>,
     path: Path,
-    context: ToDtoContext
+    context: FromDtoContext
   ): ObjectType<P> {
-    let output = {} as ObjectType<P>
+    let output
+    if (!context.options.isTreeDTO) {
+      output = this.retrieveRefFromVisited<number, any>(
+        this.getIdFromNode(input).id,
+        context.visitedNodes!
+      ) // {} as ObjectType<P>
+    } else {
+      output = this.makeEmptyInstance(input, path, context) // empty
+    }
     let inputObject: DtoProps<P>
     if (!isObject(input)) {
       context.errors.push(validationError('Input is not an object', path, this.name, input))
@@ -251,6 +268,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         continue
       }
       const ak = inputObject[k]
+      // @ts-ignore
       const conversion = t.fromDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
       ObjectTypeC.addProperty(output, k, conversion)
     }

@@ -16,7 +16,14 @@ import {
   validationError
 } from 'aelastics-result'
 import { ObjectTypeC, Props } from './ObjectType'
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import {
+  Any,
+  ToDtoContext,
+  DtoTypeOf,
+  InstanceReference,
+  TypeOf,
+  FromDtoContext
+} from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 
@@ -171,7 +178,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
           output = outputTaggedUnion
         } else {
           output = {
-            ref: this.retrieveRefFromVisited(input, context),
+            ref: this.retrieveRefFromVisited(input, context.visitedNodes),
             taggedUnion: outputTaggedUnion
           }
         }
@@ -204,6 +211,14 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
 
   defaultValue(): any {
     return undefined
+  }
+
+  protected makeEmptyInstance(
+    value: DtoTypeOf<P[keyof P]> | DtoTaggedUnionType<P>,
+    path: Path,
+    context: FromDtoContext
+  ): TypeOf<P[keyof P]> {
+    return {} as any
   }
 }
 

@@ -38,6 +38,11 @@ describe('Validate Cyclic subtype structures', () => {
       c: { a: false, b: {} }
     }
     objectInstance.c.b = objectInstance
-    expect(isSuccess(type.toDTO(objectInstance as any))).toBe(true)
+    let res = type.toDTO(objectInstance as any)
+    expect(isSuccess(res)).toBe(true)
+    if (isSuccess(res)) {
+      let res2 = type.fromDTO(res.value)
+      expect(isSuccess(res2)).toBe(true)
+    }
   })
 })
