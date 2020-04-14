@@ -27,7 +27,7 @@ export class UndefinedTypeC extends SimpleTypeC<undefined> {
   }
 
   validate(value: any): Result<boolean> {
-    if (value === undefinedType) {
+    if (value === undefined) {
       return success(true)
     } else {
       return failure(new Error(`Value '${value}' is not undefined`))

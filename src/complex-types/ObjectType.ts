@@ -29,6 +29,7 @@ import { TypeSchema } from '../common/TypeSchema'
 import { ArrayTypeC } from './Array'
 import { MapTypeC } from './Map'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
+import { LinkC } from '../common/LinkC'
 
 export interface Props {
   [key: string]: Any // TypeC<any>
@@ -309,6 +310,35 @@ export const entity = <P extends Props, I extends readonly string[]>(
   }
   return obj
 }
+
+function findBaseType(fp: Any, type: ObjectTypeC<any, any>, prop: string): ObjectTypeC<any, any> {
+  // handle link types
+  if (fp instanceof LinkC) {
+    let linkedType = fp.resolveType()
+    if (linkedType === undefined) {
+      throw new Error(`Property '${prop}' on type '${type.name}' is not a valid link.`)
+    } else {
+      return findBaseType(linkedType, type, prop)
+    }
+  }
+  // handle optional types
+  if (fp instanceof OptionalTypeC) {
+    return findBaseType(fp.base, type, prop)
+  }
+
+  // handle collections
+  if (fp instanceof ArrayTypeC || fp instanceof MapTypeC) {
+    fp = fp.baseType
+    return findBaseType(fp, type, prop)
+  }
+
+  // check that props are object types
+  if (!(fp instanceof ObjectTypeC)) {
+    throw new Error(`Property '${prop}' on type '${type.name}' not object or entity type.`)
+  }
+  return fp
+}
+
 /**
  *
  * @param firstType
@@ -329,40 +359,14 @@ export const inverseProps = (
     let fp = firstType.baseType[firstProp] as TypeC<any>
     if (!fp) {
       throw new Error(`Property '${firstProp}' on type '${firstType.name}' does not extist.`)
-      return
     }
     let sp = secondType.baseType[secondProp] as TypeC<any>
     if (!sp) {
       throw new Error(`Property '${secondProp}' on type '${secondType.name}' does not extist.`)
-      return
     }
-    // handle optional types
-    if (fp instanceof OptionalTypeC) {
-      fp = fp.base
-    }
-    if (sp instanceof OptionalTypeC) {
-      sp = sp.base
-    }
-    // handle collections
-    if (fp instanceof ArrayTypeC || fp instanceof MapTypeC) {
-      fp = fp.baseType
-    }
-    if (sp instanceof ArrayTypeC || sp instanceof MapTypeC) {
-      sp = sp.baseType
-    }
-    // check that props are object types
-    if (!(fp instanceof ObjectTypeC)) {
-      throw new Error(
-        `Property '${firstProp}' on type '${firstType.name}' not object or entity type.`
-      )
-      return
-    }
-    if (!(sp instanceof ObjectTypeC)) {
-      throw new Error(
-        `Property '${secondProp}' on type '${secondType.name}' not object or entity type.`
-      )
-      return
-    }
+
+    fp = findBaseType(fp, firstType, firstProp)
+    sp = findBaseType(sp, secondType, secondProp)
     // check that props are correct inverse
     if (fp !== secondType) {
       throw new Error(

@@ -347,6 +347,8 @@ export const arrayOfPeople = t.arrayOf(person)
 
 export const ProfessorIntersectionType = t.intersectionOf([person, profesorType], 'professor')
 
+export const DoctorIntersectionType = t.intersectionOf([person, doctorType], 'doctor intersection')
+
 export const Employed = t.boolean
 export const DateOfBirth = t.date
 
