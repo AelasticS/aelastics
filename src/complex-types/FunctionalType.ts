@@ -48,6 +48,12 @@ export class FunctionalTypeC<P extends Props, R extends Any> extends TypeC<
 
     return errors.length ? failures(errors) : success(true)
   }
+
+  defaultValue(): any {
+    return () => {
+      return this.returns.defaultValue()
+    }
+  }
 }
 
 export const fun = <P extends Props, R extends Any>(

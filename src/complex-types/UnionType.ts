@@ -162,6 +162,10 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     }
     return errors.length ? failures(errors) : success(true)
   }
+
+  defaultValue(): any {
+    return undefined
+  }
 }
 
 const getUnionName = <U extends Array<Any>>(elements: U): string => {

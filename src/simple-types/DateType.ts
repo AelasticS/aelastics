@@ -47,6 +47,10 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
   toDTOCyclic(input: Date, path: Path, context: ToDtoContext): string {
     return input.toJSON()
   }
+
+  defaultValue(): Date {
+    return new Date(Date.now()) // current date time
+  }
 }
 
 /**

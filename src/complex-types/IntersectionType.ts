@@ -148,6 +148,14 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
     }
     return false
   }
+
+  defaultValue(): any {
+    let value = {}
+    for (const t of this.baseType) {
+      Object.assign(value, t.defaultValue())
+    }
+    return value
+  }
 }
 
 const getIntersectionName = <U extends Array<Any>>(elements: U): string => {

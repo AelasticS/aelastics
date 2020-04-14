@@ -19,6 +19,10 @@ export class LinkC extends TypeC<any> {
     this.path = path
   }
 
+  defaultValue(): any {
+    return undefined
+  }
+
   validateCyclic(
     value: any,
     path: Path = [],

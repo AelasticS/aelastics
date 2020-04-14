@@ -114,9 +114,11 @@ export abstract class TypeC<V, G = V, T = V> {
   /**
    *  Default value of this type
    */
-  public defaultValue(): any {
-    return undefined
-  }
+  public abstract defaultValue(): V
+
+  /*{
+    return undefined as any
+  }*/
 
   /** Custom type guard - implemented using the validation  function */
   public readonly is: Is<V> = (v: any): v is V => isSuccess(this.validate(v))

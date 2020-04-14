@@ -52,6 +52,10 @@ export class OptionalTypeC<T extends TypeC<any>> extends TypeC<
     if (traversed.has(this.base)) return success(true)
     else return this.base.validateLinks(traversed)
   }
+
+  defaultValue(): any {
+    return undefined
+  }
 }
 
 export function optional<RT extends Any>(type: RT, name?: string): OptionalTypeC<RT> {

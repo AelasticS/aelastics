@@ -44,6 +44,10 @@ export class LiteralTypeC<V extends LiteralValue> extends SimpleTypeC<V, any, an
     }
     return failure(new Error(`Value ${input}' is not valid Literal type`))
   }
+
+  defaultValue(): V {
+    return this.value
+  }
 }
 
 /**
