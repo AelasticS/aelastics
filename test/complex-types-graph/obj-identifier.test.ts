@@ -218,6 +218,7 @@ describe('Test cases for testing fromDTO of object identifier', () => {
       reference: { id: 'AA13', name: 'John', age: 21 }
     }
     const res = refStudent.fromDTO(o)
+    expect(isFailure(res)).toBe(true)
     if (isFailure(res)) {
       expect(res.errors).toEqual([
         {
@@ -292,10 +293,9 @@ describe('Test cases for testing toDTO of object identifier', () => {
     const res = refPerson.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { category: undefined, id: 1, typeName: 'personRef' },
-        reference: { name: 'John' }
+        ref: { category: 'EntityReference', id: 1, typeName: 'personRef' },
+        reference: { age: 25 }
       })
-      //  {"ref": {"category": undefined, "id": 1, "typeName": "personRef"}, "reference": {"name": {"name": "John"}}} ? name 2 times
     }
   })
 
@@ -322,13 +322,6 @@ describe('Test cases for testing toDTO of object identifier', () => {
     const res = refStudent.fromDTO(o)
     if (isFailure(res)) {
       expect(res.errors).toEqual([
-        {
-          code: undefined,
-          message: 'missing property',
-          path: [{ actual: undefined, segment: 'name' }],
-          type: 'studentRef',
-          value: undefined
-        },
         {
           code: undefined,
           message: 'missing property',

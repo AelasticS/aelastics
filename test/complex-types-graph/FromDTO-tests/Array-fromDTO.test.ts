@@ -146,34 +146,10 @@ describe('Tests for Array method fromDTO', () => {
         {
           code: undefined,
           message:
-            "Input data is graph. Value : '[object Object]' of type '{  }' has more then one reference!",
-          path: [],
-          type: '{  }',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message:
             "Types are not matching: input type is '' and expected type is '{  }'. A possible subtype cannot be handled!",
           path: [],
           type: '{  }',
           value: '{"ref":{"id":3,"category":"Object","typeName":""},"object":{}}'
-        },
-        {
-          code: undefined,
-          message:
-            "Input data is graph. Value : '[object Object]' of type '{  }' has more then one reference!",
-          path: [],
-          type: '{  }',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message:
-            "Input data is graph. Value : '[object Object]' of type 'arrayOfEmployees' has more then one reference!",
-          path: [],
-          type: 'arrayOfEmployees',
-          value: undefined
         }
       ])
     }

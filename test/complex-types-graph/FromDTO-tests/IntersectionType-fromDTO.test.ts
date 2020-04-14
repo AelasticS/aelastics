@@ -1,6 +1,6 @@
 import { FullNameType } from '../../example/types-example'
 import { isFailure, isSuccess } from 'aelastics-result'
-import { errorMessages, ProfessorIntersectionType } from '../testing-types'
+import { DoctorIntersectionType, errorMessages, ProfessorIntersectionType } from '../testing-types'
 import { DtoTypeOf } from '../../../src/common/Type'
 
 describe('fromDTO test cases for IntersectionType', () => {
@@ -82,44 +82,41 @@ describe('fromDTO test cases for IntersectionType', () => {
   })
 
   it('should not be valid fromDTO for ProfessorIntersectionType   ', () => {
-    const professor = {
-      ref: { typeName: 'professor', category: 'Intersection', id: 1 },
+    const doctor = {
+      ref: { typeName: 'doctor intersection', category: 'Intersection', id: 1 },
       intersection: {
         person: {
           ref: { typeName: 'person', category: 'Object', id: 2 },
           object: { name: 'John22', age: 32 }
         },
-        profesor: {
-          ref: { typeName: 'profesor', category: 'Object', id: 3 },
-          object: { name: 'John', title: 'Msc' }
+        doctorObject: {
+          ref: { typeName: 'doctorObject', category: 'Object', id: 3 },
+          object: { profession: 'doctor', specialization: true, worksAt: 'Bel Medic' }
         }
       }
     }
-    const res = ProfessorIntersectionType.fromDTO(professor)
+    const res = DoctorIntersectionType.fromDTO(doctor)
     expect(isSuccess(res)).toBe(false)
   })
 
   it('should be valid fromDTO error message for ProfessorIntersectionType   ', () => {
-    const professor = {
-      ref: { typeName: 'professor', category: 'Intersection', id: 1 },
+    const doctor = {
+      ref: { typeName: 'doctor intersection', category: 'Intersection', id: 1 },
       intersection: {
         person: {
           ref: { typeName: 'person', category: 'Object', id: 2 },
           object: { name: 'John22', age: 32 }
         },
-        profesor: {
-          ref: { typeName: 'profesor', category: 'Object', id: 3 },
-          object: { name: 'John33', title: 'Msc' }
+        doctorObject: {
+          ref: { typeName: 'doctorObject', category: 'Object', id: 3 },
+          object: { profession: 'doctor', specialization: true, worksAt: 'Bel Medic' }
         }
       }
     }
-    const res = ProfessorIntersectionType.fromDTO(professor)
+    const res = DoctorIntersectionType.fromDTO(doctor)
     expect(isFailure(res)).toBe(true)
     if (isFailure(res)) {
-      expect(errorMessages(res)).toEqual(
-        'Expected name:John33 to be alphabetical, got `John33`\n' +
-          'Expected name:John33 to be alphabetical, got `John33`\n'
-      )
+      expect(errorMessages(res)).toEqual('Expected name:John22 to be alphabetical, got `John22`\n')
     }
   })
 })
