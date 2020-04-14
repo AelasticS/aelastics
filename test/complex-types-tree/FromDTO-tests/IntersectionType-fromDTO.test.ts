@@ -43,7 +43,7 @@ describe('fromDTOtree test cases for IntersectionType', () => {
     const professor = { name: 'John', age: -32, title: 'Msc' }
     const res = ProfessorIntersectionType.fromDTOtree((professor as unknown) as any)
     if (isFailure(res)) {
-      expect(errorMessages(res)).toEqual('')
+      expect(errorMessages(res)).toEqual('Expected age:-32 to be positive, got -32\n')
     }
   })
 })

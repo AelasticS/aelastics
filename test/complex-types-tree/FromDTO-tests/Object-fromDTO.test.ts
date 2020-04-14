@@ -10,10 +10,7 @@ describe('Testing fromDTOtree method of ObjectType', () => {
       year: 2000
     })
 
-    // expect(isSuccess(d)).toBe(true)
-    if (isFailure(d)) {
-      expect(d).toEqual('')
-    }
+    expect(isSuccess(d)).toBe(true)
   })
   it('should not be valid fromDTOtree for examples.DateType', () => {
     let d = examples.DateType.fromDTOtree({
@@ -40,12 +37,7 @@ describe('Testing fromDTOtree method of ObjectType', () => {
         {
           code: 'ValidationError',
           message: 'Expected month:15 to be in range [1..12], got 15',
-          path: [
-            {
-              actual: 15,
-              segment: 'month'
-            }
-          ],
+          path: [{ actual: 15, segment: 'month' }],
           type: '',
           value: '15'
         },
@@ -54,7 +46,7 @@ describe('Testing fromDTOtree method of ObjectType', () => {
           message: 'Expected  to be correct value of date, got [object Object]',
           path: [],
           type: 'date',
-          value: '{"day":10,"year":2000}'
+          value: '{"day":10,"month":15,"year":2000}'
         }
       ])
     }
@@ -155,8 +147,7 @@ describe('Testing fromDTOtree method of ObjectType', () => {
       expect(s).toEqual(
         'Expected dateOfBirth:[object Object]/month:15 to be in range [1..12], got 15\n' +
           'Expected dateOfBirth:[object Object] to be correct value of date, got [object Object]\n' +
-          'Expected  date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]\n' +
-          "Cannot read property 'year' of undefined\n"
+          'Expected  date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]\n'
       )
     }
   })
