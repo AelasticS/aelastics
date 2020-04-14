@@ -96,20 +96,20 @@ describe('Test cases for object identifier', () => {
     expect(isSuccess(refStudent.validate((o as unknown) as any))).toBe(false)
   })
 
-  it('should not be valid reference when identifier has less properties then reference', () => {
+  it('should be valid reference when identifier has less properties then reference', () => {
     const student = t.entity(
       {
         name: t.string,
         id: t.string,
         age: t.number
       },
-      ['id'],
+      ['id'] as const,
       'student',
       undefined
     )
     const refStudent = t.ref(student, 'studentRef')
     const o = { id: '113A', name: 'John' }
-    expect(isSuccess(refStudent.validate(o))).toBe(false)
+    expect(isSuccess(refStudent.validate(o))).toBe(true)
   })
 
   it('should not be valid when reference has incorrect type of values', () => {
@@ -119,13 +119,13 @@ describe('Test cases for object identifier', () => {
         id: t.string,
         age: t.number
       },
-      ['id', 'name'],
+      ['id', 'name'] as const,
       'student',
       undefined
     )
     const refStudent = t.ref(student, 'studentRef')
     const o = { id: 12, name: 'John', age: 32 }
-    expect(isSuccess(refStudent.validate(o))).toBe(false)
+    expect(isSuccess(refStudent.validate(o as any))).toBe(false)
   })
 
   it('should be valid reference when complex identifier is correctly given', () => {
@@ -135,7 +135,7 @@ describe('Test cases for object identifier', () => {
         id: t.string,
         age: t.number
       },
-      ['id', 'name'],
+      ['id', 'name'] as const,
       'student',
       undefined
     )
@@ -152,7 +152,7 @@ describe('Test cases for testing fromDTO of object identifier', () => {
       id: t.string.derive('student').nonEmpty.uppercase,
       age: t.number
     },
-    ['name', 'id'],
+    ['name', 'id'] as const,
     'student',
     undefined
   )
@@ -193,11 +193,11 @@ describe('Test cases for testing fromDTO of object identifier', () => {
 
   it('should not be valid fromDTO when identifier has more properties then reference', () => {
     const refStudent = t.ref(student, 'studentRef')
-    const o: t.DtoTypeOf<typeof refStudent> = {
+    const o = {
       ref: { id: 1, category: 'Object', typeName: 'studentRef' },
       reference: { name: 'John' }
     }
-    const res = refStudent.fromDTO(o)
+    const res = refStudent.fromDTO(o as any)
     if (isFailure(res)) {
       expect(res.errors).toEqual([
         {
@@ -211,25 +211,14 @@ describe('Test cases for testing fromDTO of object identifier', () => {
     }
   })
 
-  it('should not be valid fromDTO when identifier has less properties then reference', () => {
+  it('should be valid fromDTO when identifier has less properties then reference', () => {
     const refStudent = t.ref(student, 'studentRef')
     const o = {
       ref: { id: 1, category: 'Object', typeName: 'studentRef' },
       reference: { id: 'AA13', name: 'John', age: 21 }
     }
     const res = refStudent.fromDTO(o)
-    expect(isFailure(res)).toBe(true)
-    if (isFailure(res)) {
-      expect(res.errors).toEqual([
-        {
-          code: undefined,
-          message: 'Extra properties',
-          path: [],
-          type: 'studentRef',
-          value: '{"id":"AA13","name":"John","age":21}'
-        }
-      ])
-    }
+    expect(isSuccess(res)).toBe(true)
   })
 
   it('should not be valid fromDTO when reference has incorrect type of values', () => {
@@ -238,7 +227,7 @@ describe('Test cases for testing fromDTO of object identifier', () => {
       ref: { id: 1, category: 'Object', typeName: 'studentRef' },
       reference: { id: 12, name: 'John' }
     }
-    const res = refStudent.fromDTO(o)
+    const res = refStudent.fromDTO(o as any)
     if (isFailure(res)) {
       expect(res.errors).toEqual([
         {
@@ -276,7 +265,7 @@ describe('Test cases for testing toDTO of object identifier', () => {
       id: t.string.derive('student').nonEmpty.uppercase,
       age: t.number
     },
-    ['name', 'id'],
+    ['name', 'id'] as const,
     'student',
     undefined
   )
@@ -319,7 +308,7 @@ describe('Test cases for testing toDTO of object identifier', () => {
   it('should be valid toDTO error when identifier has more properties then reference', () => {
     const refStudent = t.ref(student, 'studentRef')
     const o = { name: 'John' }
-    const res = refStudent.fromDTO(o)
+    const res = refStudent.fromDTO(o as any)
     if (isFailure(res)) {
       expect(res.errors).toEqual([
         {
@@ -337,13 +326,13 @@ describe('Test cases for testing toDTO of object identifier', () => {
     const refStudent = t.ref(student, 'studentRef')
     const o = { id: 'AA13', name: 'John', age: 21 }
     const res = refStudent.toDTO(o)
-    expect(isFailure(res)).toBe(true)
+    expect(isSuccess(res)).toBe(true)
   })
 
   it('should not be valid toDTO when reference has incorrect type of values', () => {
     const refStudent = t.ref(student, 'studentRef')
     const o = { id: 12, name: 'John' }
-    const res = refStudent.fromDTO(o)
+    const res = refStudent.fromDTO(o as any)
     expect(isFailure(res)).toBe(true)
   })
 

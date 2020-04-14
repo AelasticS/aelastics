@@ -62,12 +62,12 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
     }
     const identifier = this.referencedType.identifier
     const errors: Errors = []
-    if (Object.keys(value).length > identifier.length) {
-      const fail = failureValidation('Extra properties', path, this.name, value)
-      if (isFailure(fail)) {
-        return fail
-      }
-    }
+    // if (Object.keys(value).length > identifier.length) {
+    //   const fail = failureValidation('Extra properties', path, this.name, value)
+    //   if (isFailure(fail)) {
+    //     return fail
+    //   }
+    // }
     for (let i = 0; i < identifier.length; i++) {
       const k = identifier[i]
       if (value[k] === undefined) {
