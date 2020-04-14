@@ -20,7 +20,7 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
     traversed: VisitedNodes<any, any, any>
   ): Result<boolean> {
     if (input instanceof Date && !isNaN(input.getTime())) {
-      return super.validate(input)
+      return this.checkValidators(input, path)
     }
     return failure(new Error(`Value: '${input}' at path:${pathToString(path)} is not valid Date`))
   }
