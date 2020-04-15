@@ -32,7 +32,9 @@ export abstract class ComplexTypeC<
 
   get category(): string {
     // @ts-ignore
-    return this['_tag']
+    let str: string = this['_tag'] as string
+    str = str.charAt(0).toLowerCase() + str.substring(1, str.length)
+    return str
   }
 
   abstract makeDTOInstance(input: V, ref: InstanceReference, path: Path, context: ToDtoContext): T

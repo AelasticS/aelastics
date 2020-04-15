@@ -61,10 +61,7 @@ describe('fromDTO tests for Map', () => {
     let map = examples.MapofPeople.fromDTO(DTOObject)
     if (isFailure(map)) {
       let s = examples.errorMessages(map)
-      expect(s).toEqual(
-        'Expected [1]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n' +
-          'Expected [2]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n'
-      )
+      expect(s).toEqual('Expected [1]:undefined/name:Ivan34 to be alphabetical, got `Ivan34`\n')
     }
   })
 

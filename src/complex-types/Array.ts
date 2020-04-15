@@ -98,21 +98,19 @@ export class ArrayTypeC<
   }
 
   makeInstanceFromDTO(
-    input: Array<DtoTypeOf<E>> | DtoArrayType<E>,
+    input: Array<DtoTypeOf<E>>,
     output: Array<TypeOf<E>>,
     path: Path,
-    context: ToDtoContext
-  ): Array<TypeOf<E>> {
-    if (this.isArrayRef(input)) {
+    context: FromDtoContext
+  ): void {
+    if (!Array.isArray(input)) {
       context.errors.push(validationError('Input is not an array', path, this.name, input))
-      return []
     }
     for (let i = 0; i < input.length; i++) {
       const x = input[i]
       const conversion = this.baseType.fromDTOCyclic(x, path, context)
       output.push(conversion)
     }
-    return output
   }
 
   makeDTOInstance(
