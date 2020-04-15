@@ -35,9 +35,9 @@ export abstract class ComplexTypeC<
     return this['_tag']
   }
 
-  abstract makeDTOInstance(input: V, path: Path, context: ToDtoContext): T | G
+  abstract makeDTOInstance(input: V, ref: InstanceReference, path: Path, context: ToDtoContext): T
 
-  abstract makeInstanceFromDTO(input: T | G, path: Path, context: FromDtoContext): V
+  abstract makeInstanceFromDTO(input: T, empty: V, path: Path, context: FromDtoContext): void
 
   public retrieveRefFromVisited<S, T>(key: S, visitedNodes: VisitedNodes<TypeC<any>, S, T>): T {
     let ref = visitedNodes.get([this, key])
@@ -58,7 +58,7 @@ export abstract class ComplexTypeC<
 
   protected abstract makeEmptyInstance(value: T | G, path: Path, context: FromDtoContext): V
 
-  protected getIdFromNode(input: any): InstanceReference {
+  protected getRefFromNode(input: any): InstanceReference {
     return input.ref === undefined ? 0 : input.ref
   }
 
@@ -77,9 +77,17 @@ export abstract class ComplexTypeC<
       return { ref: outputRef } as any
     } else {
       let output: T | G
-      context.visitedNodes.set([this, input], this.makeReference(input, context))
-      output = this.makeDTOInstance(input, path, context)
-      return output
+      let ref = this.makeReference(input, context)
+      context.visitedNodes.set([this, input], ref)
+      output = this.makeDTOInstance(input, ref, path, context)
+      if (!context.options.isTreeDTO) {
+        let res = {} as G
+        res.ref = ref
+        res[this.category] = output
+        return res
+      } else {
+        return output
+      }
     }
   }
 
@@ -87,7 +95,7 @@ export abstract class ComplexTypeC<
     // test if it is graph or tree!
     if (context.options.isTreeDTO === false) {
       // graph!
-      let ref = this.getIdFromNode(value)
+      let ref = this.getRefFromNode(value)
       let output = context.visitedNodes?.get([this, ref.id])
       if (output) {
         // already in cache
@@ -95,13 +103,20 @@ export abstract class ComplexTypeC<
       } else {
         // put output in cache
         output = this.makeEmptyInstance(value, path, context)
-        context.visitedNodes?.set([this, this.getIdFromNode(value).id], output)
-        output = this.makeInstanceFromDTO(value, path, context)
+        let ref = this.getRefFromNode(value)
+        context.visitedNodes?.set([this, ref.id], output)
+        this.makeInstanceFromDTO(
+          (value as { [key: string]: any })[this.category] as T,
+          output,
+          path,
+          context
+        )
         return output
       }
     } else {
       // tree!
-      let output = this.makeInstanceFromDTO(value, path, context)
+      let output = this.makeEmptyInstance(value, path, context)
+      this.makeInstanceFromDTO(value as T, output, path, context)
       return output
     }
   }

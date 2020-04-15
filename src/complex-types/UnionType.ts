@@ -80,63 +80,35 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
   }
 
   makeInstanceFromDTO(
-    input: DtoTypeOf<P[number]> | DtoUnionType<P>,
+    input: DtoTypeOf<P[number]>,
+    empty: TypeOf<P[number]>,
     path: Path,
-    context: ToDtoContext
-  ): TypeOf<P[number]> {
-    if (this.isUnionRef(input)) {
-      let type = this.baseType.find(t => t.name === input.ref.specificTypeName)
-      if (!type) {
-        context.errors.push(
-          validationError(
-            `Not existing type '${input.ref.specificTypeName}' in union '${path}': '${input}''`,
-            path,
-            this.name,
-            input
-          )
-        )
-        return undefined
-      } else {
-        return type.fromDTOCyclic(input.union, path, context)
-      }
+    context: FromDtoContext
+  ) {
+    let result = this.getTypeFromValue(input)
+    if (isSuccess(result)) {
+      return result.value.fromDTOCyclic(input, path, context)
     } else {
-      let result = this.getTypeFromValue(input)
-      if (isSuccess(result)) {
-        return result.value.fromDTOCyclic(input, path, context)
-      } else {
-        context.errors.push(...(result.errors as ValidationError[]))
-      }
+      context.errors.push(...(result.errors as ValidationError[]))
     }
-
     return undefined
   }
 
   makeDTOInstance(
     input: TypeOf<P[number]>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): DtoTypeOf<P[number]> | DtoUnionType<P> {
-    let output: DtoTypeOf<P[number]> | DtoUnionType<P>
-    let outputUnion: DtoTypeOf<P[number]> = {} as DtoTypeOf<P[number]>
+  ): DtoTypeOf<P[number]> {
+    let output: DtoTypeOf<P[number]> = {} as DtoTypeOf<P[number]>
     let typeInUnion
     for (let i = 0; i < this.baseType.length; i++) {
       const type = this.baseType[i]
       let resVal = type.validate(input)
       if (isSuccess(resVal)) {
-        typeInUnion = type.name
-        outputUnion = type.toDTOCyclic(input, path, context)
+        ref.specificTypeName = type.name
+        output = type.toDTOCyclic(input, path, context)
         break
-      }
-    }
-    if (context.options.isTreeDTO) {
-      output = outputUnion
-    } else {
-      output = {
-        ref: {
-          ...this.retrieveRefFromVisited(input, context.visitedNodes),
-          ...{ specificTypeName: typeInUnion }
-        },
-        union: outputUnion
       }
     }
     return output

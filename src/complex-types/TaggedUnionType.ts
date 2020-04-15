@@ -100,19 +100,12 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
   }
 
   makeInstanceFromDTO(
-    input: DtoTypeOf<P[keyof P]> | DtoTaggedUnionType<P>,
+    input: DtoTypeOf<P[keyof P]>,
+    empty: TypeOf<P[keyof P]>,
     path: Path,
-    context: ToDtoContext
-  ): TypeOf<P[keyof P]> {
-    let inputObject
-    let discrValue
-    if (this.isTaggedUnionRef(input)) {
-      inputObject = input.taggedUnion
-      discrValue = inputObject!.object[this.discriminator]
-    } else {
-      inputObject = input
-      discrValue = inputObject[this.discriminator]
-    }
+    context: FromDtoContext
+  ): void {
+    let discrValue = input[this.discriminator]
     if (!discrValue) {
       context.errors.push(
         validationError(
@@ -134,8 +127,9 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
         )
         return undefined
       }
-      return type.fromDTOCyclic(
-        inputObject,
+      return (type as ComplexTypeC<any, any>).makeInstanceFromDTO(
+        input,
+        empty,
         appendPath(path, discrValue, type.name, input),
         context
       )
@@ -144,10 +138,10 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
 
   makeDTOInstance(
     input: TypeOf<P[keyof P]>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): DtoTypeOf<P[keyof P]> | DtoTaggedUnionType<P> {
-    let output: DtoTypeOf<P[number]> | DtoTaggedUnionType<P>
+  ): DtoTypeOf<P[keyof P]> {
     let outputTaggedUnion: DtoTypeOf<P[number]> = {} as DtoTypeOf<P[number]>
     const instance = input[this.discriminator]
     if (!instance) {
@@ -174,15 +168,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
           appendPath(path, instance, type?.name, input),
           context
         )
-        if (context.options.isTreeDTO) {
-          output = outputTaggedUnion
-        } else {
-          output = {
-            ref: this.retrieveRefFromVisited(input, context.visitedNodes),
-            taggedUnion: outputTaggedUnion
-          }
-        }
-        return output
+        return outputTaggedUnion
       }
     }
   }

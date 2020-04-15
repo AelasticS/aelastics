@@ -99,23 +99,16 @@ export class ArrayTypeC<
 
   makeInstanceFromDTO(
     input: Array<DtoTypeOf<E>> | DtoArrayType<E>,
+    output: Array<TypeOf<E>>,
     path: Path,
     context: ToDtoContext
   ): Array<TypeOf<E>> {
-    let inputArray: Array<DtoTypeOf<E>>
     if (this.isArrayRef(input)) {
-      if (!Array.isArray(input.array)) {
-        context.errors.push(validationError('Input is not an array', path, this.name, input))
-        return []
-      }
-      inputArray = input.array
-    } else {
-      inputArray = input
+      context.errors.push(validationError('Input is not an array', path, this.name, input))
+      return []
     }
-
-    const output: Array<TypeOf<E>> = []
-    for (let i = 0; i < inputArray.length; i++) {
-      const x = inputArray[i]
+    for (let i = 0; i < input.length; i++) {
+      const x = input[i]
       const conversion = this.baseType.fromDTOCyclic(x, path, context)
       output.push(conversion)
     }
@@ -124,15 +117,15 @@ export class ArrayTypeC<
 
   makeDTOInstance(
     input: Array<TypeOf<E>>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): Array<DtoTypeOf<E>> | DtoArrayType<E> {
+  ): Array<DtoTypeOf<E>> {
     if (!Array.isArray(input)) {
       context.errors.push(
         validationError(`Value ${path} is not Array: '${input}' `, path, this.name)
       )
     }
-    let output: Array<DtoTypeOf<E>> | DtoArrayType<E>
     const outArray: Array<DtoTypeOf<E>> = []
     for (let i = 0; i < input.length; i++) {
       const conversion = this.baseType.toDTOCyclic(
@@ -142,15 +135,7 @@ export class ArrayTypeC<
       )
       outArray.push(conversion)
     }
-    if (context.options.isTreeDTO) {
-      output = outArray
-    } else {
-      output = {
-        ref: this.retrieveRefFromVisited(input, context.visitedNodes),
-        array: outArray
-      }
-    }
-    return output
+    return outArray
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

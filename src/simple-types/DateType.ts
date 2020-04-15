@@ -4,7 +4,7 @@
 
 import { SimpleTypeC } from './SimpleType'
 import { Error, failure, Result, Path, validationError, pathToString } from 'aelastics-result'
-import { ToDtoContext } from '../common/Type'
+import { FromDtoContext, ToDtoContext } from '../common/Type'
 import { VisitedNodes } from '../common/VisitedNodes'
 
 export class DateTypeC extends SimpleTypeC<Date, string, string> {
@@ -32,7 +32,7 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
     return failure(new Error(`Value: '${input}' is not valid Date`))
   }
 
-  fromDTOCyclic(value: string, path: Path, context: ToDtoContext): Date | undefined {
+  fromDTOCyclic(value: string, path: Path, context: FromDtoContext): Date | undefined {
     try {
       const d = new Date(value)
       return d

@@ -106,6 +106,10 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
 
   public defaultValue(): any {
     const obj = {}
+    // ToDo correct subtype
+    /*    if (context.options.includeTypeInfo) {
+      ObjectTypeC.addProperty(output, context.options.typeInfoPropName, this.name)
+    }*/
     let [keys, types, len] = this.getPropsInfo()
     for (let i = 0; i < len; i++) {
       // @ts-ignore
@@ -161,12 +165,17 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
 
   makeDTOInstance(
     input: ObjectType<P>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): DtoProps<P> | DtoObjectType<P> {
+  ): DtoProps<P> {
     try {
-      let output: DtoProps<P> | DtoObjectType<P>
+      //      let output: DtoProps<P> | DtoObjectType<P>
       let outObject: DtoProps<P> = {} as DtoProps<P>
+      // ToDo save correct subtype in Ref,
+      if (ref && context.options.includeTypeInfo) {
+        ref.specificTypeName = input[context.options.typeInfoPropName]
+      }
       let [keys, types, len] = this.getPropsInfo()
       for (let i = 0; i < len; i++) {
         const t = types[i]
@@ -175,22 +184,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         const conversion = t.toDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
         ObjectTypeC.addProperty(outObject, k, conversion)
       }
-      if (context.options.isTreeDTO) {
-        output = outObject
-      } else {
-        let ref = context.visitedNodes.get([this, input])
-        if (ref !== undefined) {
-          output = {
-            ref: ref,
-            object: outObject
-          }
-        } else {
-          throw new Error(
-            `System Error in MakeDTOInstance: not in VisitedNodes value '${path}: '${input}' of type '${this.name}'!`
-          )
-        }
-      }
-      return output
+      return outObject
     } catch (e) {
       context.errors.push(
         validationError(`Caught exception '${(e as Error).message}'`, path, this.name, input)
@@ -208,27 +202,26 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
   }
 
   makeInstanceFromDTO(
-    input: DtoProps<P> | DtoObjectType<P>,
+    input: DtoProps<P>,
+    output: ObjectType<P>,
     path: Path,
     context: FromDtoContext
-  ): ObjectType<P> {
-    let output
-    if (!context.options.isTreeDTO) {
-      output = this.retrieveRefFromVisited<number, any>(
-        this.getIdFromNode(input).id,
-        context.visitedNodes!
-      ) // {} as ObjectType<P>
-    } else {
-      output = this.makeEmptyInstance(input, path, context) // empty
-    }
-    let inputObject: DtoProps<P>
+  ) {
+    /*    if (!context.options.isTreeDTO) {
+          let ref = this.getRefFromNode(input)
+          output = this.retrieveRefFromVisited<number, any>(ref.id, context.visitedNodes!) // {} as ObjectType<P>
+        } else {
+          output = this.makeEmptyInstance(input, path, context) // empty
+        }*/
     if (!isObject(input)) {
       context.errors.push(validationError('Input is not an object', path, this.name, input))
       return output
     }
-    if (this.isObjRef(input) && !context.options.isTreeDTO) {
-      if (input.ref.typeName !== this.name) {
-        // determine correct subtype, add context for schema
+    if (context.options.includeTypeInfo) {
+      // ToDo correct subtype, determine correct subtype, add schema to context or to TypeC
+      let typeName = input[context.options.typeInfoPropName]
+      ObjectTypeC.addProperty(output, context.options.typeInfoPropName, this.name)
+      if (typeName !== this.name) {
         context.errors.push(
           validationError(
             `Types are not matching: input type is '${input.ref.typeName}' and expected type is '${this.name}'. A possible subtype cannot be handled!`,
@@ -238,36 +231,20 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
           )
         )
         return output // empty
-      } else {
-        inputObject = input.object as DtoProps<P>
       }
-    } else if (!this.isObjRef(input) && context.options.isTreeDTO) {
-      inputObject = input
-    } else {
-      context.errors.push(
-        validationError(
-          `Input type '${this.name} at path '${path}' is not valid:"${input.toString()}" `,
-          path,
-          this.name,
-          input
-        )
-      )
-      return output // empty
     }
-    if (context.options.includeTypeInfo) {
-      ObjectTypeC.addProperty(output, context.options.typeInfoPropName, this.name)
-    }
+
     let [keys, types, len] = this.getPropsInfo()
     for (let i = 0; i < len; i++) {
       const t = types[i]
       const k = keys[i]
-      if (!Object.prototype.hasOwnProperty.call(inputObject, k) && !(t instanceof OptionalTypeC)) {
+      if (!Object.prototype.hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
         context.errors.push(
           validationError('missing property', appendPath(path, k, t.name), this.name)
         )
         continue
       }
-      const ak = inputObject[k]
+      const ak = input[k]
       // @ts-ignore
       const conversion = t.fromDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
       ObjectTypeC.addProperty(output, k, conversion)
