@@ -152,18 +152,22 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param options
    */
   public fromDTO(value: T | G, options: ConversionOptions = defaultConversionOptions): Result<V> {
-    let context: FromDtoContext = {
-      options: options,
-      errors: [],
-      counter: 0,
-      visitedNodes: options.isTreeDTO ? undefined : createVisitedNodesFromDTO()
-    }
-    let res = this.fromDTOCyclic(value, [], context)
-    if (context.errors.length > 0) {
-      return failures(context.errors)
-    } else {
-      const resVal = this.validate(res as V)
-      return isSuccess(resVal) ? success<V>(res as V) : resVal
+    try {
+      let context: FromDtoContext = {
+        options: options,
+        errors: [],
+        counter: 0,
+        visitedNodes: options.isTreeDTO ? undefined : createVisitedNodesFromDTO()
+      }
+      let res = this.fromDTOCyclic(value, [], context)
+      if (context.errors.length > 0) {
+        return failures(context.errors)
+      } else {
+        const resVal = this.validate(res as V)
+        return isSuccess(resVal) ? success<V>(res as V) : resVal
+      }
+    } catch (e) {
+      return failure(new Error(e.toString()))
     }
   }
 
@@ -199,23 +203,27 @@ export abstract class TypeC<V, G = V, T = V> {
    * @param options
    */
   public toDTO(value: V, options: ConversionOptions = defaultConversionOptions): Result<T | G> {
-    if (options.validate) {
-      let res = this.validate(value)
-      if (isFailure(res)) {
-        return failures(res.errors)
+    try {
+      if (options.validate) {
+        let res = this.validate(value)
+        if (isFailure(res)) {
+          return failures(res.errors)
+        }
       }
-    }
-    let context: ToDtoContext = {
-      options: options,
-      errors: [],
-      visitedNodes: createVisitedNodesToDTO(),
-      counter: 0
-    }
-    let res = this.toDTOCyclic(value, [], context)
-    if (context.errors.length > 0) {
-      return failures(context.errors)
-    } else {
-      return success(res)
+      let context: ToDtoContext = {
+        options: options,
+        errors: [],
+        visitedNodes: createVisitedNodesToDTO(),
+        counter: 0
+      }
+      let res = this.toDTOCyclic(value, [], context)
+      if (context.errors.length > 0) {
+        return failures(context.errors)
+      } else {
+        return success(res)
+      }
+    } catch (e) {
+      return failure(new Error(e.toString()))
     }
   }
 
@@ -249,7 +257,6 @@ export abstract class TypeC<V, G = V, T = V> {
         `Type '${this.name}' is a system type. New constrains are not allowed! Define a derived type instead.`
       )
     }
-
     this.validators.push(validator)
     return this
   }
@@ -271,7 +278,6 @@ export abstract class TypeC<V, G = V, T = V> {
   public derive(name: string = `derived from ${this.name}`): this {
     const derived = new (this.constructor as any)(name)
     derived.derivedFrom = this
-
     return derived
   }
 
