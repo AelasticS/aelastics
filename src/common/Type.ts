@@ -93,7 +93,8 @@ export abstract class TypeC<V, G = V, T = V> {
   public readonly _G!: G // graph DTO type
   public readonly _T!: T // tree DTO type
 
-  //  public derivedFrom: TypeC<T, D>
+  //  system type cannot be changed
+  public systemType: boolean = false
 
   /** Unique name for this type within a type schema */
   public readonly shortName: string
@@ -239,6 +240,12 @@ export abstract class TypeC<V, G = V, T = V> {
   }*/
 
   public addValidator(validator: Validator<V>): this {
+    if (this.systemType) {
+      throw new Error(
+        `Type '${this.name}' is a system type. New constrains are not allowed! Define a derived type instead.`
+      )
+    }
+
     this.validators.push(validator)
     return this
   }

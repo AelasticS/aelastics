@@ -6,6 +6,7 @@ import { SimpleTypeC } from './SimpleType'
 import { Error, failure, Result, Path, validationError, pathToString } from 'aelastics-result'
 import { FromDtoContext, ToDtoContext } from '../common/Type'
 import { VisitedNodes } from '../common/VisitedNodes'
+import { boolean } from './Boolean'
 
 export class DateTypeC extends SimpleTypeC<Date, string, string> {
   public readonly _tag: 'Date' = 'Date'
@@ -58,3 +59,4 @@ export class DateTypeC extends SimpleTypeC<Date, string, string> {
  */
 
 export const date = new DateTypeC()
+date.systemType = true

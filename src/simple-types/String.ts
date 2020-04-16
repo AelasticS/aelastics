@@ -3,6 +3,7 @@
  */
 
 import { SimpleTypeC } from './SimpleType'
+import { boolean } from './Boolean'
 
 export class StringTypeC extends SimpleTypeC<string> {
   public readonly _tag: 'String' = 'String'
@@ -242,3 +243,4 @@ string.addValidator({
   message: (value: any, label: string) => `Value ${label}: "${value}" is not of type "${label}`,
   predicate: (value: any) => typeof value === 'string'
 })
+string.systemType = true

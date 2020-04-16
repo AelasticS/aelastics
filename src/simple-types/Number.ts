@@ -202,3 +202,4 @@ number.addValidator({
   message: (value: any, label: string) => `Value ${label}: "${value}" is not of type "${label}`,
   predicate: (value: any) => typeof value === 'number'
 })
+number.systemType = true

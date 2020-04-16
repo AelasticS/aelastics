@@ -93,7 +93,7 @@ export const rootMap = t.mapOf(
   t.object(
     {
       a: t.boolean,
-      b: t.number.lessThan(32),
+      b: t.number.derive().lessThan(32),
       c: t.optional(t.string),
       d: t.link(mapSchema, 'rootMap', 'object')
     },
@@ -152,7 +152,7 @@ export const secondLevelSybtypeObject = t.object(
 )
 export const recursiveSubtype = t.subtype(
   simpleObject,
-  { b: t.number.greaterThan(11), c: secondLevelSybtypeObject },
+  { b: t.number.derive().greaterThan(11), c: secondLevelSybtypeObject },
   'recursiveSubtype',
   subtypeSchema
 )

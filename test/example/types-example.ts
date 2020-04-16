@@ -237,7 +237,7 @@ export const ActorType = t.object(
 export const AwardType = t.object(
   {
     name: t.string,
-    year: t.number.positive,
+    year: t.number.derive().positive,
     categoiries: t.arrayOf(t.string, 'Categories')
   },
   'AwardType',
