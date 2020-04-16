@@ -44,3 +44,4 @@ export class UndefinedTypeC extends SimpleTypeC<undefined> {
  */
 // tslint:disable-next-line:variable-name
 export const undefinedType: UndefinedTypeC = new UndefinedTypeC()
+undefinedType.systemType = true

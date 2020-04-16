@@ -44,3 +44,4 @@ export class VoidTypeC extends SimpleTypeC<void> {
 }
 
 export const voidType: VoidTypeC = new VoidTypeC()
+voidType.systemType = true
