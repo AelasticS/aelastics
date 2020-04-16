@@ -164,7 +164,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
     return output
   }
 
-  protected makeEmptyInstance(
+  makeEmptyInstance(
     value: DtoTypeOfKey<T> | DtoEntityReference<T>,
     path: Path,
     context: FromDtoContext

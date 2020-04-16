@@ -45,7 +45,7 @@ export class ArrayTypeC<
     return []
   }
 
-  protected makeEmptyInstance(
+  makeEmptyInstance(
     value: Array<DtoTypeOf<E>> | DtoArrayType<E>,
     path: Path,
     context: FromDtoContext

@@ -58,7 +58,7 @@ export abstract class ComplexTypeC<
     }
   }
 
-  protected abstract makeEmptyInstance(value: T | G, path: Path, context: FromDtoContext): V
+  public abstract makeEmptyInstance(value: T | G, path: Path, context: FromDtoContext): V
 
   protected getRefFromNode(input: any): InstanceReference {
     return input.ref === undefined ? 0 : input.ref

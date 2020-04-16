@@ -142,7 +142,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
     return value
   }
 
-  protected makeEmptyInstance(
+  makeEmptyInstance(
     value: { [p: string]: DtoTypeOf<P[number]> } | DtoIntersectionType<P>,
     path: Path,
     context: FromDtoContext

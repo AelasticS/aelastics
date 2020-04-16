@@ -193,7 +193,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     }
   }
 
-  protected makeEmptyInstance(
+  makeEmptyInstance(
     value: DtoProps<P> | DtoObjectType<P>,
     path: Path,
     context: FromDtoContext

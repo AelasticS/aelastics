@@ -56,7 +56,7 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     return new Map()
   }
 
-  protected makeEmptyInstance(
+  makeEmptyInstance(
     value: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V>,
     path: Path,
     context: FromDtoContext

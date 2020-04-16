@@ -28,7 +28,8 @@ import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { UnionType } from 'typedoc/dist/lib/models'
 import { types } from '../aelastics-types'
 import isUnionType = types.isUnionType
-import { DtoObjectType } from './ObjectType'
+import { DtoObjectType, isObject } from './ObjectType'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 type DtoUnionType<P extends Array<Any>> = {
   ref: InstanceReference
@@ -79,18 +80,67 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     return false
   }
 
+  fromDTOCyclic(
+    input: DtoTypeOf<P[number]> | DtoUnionType<P>,
+    path: Path,
+    context: FromDtoContext
+  ): TypeOf<P[number]> {
+    // test if it is graph or tree!
+    if (context.options.isTreeDTO === false) {
+      // graph!
+      let value: DtoUnionType<P> = input
+
+      let ref = this.getRefFromNode(value)
+      let output = context.visitedNodes?.get([this, ref.id])
+      if (output) {
+        // already in cache
+        return output
+      } else {
+        // put output in cache
+        let specificType = this.getTypeFromName(value.ref.specificTypeName)
+        if (specificType) {
+          if (specificType instanceof SimpleTypeC) {
+            output = value.union
+            return (specificType as SimpleTypeC<any>).fromDTOCyclic(value.union, path, context)
+          } else {
+            let ct = specificType as ComplexTypeC<any, any>
+            output = ct.makeEmptyInstance(value.union, path, context)
+            // @ts-ignore
+            let ref = this.getRefFromNode(value)
+            context.visitedNodes?.set([this, ref.id], output)
+            ct.makeInstanceFromDTO(value.union![ct.category], output, path, context)
+            return output
+          }
+        } else {
+          context.errors.push(
+            new ValidationError(
+              `Value '${JSON.stringify(value.union)}' is not of type '${
+                value.ref.specificTypeName
+              }'`,
+              path,
+              value.ref.specificTypeName!,
+              value.union
+            )
+          )
+        }
+      }
+    } else {
+      // tree!
+      let type = this.getTypeFromValue(input)
+      if (isSuccess(type)) {
+        return type.value.fromDTOCyclic(input, path, context)
+      } else {
+        context.errors.push(...(type.errors as ValidationError[]))
+      }
+    }
+  }
+
   makeInstanceFromDTO(
     input: DtoTypeOf<P[number]>,
     empty: TypeOf<P[number]>,
     path: Path,
     context: FromDtoContext
   ) {
-    let result = this.getTypeFromValue(input)
-    if (isSuccess(result)) {
-      return result.value.fromDTOCyclic(input, path, context)
-    } else {
-      context.errors.push(...(result.errors as ValidationError[]))
-    }
     return undefined
   }
 
@@ -127,6 +177,16 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     )
   }
 
+  public getTypeFromName(name?: string): Any | undefined {
+    for (let i = 0; i < this.baseType.length; i++) {
+      const type = this.baseType[i]
+      if (name === type.name) {
+        return type
+      }
+    }
+    return undefined
+  }
+
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     traversed.set(this, this)
     let errors = []
@@ -149,12 +209,21 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     return undefined
   }
 
-  protected makeEmptyInstance(
-    value: DtoTypeOf<P[number]> | DtoUnionType<P>,
+  makeEmptyInstance(
+    input: DtoTypeOf<P[number]> | DtoUnionType<P>,
     path: Path,
     context: FromDtoContext
   ): TypeOf<P[number]> {
-    return undefined
+    let res = input
+    if (context.options.isTreeDTO) {
+      // @ts-ignore
+      res = input.union
+    }
+    if (isObject(res)) {
+      return {}
+    } else if (Array.isArray(res)) {
+      return []
+    } else return input
   }
 }
 

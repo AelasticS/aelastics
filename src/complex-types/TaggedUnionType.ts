@@ -199,7 +199,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
     return undefined
   }
 
-  protected makeEmptyInstance(
+  makeEmptyInstance(
     value: DtoTypeOf<P[keyof P]> | DtoTaggedUnionType<P>,
     path: Path,
     context: FromDtoContext
