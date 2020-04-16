@@ -130,7 +130,11 @@ export abstract class TypeC<V, G = V, T = V> {
    */
 
   public validate(value: V): Result<boolean> {
-    return this.validateCyclic(value, [], new VisitedNodes())
+    try {
+      return this.validateCyclic(value, [], new VisitedNodes())
+    } catch (e) {
+      return failure(new Error(e.toString()))
+    }
   }
 
   public validateCyclic(
