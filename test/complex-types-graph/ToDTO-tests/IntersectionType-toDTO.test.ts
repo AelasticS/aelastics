@@ -18,14 +18,14 @@ describe('toDTO test cases for IntersectionType', () => {
         intersection: {
           famName: {
             object: { familyName: 'Brown' },
-            ref: { category: 'Object', id: 3, typeName: 'famName' }
+            ref: { category: 'object', id: 3, typeName: 'famName' }
           },
           name: {
             object: { name: 'John' },
-            ref: { category: 'Object', id: 2, typeName: 'name' }
+            ref: { category: 'object', id: 2, typeName: 'name' }
           }
         },
-        ref: { category: 'Intersection', id: 1, typeName: '(name | famName)' }
+        ref: { category: 'intersection', id: 1, typeName: '(name | famName)' }
       })
     }
   })

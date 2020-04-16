@@ -8,9 +8,9 @@ import {
   failures,
   isFailure,
   Path,
+  pathToString,
   success,
   Result,
-  ValidationError,
   validationError,
   Errors
 } from 'aelastics-result'
@@ -59,7 +59,7 @@ export class ArrayTypeC<
     traversed: VisitedNodes<any, any, any>
   ): Result<boolean> {
     if (!Array.isArray(input)) {
-      return failure(new Error(`Value ${path}: '${input}' is not Array`))
+      return failure(new Error(`Value ${pathToString(path)}: '${input}' is not Array`))
     }
 
     let pair: TypeInstancePair<Any, any> = [this, input]
@@ -104,7 +104,14 @@ export class ArrayTypeC<
     context: FromDtoContext
   ): void {
     if (!Array.isArray(input)) {
-      context.errors.push(validationError('Input is not an array', path, this.name, input))
+      context.errors.push(
+        validationError(
+          `Input ${pathToString(path)}:'${input}' is not an array`,
+          path,
+          this.name,
+          input
+        )
+      )
     }
     for (let i = 0; i < input.length; i++) {
       const x = input[i]
@@ -121,7 +128,7 @@ export class ArrayTypeC<
   ): Array<DtoTypeOf<E>> {
     if (!Array.isArray(input)) {
       context.errors.push(
-        validationError(`Value ${path} is not Array: '${input}' `, path, this.name)
+        validationError(`Value ${pathToString(path)} is not Array: '${input}' `, path, this.name)
       )
     }
     const outArray: Array<DtoTypeOf<E>> = []

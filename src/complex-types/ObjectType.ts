@@ -9,6 +9,7 @@ import {
   failureValidation,
   isFailure,
   Path,
+  pathToString,
   Result,
   success,
   validationError,
@@ -214,7 +215,14 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
           output = this.makeEmptyInstance(input, path, context) // empty
         }*/
     if (!isObject(input)) {
-      context.errors.push(validationError('Input is not an object', path, this.name, input))
+      context.errors.push(
+        validationError(
+          `Value ${pathToString(path)} is not Object: '${input}'`,
+          path,
+          this.name,
+          input
+        )
+      )
       return output
     }
     if (context.options.includeTypeInfo) {

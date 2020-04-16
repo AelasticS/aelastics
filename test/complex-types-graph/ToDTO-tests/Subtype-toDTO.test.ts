@@ -19,7 +19,7 @@ describe('Testing toDTO for Subtype', () => {
     const res = numbersAndStringObjectType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Object', typeName: 'subtype of { a: positive })' },
+        ref: { id: 1, category: 'object', typeName: 'subtype of { a: positive })' },
         object: { a: 5, b: 'something' }
       })
     }
@@ -62,7 +62,7 @@ describe('Testing toDTO for Subtype', () => {
     const res = numbersAndStringObjectType.toDTO(o)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Object', typeName: 'subtype of { a: positive })' },
+        ref: { id: 1, category: 'object', typeName: 'subtype of { a: positive })' },
         object: { a: 5, b: 'something' }
       })
     }
@@ -77,7 +77,7 @@ describe('Testing toDTO for Subtype', () => {
     if (isSuccess(res)) {
       // expect(res.value.name === 'John' && res.value.university === 'Stanford').toBe(true)
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Object', typeName: 'StudentType' },
+        ref: { id: 1, category: 'object', typeName: 'StudentType' },
         object: { name: 'John', university: 'Stanford' }
       })
     }

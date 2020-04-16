@@ -17,7 +17,7 @@ describe('Validate Cyclic intersection structures', () => {
     expect(isSuccess(type.validate(ObjectInstance as any))).toBe(true)
   })
 
-  it("Testing if cyclic intesection is valid'", () => {
+  it("Testing if cyclic intersection is valid'", () => {
     const type = examples.recursiveIntersection
     examples.intersectionSchema.validate()
 

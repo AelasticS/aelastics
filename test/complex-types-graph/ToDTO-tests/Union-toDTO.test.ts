@@ -9,7 +9,12 @@ describe('ToDTO tests for union type', () => {
     const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Union', specificTypeName: 'PassingGrade', typeName: 'grade' },
+        ref: {
+          id: 1,
+          category: 'union',
+          specificTypeName: 'PassingGrade',
+          typeName: 'grade'
+        },
         union: 7
       })
     }
@@ -19,7 +24,7 @@ describe('ToDTO tests for union type', () => {
     const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Union', specificTypeName: '"failed"', typeName: 'grade' },
+        ref: { id: 1, category: 'union', specificTypeName: '"failed"', typeName: 'grade' },
         union: 'failed'
       })
     }
@@ -39,14 +44,14 @@ describe('ToDTO tests for union type', () => {
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         ref: {
-          id: 2,
-          category: 'Union',
+          id: 1,
+          category: 'union',
           specificTypeName: 'DoctorType',
           typeName: '(DriverType | DoctorType)'
         },
         union: {
           object: { profession: 'Doctor', specialization: 'Cardiologist' },
-          ref: { id: 1, category: 'Object', typeName: 'DoctorType' }
+          ref: { id: 2, category: 'object', typeName: 'DoctorType' }
         }
       })
     }
@@ -62,14 +67,14 @@ describe('ToDTO tests for union type', () => {
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         ref: {
-          id: 2,
-          category: 'Union',
+          id: 1,
+          category: 'union',
           specificTypeName: 'DoctorType',
           typeName: '(DriverType | DoctorType)'
         },
         union: {
           object: { profession: 'Doctor', specialization: 'Cardiologist' },
-          ref: { id: 1, category: 'Object', typeName: 'DoctorType' }
+          ref: { id: 2, category: 'object', typeName: 'DoctorType' }
         }
       })
     }

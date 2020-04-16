@@ -13,14 +13,14 @@ describe('toDTO test cases for TaggedUnion', () => {
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         taggedUnion: {
-          ref: { id: 1, category: 'Object', typeName: 'doctorObject' },
+          ref: { id: 2, category: 'object', typeName: 'doctorObject' },
           object: {
             profession: 'doctor',
             specialization: true,
             worksAt: 'Prinston plainsbro'
           }
         },
-        ref: { id: 2, category: 'TaggedUnion', typeName: 'employee' }
+        ref: { id: 1, category: 'taggedUnion', typeName: 'employee' }
       })
     }
   })
@@ -36,9 +36,9 @@ describe('toDTO test cases for TaggedUnion', () => {
       expect(res.value).toEqual({
         taggedUnion: {
           object: { profession: 'lawyer', masterDegree: true, worksAt: 'Goliath National Bank' },
-          ref: { id: 1, category: 'Object', typeName: 'lawyerObject' }
+          ref: { id: 2, category: 'object', typeName: 'lawyerObject' }
         },
-        ref: { id: 2, category: 'TaggedUnion', typeName: 'employee' }
+        ref: { id: 1, category: 'taggedUnion', typeName: 'employee' }
       })
     }
   })

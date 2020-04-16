@@ -58,19 +58,19 @@ export const invDTO: t.DtoTreeTypeOf<typeof InvoiceType> = {
   id: 1,
   date: '2010-03-24',
   items: {
-    ref: { id: 1, category: 'Map', typeName: 'InvoiceType' },
+    ref: { id: 1, category: 'map', typeName: 'InvoiceType' },
     map: [
       [
         1,
         {
-          ref: { id: 2, category: 'Object', typeName: 'InvoiceItemType' },
+          ref: { id: 2, category: 'object', typeName: 'InvoiceItemType' },
           object: { id: 1, name: 'p1' }
         }
       ],
       [
         2,
         {
-          ref: { id: 2, category: 'Object', typeName: 'InvoiceItemType' },
+          ref: { id: 2, category: 'object', typeName: 'InvoiceItemType' },
           object: { id: 2, name: 'p2' }
         }
       ]

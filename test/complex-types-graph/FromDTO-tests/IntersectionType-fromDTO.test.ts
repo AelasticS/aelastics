@@ -19,14 +19,14 @@ describe('fromDTO test cases for IntersectionType', () => {
     */
 
     const fullName: DtoTypeOf<typeof FullNameType> = {
-      ref: { id: 3, category: 'Intersection', typeName: '(name | famName)' },
+      ref: { id: 3, category: 'intersection', typeName: '(name | famName)' },
       intersection: {
         name: {
-          ref: { id: 1, category: 'Object', typeName: 'name' },
+          ref: { id: 1, category: 'object', typeName: 'name' },
           object: { name: 'sima' }
         },
         famName: {
-          ref: { id: 2, category: 'Object', typeName: 'famName' },
+          ref: { id: 2, category: 'object', typeName: 'famName' },
           object: { familyName: 'Simic' }
         }
       }
@@ -38,11 +38,14 @@ describe('fromDTO test cases for IntersectionType', () => {
 
   it('should be valid fromDTO error message for FullNameType in case of unexpected input value', () => {
     const fullName = {
-      ref: { id: 1, category: 'Intersection', typeName: '(name | famName)' },
+      ref: { id: 1, category: 'intersection', typeName: '(name | famName)' },
       intersection: {
-        name: { ref: { id: 1, category: 'Object', typeName: 'name' }, object: { name: 3 } },
+        name: {
+          ref: { id: 1, category: 'object', typeName: 'name' },
+          object: { name: 3 }
+        },
         famName: {
-          ref: { id: 2, category: 'Object', typeName: 'famName' },
+          ref: { id: 2, category: 'object', typeName: 'famName' },
           object: { familyName: 'Brown' }
         }
       }
@@ -55,11 +58,14 @@ describe('fromDTO test cases for IntersectionType', () => {
 
   it(' should be valid fromDTO error message for FullNameType in case of unsatisfied constraints', () => {
     const fullName = {
-      ref: { id: 1, category: 'Intersection', typeName: '(name | famName)' },
+      ref: { id: 1, category: 'intersection', typeName: '(name | famName)' },
       intersection: {
-        name: { ref: { id: 1, category: 'Object', typeName: 'name' }, object: { name: '3' } },
+        name: {
+          ref: { id: 1, category: 'object', typeName: 'name' },
+          object: { name: '3' }
+        },
         famName: {
-          ref: { id: 2, category: 'Object', typeName: 'famName' },
+          ref: { id: 2, category: 'object', typeName: 'famName' },
           object: { familyName: 'Brown' }
         }
       }
@@ -83,14 +89,14 @@ describe('fromDTO test cases for IntersectionType', () => {
 
   it('should not be valid fromDTO for ProfessorIntersectionType   ', () => {
     const doctor = {
-      ref: { typeName: 'doctor intersection', category: 'Intersection', id: 1 },
+      ref: { typeName: 'doctor intersection', category: 'intersection', id: 1 },
       intersection: {
         person: {
-          ref: { typeName: 'person', category: 'Object', id: 2 },
+          ref: { typeName: 'person', category: 'object', id: 2 },
           object: { name: 'John22', age: 32 }
         },
         doctorObject: {
-          ref: { typeName: 'doctorObject', category: 'Object', id: 3 },
+          ref: { typeName: 'doctorObject', category: 'object', id: 3 },
           object: { profession: 'doctor', specialization: true, worksAt: 'Bel Medic' }
         }
       }
@@ -101,14 +107,14 @@ describe('fromDTO test cases for IntersectionType', () => {
 
   it('should be valid fromDTO error message for ProfessorIntersectionType   ', () => {
     const doctor = {
-      ref: { typeName: 'doctor intersection', category: 'Intersection', id: 1 },
+      ref: { typeName: 'doctor intersection', category: 'intersection', id: 1 },
       intersection: {
         person: {
-          ref: { typeName: 'person', category: 'Object', id: 2 },
+          ref: { typeName: 'person', category: 'object', id: 2 },
           object: { name: 'John22', age: 32 }
         },
         doctorObject: {
-          ref: { typeName: 'doctorObject', category: 'Object', id: 3 },
+          ref: { typeName: 'doctorObject', category: 'object', id: 3 },
           object: { profession: 'doctor', specialization: true, worksAt: 'Bel Medic' }
         }
       }

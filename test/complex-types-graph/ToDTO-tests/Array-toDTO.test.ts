@@ -13,7 +13,7 @@ describe('ToDTO tests for Array type', () => {
     const res = arrayOfNumbers.toDTO(a)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Array', typeName: 'array of num' },
+        ref: { id: 1, category: 'array', typeName: 'array of num' },
         array: [15, 12, 25, 60]
       })
     }
@@ -37,18 +37,18 @@ describe('ToDTO tests for Array type', () => {
     const res = arrayOfPeople.toDTO(a)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 4, category: 'Array', typeName: 'Array<person>' },
+        ref: { id: 1, category: 'array', typeName: 'Array<person>' },
         array: [
           {
-            ref: { id: 1, category: 'Object', typeName: 'person' },
+            ref: { id: 2, category: 'object', typeName: 'person' },
             object: { name: 'Nick', age: 25 }
           },
           {
-            ref: { id: 2, category: 'Object', typeName: 'person' },
+            ref: { id: 3, category: 'object', typeName: 'person' },
             object: { name: 'Astrid', age: 32 }
           },
           {
-            ref: { id: 3, category: 'Object', typeName: 'person' },
+            ref: { id: 4, category: 'object', typeName: 'person' },
             object: { name: 'Tim', age: 29 }
           }
         ]
@@ -69,18 +69,18 @@ describe('ToDTO tests for Array type', () => {
     const res = arrayOfPeople.toDTO(a)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 4, category: 'Array', typeName: 'Array<person>' },
+        ref: { id: 1, category: 'array', typeName: 'Array<person>' },
         array: [
           {
-            ref: { id: 1, category: 'Object', typeName: 'person' },
+            ref: { id: 2, category: 'object', typeName: 'person' },
             object: { name: 'Nick', age: 25 }
           },
           {
-            ref: { id: 2, category: 'Object', typeName: 'person' },
+            ref: { id: 3, category: 'object', typeName: 'person' },
             object: { name: 'Astrid', age: 32 }
           },
           {
-            ref: { id: 3, category: 'Object', typeName: 'person' },
+            ref: { id: 4, category: 'object', typeName: 'person' },
             object: { name: 'Tim', age: 29 }
           }
         ]
