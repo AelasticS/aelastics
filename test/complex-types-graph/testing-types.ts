@@ -354,6 +354,22 @@ export const ProfessorIntersectionType = t.intersectionOf([person, profesorType]
 
 export const DoctorIntersectionType = t.intersectionOf([person, doctorType], 'doctor intersection')
 
+export const personJohn: t.TypeOf<typeof person> = {
+  name: 'John',
+  age: 24
+}
+
+export const doctor1: t.TypeOf<typeof doctorType> = {
+  profession: 'doctor',
+  specialization: true,
+  worksAt: 'Bel Medic'
+}
+
+export const profesorMark: t.TypeOf<typeof profesorType> = {
+  name: 'Mark Potter',
+  title: 'Phd'
+}
+
 export const Employed = t.boolean
 export const DateOfBirth = t.date
 

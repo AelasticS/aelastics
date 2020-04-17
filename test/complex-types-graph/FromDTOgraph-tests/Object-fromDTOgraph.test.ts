@@ -1,125 +1,61 @@
 import { isFailure, isSuccess, Result } from 'aelastics-result'
 import * as t from '../../../src/aelastics-types'
 import * as tn from '../../example/travel-network'
+// import {Belgrade} from '../../example/travel-network'
 
-let Belgrade: tn.IPlaceGraph = {
-  ref: { id: 1, category: 'Object', typeName: 'Place' },
-  object: {
-    name: 'Belgrade',
-    neighbor: {
-      ref: { id: 2, category: 'Array', typeName: 'Array<Link^Place>' },
-      array: []
-    }
-  }
-}
-let Nis: tn.IPlaceGraph = {
-  ref: { id: 3, category: 'Object', typeName: 'Place' },
-  object: {
-    name: 'Nis',
-    neighbor: {
-      ref: { id: 4, category: 'Array', typeName: 'Array<Link^Place>' },
-      array: []
-    }
-  }
-}
-let Kraljevo: tn.IPlaceGraph = {
-  ref: { id: 5, category: 'Object', typeName: 'Place' },
-  object: {
-    name: 'Kraljevo',
-    neighbor: {
-      ref: { id: 6, category: 'Array', typeName: 'Array<Link^Place>' },
-      array: []
-    }
-  }
-}
-
-let NoviSad: tn.IPlaceGraph = {
-  ref: { id: 7, category: 'Object', typeName: 'Place' },
-  object: {
-    name: 'NoviSad',
-    neighbor: {
-      ref: { id: 8, category: 'Array', typeName: 'Array<Link^Place>' },
-      array: []
-    }
-  }
-}
 describe('Testing fromDTOgraph method of ObjectType', () => {
   it('Should be valid for Travel exemple in travel network', () => {
-    Belgrade.object.neighbor.array.push(NoviSad, Kraljevo, Nis)
-    NoviSad.object.neighbor.array.push(Belgrade)
-    Nis.object.neighbor.array.push(Belgrade, Kraljevo)
-    Kraljevo.object.neighbor.array.push(Nis, Belgrade)
-    let t = tn.Place.fromDTOgraph(Belgrade)
-
-    if (isSuccess(t)) {
-      expect(t.value).toEqual(tn.Belgrade)
-    }
-  })
-
-  it('Should be valid for Travel network biderectional each to every other', () => {
-    Belgrade.object.neighbor.array = []
-    Nis.object.neighbor.array = []
-    Kraljevo.object.neighbor.array = []
-    Belgrade.object.neighbor.array.push(Nis, Kraljevo)
-    Nis.object.neighbor.array.push(Kraljevo, Belgrade)
-    Kraljevo.object.neighbor.array.push(Belgrade, Nis)
-
-    let b = tn.Place.fromDTOgraph(Belgrade)
-
-    if (isSuccess(b)) {
-      expect(
-        ((b.value.neighbor[0] as tn.IPlace).neighbor[0] as tn.IPlace).neighbor[0] as tn.IPlace
-      ).toEqual(
-        ((b.value.neighbor[1] as tn.IPlace).neighbor[1] as tn.IPlace).neighbor[1] as tn.IPlace
-      )
+    let result = tn.Place.toDTO(tn.Belgrade)
+    if (isSuccess(result)) {
+      let result2 = tn.Place.fromDTO(result.value)
+      if (isSuccess(result2)) {
+        let Belgrade2 = result2.value
+        expect(Belgrade2.name).toEqual(tn.Belgrade.name)
+        expect(Belgrade2.neighbor.length).toEqual(tn.Belgrade.neighbor.length)
+        let arr1 = []
+        let arr2 = []
+        for (let i = 0; i < tn.Belgrade.neighbor.length; i++) {
+          arr1.push(((tn.Belgrade.neighbor[i] as any) as tn.IPlace).name)
+        }
+        for (let j = 0; j < Belgrade2.neighbor.length; j++) {
+          arr2.push(((Belgrade2.neighbor[j] as any) as tn.IPlace).name)
+        }
+        expect(arr1).toEqual(jasmine.arrayContaining(arr2))
+      }
     }
   })
 
   it('Should be valid for travel network (one place with itself)', () => {
-    Belgrade.object.neighbor.array = []
-    Belgrade.object.neighbor.array.push(Belgrade)
-    let res = tn.Place.fromDTOgraph(Belgrade)
-    // expect((res as any as tn.IPlace).neighbor[0]).toEqual(Belgrade as any as tn.IPlace)
-    if (isSuccess(res)) {
-      expect(res.value).toEqual({
-        object: {
-          name: 'Belgrade',
-          neighbor: [Belgrade]
-        }
-      })
+    tn.NoviSad.neighbor.push(tn.NoviSad)
+
+    let NoviSadDtoGraph = tn.Place.toDTO(tn.NoviSad)
+    if (isSuccess(NoviSadDtoGraph)) {
+      let NoviSadFromDto = tn.Place.fromDTO(NoviSadDtoGraph.value)
+      if (isSuccess(NoviSadFromDto)) {
+        let NoviSad2 = NoviSadFromDto.value
+        expect((NoviSad2.neighbor[0] as tn.IPlace).name).toEqual(tn.Belgrade.name)
+        expect((NoviSad2.neighbor[1] as tn.IPlace).name).toEqual(tn.NoviSad.name)
+      }
     }
+
+    tn.NoviSad.neighbor[1] = {}
   })
 
   it('Should be valid for loop', () => {
-    Belgrade.object.neighbor.array = []
-    Nis.object.neighbor.array = []
-    Kraljevo.object.neighbor.array = []
-    Belgrade.object.neighbor.array.push(Nis)
-    Nis.object.neighbor.array.push(Kraljevo)
-    Kraljevo.object.neighbor.array.push(Belgrade)
-
-    let b = tn.Place.fromDTOgraph(Belgrade)
-
-    if (isSuccess(b)) {
-      expect(b.value.neighbor[0]).toEqual((Nis as any) as tn.IPlace)
+    let KraljevoDtoGraph = tn.Place.toDTO(tn.Kraljevo)
+    if (isSuccess(KraljevoDtoGraph)) {
+      let KraljevoFromDto = tn.Place.fromDTO(KraljevoDtoGraph.value)
+      if (isSuccess(KraljevoFromDto)) {
+        let Kraljevo2 = KraljevoFromDto.value
+        expect((Kraljevo2.neighbor[0] as tn.IPlace).name).toEqual(tn.Nis.name)
+        expect(((Kraljevo2.neighbor[0] as tn.IPlace).neighbor[0] as tn.IPlace).name).toEqual(
+          tn.Belgrade.name
+        )
+        expect(
+          (((Kraljevo2.neighbor[0] as tn.IPlace).neighbor[0] as tn.IPlace).neighbor[1] as tn.IPlace)
+            .name
+        ).toEqual(tn.Kraljevo.name)
+      }
     }
-
-    let k = tn.Place.fromDTOgraph(Kraljevo)
-    if (isSuccess(k)) {
-      expect(k.value.neighbor[0]).toEqual(b)
-    }
-
-    let n = tn.Place.fromDTOgraph(Nis)
-    if (isSuccess(n)) {
-      expect(n.value.neighbor[0]).toEqual(k)
-    }
-    if (isSuccess(b)) {
-      expect(((b.value.neighbor[0] as tn.IPlace).neighbor[0] as tn.IPlace).neighbor[0]).toEqual(b)
-    }
-    // expect(t).toEqual((tn.Belgrade.neighbor[0] as tn.IPlace).name==="Nis" )
-    // expect(((t as any as tn.IPlace).neighbor[0] as tn.IPlace).name).toEqual("Nis")
-    // expect((t as any as tn.IPlace).neighbor[0]).toEqual(Nis)
-
-    // expect(t).toBeInstanceOf(tn.Belgrade)
   })
 })

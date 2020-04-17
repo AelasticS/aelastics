@@ -67,7 +67,7 @@ export const OsobaShema = t.schema('OsobaSchema')
 export const osoba = t.object(
   {
     name: t.string,
-    age: t.number.greaterThan(0),
+    age: t.number.derive('age').greaterThan(0),
     rodjaci: t.arrayOf(t.link(OsobaShema, 'osoba'))
   },
   'osoba',
@@ -86,7 +86,7 @@ export const radnik = t.subtype(
 export const student = t.subtype(
   osoba,
   {
-    prosek: t.number.derive('prosek').inRange(6, 10)
+    prosek: t.number.derive('prosek').int8.inRange(6, 10)
   },
   'student',
   OsobaShema
@@ -137,3 +137,5 @@ export const Ana: t.TypeOf<typeof student> = {
 }
 
 Jela.rodjaci.push(Ana)
+Pera.rodjaci.push(Ana)
+Zika.rodjaci.push(Jela)

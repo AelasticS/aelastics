@@ -219,6 +219,35 @@ export const recursiveIntersection = t.intersectionOf(
   [t.object({ a: secondLevelIntersectionObject }), t.object({ b: t.string })],
   'recursiveIntersection'
 )
+
+export const recursive1: t.TypeOf<typeof recursiveIntersection> = {
+  a: {
+    c: 'C',
+    b: true,
+    a: undefined
+  },
+  b: 'A'
+}
+recursive1.a.a = recursive1
+
+export const recursive2: t.TypeOf<typeof recursiveIntersection> = {
+  a: {
+    c: 'B',
+    b: true,
+    a: undefined
+  },
+  b: 'B'
+}
+
+export const recursive3: t.TypeOf<typeof recursiveIntersection> = {
+  a: {
+    c: 'C',
+    b: true,
+    a: undefined
+  },
+  b: 'C'
+}
+
 intersectionSchema.addType(recursiveIntersection)
 intersectionSchema.validate()
 export const simpleObject = t.object({ a: t.string }, 'simple object')
