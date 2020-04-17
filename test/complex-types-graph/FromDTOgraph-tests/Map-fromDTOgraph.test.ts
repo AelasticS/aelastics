@@ -2,104 +2,54 @@ import * as examples from '../testing-types'
 import { isSuccess, isFailure } from 'aelastics-result'
 import * as t from '../../../src/aelastics-types'
 import * as r from '../../example/recursive-example'
-
-let map1: t.DtoTypeOf<typeof r.rootMapGraph> = {
-  ref: { id: 1, category: 'Map', typeName: 'rootMapGraph' },
-  map: [
-    [
-      1,
-      {
-        ref: { id: 2, category: 'Map', typeName: 'rootMapGraph' },
-        map: []
-        // array: []
-      }
-    ]
-  ]
-}
-
-let map2: t.DtoTypeOf<typeof r.rootMapGraph> = {
-  ref: { id: 3, category: 'Map', typeName: 'rootMapGraph' },
-  map: [
-    [
-      2,
-      {
-        ref: { id: 4, category: 'Map', typeName: 'rootMapGraph' },
-        // array: []
-        map: []
-      }
-    ]
-  ]
-}
-
-let map3: t.DtoTypeOf<typeof r.rootMapGraph> = {
-  ref: { id: 5, category: 'Map', typeName: 'rootMapGraph' },
-  map: [
-    [
-      3,
-      {
-        ref: { id: 6, category: 'Map', typeName: 'rootMapGraph' },
-        // array: []
-        map: []
-      }
-    ]
-  ]
-}
+import { map3 } from '../../example/recursive-example'
 
 describe('Testing fromDTOgraph method for MapType', () => {
-  it('Should be valid for loop example', () => {
-    // map1.map[0][1].array.push(map2)
-    //     // map2.map[0][1].array.push(map3)
-    //     // map3.map[0][1].array.push(map1)
-
-    map1.map[0][1].map[0][1] = map2
-    map2.map[0][1].map[0][1] = map3
-    map3.map[0][1].map[0][1] = map1
-    // let res = r.rootMapGraph.fromDTOgraph(map1)
-    // expect(isSuccess(res)).toBe(true)
-
-    let res = r.rootMapGraph.fromDTOgraph(map3)
-
-    if (isSuccess(res)) {
-      expect(res.value.get(3)).toEqual((map1 as any) as t.TypeOf<typeof r.rootMapGraph>)
-    }
-  })
-
   it('should be valid for bidirectional example', () => {
-    map1.map[0][1].map[0][1] = []
-    map2.map[0][1].map[0][1] = []
-    map3.map[0][1].map[0][1] = []
+    let map1DtoGraph = r.rootMapGraph.toDTO(r.map1)
 
-    map1.map[0][1].map[0][1] = map2
-    map2.map[0][1].map[0][1] = map1
-
-    let res = r.rootMapGraph.fromDTOgraph(map2)
-
-    if (isSuccess(res)) {
-      expect(res.value.get(2)).toEqual((map1 as any) as t.TypeOf<typeof r.rootMapGraph>)
+    if (isSuccess(map1DtoGraph)) {
+      let map1FromDto = r.rootMapGraph.fromDTO(map1DtoGraph.value)
+      if (isSuccess(map1FromDto)) {
+        let firstMap = map1FromDto.value
+        expect(firstMap.size).toEqual(r.map1.size)
+        expect(firstMap.get(1)).toEqual(r.map1.get(1))
+        expect(firstMap.get(1)).toEqual(r.map2)
+        expect((firstMap.get(1) as t.TypeOf<typeof r.rootMapGraph>).get(1)).toEqual(r.map1)
+      }
     }
   })
 
-  it('should be valid for example each to every other', () => {
-    map1.map[0][1].map[0][1] = []
-    map2.map[0][1].map[0][1] = []
-    map3.map[0][1].map[0][1] = []
+  it('should be valid for example one map maps itself', () => {
+    r.map3.set(2, r.map3)
 
-    map1.map[0][1].map[0][1] = map2
-    map1.map[1][0] = 11
-    map1.map[1][1].map[0][1] = map3
-
-    map2.map[0][1].map[0][1] = map1
-    map2.map[1][0] = 22
-    map2.map[1][1].map[0][1] = map3
-
-    map3.map[0][1].map[0][1] = map1
-    map3.map[1][0] = 33
-    map3.map[1][1].map[0][1] = map2
-
-    let res = r.rootMapGraph.fromDTOgraph(map3)
-
-    if (isSuccess(res)) {
-      expect(res.value.get(33)).toEqual((map2 as any) as t.TypeOf<typeof r.rootMapGraph>)
+    let map3DtoGraph = r.rootMapGraph.toDTO(r.map3)
+    if (isSuccess(map3DtoGraph)) {
+      let map3FromDto = r.rootMapGraph.fromDTO(map3DtoGraph.value)
+      if (isSuccess(map3FromDto)) {
+        let thirdMap = map3FromDto.value
+        expect(thirdMap.size).toEqual(1)
+        expect(thirdMap.get(2)).toEqual(r.map3.get(2))
+      }
     }
+
+    r.map3.delete(2)
+  })
+
+  it('should be valid for loop', () => {
+    r.map1.set(2, map3)
+
+    let map1DtoGraph = r.rootMapGraph.toDTO(r.map1)
+    if (isSuccess(map1DtoGraph)) {
+      let map1FromDto = r.rootMapGraph.fromDTO(map1DtoGraph.value)
+      if (isSuccess(map1FromDto)) {
+        let firstMap = map1FromDto.value
+        expect(firstMap.size).toEqual(r.map1.size)
+        expect(firstMap.size).toEqual(2)
+        expect(firstMap.get(2)).toEqual(r.map1.get(2))
+      }
+    }
+
+    r.map1.delete(2)
   })
 })

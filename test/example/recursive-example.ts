@@ -3,6 +3,7 @@
  */
 import * as t from '../../src/aelastics-types'
 import { AgeType, SexType, BirthPlaceType } from './types-example'
+import any = jasmine.any
 
 const MySchema = t.schema('MySchema')
 
@@ -188,6 +189,13 @@ export const rootMapGraph = t.mapOf(
   'rootMapGraph'
 )
 mapSchema.addType(rootMapGraph)
+
+export const map1: t.TypeOf<typeof rootMapGraph> = new Map([[1, new Map([])]])
+
+export const map2: t.TypeOf<typeof rootMapGraph> = new Map([[1, map1]])
+
+export const map3: t.TypeOf<typeof rootMapGraph> = new Map([[1, map2]])
+map1.set(1, map2)
 
 mapSchema.validate()
 export const intersectionInstance = t.intersectionOf([
