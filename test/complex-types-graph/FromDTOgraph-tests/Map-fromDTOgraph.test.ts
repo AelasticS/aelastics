@@ -2,7 +2,6 @@ import * as examples from '../testing-types'
 import { isSuccess, isFailure } from 'aelastics-result'
 import * as t from '../../../src/aelastics-types'
 import * as r from '../../example/recursive-example'
-import { map3 } from '../../example/recursive-example'
 
 describe('Testing fromDTOgraph method for MapType', () => {
   it('should be valid for bidirectional example', () => {
@@ -37,7 +36,7 @@ describe('Testing fromDTOgraph method for MapType', () => {
   })
 
   it('should be valid for loop', () => {
-    r.map1.set(2, map3)
+    r.map1.set(2, r.map3)
 
     let map1DtoGraph = r.rootMapGraph.toDTO(r.map1)
     if (isSuccess(map1DtoGraph)) {
