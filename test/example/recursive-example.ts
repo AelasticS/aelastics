@@ -159,6 +159,22 @@ export const arrayObject = t.object(
 
 export const firstLevelArray = t.arrayOf(arrayObject, 'firstLevelArray')
 
+export const arr1: t.TypeOf<typeof arrayObject> = {
+  a: true,
+  b: 10,
+  c: []
+}
+export const arr2: t.TypeOf<typeof arrayObject> = {
+  a: false,
+  b: 20,
+  c: []
+}
+
+export const f: t.TypeOf<typeof firstLevelArray> = [arr1, arr2]
+
+arr1.c[0] = f
+arr2.c[0] = f
+
 arraySchema.addType(firstLevelArray)
 
 export const mapSchema = t.schema('mapSchema')

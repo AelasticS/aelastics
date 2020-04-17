@@ -223,6 +223,19 @@ export const Union3 = t.unionOf([DriverType, janitorType], 'union3')
 export const Union2 = t.unionOf([DoctorType, janitorType], 'union2')
 export const Union1 = t.unionOf([DoctorType, DriverType, Union2, Union3], 'union1')
 
+export const thirdUnion: t.TypeOf<typeof Union3> = {
+  name: 'Jack',
+  age: 35
+  // profession: 'Driver',
+  // licences: ['A', 'B']
+}
+export const secondUnion: t.TypeOf<typeof Union2> = {
+  profession: 'Doctor',
+  specialization: 'Internist',
+  name: 'Mark',
+  age: 26
+}
+
 // Maps
 export const MapOfPeopleKey = t.number.derive('integer').integer
 export const MapOfPeoplePropName = t.string.derive('name').alphabetical
@@ -326,6 +339,12 @@ export const employeeType = t.taggedUnion(
   'profession',
   'employee'
 )
+
+export const taggedUnionEmployee: t.TypeOf<typeof employeeType> = {
+  profession: 'doctor',
+  specialization: true,
+  worksAt: 'Bel Medic'
+}
 
 export const personType = t.object(
   {
