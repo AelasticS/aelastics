@@ -13,7 +13,7 @@ describe('toDTOtree test cases for IntersectionType', () => {
     const fullName = { name: 'John', familyName: 'Brown' }
     const res = FullNameType.toDTOtree(fullName)
     if (isSuccess(res)) {
-      expect(res.value).toEqual({ familyName: 'Brown', name: 'John' })
+      expect(res.value).toEqual({ famName: { familyName: 'Brown' }, name: { name: 'John' } })
     }
   })
 
