@@ -9,7 +9,8 @@ import {
   DtoTypeOf,
   InstanceReference,
   TypeOf,
-  FromDtoContext
+  FromDtoContext,
+  DtoTreeTypeOf
 } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
@@ -49,7 +50,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   P,
   UnionToIntersection<TypeOf<P[number]>>,
   DtoIntersectionType<P>,
-  { [key: string]: DtoTypeOf<P[number]> } // UnionToIntersection<DtoTypeOf<P[number]>>
+  { [key: string]: DtoTreeTypeOf<P[number]> } // UnionToIntersection<DtoTypeOf<P[number]>>
 > {
   public readonly _tag: 'Intersection' = 'Intersection'
 
@@ -87,7 +88,7 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   }
 
   makeInstanceFromDTO(
-    input: { [p: string]: DtoTypeOf<P[number]> },
+    input: { [p: string]: DtoTreeTypeOf<P[number]> },
     output: UnionToIntersection<TypeOf<P[number]>>,
     path: Path,
     context: FromDtoContext

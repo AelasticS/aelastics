@@ -15,7 +15,7 @@ describe('toDTO test cases for Map', () => {
           [1, { name: 'Ivan', age: 21 }],
           [2, { name: 'Stefan', age: 33 }]
         ],
-        ref: { id: 3, category: 'map', typeName: 'people' }
+        ref: { id: 1, category: 'map', typeName: 'people' }
       })
     }
   })

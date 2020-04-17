@@ -42,7 +42,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   DtoTypeOfKey<T>
 > {
   public readonly referencedType: T = this.baseType
-  public readonly _tag: 'EntityReference' = 'EntityReference'
+  public readonly _tag: 'Reference' = 'Reference'
 
   constructor(name: string, obj: T) {
     super(name, obj)

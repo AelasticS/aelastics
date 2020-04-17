@@ -105,7 +105,10 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
     path: Path,
     context: FromDtoContext
   ): void {
-    let discrValue = input.object[this.discriminator]
+    if (!context.options.isTreeDTO) {
+      input = input.object
+    }
+    let discrValue = input[this.discriminator] // input.object[this.discriminator]
     if (!discrValue) {
       context.errors.push(
         validationError(
@@ -128,7 +131,7 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
         return undefined
       }
       return (type as ComplexTypeC<any, any>).makeInstanceFromDTO(
-        input.object,
+        input,
         empty,
         appendPath(path, discrValue, type.name, input),
         context
