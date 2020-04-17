@@ -21,13 +21,10 @@ describe('fromDTO test cases for IntersectionType', () => {
     const fullName: DtoTypeOf<typeof FullNameType> = {
       ref: { id: 3, category: 'intersection', typeName: 'FullNameType' },
       intersection: {
-        name: {
-          ref: { id: 1, category: 'object', typeName: 'nam' },
-          object: { name: 'sima' }
-        },
+        name: {},
         familyName: {
           ref: { id: 2, category: 'object', typeName: 'nam' },
-          object: { name: 'sima' }
+          object: { familyName: 'sima' }
         }
       }
     }
