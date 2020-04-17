@@ -1,10 +1,13 @@
+import * as t from '../../../src/aelastics-types'
 import { FullNameType } from '../../example/types-example'
 import { isSuccess, isFailure } from 'aelastics-result'
 import { errorMessages, ProfessorIntersectionType } from '../testing-types'
 
 describe('fromDTOtree test cases for IntersectionType', () => {
   it('should be valid fromDTOtree for FullNameType', () => {
-    const fullName = { name: 'John', familyName: 'Brown' }
+    const fullName: t.DtoTreeTypeOf<typeof FullNameType> = {
+      //  name: 'John', familyName: 'Brown'
+    }
     const res = FullNameType.fromDTOtree(fullName as any)
     expect(isSuccess(res)).toBe(true)
   })

@@ -1,4 +1,4 @@
-// import * as t from '../../../src/aelastics-types'
+import * as t from '../../../src/aelastics-types'
 import { isSuccess, isFailure, Failure } from 'aelastics-result'
 import * as examples from '../../example/recursive-example'
 
@@ -43,14 +43,15 @@ describe('Validate Cyclic intersection structures', () => {
     const type = examples.recursiveIntersection
     examples.intersectionSchema.validate()
 
-    let instance = {
-      b: 5,
-      c: 'Something',
-      a: {}
+    let instance: t.TypeOf<typeof examples.recursiveIntersection> = {
+      // b: 5,
+      // c: 'Something',
+      // a: {}
+      a: { b: true, c: 'c', a: undefined },
+      b: 'b'
     }
 
-    instance.a = instance
-
+    instance.a.a = instance
     expect(isSuccess(type.validate(instance as any))).toBe(true)
   })
 })
