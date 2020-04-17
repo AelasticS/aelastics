@@ -91,8 +91,8 @@ export const firstChild = t.fun('firstChild', { worker: WorkerType }, ChildType)
 
 // intersection type example
 export const FullNameType = t.intersectionOf([
-  t.object({ name: t.string.derive('').alphabetical }),
-  t.object({ familyName: t.string })
+  t.object({ name: t.string.derive('').alphabetical }, 'name'),
+  t.object({ familyName: t.string }, 'famName')
 ])
 export const ArtSchema = t.schema('ArtSchema')
 export const SchemaSinger = t.schema('SchemaSinger', ArtSchema)
@@ -237,7 +237,7 @@ export const ActorType = t.object(
 export const AwardType = t.object(
   {
     name: t.string,
-    year: t.number.positive,
+    year: t.number.derive().positive,
     categoiries: t.arrayOf(t.string, 'Categories')
   },
   'AwardType',

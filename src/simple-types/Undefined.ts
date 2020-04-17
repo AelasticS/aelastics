@@ -19,7 +19,7 @@ export class UndefinedTypeC extends SimpleTypeC<undefined> {
     path: Path = [],
     traversed: VisitedNodes<Any, any, any>
   ): Result<boolean> {
-    if (value === undefined) {
+    if (value === undefinedType) {
       return success(true)
     } else {
       return failure(new Error(`Value '${value}' at path:'${pathToString(path)}' is not undefined`))
@@ -33,10 +33,15 @@ export class UndefinedTypeC extends SimpleTypeC<undefined> {
       return failure(new Error(`Value '${value}' is not undefined`))
     }
   }
+
+  defaultValue(): undefined {
+    return undefined
+  }
 }
 
 /**
  *  Undefined type
  */
 // tslint:disable-next-line:variable-name
-export const undefined: UndefinedTypeC = new UndefinedTypeC()
+export const undefinedType: UndefinedTypeC = new UndefinedTypeC()
+undefinedType.systemType = true

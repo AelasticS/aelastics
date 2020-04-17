@@ -47,7 +47,8 @@ describe('Validate Cyclic array structures', () => {
       c: [{}]
     }
     let arr = [o]
-    arr[0].c = arr
-    expect(isSuccess(type.validate(arr))).toBe(true)
+    arr[0].c = [arr]
+    let res = type.validate(arr)
+    expect(isSuccess(res)).toBe(true)
   })
 })

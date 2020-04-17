@@ -32,7 +32,7 @@ describe('toDTO tests for object type', () => {
     expect(isSuccess(res)).toBe(true)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { category: 'Object', id: 1, typeName: 'Numbers object type' },
+        ref: { category: 'object', id: 1, typeName: 'Numbers object type' },
         object: { a: -5, b: 3 }
       })
     }
@@ -79,7 +79,7 @@ describe('toDTO tests for object type', () => {
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         object: {},
-        ref: { category: 'Object', id: 1, typeName: '{  }' }
+        ref: { category: 'object', id: 1, typeName: '{  }' }
       })
     }
   })
@@ -98,11 +98,11 @@ describe('toDTO tests for object type', () => {
         object: {
           a: 3,
           b: {
-            ref: { id: 1, category: 'Object', typeName: 'Nested object' },
+            ref: { id: 2, category: 'object', typeName: 'Nested object' },
             object: { b1: 'B1', b2: 'Af' }
           }
         },
-        ref: { id: 2, category: 'Object', typeName: 'Complex object' }
+        ref: { id: 1, category: 'object', typeName: 'Complex object' }
       })
     }
   })

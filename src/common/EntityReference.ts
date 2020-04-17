@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeC } from './Type'
+import { Any, FromDtoContext, InstanceReference, ToDtoContext, TypeC } from './Type'
 import { isObject, ObjectTypeC, Props } from '../complex-types/ObjectType'
 import {
   appendPath,
@@ -62,12 +62,12 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
     }
     const identifier = this.referencedType.identifier
     const errors: Errors = []
-    if (Object.keys(value).length > identifier.length) {
-      const fail = failureValidation('Extra properties', path, this.name, value)
-      if (isFailure(fail)) {
-        return fail
-      }
-    }
+    // if (Object.keys(value).length > identifier.length) {
+    //   const fail = failureValidation('Extra properties', path, this.name, value)
+    //   if (isFailure(fail)) {
+    //     return fail
+    //   }
+    // }
     for (let i = 0; i < identifier.length; i++) {
       const k = identifier[i]
       if (value[k] === undefined) {
@@ -99,38 +99,31 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
   }
 
   makeInstanceFromDTO(
-    input: DtoTypeOfKey<T> | DtoEntityReference<T>,
+    input: DtoTypeOfKey<T>,
+    empty: TypeOfKey<T>,
     path: Path,
-    context: ToDtoContext
-  ): TypeOfKey<T> {
-    let inputReference: DtoTypeOfKey<T>
-    if (this.isEnityRef(input)) {
-      inputReference = input.reference
-    } else {
-      inputReference = input
-    }
-    let output: Props = {}
-    if (!isObject(inputReference)) {
+    context: FromDtoContext
+  ) {
+    let output: Props = empty
+    if (!isObject(input)) {
       context.errors.push(validationError('Reference is not valid', path, this.name, input))
       return output
     }
     const identifier = this.referencedType.identifier
     for (let i = 0; i < identifier.length; i++) {
       const k: string = identifier[i]
-      const ak = inputReference[k]
+      const ak = input[k]
       const t = this.referencedType.baseType[k] as TypeC<any>
-      const conversion = t.fromDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
-      output[k] = conversion
+      output[k] = t.fromDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
     }
-    return output as TypeOfKey<T>
   }
 
   makeDTOInstance(
     input: TypeOfKey<T>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): DtoTypeOfKey<T> | DtoEntityReference<T> {
-    let output: DtoEntityReference<T> | TypeOfKey<T>
+  ): DtoTypeOfKey<T> {
     let outReference: DtoTypeOfKey<T> = {}
     const key = this.referencedType.identifier
     try {
@@ -141,12 +134,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
         const conversion = t.toDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
         ObjectTypeC.addProperty(outReference, k, conversion)
       }
-      if (context.options.isTreeDTO) {
-        output = outReference
-      } else {
-        output = { ref: this.makeReference(input, context), reference: outReference }
-      }
-      return output
+      return outReference
     } catch (e) {
       context.errors.push(
         validationError(
@@ -157,12 +145,31 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
           this.name
         )
       )
-      return {}
+      return outReference
     }
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     return this.referencedType.validateLinks(traversed)
+  }
+
+  defaultValue(): TypeOfKey<T> {
+    const output: { [key: string]: any } = {}
+    const identifier = this.referencedType.identifier
+    for (let i = 0; i < identifier.length; i++) {
+      const k: string = identifier[i]
+      const t = this.referencedType.baseType[k] as TypeC<any>
+      output[k] = t.defaultValue()
+    }
+    return output
+  }
+
+  makeEmptyInstance(
+    value: DtoTypeOfKey<T> | DtoEntityReference<T>,
+    path: Path,
+    context: FromDtoContext
+  ): TypeOfKey<T> {
+    return {}
   }
 }
 

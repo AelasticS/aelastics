@@ -193,9 +193,12 @@ describe('Testing fromDTO method of ObjectType', () => {
    *Testing correct error message for function fromDTO with empty object as input
    */
   it('should be valid fromDTO for empty Object', () => {
-    let emptyObj = t.object({})
+    let emptyObj = t.object({}, 'emptyObj')
 
-    let emp = emptyObj.fromDTO({ ref: { id: 1, category: 'Object', typeName: '' }, object: {} })
+    let emp = emptyObj.fromDTO({
+      ref: { id: 1, category: 'Object', typeName: 'emptyObj' },
+      object: {}
+    })
     expect(isSuccess(emp)).toBe(true)
   })
 })

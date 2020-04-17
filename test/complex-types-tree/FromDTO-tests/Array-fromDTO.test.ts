@@ -3,34 +3,34 @@ import * as t from '../../../src/aelastics-types'
 import * as at from '../../../src/complex-types/Array'
 import * as examples from '../testing-types'
 
-describe('Tests for Array method fromDTO', () => {
+describe('Tests for Array method fromDTOtree', () => {
   /**
-   * Testing fromDTO with input array of numbers
+   * Testing fromDTOtree with input array of numbers
    */
-  it('should be valid fromDTO for array of numbers', () => {
+  it('should be valid fromDTOtree for array of numbers', () => {
     let arrayOfNumbers = at.arrayOf(t.number, 'arrayOfNumbers')
-    let a = arrayOfNumbers.fromDTO([5, 10, 25, 150])
+    let a = arrayOfNumbers.fromDTOtree([5, 10, 25, 150])
     expect(isSuccess(a)).toBe(true)
   })
   /**
-   * Testing fromDTO with input array of numbers where constraint is not fulfilled
+   * Testing fromDTOtree with input array of numbers where constraint is not fulfilled
    */
-  it('should not be valid fromDTO for array of numbers', () => {
+  it('should not be valid fromDTOtree for array of numbers', () => {
     let arrayOfNumbers = at.arrayOf(t.number.derive('').negative, 'arrayOfNumbers')
-    let a = arrayOfNumbers.fromDTO([5, 10, -25, -150])
+    let a = arrayOfNumbers.fromDTOtree([5, 10, -25, -150])
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
           code: 'ValidationError',
-          message: 'Expected  to be negative, got 5',
-          path: [],
+          message: 'Expected [0]:5 to be negative, got 5',
+          path: [{ actual: 5, segment: '[0]' }],
           type: '',
           value: '5'
         },
         {
           code: 'ValidationError',
-          message: 'Expected  to be negative, got 10',
-          path: [],
+          message: 'Expected [1]:10 to be negative, got 10',
+          path: [{ actual: 10, segment: '[1]' }],
           type: '',
           value: '10'
         }
@@ -38,24 +38,24 @@ describe('Tests for Array method fromDTO', () => {
     }
   })
   /**
-   * Testing fromDTO with input array of strings where constraint is not fulfilled
+   * Testing fromDTOtree with input array of strings where constraint is not fulfilled
    */
-  it('should not be valid fromDTO for array of strings', () => {
+  it('should not be valid fromDTOtree for array of strings', () => {
     let arrayOfStrings = at.arrayOf(t.string.derive('').lowercase.includes('.'), 'arrayOfStrings')
-    let a = arrayOfStrings.fromDTO(['a.bcd', 'Abc', 'a.'])
+    let a = arrayOfStrings.fromDTOtree(['a.bcd', 'Abc', 'a.'])
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
           code: 'ValidationError',
-          message: 'Expected  to include `.`, got `Abc`',
-          path: [],
+          message: 'Expected [1]:Abc to include `.`, got `Abc`',
+          path: [{ actual: 'Abc', segment: '[1]' }],
           type: '',
           value: '"Abc"'
         },
         {
           code: 'ValidationError',
-          message: 'Expected  to be lowercase, got `Abc`',
-          path: [],
+          message: 'Expected [1]:Abc to be lowercase, got `Abc`',
+          path: [{ actual: 'Abc', segment: '[1]' }],
           type: '',
           value: '"Abc"'
         }
@@ -64,9 +64,9 @@ describe('Tests for Array method fromDTO', () => {
   })
 
   /**
-   * Testing fromDTO for array of EmployeeType objects
+   * Testing fromDTOtree for array of EmployeeType objects
    */
-  it('should be valid fromDTO for array of EmployeeType objects', () => {
+  it('should be valid fromDTOtree for array of EmployeeType objects', () => {
     let arrayOfEmployees = at.arrayOf(examples.EmployeeType, 'arrayOfEmployees')
     let emps = [
       {
@@ -96,16 +96,16 @@ describe('Tests for Array method fromDTO', () => {
         }
       }
     ]
-    let a = arrayOfEmployees.fromDTO(emps as any)
+    let a = arrayOfEmployees.fromDTOtree(emps as any)
     expect(isSuccess(a)).toBe(true)
   })
 
   /**
-   * Testing fromDTO with input array of empty objects for array of EmployeeType objects
+   * Testing fromDTOtree with input array of empty objects for array of EmployeeType objects
    */
-  it('should not be valid fromDTO for array of EmployeeType objects in case of empty object', () => {
+  it('should not be valid fromDTOtree for array of EmployeeType objects in case of empty object', () => {
     let arrayOfEmployees = at.arrayOf(t.object({}), 'arrayOfEmployees')
-    let a = arrayOfEmployees.fromDTO([{}, {}, {}] as any)
+    let a = arrayOfEmployees.fromDTOtree([{}, {}, {}] as any)
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
@@ -120,10 +120,10 @@ describe('Tests for Array method fromDTO', () => {
   })
 
   /**
-   * Testing fromDTO with input array of objects with incorrect relation between values dateOfBirth and age for array of EmployeeType objects
+   * Testing fromDTOtree with input array of objects with incorrect relation between values dateOfBirth and age for array of EmployeeType objects
    */
   // no validation message?
-  it('should not be valid fromDTO for array of EmployeeType objects in case of incorrect relation between properties', () => {
+  it('should not be valid fromDTOtree for array of EmployeeType objects in case of incorrect relation between properties', () => {
     let arrayOfEmployees = at.arrayOf(examples.EmployeeType, 'arrayOfEmployees')
     let emps = [
       {
@@ -140,14 +140,23 @@ describe('Tests for Array method fromDTO', () => {
         }
       }
     ]
-    let a = arrayOfEmployees.fromDTO((emps as any) as t.DtoTreeTypeOf<typeof arrayOfEmployees>)
+    let a = arrayOfEmployees.fromDTOtree((emps as any) as t.DtoTreeTypeOf<typeof arrayOfEmployees>)
     if (isFailure(a)) {
       expect(a.errors).toEqual([
         {
           code: 'ValidationError',
           message:
-            'Expected  date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]',
-          path: [],
+            'Expected [0]:[object Object] date of birth is in correct relation with date of employment (employee age 18 or more), got [object Object]',
+          path: [
+            {
+              actual: {
+                dateOfBirth: { day: 10, month: 5, year: 2000 },
+                employmentDate: { day: 25, month: 3, year: 2016 },
+                name: 'John'
+              },
+              segment: '[0]'
+            }
+          ],
           type: 'Worker',
           value:
             '{"name":"John","employmentDate":{"day":25,"month":3,"year":2016},"dateOfBirth":{"day":10,"month":5,"year":2000}}'

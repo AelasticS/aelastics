@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { Any, ToDtoContext, TypeC } from '../common/Type'
+import { Any, ToDtoContext, FromDtoContext, TypeC } from '../common/Type'
 import { Path, Result, success } from 'aelastics-result'
 
 export abstract class SimpleTypeC<V, G = V, T = V> extends TypeC<V, G, T> {
@@ -10,6 +10,10 @@ export abstract class SimpleTypeC<V, G = V, T = V> extends TypeC<V, G, T> {
 
   constructor(name: string) {
     super(name)
+  }
+
+  fromDTOCyclic(value: T | G, path: Path, context: FromDtoContext): V | undefined {
+    return value as any
   }
 
   /** @internal */

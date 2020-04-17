@@ -1,5 +1,4 @@
 import * as examples from '../testing-types'
-
 import { TypeOf } from '../../../src/aelastics-types'
 import { isSuccess, isFailure } from 'aelastics-result'
 
@@ -16,7 +15,7 @@ describe('toDTO test cases for Map', () => {
           [1, { name: 'Ivan', age: 21 }],
           [2, { name: 'Stefan', age: 33 }]
         ],
-        ref: { id: 5, category: 'Map', typeName: 'people' }
+        ref: { id: 3, category: 'map', typeName: 'people' }
       })
     }
   })
@@ -122,7 +121,7 @@ describe('toDTO test cases for Map', () => {
     ])
 
     const res = examples.MapOfCountries.toDTO(countries)
-    // expect(isSuccess(res)).toBe(true)
+    expect(isSuccess(res)).toBe(true)
     if (isFailure(res)) {
       expect(examples.errorMessages(res)).toEqual(
         "Caught exception 'Cannot read property 'entries' of undefined'\n" +

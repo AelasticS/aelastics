@@ -1,27 +1,27 @@
-import { isSuccess, Result } from 'aelastics-result'
+import { isFailure, isSuccess, Result } from 'aelastics-result'
 import * as examples from '../testing-types'
 import { DoctorType, OccupationType, WorkerType } from '../../example/types-example'
 import * as t from '../../../src/aelastics-types'
 import { london } from '../../example/instances-example'
 
 describe('ToDTO tests for union type', () => {
-  it('Testing toDTO for grade 7 for gradeType', () => {
+  it('Testing toDTOtree for grade 7 for gradeType', () => {
     const g: t.TypeOf<typeof examples.gradeType> = 7
-    const res = examples.gradeType.toDTO(g)
+    const res = examples.gradeType.toDTOtree(g)
     if (isSuccess(res)) {
       expect(res.value).toBe(7)
     }
   })
-  it('Testing toDTO for grade failed for gradeType', () => {
+  it('Testing toDTOtree for grade failed for gradeType', () => {
     const g: t.TypeOf<typeof examples.gradeType> = 'failed'
-    const res = examples.gradeType.toDTO(g)
+    const res = examples.gradeType.toDTOtree(g)
     if (isSuccess(res)) {
       expect(res.value).toBe('failed')
     }
   })
-  it('Testing toDTO for grade 11 for gradeType', () => {
+  it('Testing toDTOtree for grade 11 for gradeType', () => {
     const g: t.TypeOf<typeof examples.gradeType> = 11
-    const res = examples.gradeType.toDTO(g)
+    const res = examples.gradeType.toDTOtree(g)
     expect(isSuccess(res)).toBe(false)
   })
 
@@ -30,13 +30,11 @@ describe('ToDTO tests for union type', () => {
       profession: 'Doctor',
       specialization: 'Cardiologist'
     }
-    const res: any = OccupationType.toDTO(Doctor) as Result<t.DtoTypeOf<typeof OccupationType>>
+    const res: any = OccupationType.toDTOtree(Doctor) as Result<t.DtoTypeOf<typeof OccupationType>>
+    expect(isSuccess(res)).toBe(true)
     if (isSuccess(res)) {
       // @ts-ignore
-      expect(
-        res.value.union.object.profession === 'Doctor' &&
-          res.value.union.object.specialization === 'Cardiologist'
-      ).toBe(true)
+      expect(res.value).toEqual({ profession: 'Doctor', specialization: 'Cardiologist' })
     }
   })
 
@@ -46,13 +44,11 @@ describe('ToDTO tests for union type', () => {
       specialization: 'Cardiologist',
       age: 22
     }
-    const res: any = OccupationType.toDTO((Doctor as unknown) as any)
+    const res: any = OccupationType.toDTOtree((Doctor as unknown) as any)
+    expect(isSuccess(res)).toBe(true)
     if (isSuccess(res)) {
       // @ts-ignore
-      expect(
-        res.value.union.object.profession === 'Doctor' &&
-          res.value.union.object.specialization === 'Cardiologist'
-      ).toBe(true)
+      expect(res.value).toEqual({ profession: 'Doctor', specialization: 'Cardiologist' })
     }
   })
 
@@ -62,35 +58,28 @@ describe('ToDTO tests for union type', () => {
       specialization: 'Dentist',
       age: 22
     }
-    const res = OccupationType.toDTO((Doctor as unknown) as any)
+    const res = OccupationType.toDTOtree((Doctor as unknown) as any)
     expect(isSuccess(res)).toBe(false)
   })
 
-  it('Testing toDto for valid complex Worker object', () => {
-    const john: t.TypeOf<typeof WorkerType> = {
+  it('Testing toDto for valid EmployeeUnionType object', () => {
+    const empType: t.TypeOf<typeof examples.EmployeeUnionType> = {
       name: 'John',
-      age: 35,
-      sex: 'male',
-      birthPlace: london,
-      occupation: { profession: 'Driver', licences: ['B', 'C'] },
-      children: [{ name: 'Peter' }, { name: 'Helen' }]
+      title: 'Phd'
     }
-    const res = WorkerType.toDTO(john) as Result<t.DtoTypeOf<typeof WorkerType>>
-    if (isSuccess(res)) {
-      expect(res.value.object.occupation).toBe({ profession: 'Driver', licences: ['B', 'C'] })
-    }
+    const res = examples.EmployeeUnionType.toDTOtree(empType) as Result<
+      t.DtoTypeOf<typeof WorkerType>
+    >
+    expect(isSuccess(res)).toBe(true)
   })
 
-  it('Testing toDto for invalid complex Worker object', () => {
-    const john = {
+  it('Testing toDto for invalid EmployeeUnionType object', () => {
+    const empType: t.TypeOf<typeof examples.EmployeeUnionType> = {
       name: 'John',
-      age: 35,
-      sex: 'male',
-      birthPlace: london,
-      occupation: { profession: 'Driver1', licences: ['B', 'C'] },
-      children: [{ name: 'Peter' }, { name: 'Helen' }]
+      title: 'Phd',
+      age: 35
     }
-    const res = WorkerType.toDTO((john as unknown) as any)
+    const res = WorkerType.toDTOtree((empType as unknown) as any)
 
     expect(isSuccess(res)).toBe(false)
   })

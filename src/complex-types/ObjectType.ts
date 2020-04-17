@@ -8,19 +8,21 @@ import {
   failures,
   failureValidation,
   isFailure,
+  Path,
+  pathToString,
+  Result,
   success,
   validationError,
-  Path,
-  Result,
   ValidationError
 } from 'aelastics-result'
 import { ComplexTypeC } from './ComplexType'
 import {
   Any,
-  ToDtoContext,
   DtoTreeTypeOf,
   DtoTypeOf,
+  FromDtoContext,
   InstanceReference,
+  ToDtoContext,
   TypeC,
   TypeOf
 } from '../common/Type'
@@ -29,6 +31,7 @@ import { TypeSchema } from '../common/TypeSchema'
 import { ArrayTypeC } from './Array'
 import { MapTypeC } from './Map'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
+import { LinkC } from '../common/LinkC'
 
 export interface Props {
   [key: string]: Any // TypeC<any>
@@ -71,10 +74,6 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     { prop: string; type: ObjectTypeC<any, []> }
   >()
 
-  public getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
-    return [this._keys, this._types, this._len]
-  }
-
   constructor(name: string, props: P, identifier: I) {
     super(name, props)
     this.identifier = identifier
@@ -92,12 +91,33 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return mp
   }
 
+  /** @internal */
+  public static addProperty(obj: Object, prop: string, value: any) {
+    Object.defineProperty(obj, prop, {
+      value: value,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    })
+  }
+
+  public getPropsInfo(): [string[], TypeC<any, any, any>[], number] {
+    return [this._keys, this._types, this._len]
+  }
+
   public defaultValue(): any {
     const obj = {}
+    // ToDo correct subtype
+    /*    if (context.options.includeTypeInfo) {
+      ObjectTypeC.addProperty(output, context.options.typeInfoPropName, this.name)
+    }*/
     let [keys, types, len] = this.getPropsInfo()
     for (let i = 0; i < len; i++) {
       // @ts-ignore
-      obj[keys[i]] = types[i] instanceof ObjectTypeC ? undefined : types[i].defaultValue()
+      obj[keys[i]] =
+        types[i] instanceof ObjectTypeC
+          ? undefined // default object property is undefined
+          : types[i].defaultValue()
       // obj[this.keys[i]] = this.types[i].defaultValue();
     }
     return obj
@@ -118,6 +138,8 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
 
     if (traversed.has(pair)) {
       return success(true)
+    } else {
+      traversed.set(pair, input)
     }
 
     let [keys, types, len] = this.getPropsInfo()
@@ -142,21 +164,19 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return errors.length ? failures(errors) : success(true)
   }
 
-  protected isObjRef(input: any): input is DtoObjectType<P> {
-    if (input.ref && input.object) {
-      return true
-    }
-    return false
-  }
-
   makeDTOInstance(
     input: ObjectType<P>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): DtoProps<P> | DtoObjectType<P> {
+  ): DtoProps<P> {
     try {
-      let output: DtoProps<P> | DtoObjectType<P>
+      //      let output: DtoProps<P> | DtoObjectType<P>
       let outObject: DtoProps<P> = {} as DtoProps<P>
+      // ToDo save correct subtype in Ref,
+      if (ref && context.options.includeTypeInfo) {
+        ref.specificTypeName = input[context.options.typeInfoPropName]
+      }
       let [keys, types, len] = this.getPropsInfo()
       for (let i = 0; i < len; i++) {
         const t = types[i]
@@ -165,15 +185,7 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
         const conversion = t.toDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
         ObjectTypeC.addProperty(outObject, k, conversion)
       }
-      if (context.options.isTreeDTO) {
-        output = outObject
-      } else {
-        output = {
-          ref: this.makeReference(input, context),
-          object: outObject
-        }
-      }
-      return output
+      return outObject
     } catch (e) {
       context.errors.push(
         validationError(`Caught exception '${(e as Error).message}'`, path, this.name, input)
@@ -182,20 +194,42 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     }
   }
 
-  makeInstanceFromDTO(
-    input: DtoProps<P> | DtoObjectType<P>,
+  makeEmptyInstance(
+    value: DtoProps<P> | DtoObjectType<P>,
     path: Path,
-    context: ToDtoContext
+    context: FromDtoContext
   ): ObjectType<P> {
-    let output = {} as ObjectType<P>
-    let inputObject: DtoProps<P>
-    if (!isObject(input.object)) {
-      context.errors.push(validationError('Input is not an object', path, this.name, input))
+    return {} as any
+  }
+
+  makeInstanceFromDTO(
+    input: DtoProps<P>,
+    output: ObjectType<P>,
+    path: Path,
+    context: FromDtoContext
+  ) {
+    /*    if (!context.options.isTreeDTO) {
+          let ref = this.getRefFromNode(input)
+          output = this.retrieveRefFromVisited<number, any>(ref.id, context.visitedNodes!) // {} as ObjectType<P>
+        } else {
+          output = this.makeEmptyInstance(input, path, context) // empty
+        }*/
+    if (!isObject(input)) {
+      context.errors.push(
+        validationError(
+          `Value ${pathToString(path)} is not Object: '${input}'`,
+          path,
+          this.name,
+          input
+        )
+      )
       return output
     }
-    if (this.isObjRef(input) && !context.options.isTreeDTO) {
-      if (input.ref.typeName !== this.name) {
-        // determine correct subtype, add context for schema
+    if (context.options.includeTypeInfo) {
+      // ToDo correct subtype, determine correct subtype, add schema to context or to TypeC
+      let typeName = input[context.options.typeInfoPropName]
+      ObjectTypeC.addProperty(output, context.options.typeInfoPropName, this.name)
+      if (typeName !== this.name) {
         context.errors.push(
           validationError(
             `Types are not matching: input type is '${input.ref.typeName}' and expected type is '${this.name}'. A possible subtype cannot be handled!`,
@@ -205,50 +239,25 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
           )
         )
         return output // empty
-      } else {
-        inputObject = input.object as DtoProps<P>
       }
-    } else if (!this.isObjRef(input) && !context.options.isTreeDTO) {
-      inputObject = input
-    } else {
-      context.errors.push(
-        validationError(
-          `Input type '${this.name} at path '${path}' is not valid:"${input.toString()}" `,
-          path,
-          this.name,
-          input
-        )
-      )
-      return output // empty
     }
-    if (context.options.includeTypeInfo) {
-      ObjectTypeC.addProperty(output, context.options.typeInfoPropName, this.name)
-    }
+
     let [keys, types, len] = this.getPropsInfo()
     for (let i = 0; i < len; i++) {
       const t = types[i]
       const k = keys[i]
-      if (!Object.prototype.hasOwnProperty.call(inputObject, k) && !(t instanceof OptionalTypeC)) {
+      if (!Object.prototype.hasOwnProperty.call(input, k) && !(t instanceof OptionalTypeC)) {
         context.errors.push(
           validationError('missing property', appendPath(path, k, t.name), this.name)
         )
         continue
       }
-      const ak = inputObject[k]
+      const ak = input[k]
+      // @ts-ignore
       const conversion = t.fromDTOCyclic(ak, appendPath(path, k, t.name, ak), context)
       ObjectTypeC.addProperty(output, k, conversion)
     }
     return output
-  }
-
-  /** @internal */
-  public static addProperty(obj: Object, prop: string, value: any) {
-    Object.defineProperty(obj, prop, {
-      value: value,
-      writable: true,
-      enumerable: true,
-      configurable: true
-    })
   }
 
   validateLinks(traversed: Map<any, any>): Result<boolean> {
@@ -266,6 +275,13 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       }
     }
     return errors.length ? failures(errors) : success(true)
+  }
+
+  protected isObjRef(input: any): input is DtoObjectType<P> {
+    if (input.ref && input.object) {
+      return true
+    }
+    return false
   }
 }
 
@@ -306,6 +322,35 @@ export const entity = <P extends Props, I extends readonly string[]>(
   }
   return obj
 }
+
+function findBaseType(fp: Any, type: ObjectTypeC<any, any>, prop: string): ObjectTypeC<any, any> {
+  // handle link types
+  if (fp instanceof LinkC) {
+    let linkedType = fp.resolveType()
+    if (linkedType === undefined) {
+      throw new Error(`Property '${prop}' on type '${type.name}' is not a valid link.`)
+    } else {
+      return findBaseType(linkedType, type, prop)
+    }
+  }
+  // handle optional types
+  if (fp instanceof OptionalTypeC) {
+    return findBaseType(fp.base, type, prop)
+  }
+
+  // handle collections
+  if (fp instanceof ArrayTypeC || fp instanceof MapTypeC) {
+    fp = fp.baseType
+    return findBaseType(fp, type, prop)
+  }
+
+  // check that props are object types
+  if (!(fp instanceof ObjectTypeC)) {
+    throw new Error(`Property '${prop}' on type '${type.name}' not object or entity type.`)
+  }
+  return fp
+}
+
 /**
  *
  * @param firstType
@@ -326,40 +371,14 @@ export const inverseProps = (
     let fp = firstType.baseType[firstProp] as TypeC<any>
     if (!fp) {
       throw new Error(`Property '${firstProp}' on type '${firstType.name}' does not extist.`)
-      return
     }
     let sp = secondType.baseType[secondProp] as TypeC<any>
     if (!sp) {
       throw new Error(`Property '${secondProp}' on type '${secondType.name}' does not extist.`)
-      return
     }
-    // handle optional types
-    if (fp instanceof OptionalTypeC) {
-      fp = fp.base
-    }
-    if (sp instanceof OptionalTypeC) {
-      sp = sp.base
-    }
-    // handle collections
-    if (fp instanceof ArrayTypeC || fp instanceof MapTypeC) {
-      fp = fp.baseType
-    }
-    if (sp instanceof ArrayTypeC || sp instanceof MapTypeC) {
-      sp = sp.baseType
-    }
-    // check that props are object types
-    if (!(fp instanceof ObjectTypeC)) {
-      throw new Error(
-        `Property '${firstProp}' on type '${firstType.name}' not object or entity type.`
-      )
-      return
-    }
-    if (!(sp instanceof ObjectTypeC)) {
-      throw new Error(
-        `Property '${secondProp}' on type '${secondType.name}' not object or entity type.`
-      )
-      return
-    }
+
+    fp = findBaseType(fp, firstType, firstProp)
+    sp = findBaseType(sp, secondType, secondProp)
     // check that props are correct inverse
     if (fp !== secondType) {
       throw new Error(
