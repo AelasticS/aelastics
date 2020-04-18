@@ -1,5 +1,5 @@
 import { isSuccess, isFailure } from 'aelastics-result'
-import * as examples from '../testing-types'
+import * as examples from '../complex-types-graph/testing-types'
 
 describe('Map tests', () => {
   it('Testing if regular map is of type examples.MapofPeople', () => {
