@@ -23,7 +23,7 @@ export { subtype } from './complex-types/Subtype'
 export { mapOf } from './complex-types/Map'
 export { fun, argsType, returnType } from './complex-types/FunctionalType'
 export { intersectionOf } from './complex-types/IntersectionType'
-export { schema, ValidateStatusEnum } from './common/TypeSchema'
+export { schema, ValidateStatusEnum, TypeSchema } from './common/TypeSchema'
 export { ref, TypeOfKey, DtoTypeOfKey, DtoTreeTypeOfKey } from './common/EntityReference'
 export { link } from './common/LinkC'
 
