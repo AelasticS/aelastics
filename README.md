@@ -2,7 +2,7 @@
 
 > Types dynamically created at run time - Alpha version
 > - tree and graph data structures 
-> - data validation and serialization
+> - data validation and serialization/deserialization
 
 ## Highlights
 
@@ -18,16 +18,18 @@
 
 
 #### Validation
-- Lots of built-in validations
-- Custom complex validations and object/data value constrains
-- User defined error message specifications
+- Lots of built-in standard validations for string and number types
+- Custom complex validations and object/data value constrains can be defined
+- User defined error message specifications for violated constrains
 - Extensive error reports collected during data validations
 
-#### Serialization
-- Serialization/deserialization to/from Data Transfer Objects 
-- Support for date type, map, union, object references
-- Optional automatic object ID generation (version 1.1)
-- Graph data structures are serialized/deserialized using generated object IDs (version 1.1) 
+#### Serialization/Deserialization
+- Transformation to/from Data Transfer Objects (tree data structures) which can be directly used by JSON.stringify and JSON.parse functions
+- Graph cyclic data structures are supported as an out-of-the-box feature
+- Support for types not supported by JSON stringify and parse functions: maps, unions, date type, object references, etc.
+
+#### Structure Traversal/Processing
+- Input data structure is traversed in a depth-first manner and user supplied function is invoked exactly once at each element of the input 
 
 ## Example
 

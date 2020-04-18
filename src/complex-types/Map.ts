@@ -22,9 +22,11 @@ import {
   DtoTypeOf,
   InstanceReference,
   TypeOf,
-  FromDtoContext
+  FromDtoContext,
+  TraversalContext
 } from '../common/Type'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 /**
  * Map type
@@ -62,6 +64,27 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     context: FromDtoContext
   ): Map<TypeOf<K>, TypeOf<V>> {
     return new Map()
+  }
+
+  traverseCyclic<R>(
+    value: Map<TypeOf<K>, TypeOf<V>>,
+    f: <K, V>(type: Any, value: Map<TypeOf<any>, TypeOf<any>>, c: TraversalContext) => void,
+    context: TraversalContext
+  ): void {
+    let pair: TypeInstancePair<Any, any> = [this, value]
+    if (context.traversed.has(pair)) {
+      return
+    }
+    context.traversed.set(pair, undefined)
+    f(this, value, context)
+    value.forEach((v: V, key: K) => {
+      if (!(this.baseType instanceof SimpleTypeC)) {
+        this.baseType.traverseCyclic(v, f, context)
+      }
+      if (!(this.keyType instanceof SimpleTypeC)) {
+        this.keyType.traverseCyclic(v, f, context)
+      }
+    })
   }
 
   validateCyclic(

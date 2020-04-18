@@ -23,6 +23,7 @@ import {
   FromDtoContext,
   InstanceReference,
   ToDtoContext,
+  TraversalContext,
   TypeC,
   TypeOf
 } from '../common/Type'
@@ -32,6 +33,7 @@ import { ArrayTypeC } from './Array'
 import { MapTypeC } from './Map'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { LinkC } from '../common/LinkC'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 export interface Props {
   [key: string]: Any // TypeC<any>
@@ -282,6 +284,37 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       return true
     }
     return false
+  }
+
+  traverseCyclic<R>(
+    value: ObjectType<P>,
+    f: (type: Any, value: any, c: TraversalContext) => void,
+    context: TraversalContext
+  ): void {
+    let pair: TypeInstancePair<Any, any> = [this, value]
+
+    if (context.traversed.has(pair)) {
+      return
+    } else {
+      context.traversed.set(pair, value)
+    }
+    let [keys, types, len] = this.getPropsInfo()
+    const errors: ValidationError[] = []
+    for (let i = 0; i < len; i++) {
+      const t = types[i]
+      const k = keys[i]
+      if (!Object.prototype.hasOwnProperty.call(value, k) && !(t instanceof OptionalTypeC)) {
+        continue
+      }
+      const ak = value[k]
+      f(this, ak, context)
+      if (t instanceof SimpleTypeC) {
+        continue
+      } else {
+        t.traverseCyclic(ak, f, context)
+      }
+    }
+    return
   }
 }
 

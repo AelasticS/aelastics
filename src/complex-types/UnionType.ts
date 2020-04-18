@@ -10,7 +10,8 @@ import {
   DtoTypeOf,
   InstanceReference,
   TypeOf,
-  FromDtoContext
+  FromDtoContext,
+  TraversalContext
 } from '../common/Type'
 import {
   Error,
@@ -46,6 +47,28 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
 
   constructor(name: string, baseType: P) {
     super(name, baseType)
+  }
+
+  traverseCyclic<R>(
+    value: TypeOf<P[number]>,
+    f: <P>(type: Any, value: any, context: TraversalContext) => void,
+    context: TraversalContext
+  ): void {
+    let pair: TypeInstancePair<Any, any> = [this, value]
+
+    if (context.traversed.has(pair)) {
+      return
+    }
+    context.traversed.set(pair, undefined)
+    const typeRes = this.getTypeFromValue(value)
+    if (isFailure(typeRes)) {
+      throw new Error(`Value: '${value}' is not union: '${this.name}'`)
+    } else {
+      f(this, value, context)
+      if (!(typeRes.value instanceof SimpleTypeC)) {
+        typeRes.value.traverseCyclic(value, f, context)
+      }
+    }
   }
 
   validateCyclic(

@@ -21,10 +21,12 @@ import {
   InstanceReference,
   TypeC,
   TypeOf,
-  FromDtoContext
+  FromDtoContext,
+  TraversalContext
 } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 /**
  * Array type
@@ -88,6 +90,28 @@ export class ArrayTypeC<
       errors.push(...res.errors)
     }
     return errors.length ? failures(errors) : success(true)
+  }
+
+  public traverseCyclic<R>(
+    value: any,
+    f: (type: Any, value: any, c: TraversalContext) => void,
+    context: TraversalContext
+  ): void {
+    let pair: TypeInstancePair<Any, any> = [this, value]
+    if (context.traversed.has(pair)) {
+      return
+    }
+    context.traversed.set(pair, undefined)
+    const errors: Errors = []
+    for (let i = 0; i < value.length; i++) {
+      const x = value[i]
+      f(this, x, context)
+      if (this.baseType instanceof SimpleTypeC) {
+        continue
+      } else {
+        this.baseType.traverseCyclic(x, f, context)
+      }
+    }
   }
 
   protected isArrayRef(input: any): input is DtoArrayType<E> {

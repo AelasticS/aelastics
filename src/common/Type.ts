@@ -307,6 +307,22 @@ export abstract class TypeC<V, G = V, T = V> {
   }
 
   public abstract validateLinks(traversed: Map<Any, Any>): Result<boolean>
+
+  public traverse<R>(value: V, f: (type: Any, value: V, c: TraversalContext) => void): void {
+    return this.traverseCyclic<R>(value, f, new TraversalContext())
+  }
+
+  public traverseCyclic<R>(
+    value: V,
+    f: (type: Any, value: V, c: TraversalContext) => void,
+    context: TraversalContext
+  ): void {
+    return undefined
+  }
+}
+
+export class TraversalContext {
+  traversed: VisitedNodes<Any, any, any> = new VisitedNodes<Any, any, any>()
 }
 
 /**
