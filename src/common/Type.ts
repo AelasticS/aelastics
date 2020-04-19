@@ -18,7 +18,13 @@ import {
   ValidationError
 } from 'aelastics-result'
 import { VisitedNodes } from './VisitedNodes'
-import { TraversalContext, TraversalFunc } from './TraversalContext'
+import {
+  ExtraInfo,
+  PositionType,
+  RoleType,
+  TraversalContext,
+  TraversalFunc
+} from './TraversalContext'
 
 export type Predicate<T> = (value: T) => boolean
 
@@ -331,13 +337,26 @@ export abstract class TypeC<V, G = V, T = V> {
 
   public abstract validateLinks(traversed: Map<Any, Any>): Result<boolean>
 
-  public traverse<R>(value: V, f: TraversalFunc<R>): R {
-    return this.traverseCyclic<R>(value, f, new TraversalContext())
+  public traverse<R>(instance: V, f: TraversalFunc<R>, initValue: R): R {
+    return this.traverseCyclic<R>(
+      instance,
+      f,
+      initValue,
+      'asRoot',
+      { parentResult: initValue },
+      new TraversalContext<R>(initValue, false)
+    )
   }
 
-  public traverseCyclic<R>(value: V, f: TraversalFunc<R>, context: TraversalContext<R>): R {
-    return undefined as any
-  }
+  public abstract traverseCyclic<R>(
+    instance: V,
+    f: TraversalFunc<R>,
+    currentResult: R,
+    role: RoleType,
+    //    position: PositionType,
+    extra: ExtraInfo,
+    context: TraversalContext<R>
+  ): R
 }
 
 /**

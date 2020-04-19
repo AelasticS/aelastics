@@ -4,6 +4,13 @@
 
 import { Any, ToDtoContext, FromDtoContext, TypeC } from '../common/Type'
 import { Path, Result, success } from 'aelastics-result'
+import {
+  ExtraInfo,
+  PositionType,
+  RoleType,
+  TraversalContext,
+  TraversalFunc
+} from '../common/TraversalContext'
 
 export abstract class SimpleTypeC<V, G = V, T = V> extends TypeC<V, G, T> {
   //    public readonly _tagSimple: 'Simple' = 'Simple';
@@ -23,5 +30,16 @@ export abstract class SimpleTypeC<V, G = V, T = V> extends TypeC<V, G, T> {
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     return success(true)
+  }
+
+  traverseCyclic<R>(
+    instance: V,
+    f: TraversalFunc<R>,
+    currentResult: R,
+    role: RoleType,
+    extra: ExtraInfo,
+    context: TraversalContext<R>
+  ): R {
+    return f(this, instance, currentResult, 'AfterAllChildren', role, extra, context)
   }
 }

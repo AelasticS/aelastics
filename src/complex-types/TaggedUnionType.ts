@@ -27,7 +27,7 @@ import {
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { SimpleTypeC } from '../simple-types/SimpleType'
-import { TraversalContext } from '../common/TraversalContext'
+import { ExtraInfo, RoleType, TraversalContext } from '../common/TraversalContext'
 
 // export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralTypeC<Tag> }
 
@@ -58,24 +58,20 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
     super(name, elements)
   }
 
-  protected traverseChildren<R>(
-    value: TypeOf<P[keyof P]>,
-    f: (type: Any, value: any, c: TraversalContext<R>) => R,
-    context: TraversalContext<R>
-  ): void {
-    const instance = value[this.discriminator]
-    if (!instance) {
+  protected *children(value: TypeOf<P[keyof P]>): Generator<[Any, any, RoleType, ExtraInfo]> {
+    const discrValue = value[this.discriminator]
+    if (!discrValue) {
       throw new Error(
         `Value: '${value}' is not a proper union, no discriminator property: '${this.discriminator}'`
       )
     } else {
-      const type = findTypeFromDiscriminator(instance, this.baseType)
+      const type = findTypeFromDiscriminator(discrValue, this.baseType)
       if (!type) {
-        throw new Error(`Value '${value}' - there is no type in tagged union named: '${instance}'`)
+        throw new Error(
+          `Value '${value}' - there is no type in tagged union named: '${discrValue}'`
+        )
       } else {
-        if (!(type instanceof SimpleTypeC)) {
-          type.traverseCyclic(value, f, context)
-        }
+        yield [type, value, 'asElementOfTaggedUnion', {}]
       }
     }
   }

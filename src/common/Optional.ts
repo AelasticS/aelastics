@@ -4,6 +4,13 @@
 
 import { success, Path, Result, failures, isFailure, ValidationError } from 'aelastics-result'
 import { Any, ToDtoContext, DtoTypeOf, TypeC, TypeOf } from './Type'
+import {
+  ExtraInfo,
+  PositionType,
+  RoleType,
+  TraversalContext,
+  TraversalFunc
+} from './TraversalContext'
 
 const getOptionalName = (base: Any): string => `optional ${base.name}`
 
@@ -45,6 +52,24 @@ export class OptionalTypeC<T extends TypeC<any>> extends TypeC<
     } else {
       return this.base.toDTOCyclic(input, path, context)
     }
+  }
+
+  traverseCyclic<R>(
+    instance: TypeOf<T> | undefined,
+    f: TraversalFunc<R>,
+    currentResult: R,
+    role: RoleType,
+    extra: ExtraInfo,
+    context: TraversalContext<R>
+  ): R {
+    return this.base.traverseCyclic(
+      instance,
+      f,
+      currentResult,
+      role,
+      { ...extra, ...{ optional: true } },
+      context
+    )
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

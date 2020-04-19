@@ -25,7 +25,13 @@ import {
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { SimpleTypeC } from '../simple-types/SimpleType'
-import { TraversalContext, TraversalFunc } from '../common/TraversalContext'
+import {
+  ExtraInfo,
+  PositionType,
+  RoleType,
+  TraversalContext,
+  TraversalFunc
+} from '../common/TraversalContext'
 
 /**
  * Array type
@@ -91,21 +97,44 @@ export class ArrayTypeC<
     return errors.length ? failures(errors) : success(true)
   }
 
-  protected traverseChildren<R>(
-    value: Array<TypeOf<E>>,
-    f: (type: Any, value: any, c: TraversalContext<R>) => R,
-    context: TraversalContext<R>
-  ) {
+  *children(value: Array<TypeOf<E>>): Generator<[Any, any, RoleType, ExtraInfo]> {
     for (let i = 0; i < value.length; i++) {
-      const x = value[i]
-      f(this, x, context)
-      if (this.baseType instanceof SimpleTypeC && context.skipSimpleTypes) {
-        continue
-      } else {
-        this.baseType.traverseCyclic(x, f, context)
-      }
+      yield [this.baseType, value[i], 'asArrayElement', { index: i }]
     }
   }
+
+  /*
+
+    protected traverseChildren<R>(
+      value: Array<TypeOf<E>>,
+      f: TraversalFunc<R>,
+      currentResult: R,
+      role: RoleType,
+      //   position: PositionType,
+      extra: ExtraInfo,
+      context: TraversalContext<R>
+    ): void {
+      let childRes = currentResult
+      for (let i = 0; i < value.length; i++) {
+        const x = value[i]
+        if (this.baseType instanceof SimpleTypeC && context.skipSimpleTypes) {
+          continue
+        } else {
+          childRes = this.baseType.traverseCyclic(
+            x,
+            f,
+            childRes,
+            'AsArrayElement',
+            { index: i, parentInstance: value, parentType:this, parentResult:currentResult},
+            context
+          )
+          context.popEntry()
+          // after child
+          f(this, x, childRes, 'AfterChild', role, extra, context)
+        }
+      }
+    }
+  */
 
   protected isArrayRef(input: any): input is DtoArrayType<E> {
     if (input.ref && input.array) {

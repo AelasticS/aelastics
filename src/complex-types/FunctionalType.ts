@@ -8,26 +8,31 @@ import {
   DtoTreeTypeOf,
   DtoTypeOf,
   FromDtoContext,
+  InstanceReference,
   ToDtoContext,
   TypeC,
   TypeOf
 } from '../common/Type'
 import { DtoObjectType, DtoProps, ObjectType, Props } from './ObjectType'
 import { failures, isFailure, Path, Result, success } from 'aelastics-result'
+import { ComplexTypeC } from './ComplexType'
+import { ExtraInfo, RoleType } from '../common/TraversalContext'
 
 export type FunDecl<A, R> = {
   args: A
   returns: R
 }
 
-export class FunctionalTypeC<P extends Props, R extends Any> extends TypeC<
+export class FunctionalTypeC<P extends Props, R extends Any> extends ComplexTypeC<
+  R,
   FunDecl<ObjectType<P>, TypeOf<R>>,
   FunDecl<DtoObjectType<P>, DtoTypeOf<R>>,
   FunDecl<DtoProps<P>, DtoTreeTypeOf<R>>
 > {
   public readonly _tag: 'Function' = 'Function'
+
   constructor(name: string, readonly args: P, readonly returns: R) {
-    super(name)
+    super(name, returns)
   }
 
   toDTOCyclic(
@@ -42,8 +47,8 @@ export class FunctionalTypeC<P extends Props, R extends Any> extends TypeC<
     value: FunDecl<DtoProps<P>, DtoTreeTypeOf<R>> | FunDecl<DtoObjectType<P>, DtoTypeOf<R>>,
     path: Path,
     context: FromDtoContext
-  ): FunDecl<ObjectType<P>, TypeOf<R>> | undefined {
-    return undefined
+  ): FunDecl<ObjectType<P>, TypeOf<R>> {
+    return undefined as any
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
@@ -78,6 +83,40 @@ export class FunctionalTypeC<P extends Props, R extends Any> extends TypeC<
     return () => {
       return this.returns.defaultValue()
     }
+  }
+
+  protected *children(instance: any): Generator<[Any, any, RoleType, ExtraInfo]> {
+    return []
+    for (let [key, value] of Object.entries(this.args)) {
+      yield [value, instance, 'asFuncArgument', { propName: key }]
+    }
+    yield [this.returns, instance, 'asFuncArgument', {}]
+  }
+
+  makeDTOInstance(
+    input: FunDecl<ObjectType<P>, TypeOf<R>>,
+    ref: InstanceReference,
+    path: Path,
+    context: ToDtoContext
+  ): FunDecl<DtoProps<P>, DtoTreeTypeOf<R>> {
+    return undefined as any
+  }
+
+  makeEmptyInstance(
+    value: FunDecl<DtoProps<P>, DtoTreeTypeOf<R>> | FunDecl<DtoObjectType<P>, DtoTypeOf<R>>,
+    path: Path,
+    context: FromDtoContext
+  ): FunDecl<ObjectType<P>, TypeOf<R>> {
+    return undefined as any
+  }
+
+  makeInstanceFromDTO(
+    input: FunDecl<DtoProps<P>, DtoTreeTypeOf<R>>,
+    empty: FunDecl<ObjectType<P>, TypeOf<R>>,
+    path: Path,
+    context: FromDtoContext
+  ): void {
+    return
   }
 }
 

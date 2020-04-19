@@ -2,9 +2,15 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import { ToDtoContext, InstanceReference, TypeC, FromDtoContext, Any } from '../common/Type'
+import { ToDtoContext, InstanceReference, TypeC, FromDtoContext, Any, TypeOf } from '../common/Type'
 import { Path, validationError } from 'aelastics-result'
-import { TraversalContext } from '../common/TraversalContext'
+import {
+  ExtraInfo,
+  PositionType,
+  RoleType,
+  TraversalContext,
+  TraversalFunc
+} from '../common/TraversalContext'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { SimpleTypeC } from '../simple-types/SimpleType'
 
@@ -114,28 +120,62 @@ export abstract class ComplexTypeC<
     }
   }
 
-  protected abstract traverseChildren<R>(
-    value: V,
-    f: (type: Any, value: any, c: TraversalContext<R>) => R,
-    context: TraversalContext<R>
-  ): void
+  /*  protected abstract children<R>(
+      value: V,
+      f: TraversalFunc<R>,
+      currentResult: R,
+      role: RoleType,
+      //    position:PositionType,
+      extra: ExtraInfo,
+      context: TraversalContext<R>
+    ): void*/
+
+  // children iterator
+  protected abstract children(value: V): Generator<[Any, any, RoleType, ExtraInfo]>
 
   traverseCyclic<R>(
-    value: V,
-    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    instance: V,
+    f: TraversalFunc<R>,
+    currentResult: R,
+    role: RoleType,
+    //   position:PositionType,
+    extra: ExtraInfo,
     context: TraversalContext<R>
   ): R {
-    let pair: TypeInstancePair<Any, any> = [this, value]
+    let pair: TypeInstancePair<Any, any> = [this, instance]
     if (context.traversed.has(pair)) {
       return context.traversed.get(pair)
     }
+    context.traversed.set(pair, undefined)
+
     // before children
-    let r: R = f(this, value, context)
-    context.traversed.set(pair, r)
-    this.traverseChildren(value, f, context)
-    // after children
-    r = f(this, value, context)
-    context.traversed.set(pair, r)
+    let r: R = f(this, instance, currentResult, 'BeforeChildren', role, extra, context)
+    context.pushEntry(role, { parentType: this, parentInstance: instance })
+    let accumulator = currentResult
+    for (let [childType, child, childRole, extra] of this.children(instance)) {
+      if (childType instanceof SimpleTypeC && context.skipSimpleTypes) {
+        continue
+      } else {
+        accumulator = childType.traverseCyclic(
+          child,
+          f,
+          accumulator,
+          childRole,
+          {
+            ...{
+              parentInstance: instance,
+              parentType: this,
+              parentResult: accumulator
+            },
+            ...extra
+          },
+          context
+        )
+      }
+      // after children
+      r = f(this, instance, currentResult, 'AfterAllChildren', childRole, extra, context)
+    }
+    context.popEntry()
     return r
   }
 }

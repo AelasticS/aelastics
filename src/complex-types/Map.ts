@@ -26,7 +26,7 @@ import {
 } from '../common/Type'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { SimpleTypeC } from '../simple-types/SimpleType'
-import { TraversalContext } from '../common/TraversalContext'
+import { ExtraInfo, RoleType, TraversalContext } from '../common/TraversalContext'
 
 /**
  * Map type
@@ -66,19 +66,16 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
     return new Map()
   }
 
-  protected traverseChildren<R>(
-    value: Map<TypeOf<K>, TypeOf<V>>,
-    f: (type: Any, value: any, c: TraversalContext<R>) => R,
-    context: TraversalContext<R>
-  ): void {
-    value.forEach((v: V, key: K) => {
-      if (!(this.baseType instanceof SimpleTypeC && context.skipSimpleTypes)) {
-        this.baseType.traverseCyclic(v, f, context)
-      }
-      if (!(this.keyType instanceof SimpleTypeC && context.skipSimpleTypes)) {
-        this.keyType.traverseCyclic(v, f, context)
-      }
-    })
+  //  https://github.com/redux-saga/redux-saga/issues/306
+
+  protected *children(
+    value: Map<TypeOf<K>, TypeOf<V>>
+  ): Generator<[Any, any, RoleType, ExtraInfo]> {
+    let arr = Array.from(value.entries())
+    for (let a of arr) {
+      yield [this.baseType, a[0], 'asMapKey', {}]
+      yield [this.baseType, a[1], 'asMapValue', {}]
+    }
   }
 
   validateCyclic(

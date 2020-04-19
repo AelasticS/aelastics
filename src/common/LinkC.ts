@@ -7,6 +7,7 @@ import { Any, FromDtoContext, ToDtoContext, TypeC } from './Type'
 import { TypeSchema, ValidateStatusEnum } from './TypeSchema'
 import { failure, failures, Path, Result, success } from 'aelastics-result'
 import { VisitedNodes } from './VisitedNodes'
+import { ExtraInfo, RoleType, TraversalContext, TraversalFunc } from './TraversalContext'
 
 export class LinkC extends TypeC<any> {
   public readonly schema: TypeSchema
@@ -21,6 +22,20 @@ export class LinkC extends TypeC<any> {
 
   defaultValue(): any {
     return undefined
+  }
+
+  traverseCyclic<R>(
+    instance: any,
+    f: TraversalFunc<R>,
+    currentResult: R,
+    role: RoleType,
+    extra: ExtraInfo,
+    context: TraversalContext<R>
+  ): R {
+    if (this.resolvedType) {
+      return this.resolvedType.traverseCyclic(instance, f, currentResult, role, extra, context)
+    }
+    throw new Error(`Link to type:'${this.path}' is undefined`)
   }
 
   validateCyclic(

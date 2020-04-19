@@ -33,7 +33,7 @@ import { MapTypeC } from './Map'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { LinkC } from '../common/LinkC'
 import { SimpleTypeC } from '../simple-types/SimpleType'
-import { TraversalContext, TraversalFunc } from '../common/TraversalContext'
+import { ExtraInfo, RoleType, TraversalContext, TraversalFunc } from '../common/TraversalContext'
 
 export interface Props {
   [key: string]: Any // TypeC<any>
@@ -287,25 +287,13 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return false
   }
 
-  protected traverseChildren<R>(
-    value: ObjectType<P>,
-    f: (type: Any, value: any, c: TraversalContext<R>) => R,
-    context: TraversalContext<R>
-  ): void {
+  protected *children(value: ObjectType<P>): Generator<[Any, any, RoleType, ExtraInfo]> {
     let [keys, types, len] = this.getPropsInfo()
     for (let i = 0; i < len; i++) {
       const t = types[i]
       const k = keys[i]
-      if (!Object.prototype.hasOwnProperty.call(value, k) && !(t instanceof OptionalTypeC)) {
-        continue
-      }
       const ak = value[k]
-      f(this, ak, context)
-      if (t instanceof SimpleTypeC && context.skipSimpleTypes) {
-        continue
-      } else {
-        t.traverseCyclic(ak, f, context)
-      }
+      yield [t, ak, 'asProperty', { propName: k }]
     }
   }
 }

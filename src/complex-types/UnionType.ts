@@ -30,7 +30,7 @@ import { types } from '../aelastics-types'
 import isUnionType = types.isUnionType
 import { DtoObjectType, isObject } from './ObjectType'
 import { SimpleTypeC } from '../simple-types/SimpleType'
-import { TraversalContext } from '../common/TraversalContext'
+import { ExtraInfo, RoleType, TraversalContext } from '../common/TraversalContext'
 
 type DtoUnionType<P extends Array<Any>> = {
   ref: InstanceReference
@@ -49,18 +49,12 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     super(name, baseType)
   }
 
-  protected traverseChildren<R>(
-    value: TypeOf<P[number]>,
-    f: (type: Any, value: any, c: TraversalContext<R>) => R,
-    context: TraversalContext<R>
-  ): void {
+  protected *children(value: TypeOf<P[number]>): Generator<[Any, any, RoleType, ExtraInfo]> {
     const typeRes = this.getTypeFromValue(value)
     if (isFailure(typeRes)) {
       throw new Error(`Value: '${value}' is not union: '${this.name}'`)
     } else {
-      if (!(typeRes.value instanceof SimpleTypeC && context.skipSimpleTypes)) {
-        typeRes.value.traverseCyclic(value, f, context)
-      }
+      yield [typeRes.value, value, 'asElementOfUnion', {}]
     }
   }
 

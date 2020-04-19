@@ -21,7 +21,7 @@ import {
 } from 'aelastics-result'
 import { ComplexTypeC } from '../complex-types/ComplexType'
 import { VisitedNodes } from './VisitedNodes'
-import { TraversalContext } from './TraversalContext'
+import { ExtraInfo, RoleType, TraversalContext } from './TraversalContext'
 import { SimpleTypeC } from '../simple-types/SimpleType'
 
 // You can use const assertion (added in typescript 3.4)
@@ -50,7 +50,17 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
     super(name, obj)
   }
 
-  protected traverseChildren<R>(
+  protected *children(value: TypeOfKey<T>): Generator<[Any, any, RoleType, ExtraInfo]> {
+    const identifier = this.referencedType.identifier
+    for (let i = 0; i < identifier.length; i++) {
+      const k = identifier[i]
+      const ak = value[k]
+      const t = this.referencedType.baseType[k] as TypeC<any>
+      yield [t, ak, 'asIdentifierPart', { propName: k }]
+    }
+  }
+
+  /*  protected children1<R>(
     value: TypeOfKey<T>,
     f: (type: Any, value: any, c: TraversalContext<R>) => R,
     context: TraversalContext<R>
@@ -65,7 +75,7 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
       }
       t.traverseCyclic(value, f, context)
     }
-  }
+  }*/
 
   // value should be of type corresponding to the identifier of the referenced type
   validateCyclic(

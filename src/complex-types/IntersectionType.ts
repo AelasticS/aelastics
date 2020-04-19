@@ -16,7 +16,7 @@ import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { SimpleTypeC } from '../simple-types/SimpleType'
-import { TraversalContext } from '../common/TraversalContext'
+import { ExtraInfo, RoleType, TraversalContext } from '../common/TraversalContext'
 
 type UnionToIntersection<U> = (U extends any
 ? (k: U) => void
@@ -56,16 +56,11 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
 > {
   public readonly _tag: 'Intersection' = 'Intersection'
 
-  protected traverseChildren<R>(
-    value: UnionToIntersection<TypeOf<P[number]>>,
-    f: (type: Any, value: any, c: TraversalContext<R>) => R,
-    context: TraversalContext<R>
-  ): void {
+  protected *children(
+    value: UnionToIntersection<TypeOf<P[number]>>
+  ): Generator<[Any, any, RoleType, ExtraInfo]> {
     for (const t of this.baseType) {
-      if (t instanceof SimpleTypeC && context.skipSimpleTypes) {
-        continue
-      }
-      t.traverseCyclic(value, f, context)
+      yield [t, value, 'asIntersectionElement', {}]
     }
   }
 
