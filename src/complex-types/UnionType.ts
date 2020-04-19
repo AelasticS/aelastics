@@ -51,8 +51,8 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
 
   protected traverseChildren<R>(
     value: TypeOf<P[number]>,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ): void {
     const typeRes = this.getTypeFromValue(value)
     if (isFailure(typeRes)) {

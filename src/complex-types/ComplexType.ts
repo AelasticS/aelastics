@@ -116,14 +116,14 @@ export abstract class ComplexTypeC<
 
   protected abstract traverseChildren<R>(
     value: V,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ): void
 
   traverseCyclic<R>(
     value: V,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ): R {
     let pair: TypeInstancePair<Any, any> = [this, value]
     if (context.traversed.has(pair)) {

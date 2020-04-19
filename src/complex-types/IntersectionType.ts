@@ -58,8 +58,8 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
 
   protected traverseChildren<R>(
     value: UnionToIntersection<TypeOf<P[number]>>,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ): void {
     for (const t of this.baseType) {
       if (t instanceof SimpleTypeC && context.skipSimpleTypes) {

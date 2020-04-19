@@ -52,8 +52,8 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
 
   protected traverseChildren<R>(
     value: TypeOfKey<T>,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ): void {
     const identifier = this.referencedType.identifier
     for (let i = 0; i < identifier.length; i++) {

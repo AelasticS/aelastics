@@ -18,7 +18,7 @@ const prepareForReact: t.types.TraversalFunc<number> = (type, value, c): number 
     case 'Date':
     case 'Union':
   }
-  return
+  return 1
 }
 
 export class Repository<T extends t.Any> {

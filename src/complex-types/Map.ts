@@ -68,8 +68,8 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
 
   protected traverseChildren<R>(
     value: Map<TypeOf<K>, TypeOf<V>>,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ): void {
     value.forEach((v: V, key: K) => {
       if (!(this.baseType instanceof SimpleTypeC && context.skipSimpleTypes)) {

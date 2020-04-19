@@ -93,8 +93,8 @@ export class ArrayTypeC<
 
   protected traverseChildren<R>(
     value: Array<TypeOf<E>>,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ) {
     for (let i = 0; i < value.length; i++) {
       const x = value[i]

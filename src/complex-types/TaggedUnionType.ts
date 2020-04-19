@@ -60,8 +60,8 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
 
   protected traverseChildren<R>(
     value: TypeOf<P[keyof P]>,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ): void {
     const instance = value[this.discriminator]
     if (!instance) {

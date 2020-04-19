@@ -289,8 +289,8 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
 
   protected traverseChildren<R>(
     value: ObjectType<P>,
-    f: <R>(type: Any, value: any, c: TraversalContext) => R,
-    context: TraversalContext
+    f: (type: Any, value: any, c: TraversalContext<R>) => R,
+    context: TraversalContext<R>
   ): void {
     let [keys, types, len] = this.getPropsInfo()
     for (let i = 0; i < len; i++) {
