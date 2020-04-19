@@ -19,14 +19,13 @@ import {
   ToDtoContext,
   DtoTypeOf,
   InstanceReference,
-  TypeC,
   TypeOf,
-  FromDtoContext,
-  TraversalContext
+  FromDtoContext
 } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { SimpleTypeC } from '../simple-types/SimpleType'
+import { TraversalContext, TraversalFunc } from '../common/TraversalContext'
 
 /**
  * Array type
@@ -92,21 +91,15 @@ export class ArrayTypeC<
     return errors.length ? failures(errors) : success(true)
   }
 
-  public traverseCyclic<R>(
-    value: any,
-    f: (type: Any, value: any, c: TraversalContext) => void,
+  protected traverseChildren<R>(
+    value: Array<TypeOf<E>>,
+    f: <R>(type: Any, value: any, c: TraversalContext) => R,
     context: TraversalContext
-  ): void {
-    let pair: TypeInstancePair<Any, any> = [this, value]
-    if (context.traversed.has(pair)) {
-      return
-    }
-    context.traversed.set(pair, undefined)
-    const errors: Errors = []
+  ) {
     for (let i = 0; i < value.length; i++) {
       const x = value[i]
       f(this, x, context)
-      if (this.baseType instanceof SimpleTypeC) {
+      if (this.baseType instanceof SimpleTypeC && context.skipSimpleTypes) {
         continue
       } else {
         this.baseType.traverseCyclic(x, f, context)

@@ -22,12 +22,12 @@ import {
   DtoTypeOf,
   InstanceReference,
   TypeOf,
-  FromDtoContext,
-  TraversalContext
+  FromDtoContext
 } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { SimpleTypeC } from '../simple-types/SimpleType'
+import { TraversalContext } from '../common/TraversalContext'
 
 // export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralTypeC<Tag> }
 
@@ -58,16 +58,11 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
     super(name, elements)
   }
 
-  traverseCyclic<R>(
+  protected traverseChildren<R>(
     value: TypeOf<P[keyof P]>,
-    f: <P>(type: Any, value: any, c: TraversalContext) => void,
+    f: <R>(type: Any, value: any, c: TraversalContext) => R,
     context: TraversalContext
   ): void {
-    let pair: TypeInstancePair<Any, any> = [this, value]
-    if (context.traversed.has(pair)) {
-      return
-    }
-    context.traversed.set(pair, undefined)
     const instance = value[this.discriminator]
     if (!instance) {
       throw new Error(
@@ -78,7 +73,6 @@ export class TaggedUnionTypeC<P extends Props> extends ComplexTypeC<
       if (!type) {
         throw new Error(`Value '${value}' - there is no type in tagged union named: '${instance}'`)
       } else {
-        f(this, value, context)
         if (!(type instanceof SimpleTypeC)) {
           type.traverseCyclic(value, f, context)
         }

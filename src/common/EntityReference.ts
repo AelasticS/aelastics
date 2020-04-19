@@ -21,6 +21,8 @@ import {
 } from 'aelastics-result'
 import { ComplexTypeC } from '../complex-types/ComplexType'
 import { VisitedNodes } from './VisitedNodes'
+import { TraversalContext } from './TraversalContext'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 // You can use const assertion (added in typescript 3.4)
 // https://stackoverflow.com/questions/55570729/how-to-limit-the-keys-of-an-object-to-the-strings-of-an-array-in-typescript
@@ -46,6 +48,23 @@ export class EntityReference<T extends ObjectTypeC<any, readonly string[]>> exte
 
   constructor(name: string, obj: T) {
     super(name, obj)
+  }
+
+  protected traverseChildren<R>(
+    value: TypeOfKey<T>,
+    f: <R>(type: Any, value: any, c: TraversalContext) => R,
+    context: TraversalContext
+  ): void {
+    const identifier = this.referencedType.identifier
+    for (let i = 0; i < identifier.length; i++) {
+      const k = identifier[i]
+      const ak = value[k]
+      const t = this.referencedType.baseType[k] as TypeC<any>
+      if (t instanceof SimpleTypeC && context.skipSimpleTypes) {
+        continue
+      }
+      t.traverseCyclic(value, f, context)
+    }
   }
 
   // value should be of type corresponding to the identifier of the referenced type

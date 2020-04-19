@@ -18,6 +18,7 @@ import {
   ValidationError
 } from 'aelastics-result'
 import { VisitedNodes } from './VisitedNodes'
+import { TraversalContext, TraversalFunc } from './TraversalContext'
 
 export type Predicate<T> = (value: T) => boolean
 
@@ -85,6 +86,23 @@ export interface Validator<T> {
   message(value: T, label?: string, result?: any): string
 }
 
+export type CategoryType =
+  | 'Object'
+  | 'Array'
+  | 'Map'
+  | 'TaggedUnion'
+  | 'Union'
+  | 'Intersection'
+  | 'Function'
+  | 'Boolean'
+  | 'Number'
+  | 'String'
+  | 'Literal'
+  | 'Null'
+  | 'Undefined'
+  | 'Void'
+  | 'Date'
+
 /**
  *  TypeC is a root of types hierarchy
  */
@@ -102,6 +120,11 @@ export abstract class TypeC<V, G = V, T = V> {
   // full name, e.g. /schema/sub-schema/type-name
   get name(): string {
     return this.shortName
+  }
+
+  get category(): CategoryType {
+    // @ts-ignore
+    return this['-tag'] as CategoryType
   }
 
   /** Array of functions checking constrains on values of this type */
@@ -308,21 +331,13 @@ export abstract class TypeC<V, G = V, T = V> {
 
   public abstract validateLinks(traversed: Map<Any, Any>): Result<boolean>
 
-  public traverse<R>(value: V, f: (type: Any, value: V, c: TraversalContext) => void): void {
+  public traverse<R>(value: V, f: TraversalFunc): R {
     return this.traverseCyclic<R>(value, f, new TraversalContext())
   }
 
-  public traverseCyclic<R>(
-    value: V,
-    f: (type: Any, value: V, c: TraversalContext) => void,
-    context: TraversalContext
-  ): void {
-    return undefined
+  public traverseCyclic<R>(value: V, f: TraversalFunc, context: TraversalContext): R {
+    return undefined as any
   }
-}
-
-export class TraversalContext {
-  traversed: VisitedNodes<Any, any, any> = new VisitedNodes<Any, any, any>()
 }
 
 /**

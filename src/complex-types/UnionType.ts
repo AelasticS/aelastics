@@ -10,8 +10,7 @@ import {
   DtoTypeOf,
   InstanceReference,
   TypeOf,
-  FromDtoContext,
-  TraversalContext
+  FromDtoContext
 } from '../common/Type'
 import {
   Error,
@@ -31,6 +30,7 @@ import { types } from '../aelastics-types'
 import isUnionType = types.isUnionType
 import { DtoObjectType, isObject } from './ObjectType'
 import { SimpleTypeC } from '../simple-types/SimpleType'
+import { TraversalContext } from '../common/TraversalContext'
 
 type DtoUnionType<P extends Array<Any>> = {
   ref: InstanceReference
@@ -49,23 +49,16 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
     super(name, baseType)
   }
 
-  traverseCyclic<R>(
+  protected traverseChildren<R>(
     value: TypeOf<P[number]>,
-    f: <P>(type: Any, value: any, context: TraversalContext) => void,
+    f: <R>(type: Any, value: any, c: TraversalContext) => R,
     context: TraversalContext
   ): void {
-    let pair: TypeInstancePair<Any, any> = [this, value]
-
-    if (context.traversed.has(pair)) {
-      return
-    }
-    context.traversed.set(pair, undefined)
     const typeRes = this.getTypeFromValue(value)
     if (isFailure(typeRes)) {
       throw new Error(`Value: '${value}' is not union: '${this.name}'`)
     } else {
-      f(this, value, context)
-      if (!(typeRes.value instanceof SimpleTypeC)) {
+      if (!(typeRes.value instanceof SimpleTypeC && context.skipSimpleTypes)) {
         typeRes.value.traverseCyclic(value, f, context)
       }
     }
@@ -131,7 +124,7 @@ export class UnionTypeC<P extends Array<Any>> extends ComplexTypeC<
             // @ts-ignore
             let ref = this.getRefFromNode(value)
             context.visitedNodes?.set([this, ref.id], output)
-            ct.makeInstanceFromDTO(value.union![ct.category], output, path, context)
+            ct.makeInstanceFromDTO(value.union![ct.categoryCamelCase], output, path, context)
             return output
           }
         } else {

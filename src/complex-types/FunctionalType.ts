@@ -25,6 +25,7 @@ export class FunctionalTypeC<P extends Props, R extends Any> extends TypeC<
   FunDecl<DtoObjectType<P>, DtoTypeOf<R>>,
   FunDecl<DtoProps<P>, DtoTreeTypeOf<R>>
 > {
+  public readonly _tag: 'Function' = 'Function'
   constructor(name: string, readonly args: P, readonly returns: R) {
     super(name)
   }

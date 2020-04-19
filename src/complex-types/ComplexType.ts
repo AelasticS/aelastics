@@ -2,20 +2,11 @@
  * Copyright (c) AelasticS 2019.
  */
 
-import {
-  ToDtoContext,
-  InstanceReference,
-  TypeC,
-  FromDtoContext,
-  ConversionContext
-} from '../common/Type'
+import { ToDtoContext, InstanceReference, TypeC, FromDtoContext, Any } from '../common/Type'
 import { Path, validationError } from 'aelastics-result'
-import { Props } from './ObjectType'
-import { VisitedNodes } from '../common/VisitedNodes'
-
-interface GraphNode {
-  ref: InstanceReference
-}
+import { TraversalContext } from '../common/TraversalContext'
+import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 /**
  *  Complex type: a structure which is derived from some type P
@@ -30,7 +21,7 @@ export abstract class ComplexTypeC<
     super(name)
   }
 
-  get category(): string {
+  get categoryCamelCase(): string {
     // @ts-ignore
     let str: string = this['_tag'] as string
     str = str.charAt(0).toLowerCase() + str.substring(1, str.length)
@@ -53,7 +44,7 @@ export abstract class ComplexTypeC<
   public makeReference(input: any, context: ToDtoContext): InstanceReference {
     return {
       typeName: this.name,
-      category: this.category,
+      category: this.categoryCamelCase,
       id: ++context.counter
     }
   }
@@ -85,7 +76,7 @@ export abstract class ComplexTypeC<
       if (!context.options.isTreeDTO) {
         let res = {} as G
         res.ref = ref
-        res[this.category] = output
+        res[this.categoryCamelCase] = output
         return res
       } else {
         return output
@@ -108,7 +99,7 @@ export abstract class ComplexTypeC<
         let ref = this.getRefFromNode(value)
         context.visitedNodes?.set([this, ref.id], output)
         this.makeInstanceFromDTO(
-          (value as { [key: string]: any })[this.category] as T,
+          (value as { [key: string]: any })[this.categoryCamelCase] as T,
           output,
           path,
           context
@@ -121,5 +112,30 @@ export abstract class ComplexTypeC<
       this.makeInstanceFromDTO(value as T, output, path, context)
       return output
     }
+  }
+
+  protected abstract traverseChildren<R>(
+    value: V,
+    f: <R>(type: Any, value: any, c: TraversalContext) => R,
+    context: TraversalContext
+  ): void
+
+  traverseCyclic<R>(
+    value: V,
+    f: <R>(type: Any, value: any, c: TraversalContext) => R,
+    context: TraversalContext
+  ): R {
+    let pair: TypeInstancePair<Any, any> = [this, value]
+    if (context.traversed.has(pair)) {
+      return context.traversed.get(pair)
+    }
+    // before children
+    let r: R = f(this, value, context)
+    context.traversed.set(pair, r)
+    this.traverseChildren(value, f, context)
+    // after children
+    r = f(this, value, context)
+    context.traversed.set(pair, r)
+    return r
   }
 }

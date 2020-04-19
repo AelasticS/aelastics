@@ -10,13 +10,13 @@ import {
   InstanceReference,
   TypeOf,
   FromDtoContext,
-  DtoTreeTypeOf,
-  TraversalContext
+  DtoTreeTypeOf
 } from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { SimpleTypeC } from '../simple-types/SimpleType'
+import { TraversalContext } from '../common/TraversalContext'
 
 type UnionToIntersection<U> = (U extends any
 ? (k: U) => void
@@ -56,19 +56,13 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
 > {
   public readonly _tag: 'Intersection' = 'Intersection'
 
-  traverseCyclic<R>(
+  protected traverseChildren<R>(
     value: UnionToIntersection<TypeOf<P[number]>>,
-    f: <P>(type: Any, value: any, context: TraversalContext) => void,
+    f: <R>(type: Any, value: any, c: TraversalContext) => R,
     context: TraversalContext
   ): void {
-    let pair: TypeInstancePair<Any, any> = [this, value]
-    if (context.traversed.has(pair)) {
-      return
-    }
-    context.traversed.set(pair, undefined)
-    f(this, value, context)
     for (const t of this.baseType) {
-      if (t instanceof SimpleTypeC) {
+      if (t instanceof SimpleTypeC && context.skipSimpleTypes) {
         continue
       }
       t.traverseCyclic(value, f, context)

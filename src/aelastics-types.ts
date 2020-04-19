@@ -54,6 +54,8 @@ import * as std from './simple-types/DateType'
 import * as link from './common/LinkC'
 import * as schema from './common/TypeSchema'
 
+import * as tc from './common/TraversalContext'
+
 export namespace types {
   export type Type<T, D = T> = ct.TypeC<T, D>
 
@@ -61,6 +63,8 @@ export namespace types {
     return v instanceof ct.TypeC
   }
 
+  export type TraversalContext = tc.TraversalContext
+  export type TraversalFunc<R> = tc.TraversalFunc
   export type Any = ct.Any
   export type TypeOf<T extends Any> = ct.TypeOf<T>
   export type ObjectType<T extends cot.Props> = cot.ObjectType<T>

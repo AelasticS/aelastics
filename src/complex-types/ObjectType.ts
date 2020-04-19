@@ -23,7 +23,6 @@ import {
   FromDtoContext,
   InstanceReference,
   ToDtoContext,
-  TraversalContext,
   TypeC,
   TypeOf
 } from '../common/Type'
@@ -34,6 +33,7 @@ import { MapTypeC } from './Map'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
 import { LinkC } from '../common/LinkC'
 import { SimpleTypeC } from '../simple-types/SimpleType'
+import { TraversalContext, TraversalFunc } from '../common/TraversalContext'
 
 export interface Props {
   [key: string]: Any // TypeC<any>
@@ -287,20 +287,12 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
     return false
   }
 
-  traverseCyclic<R>(
+  protected traverseChildren<R>(
     value: ObjectType<P>,
-    f: (type: Any, value: any, c: TraversalContext) => void,
+    f: <R>(type: Any, value: any, c: TraversalContext) => R,
     context: TraversalContext
   ): void {
-    let pair: TypeInstancePair<Any, any> = [this, value]
-
-    if (context.traversed.has(pair)) {
-      return
-    } else {
-      context.traversed.set(pair, value)
-    }
     let [keys, types, len] = this.getPropsInfo()
-    const errors: ValidationError[] = []
     for (let i = 0; i < len; i++) {
       const t = types[i]
       const k = keys[i]
@@ -309,16 +301,14 @@ export class ObjectTypeC<P extends Props, I extends readonly string[]> extends C
       }
       const ak = value[k]
       f(this, ak, context)
-      if (t instanceof SimpleTypeC) {
+      if (t instanceof SimpleTypeC && context.skipSimpleTypes) {
         continue
       } else {
         t.traverseCyclic(ak, f, context)
       }
     }
-    return
   }
 }
-
 /**
  *
  * @param props
