@@ -3,6 +3,7 @@
  */
 import * as t from '../../src/aelastics-types'
 import { AgeType, SexType, BirthPlaceType } from './types-example'
+import any = jasmine.any
 
 const MySchema = t.schema('MySchema')
 
@@ -158,6 +159,22 @@ export const arrayObject = t.object(
 
 export const firstLevelArray = t.arrayOf(arrayObject, 'firstLevelArray')
 
+export const arr1: t.TypeOf<typeof arrayObject> = {
+  a: true,
+  b: 10,
+  c: []
+}
+export const arr2: t.TypeOf<typeof arrayObject> = {
+  a: false,
+  b: 20,
+  c: []
+}
+
+export const f: t.TypeOf<typeof firstLevelArray> = [arr1, arr2]
+
+arr1.c[0] = f
+arr2.c[0] = f
+
 arraySchema.addType(firstLevelArray)
 
 export const mapSchema = t.schema('mapSchema')
@@ -189,6 +206,13 @@ export const rootMapGraph = t.mapOf(
 )
 mapSchema.addType(rootMapGraph)
 
+export const map1: t.TypeOf<typeof rootMapGraph> = new Map([[1, new Map([])]])
+
+export const map2: t.TypeOf<typeof rootMapGraph> = new Map([[1, map1]])
+
+export const map3: t.TypeOf<typeof rootMapGraph> = new Map([[1, map2]])
+map1.set(1, map2)
+
 mapSchema.validate()
 export const intersectionInstance = t.intersectionOf([
   t.object({ a: t.string.derive('').alphabetical }),
@@ -219,6 +243,35 @@ export const recursiveIntersection = t.intersectionOf(
   [t.object({ a: secondLevelIntersectionObject }), t.object({ b: t.string })],
   'recursiveIntersection'
 )
+
+export const recursive1: t.TypeOf<typeof recursiveIntersection> = {
+  a: {
+    c: 'C',
+    b: true,
+    a: undefined
+  },
+  b: 'A'
+}
+recursive1.a.a = recursive1
+
+export const recursive2: t.TypeOf<typeof recursiveIntersection> = {
+  a: {
+    c: 'B',
+    b: true,
+    a: undefined
+  },
+  b: 'B'
+}
+
+export const recursive3: t.TypeOf<typeof recursiveIntersection> = {
+  a: {
+    c: 'C',
+    b: true,
+    a: undefined
+  },
+  b: 'C'
+}
+
 intersectionSchema.addType(recursiveIntersection)
 intersectionSchema.validate()
 export const simpleObject = t.object({ a: t.string }, 'simple object')

@@ -223,6 +223,19 @@ export const Union3 = t.unionOf([DriverType, janitorType], 'union3')
 export const Union2 = t.unionOf([DoctorType, janitorType], 'union2')
 export const Union1 = t.unionOf([DoctorType, DriverType, Union2, Union3], 'union1')
 
+export const thirdUnion: t.TypeOf<typeof Union3> = {
+  name: 'Jack',
+  age: 35
+  // profession: 'Driver',
+  // licences: ['A', 'B']
+}
+export const secondUnion: t.TypeOf<typeof Union2> = {
+  profession: 'Doctor',
+  specialization: 'Internist',
+  name: 'Mark',
+  age: 26
+}
+
 // Maps
 export const MapOfPeopleKey = t.number.derive('integer').integer
 export const MapOfPeoplePropName = t.string.derive('name').alphabetical
@@ -327,6 +340,12 @@ export const employeeType = t.taggedUnion(
   'employee'
 )
 
+export const taggedUnionEmployee: t.TypeOf<typeof employeeType> = {
+  profession: 'doctor',
+  specialization: true,
+  worksAt: 'Bel Medic'
+}
+
 export const personType = t.object(
   {
     name: t.string.derive('').alphabetical.nonEmpty,
@@ -353,6 +372,22 @@ export const arrayOfPeople = t.arrayOf(person)
 export const ProfessorIntersectionType = t.intersectionOf([person, profesorType], 'professor')
 
 export const DoctorIntersectionType = t.intersectionOf([person, doctorType], 'doctor intersection')
+
+export const personJohn: t.TypeOf<typeof person> = {
+  name: 'John',
+  age: 24
+}
+
+export const doctor1: t.TypeOf<typeof doctorType> = {
+  profession: 'doctor',
+  specialization: true,
+  worksAt: 'Bel Medic'
+}
+
+export const profesorMark: t.TypeOf<typeof profesorType> = {
+  name: 'Mark Potter',
+  title: 'Phd'
+}
 
 export const Employed = t.boolean
 export const DateOfBirth = t.date

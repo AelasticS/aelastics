@@ -45,6 +45,7 @@ export type DtoProps<P extends Props> = { [K in keyof P]: DtoTypeOf<P[K]> }
 export type DtoObjectType<P extends Props> = {
   ref: InstanceReference
   object?: DtoProps<P>
+  // object: DtoProps<P>
 }
 
 export const isObject = (u: any) => u !== null && typeof u === 'object'
