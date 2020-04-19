@@ -1,8 +1,8 @@
-import * as examples from '../testing-types'
+import * as examples from '../complex-types-graph/testing-types'
 import { isSuccess } from 'aelastics-result'
-import * as t from '../../../src/aelastics-types'
+import * as t from '../../src/aelastics-types'
 // tslint:disable-next-line:no-duplicate-imports
-import { doctorType, lawyerType } from '../testing-types'
+import { doctorType, lawyerType } from '../complex-types-graph/testing-types'
 
 describe('TaggedUnion tests', () => {
   // Wanted to check whether the validators will work at the first level of object.

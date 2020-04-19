@@ -5,23 +5,28 @@ import { TypeOf } from '../../../src/common/Type'
 
 describe('toDTO test cases for IntersectionType', () => {
   it('should be valid toDTO for FullNameType', () => {
-    // Doesn't work!!
     const fullName: TypeOf<typeof FullNameType> = { name: 'John', familyName: 'Brown' }
     const res = FullNameType.toDTO(fullName)
-    // if(isSuccess(res)) {
-    //   expect(res.value).toEqual({})
-    // }
-    if (isFailure(res)) {
-      expect(res.errors).toEqual('')
-    }
-    // expect(isSuccess(res)).toBe(true)
+    expect(isSuccess(res)).toBe(true)
   })
-  // Missing ref and map
+
   it('should be valid toDTO value for FullNameType', () => {
     const fullName = { name: 'John', familyName: 'Brown' }
     const res = FullNameType.toDTO(fullName)
     if (isSuccess(res)) {
-      expect(res.value).toEqual({ familyName: 'Brown', name: 'John' })
+      expect(res.value).toEqual({
+        intersection: {
+          famName: {
+            object: { familyName: 'Brown' },
+            ref: { category: 'object', id: 3, typeName: 'famName' }
+          },
+          name: {
+            object: { name: 'John' },
+            ref: { category: 'object', id: 2, typeName: 'name' }
+          }
+        },
+        ref: { category: 'intersection', id: 1, typeName: '(name | famName)' }
+      })
     }
   })
 

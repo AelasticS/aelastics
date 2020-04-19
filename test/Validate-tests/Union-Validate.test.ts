@@ -1,5 +1,5 @@
 import { isSuccess, isFailure } from 'aelastics-result'
-import * as examples from '../testing-types'
+import * as examples from '../complex-types-graph/testing-types'
 
 describe('UnionTest', () => {
   it('Testing if 6 is a valid grade', () => {

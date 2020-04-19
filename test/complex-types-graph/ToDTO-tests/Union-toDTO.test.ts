@@ -1,8 +1,7 @@
-import { isSuccess } from 'aelastics-result'
+import { isSuccess, Result } from 'aelastics-result'
 import * as examples from '../testing-types'
 import { DoctorType, OccupationType, WorkerType } from '../../example/types-example'
 import * as t from '../../../src/aelastics-types'
-import { london } from '../../example/instances-example'
 
 describe('ToDTO tests for union type', () => {
   it('Testing toDTO for grade 7 for gradeType', () => {
@@ -10,8 +9,12 @@ describe('ToDTO tests for union type', () => {
     const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Union', typeName: 'grade' },
-        typeInUnion: 'PassingGrade',
+        ref: {
+          id: 1,
+          category: 'union',
+          specificTypeName: 'PassingGrade',
+          typeName: 'grade'
+        },
         union: 7
       })
     }
@@ -21,8 +24,7 @@ describe('ToDTO tests for union type', () => {
     const res = examples.gradeType.toDTO(g)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 1, category: 'Union', typeName: 'grade' },
-        typeInUnion: '"failed"',
+        ref: { id: 1, category: 'union', specificTypeName: '"failed"', typeName: 'grade' },
         union: 'failed'
       })
     }
@@ -41,11 +43,15 @@ describe('ToDTO tests for union type', () => {
     const res = OccupationType.toDTO(Doctor)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 2, category: 'Union', typeName: '(DriverType | DoctorType)' },
-        typeInUnion: 'DoctorType',
+        ref: {
+          id: 1,
+          category: 'union',
+          specificTypeName: 'DoctorType',
+          typeName: '(DriverType | DoctorType)'
+        },
         union: {
           object: { profession: 'Doctor', specialization: 'Cardiologist' },
-          ref: { id: 1, category: 'Object', typeName: 'DoctorType' }
+          ref: { id: 2, category: 'object', typeName: 'DoctorType' }
         }
       })
     }
@@ -60,11 +66,15 @@ describe('ToDTO tests for union type', () => {
     const res = OccupationType.toDTO((Doctor as unknown) as any)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
-        ref: { id: 2, category: 'Union', typeName: '(DriverType | DoctorType)' },
-        typeInUnion: 'DoctorType',
+        ref: {
+          id: 1,
+          category: 'union',
+          specificTypeName: 'DoctorType',
+          typeName: '(DriverType | DoctorType)'
+        },
         union: {
           object: { profession: 'Doctor', specialization: 'Cardiologist' },
-          ref: { id: 1, category: 'Object', typeName: 'DoctorType' }
+          ref: { id: 2, category: 'object', typeName: 'DoctorType' }
         }
       })
     }
@@ -80,32 +90,22 @@ describe('ToDTO tests for union type', () => {
     expect(isSuccess(res)).toBe(false)
   })
 
-  it('Testing toDto for valid complex Worker object', () => {
-    const john: t.TypeOf<typeof WorkerType> = {
+  it('Testing toDto for valid EmployeeUnionType object', () => {
+    const empType: t.TypeOf<typeof examples.EmployeeUnionType> = {
       name: 'John',
-      age: 35,
-      sex: 'male',
-      birthPlace: london,
-      occupation: { profession: 'Driver', licences: ['B', 'C'] },
-      children: [{ name: 'Peter' }, { name: 'Helen' }]
+      title: 'Phd'
     }
-    const res = WorkerType.toDTO(john)
-    if (isSuccess(res)) {
-      expect(res.value).toEqual('')
-    }
+    const res = examples.EmployeeUnionType.toDTO(empType) as Result<t.DtoTypeOf<typeof WorkerType>>
+    expect(isSuccess(res)).toBe(true)
   })
 
-  it('Testing toDto for invalid complex Worker object', () => {
-    const john = {
+  it('Testing toDto for invalid EmployeeUnionType object', () => {
+    const empType: t.TypeOf<typeof examples.EmployeeUnionType> = {
       name: 'John',
-      age: 35,
-      sex: 'male',
-      birthPlace: london,
-      occupation: { profession: 'Driver1', licences: ['B', 'C'] },
-      children: [{ name: 'Peter' }, { name: 'Helen' }]
+      title: 'Phd',
+      age: 35
     }
-    const res = WorkerType.toDTO((john as unknown) as any)
-
+    const res = WorkerType.toDTO((empType as unknown) as any)
     expect(isSuccess(res)).toBe(false)
   })
 })

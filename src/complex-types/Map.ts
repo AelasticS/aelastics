@@ -16,8 +16,17 @@ import {
   Result
 } from 'aelastics-result'
 import { ComplexTypeC } from './ComplexType'
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import {
+  Any,
+  ToDtoContext,
+  DtoTypeOf,
+  InstanceReference,
+  TypeOf,
+  FromDtoContext,
+  TraversalContext
+} from '../common/Type'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 /**
  * Map type
@@ -47,6 +56,35 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
 
   public defaultValue(): any {
     return new Map()
+  }
+
+  makeEmptyInstance(
+    value: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V>,
+    path: Path,
+    context: FromDtoContext
+  ): Map<TypeOf<K>, TypeOf<V>> {
+    return new Map()
+  }
+
+  traverseCyclic<R>(
+    value: Map<TypeOf<K>, TypeOf<V>>,
+    f: <K, V>(type: Any, value: Map<TypeOf<any>, TypeOf<any>>, c: TraversalContext) => void,
+    context: TraversalContext
+  ): void {
+    let pair: TypeInstancePair<Any, any> = [this, value]
+    if (context.traversed.has(pair)) {
+      return
+    }
+    context.traversed.set(pair, undefined)
+    f(this, value, context)
+    value.forEach((v: V, key: K) => {
+      if (!(this.baseType instanceof SimpleTypeC)) {
+        this.baseType.traverseCyclic(v, f, context)
+      }
+      if (!(this.keyType instanceof SimpleTypeC)) {
+        this.keyType.traverseCyclic(v, f, context)
+      }
+    })
   }
 
   validateCyclic(
@@ -97,48 +135,41 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
   }
 
   makeInstanceFromDTO(
-    input: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V>,
+    input: Array<[DtoTypeOf<K>, DtoTypeOf<V>]>,
+    output: Map<K, TypeOf<V>>,
     path: Path,
-    context: ToDtoContext
+    context: FromDtoContext
   ): Map<TypeOf<K>, TypeOf<V>> {
-    let inputMapArray: Array<[DtoTypeOf<K>, DtoTypeOf<V>]>
-    if (this.isMapRef(input)) {
-      if (!Array.isArray(input.map)) {
-        context.errors.push(
-          validationError('Input is not a map represented as an array', path, this.name, input)
-        )
-        return new Map<TypeOf<K>, TypeOf<V>>()
-      }
-      inputMapArray = input.map
-    } else {
-      inputMapArray = input
+    if (!Array.isArray(input)) {
+      context.errors.push(
+        validationError('Input is not a map represented as an array', path, this.name, input)
+      )
+      return new Map<TypeOf<K>, TypeOf<V>>()
     }
-    const output: Map<K, TypeOf<V>> = new Map<TypeOf<K>, TypeOf<V>>()
-    for (let i = 0; i < inputMapArray.length; i++) {
+    for (let i = 0; i < input.length; i++) {
       let newPath = appendPath(path, `[${i}]`, this.name)
-      if (inputMapArray[i].length !== 2) {
+      if (input[i].length !== 2) {
         context.errors.push(validationError('Invalid map element', newPath, this.name))
         continue
       }
-      const k: K = inputMapArray[i][0]
+      const k: K = input[i][0]
       const keyConversion = this.keyType.fromDTOCyclic(k, newPath, context)
-      const x: V = inputMapArray[i][1]
+      const x: V = input[i][1]
       const valueConversion = this.baseType.fromDTOCyclic(x, newPath, context)
       output.set(keyConversion, valueConversion)
     }
-
     return output
   }
 
   makeDTOInstance(
     input: Map<TypeOf<K>, TypeOf<V>>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V> {
-    let output: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> | DtoMapType<K, V>
+  ): Array<[DtoTypeOf<K>, DtoTypeOf<V>]> {
     const outputMapArray: Array<[DtoTypeOf<K>, DtoTypeOf<V>]> = []
     for (const [k, v] of input.entries()) {
-      const kConversion = this.baseType.toDTOCyclic(
+      const kConversion = this.keyType.toDTOCyclic(
         k,
         appendPath(path, `[${k}]`, this.name),
         context
@@ -150,12 +181,7 @@ export class MapTypeC<K extends Any, V extends Any> extends ComplexTypeC<
       )
       outputMapArray.push([k, v])
     }
-    if (context.options.isTreeDTO) {
-      output = outputMapArray
-    } else {
-      output = { ref: this.makeReference(input, context), map: outputMapArray }
-    }
-    return output
+    return outputMapArray
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

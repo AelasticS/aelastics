@@ -3,10 +3,20 @@
  *
  */
 
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeOf } from '../common/Type'
+import {
+  Any,
+  ToDtoContext,
+  DtoTypeOf,
+  InstanceReference,
+  TypeOf,
+  FromDtoContext,
+  DtoTreeTypeOf,
+  TraversalContext
+} from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { Error, failures, isFailure, Path, Result, success } from 'aelastics-result'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 type UnionToIntersection<U> = (U extends any
 ? (k: U) => void
@@ -42,9 +52,28 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   P,
   UnionToIntersection<TypeOf<P[number]>>,
   DtoIntersectionType<P>,
-  UnionToIntersection<DtoTypeOf<P[number]>>
+  { [key: string]: DtoTreeTypeOf<P[number]> } // UnionToIntersection<DtoTypeOf<P[number]>>
 > {
   public readonly _tag: 'Intersection' = 'Intersection'
+
+  traverseCyclic<R>(
+    value: UnionToIntersection<TypeOf<P[number]>>,
+    f: <P>(type: Any, value: any, context: TraversalContext) => void,
+    context: TraversalContext
+  ): void {
+    let pair: TypeInstancePair<Any, any> = [this, value]
+    if (context.traversed.has(pair)) {
+      return
+    }
+    context.traversed.set(pair, undefined)
+    f(this, value, context)
+    for (const t of this.baseType) {
+      if (t instanceof SimpleTypeC) {
+        continue
+      }
+      t.traverseCyclic(value, f, context)
+    }
+  }
 
   validateCyclic(
     value: UnionToIntersection<TypeOf<P[number]>>,
@@ -80,54 +109,32 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
   }
 
   makeInstanceFromDTO(
-    input: UnionToIntersection<DtoTypeOf<P[number]>> | DtoIntersectionType<P>,
+    input: { [p: string]: DtoTreeTypeOf<P[number]> },
+    output: UnionToIntersection<TypeOf<P[number]>>,
     path: Path,
-    context: ToDtoContext
-  ): UnionToIntersection<TypeOf<P[number]>> {
-    const output = {} as UnionToIntersection<TypeOf<P[number]>>
-    if (this.isIntersectionRef(input)) {
-      for (const t of this.baseType) {
-        const res = t.fromDTOCyclic(input.intersection[t.shortName], path, context)
-        Object.assign(output, res)
-      }
-    } else {
-      for (const t of this.baseType) {
-        const res = t.fromDTOCyclic(input, path, context)
-        Object.assign(output, res)
-      }
+    context: FromDtoContext
+  ) {
+    for (const t of this.baseType) {
+      const res = t.fromDTOCyclic(input[t.shortName], path, context)
+      Object.assign(output, res)
     }
-    return output
   }
 
   makeDTOInstance(
     input: UnionToIntersection<TypeOf<P[number]>>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): UnionToIntersection<DtoTypeOf<P[number]>> | DtoIntersectionType<P> {
-    if (context.options.isTreeDTO) {
-      const outputIntersection: UnionToIntersection<DtoTypeOf<
-        P[number]
-      >> = {} as UnionToIntersection<DtoTypeOf<P[number]>>
-      for (const t of this.baseType) {
-        const res = t.toDTOCyclic(input, path, context)
-        Object.assign(outputIntersection, res)
-      }
-      return outputIntersection
-    } else {
-      let output: DtoIntersectionType<P> = {
-        ref: this.makeReference(input, context),
-        intersection: {}
-      }
-      for (const t of this.baseType) {
-        output.intersection[t.shortName] = t.toDTOCyclic(input, path, context)
-      }
-      return output
+  ): { [p: string]: DtoTypeOf<P[number]> } {
+    let output: { [p: string]: DtoTypeOf<P[number]> } = {}
+    for (const t of this.baseType) {
+      output[t.shortName] = t.toDTOCyclic(input, path, context)
     }
+    return output
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {
     traversed.set(this, this)
-
     const errors = []
     for (const t of this.baseType) {
       if (traversed.has(t)) {
@@ -147,6 +154,22 @@ export class IntersectionTypeC<P extends Array<Any>> extends ComplexTypeC<
       return true
     }
     return false
+  }
+
+  defaultValue(): any {
+    let value = {}
+    for (const t of this.baseType) {
+      Object.assign(value, t.defaultValue())
+    }
+    return value
+  }
+
+  makeEmptyInstance(
+    value: { [p: string]: DtoTypeOf<P[number]> } | DtoIntersectionType<P>,
+    path: Path,
+    context: FromDtoContext
+  ): UnionToIntersection<TypeOf<P[number]>> {
+    return {} as any
   }
 }
 

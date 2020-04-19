@@ -1,6 +1,6 @@
 import { isSuccess } from 'aelastics-result'
-import { FullNameType } from '../../example/types-example'
-import { TypeOf } from '../../../src/aelastics-types'
+import { FullNameType } from '../example/types-example'
+import { TypeOf } from '../../src/aelastics-types'
 
 describe('test cases for Intersection', () => {
   it('should be valid FullNameType', () => {

@@ -1,6 +1,6 @@
 {
   "name": "aelastics-types",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Type system dynamically created at run time",
   "keywords": [
     "runtime type definitions",
@@ -32,6 +32,11 @@
     },
     {
       "name": "Nikola Kojic",
+      "email": "support@AelasticS.com",
+      "url": "https://www.AelasticS.com"
+    },
+    {
+      "name": "Ana Savic",
       "email": "support@AelasticS.com",
       "url": "https://www.AelasticS.com"
     },

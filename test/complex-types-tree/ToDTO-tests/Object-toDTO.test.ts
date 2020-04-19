@@ -1,7 +1,7 @@
 import * as t from '../../../src/aelastics-types'
-import { isSuccess, Result } from 'aelastics-result'
+import { isFailure, isSuccess, Result } from 'aelastics-result'
 
-describe('toDTO tests for object type', () => {
+describe('toDTOtree tests for object type', () => {
   const objectWithObjectPropertyType = t.object({
     a: t.number,
     b: t.object({
@@ -13,31 +13,32 @@ describe('toDTO tests for object type', () => {
     a: t.number.derive('negative').negative,
     b: t.number
   })
-  it('Testing toDTO for some object which has 2 number properties with no restriction', () => {
+  it('Testing toDTOtree for some object which has 2 number properties with no restriction', () => {
     const o: t.TypeOf<typeof numbersObjectType> = {
       a: -5,
       b: 3
     }
-    const res = numbersObjectType.toDTO(o) as Result<t.DtoTypeOf<typeof numbersObjectType>>
+    const res = numbersObjectType.toDTOtree(o) as Result<t.DtoTypeOf<typeof numbersObjectType>>
+    expect(isSuccess(res)).toBe(true)
     if (isSuccess(res)) {
       let res1: t.DtoTypeOf<typeof numbersObjectType>
-      expect(res.value.object.a === -5 && res.value.object.b === 3).toBe(true)
+      expect(res.value).toEqual({ a: -5, b: 3 })
     }
   })
-  it("Testing toDTO for some object which has 2 where first doesn't comply with restrictions", () => {
+  it("Testing toDTOtree for some object which has 2 where first doesn't comply with restrictions", () => {
     const o: t.TypeOf<typeof numbersObjectType> = {
       a: 5,
       b: 3
     }
-    const res = numbersObjectType.toDTO(o)
+    const res = numbersObjectType.toDTOtree(o)
     expect(isSuccess(res)).toBe(false)
   })
-  it("Testing toDTO for some object which has 2 where first doesn't comply with restrictions (validation =false)", () => {
+  it("Testing toDTOtree for some object which has 2 where first doesn't comply with restrictions (validation =false)", () => {
     const o: t.TypeOf<typeof numbersObjectType> = {
       a: 5,
       b: 3
     }
-    const res = numbersObjectType.toDTO(o)
+    const res = numbersObjectType.toDTOtree(o)
     if (isSuccess(res)) {
       expect(res.value).toEqual({
         a: 5,
@@ -45,15 +46,15 @@ describe('toDTO tests for object type', () => {
       })
     }
   })
-  it('Testing toDTO for empty object', () => {
+  it('Testing toDTOtree for empty object', () => {
     const emptyObjectType = t.object({})
     const o: t.TypeOf<typeof emptyObjectType> = {}
-    const res = emptyObjectType.toDTO(o)
+    const res = emptyObjectType.toDTOtree(o)
     if (isSuccess(res)) {
       expect(res.value).toEqual({})
     }
   })
-  it('Testing toDTO for object with  object property', () => {
+  it('Testing toDTOtree for object with  object property', () => {
     const o: t.TypeOf<typeof objectWithObjectPropertyType> = {
       a: 3,
       b: {
@@ -61,14 +62,15 @@ describe('toDTO tests for object type', () => {
         b2: 'Af'
       }
     }
-    const res = objectWithObjectPropertyType.toDTO(o) as Result<
+    const res = objectWithObjectPropertyType.toDTOtree(o) as Result<
       t.DtoTypeOf<typeof objectWithObjectPropertyType>
     >
+    expect(isSuccess(res)).toBe(true)
     if (isSuccess(res)) {
-      expect(res.value.object.b.object.b2).toEqual('Af')
+      expect(res.value).toEqual({ a: 3, b: { b1: 'afge', b2: 'Af' } })
     }
   })
-  it("Testing toDTO for object with  object property whose property doesn't comply with restrictions", () => {
+  it("Testing toDTOtree for object with  object property whose property doesn't comply with restrictions", () => {
     const o: t.TypeOf<typeof objectWithObjectPropertyType> = {
       a: 3,
       b: {
@@ -76,10 +78,10 @@ describe('toDTO tests for object type', () => {
         b2: 'Af243 '
       }
     }
-    const res = objectWithObjectPropertyType.toDTO(o)
+    const res = objectWithObjectPropertyType.toDTOtree(o)
     expect(isSuccess(res)).toBe(false)
   })
-  it("Testing toDTO for object with  object property whose property doesn't comply with restrictions (validation =false)", () => {
+  it("Testing toDTOtree error message for object with  object property whose property doesn't comply with restrictions", () => {
     const o: t.TypeOf<typeof objectWithObjectPropertyType> = {
       a: 3,
       b: {
@@ -87,8 +89,22 @@ describe('toDTO tests for object type', () => {
         b2: 'Af243 '
       }
     }
-    const res = objectWithObjectPropertyType.toDTO(o)
-    expect(isSuccess(res)).toBe(true)
+    const res = objectWithObjectPropertyType.toDTOtree(o)
+    expect(isFailure(res)).toBe(true)
+    if (isFailure(res)) {
+      expect(res.errors).toEqual([
+        {
+          code: 'ValidationError',
+          message: 'Expected b:[object Object]/b2:Af243  to be alphanumeric, got `Af243 `',
+          path: [
+            { actual: { b1: 'afge', b2: 'Af243 ' }, segment: 'b' },
+            { actual: 'Af243 ', segment: 'b2' }
+          ],
+          type: 'word',
+          value: '"Af243 "'
+        }
+      ])
+    }
   })
   test('object with keys', () => {
     const ident = ['name', 'id'] as const

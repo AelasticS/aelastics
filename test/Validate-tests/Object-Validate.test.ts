@@ -1,6 +1,6 @@
-import * as t from '../../../src/aelastics-types'
+import * as t from '../../src/aelastics-types'
 import { isSuccess, isFailure, Failure } from 'aelastics-result'
-import * as examples from '../testing-types'
+import * as examples from '../complex-types-graph/testing-types'
 
 describe('ObjectTest', () => {
   it("Testing if empty object is 'empty object'", () => {

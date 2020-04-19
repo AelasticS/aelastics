@@ -8,15 +8,25 @@ import {
   failures,
   isFailure,
   Path,
+  pathToString,
   success,
   Result,
-  ValidationError,
   validationError,
   Errors
 } from 'aelastics-result'
-import { Any, ToDtoContext, DtoTypeOf, InstanceReference, TypeC, TypeOf } from '../common/Type'
+import {
+  Any,
+  ToDtoContext,
+  DtoTypeOf,
+  InstanceReference,
+  TypeC,
+  TypeOf,
+  FromDtoContext,
+  TraversalContext
+} from '../common/Type'
 import { ComplexTypeC } from './ComplexType'
 import { TypeInstancePair, VisitedNodes } from '../common/VisitedNodes'
+import { SimpleTypeC } from '../simple-types/SimpleType'
 
 /**
  * Array type
@@ -37,13 +47,21 @@ export class ArrayTypeC<
     return []
   }
 
+  makeEmptyInstance(
+    value: Array<DtoTypeOf<E>> | DtoArrayType<E>,
+    path: Path,
+    context: FromDtoContext
+  ): Array<TypeOf<E>> {
+    return []
+  }
+
   validateCyclic(
     input: Array<TypeOf<E>>,
     path: Path = [],
     traversed: VisitedNodes<any, any, any>
   ): Result<boolean> {
     if (!Array.isArray(input)) {
-      return failure(new Error(`Value ${path}: '${input}' is not Array`))
+      return failure(new Error(`Value ${pathToString(path)}: '${input}' is not Array`))
     }
 
     let pair: TypeInstancePair<Any, any> = [this, input]
@@ -74,6 +92,28 @@ export class ArrayTypeC<
     return errors.length ? failures(errors) : success(true)
   }
 
+  public traverseCyclic<R>(
+    value: any,
+    f: (type: Any, value: any, c: TraversalContext) => void,
+    context: TraversalContext
+  ): void {
+    let pair: TypeInstancePair<Any, any> = [this, value]
+    if (context.traversed.has(pair)) {
+      return
+    }
+    context.traversed.set(pair, undefined)
+    const errors: Errors = []
+    for (let i = 0; i < value.length; i++) {
+      const x = value[i]
+      f(this, x, context)
+      if (this.baseType instanceof SimpleTypeC) {
+        continue
+      } else {
+        this.baseType.traverseCyclic(x, f, context)
+      }
+    }
+  }
+
   protected isArrayRef(input: any): input is DtoArrayType<E> {
     if (input.ref && input.array) {
       return true
@@ -82,41 +122,39 @@ export class ArrayTypeC<
   }
 
   makeInstanceFromDTO(
-    input: Array<DtoTypeOf<E>> | DtoArrayType<E>,
+    input: Array<DtoTypeOf<E>>,
+    output: Array<TypeOf<E>>,
     path: Path,
-    context: ToDtoContext
-  ): Array<TypeOf<E>> {
-    let inputArray: Array<DtoTypeOf<E>>
-    if (this.isArrayRef(input)) {
-      if (!Array.isArray(input.array)) {
-        context.errors.push(validationError('Input is not an array', path, this.name, input))
-        return []
-      }
-      inputArray = input.array
-    } else {
-      inputArray = input
+    context: FromDtoContext
+  ): void {
+    if (!Array.isArray(input)) {
+      context.errors.push(
+        validationError(
+          `Input ${pathToString(path)}:'${input}' is not an array`,
+          path,
+          this.name,
+          input
+        )
+      )
     }
-
-    const output: Array<TypeOf<E>> = []
-    for (let i = 0; i < inputArray.length; i++) {
-      const x = inputArray[i]
+    for (let i = 0; i < input.length; i++) {
+      const x = input[i]
       const conversion = this.baseType.fromDTOCyclic(x, path, context)
       output.push(conversion)
     }
-    return output
   }
 
   makeDTOInstance(
     input: Array<TypeOf<E>>,
+    ref: InstanceReference,
     path: Path,
     context: ToDtoContext
-  ): Array<DtoTypeOf<E>> | DtoArrayType<E> {
+  ): Array<DtoTypeOf<E>> {
     if (!Array.isArray(input)) {
       context.errors.push(
-        validationError(`Value ${path} is not Array: '${input}' `, path, this.name)
+        validationError(`Value ${pathToString(path)} is not Array: '${input}' `, path, this.name)
       )
     }
-    let output: Array<DtoTypeOf<E>> | DtoArrayType<E>
     const outArray: Array<DtoTypeOf<E>> = []
     for (let i = 0; i < input.length; i++) {
       const conversion = this.baseType.toDTOCyclic(
@@ -126,12 +164,7 @@ export class ArrayTypeC<
       )
       outArray.push(conversion)
     }
-    if (context.options.isTreeDTO) {
-      output = outArray
-    } else {
-      output = { ref: this.makeReference(input, context), array: outArray }
-    }
-    return output
+    return outArray
   }
 
   validateLinks(traversed: Map<Any, Any>): Result<boolean> {

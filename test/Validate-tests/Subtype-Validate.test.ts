@@ -3,7 +3,7 @@
  *
  */
 
-import * as examples from '../testing-types'
+import * as examples from '../complex-types-graph/testing-types'
 import { isFailure, isSuccess } from 'aelastics-result'
 
 describe('Subtype test', () => {

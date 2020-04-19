@@ -10,7 +10,7 @@ describe('Tests for Array method fromDTO', () => {
   it('should be valid fromDTO for array of numbers', () => {
     let arrayOfNumbers = at.arrayOf(t.number, 'arrayOfNumbers')
     let a = arrayOfNumbers.fromDTO({
-      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      ref: { id: 1, category: 'array', typeName: 'Array' },
       array: [5, 10, 25, 150]
     })
     expect(isSuccess(a)).toBe(true)
@@ -21,7 +21,7 @@ describe('Tests for Array method fromDTO', () => {
   it('should not be valid fromDTO for array of numbers', () => {
     let arrayOfNumbers = at.arrayOf(t.number.derive('').negative, 'arrayOfNumbers')
     let a = arrayOfNumbers.fromDTO({
-      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      ref: { id: 1, category: 'array', typeName: 'Array' },
       array: [5, 10, -25, -150]
     })
     if (isFailure(a)) {
@@ -49,7 +49,7 @@ describe('Tests for Array method fromDTO', () => {
   it('should not be valid fromDTO for array of strings', () => {
     let arrayOfStrings = at.arrayOf(t.string.derive('').lowercase.includes('.'), 'arrayOfStrings')
     let a = arrayOfStrings.fromDTO({
-      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      ref: { id: 1, category: 'array', typeName: 'Array' },
       array: ['a.bcd', 'Abc', 'a.']
     })
     if (isFailure(a)) {
@@ -94,14 +94,14 @@ describe('Tests for Array method fromDTO', () => {
     ]
     let emps2 = arrayOfEmployees.toDTO(emps)
     let empsDto: t.DtoTypeOf<typeof arrayOfEmployees> = {
-      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      ref: { id: 1, category: 'array', typeName: 'Array' },
       array: [
         {
-          ref: { id: 2, category: 'Object', typeName: 'Worker' },
+          ref: { id: 2, category: 'object', typeName: 'Worker' },
           object: {
             name: 'Jovan',
             employmentDate: {
-              ref: { id: 3, category: 'Object', typeName: 'date' },
+              ref: { id: 3, category: 'object', typeName: 'date' },
               object: {
                 day: 4,
                 month: 4,
@@ -109,7 +109,7 @@ describe('Tests for Array method fromDTO', () => {
               }
             },
             dateOfBirth: {
-              ref: { id: 4, category: 'Object', typeName: 'date' },
+              ref: { id: 4, category: 'object', typeName: 'date' },
               object: { day: 10, month: 5, year: 2000 }
             }
           }
@@ -127,10 +127,10 @@ describe('Tests for Array method fromDTO', () => {
   it('should not be valid fromDTO for array of EmployeeType objects in case of empty object', () => {
     let arrayOfEmployees = at.arrayOf(t.object({}), 'arrayOfEmployees')
     let a = arrayOfEmployees.fromDTO({
-      ref: { id: 1, category: 'Array', typeName: 'arrayOfEmployees' },
+      ref: { id: 1, category: 'array', typeName: 'arrayOfEmployees' },
       array: [
-        { ref: { id: 2, category: 'Object', typeName: '' }, object: {} },
-        { ref: { id: 3, category: 'Object', typeName: '' }, object: {} }
+        { ref: { id: 2, category: 'object', typeName: '' }, object: {} },
+        { ref: { id: 3, category: 'object', typeName: '' }, object: {} }
       ]
     })
     if (isFailure(a)) {
@@ -146,34 +146,10 @@ describe('Tests for Array method fromDTO', () => {
         {
           code: undefined,
           message:
-            "Input data is graph. Value : '[object Object]' of type '{  }' has more then one reference!",
-          path: [],
-          type: '{  }',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message:
             "Types are not matching: input type is '' and expected type is '{  }'. A possible subtype cannot be handled!",
           path: [],
           type: '{  }',
           value: '{"ref":{"id":3,"category":"Object","typeName":""},"object":{}}'
-        },
-        {
-          code: undefined,
-          message:
-            "Input data is graph. Value : '[object Object]' of type '{  }' has more then one reference!",
-          path: [],
-          type: '{  }',
-          value: undefined
-        },
-        {
-          code: undefined,
-          message:
-            "Input data is graph. Value : '[object Object]' of type 'arrayOfEmployees' has more then one reference!",
-          path: [],
-          type: 'arrayOfEmployees',
-          value: undefined
         }
       ])
     }
@@ -187,14 +163,14 @@ describe('Tests for Array method fromDTO', () => {
   it('should not be valid fromDTO for array of EmployeeType objects in case of incorrect relation between properties', () => {
     let arrayOfEmployees = at.arrayOf(examples.EmployeeType, 'arrayOfEmployees')
     let emps: t.DtoTypeOf<typeof arrayOfEmployees> = {
-      ref: { id: 1, category: 'Array', typeName: 'Array' },
+      ref: { id: 1, category: 'array', typeName: 'Array' },
       array: [
         {
-          ref: { id: 2, category: 'Object', typeName: 'Worker' },
+          ref: { id: 2, category: 'object', typeName: 'Worker' },
           object: {
             name: 'John',
             employmentDate: {
-              ref: { id: 3, category: 'Object', typeName: 'date' },
+              ref: { id: 3, category: 'object', typeName: 'date' },
               object: {
                 day: 25,
                 month: 3,
@@ -202,7 +178,7 @@ describe('Tests for Array method fromDTO', () => {
               }
             },
             dateOfBirth: {
-              ref: { id: 4, category: 'Object', typeName: 'date' },
+              ref: { id: 4, category: 'object', typeName: 'date' },
               object: {
                 day: 10,
                 month: 5,

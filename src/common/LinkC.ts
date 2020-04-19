@@ -3,7 +3,7 @@
  *
  */
 
-import { Any, TypeC } from './Type'
+import { Any, FromDtoContext, ToDtoContext, TypeC } from './Type'
 import { TypeSchema, ValidateStatusEnum } from './TypeSchema'
 import { failure, failures, Path, Result, success } from 'aelastics-result'
 import { VisitedNodes } from './VisitedNodes'
@@ -19,14 +19,33 @@ export class LinkC extends TypeC<any> {
     this.path = path
   }
 
+  defaultValue(): any {
+    return undefined
+  }
+
   validateCyclic(
     value: any,
     path: Path = [],
     traversed: VisitedNodes<Any, any, any>
   ): Result<boolean> {
-    return this.resolvedType
-      ? this.resolvedType.validateCyclic(value, path, traversed)
-      : failures([new Error('Resolved Type is udndefined')])
+    if (this.resolvedType) {
+      return this.resolvedType.validateCyclic(value, path, traversed)
+    }
+    throw new Error(`Link to type:'${this.path}' is undefined`)
+  }
+
+  toDTOCyclic(input: any, path: Path, context: ToDtoContext): any {
+    if (this.resolvedType) {
+      return this.resolvedType.toDTOCyclic(input, path, context)
+    }
+    throw new Error(`Link to type:'${this.path}' is undefined`)
+  }
+
+  fromDTOCyclic(value: any, path: Path, context: FromDtoContext): any | undefined {
+    if (this.resolvedType) {
+      return this.resolvedType.fromDTOCyclic(value, path, context)
+    }
+    throw new Error(`Link to type:'${this.path}' is undefined`)
   }
 
   public isResolved() {

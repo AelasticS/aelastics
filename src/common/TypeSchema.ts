@@ -50,10 +50,12 @@ export class TypeSchema {
   /**
    * Return a type by its name
    */
-  public getType(path: string) {
-    if (!this.isValid) {
-      throw Error(`Type schema '${this.name}' is not validated!`)
-    }
+  public getType(path: string): Any | undefined {
+    /*  from version 0.6.2 it is  possible to get from schema a type via a path, even if schema is not validated
+        if (!this.isValid) {
+          throw Error(`Type schema '${this.name}' is not validated!`)
+        }
+    */
     let schema: TypeSchema | undefined
     let typeName: string | undefined = ''
     const segments = path.split('/')

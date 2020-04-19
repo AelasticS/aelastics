@@ -37,6 +37,11 @@ export class VoidTypeC extends SimpleTypeC<void> {
       return failure(new Error(`Value '${value}' is not void`))
     }
   }
+
+  defaultValue(): void {
+    return undefined
+  }
 }
 
 export const voidType: VoidTypeC = new VoidTypeC()
+voidType.systemType = true
