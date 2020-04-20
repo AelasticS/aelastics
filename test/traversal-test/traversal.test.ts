@@ -1,61 +1,68 @@
-class Org {
-  get radnici(): readonly Radnik[] {
-    return Object.freeze([...this._radnici])
-  }
+import { Place, Belgrade } from '../example/travel-network'
+import { types } from '../../src/aelastics-types'
+import TraversalFunc = types.TraversalFunc
 
-  public _radnici: Radnik[] = []
-}
-
-class Radnik {
-  private _org: Org | undefined
-
-  get org(): Org | undefined {
-    return this._org
-  }
-
-  set org(value: Org | undefined) {
-    let oldOrg = this._org
-    this._org = value
-    if (value && !value._radnici.includes(this)) {
-      value._radnici.push(this)
-    }
-    if (oldOrg) {
-      for (let i = 0; i < oldOrg._radnici.length; i++) {
-        if (oldOrg._radnici[i] === this) {
-          oldOrg._radnici.splice(i, 1)
-          return
+const countNodes: TraversalFunc<number> = (
+  type,
+  value,
+  currentResult,
+  position,
+  role,
+  extra,
+  context
+) => {
+  switch (type.category) {
+    case 'Object':
+      if (position === 'AfterAllChildren') {
+        switch (role) {
+          case 'asArrayElement':
+            return currentResult + 1
+          case 'asRoot':
+            return currentResult + 1
+          case 'asProperty':
+          case 'asMapKey':
+          case 'asMapValue':
+          case 'asElementOfTaggedUnion':
+          case 'asElementOfUnion':
+          case 'asIdentifierPart':
+          case 'asIntersectionElement':
+          case 'asFuncArgument':
+          case 'asReturnType':
+            break
         }
       }
-    }
+      break
+    case 'Array':
+    case 'Intersection':
+    case 'TaggedUnion':
+    case 'Map':
+    case 'Date':
+    case 'Union':
+      break
+    // nothing to do
+    case 'Function':
+    case 'Boolean':
+    case 'Literal':
+    case 'Null':
+    case 'Number':
+    case 'String':
+    case 'Undefined':
+    case 'Void':
+      return currentResult
   }
+  return currentResult
 }
-
 describe('Test cases for traversal', () => {
-  let r = new Radnik()
-  let o = new Org()
-  /*  Object.defineProperty(o, 'radnici', {
-    value: o['_radnici'],
-    writable: false
-  })*/
-  // @ts-ignore
-  // o['radnici'].push(r)
-
   test('that private array is updated - added new ', () => {
-    r.org = o
-    //    console.log(`length:${o._radnici.length}`)
-    expect(o._radnici.length).toEqual(1)
+    let count = Place.traverse(Belgrade, countNodes, 0)
+    expect(count).toEqual(3)
   })
-  const f = () => {
-    // @ts-ignore
-    o['radnici'].push(r)
-    return 1
-  }
+
   test('that public array is frozen', () => {
-    expect(f).toThrowError()
+    expect(1).toEqual(1)
   })
 
   test('that private array is updated - deleted one', () => {
-    r.org = undefined
-    expect(o._radnici.length).toEqual(0)
+    expect(0).toEqual(0)
   })
 })

@@ -55,9 +55,10 @@ export class TraversalContext<R> {
     return this.entries.pop()
   }
 
-  get lastEntry(): TraversalContextEntry {
+  get lastEntry(): TraversalContextEntry | undefined {
     if (this.entries.length <= 0) {
-      throw new Error(`TraversalContext.pop() error: array of entries empty!`)
+      // throw new Error(`TraversalContext.pop() error: array of entries empty!`)
+      return undefined
     }
     return this.entries[this.entries.length - 1]
   }

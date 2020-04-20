@@ -149,9 +149,8 @@ export abstract class ComplexTypeC<
     context.traversed.set(pair, undefined)
 
     // before children
-    let r: R = f(this, instance, currentResult, 'BeforeChildren', role, extra, context)
+    let accumulator: R = f(this, instance, currentResult, 'BeforeChildren', role, extra, context)
     context.pushEntry(role, { parentType: this, parentInstance: instance })
-    let accumulator = currentResult
     for (let [childType, child, childRole, extra] of this.children(instance)) {
       if (childType instanceof SimpleTypeC && context.skipSimpleTypes) {
         continue
@@ -173,9 +172,9 @@ export abstract class ComplexTypeC<
         )
       }
       // after children
-      r = f(this, instance, currentResult, 'AfterAllChildren', childRole, extra, context)
+      accumulator = f(this, instance, accumulator, 'AfterAllChildren', role, extra, context)
     }
     context.popEntry()
-    return r
+    return accumulator
   }
 }

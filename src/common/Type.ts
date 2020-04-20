@@ -130,7 +130,7 @@ export abstract class TypeC<V, G = V, T = V> {
 
   get category(): CategoryType {
     // @ts-ignore
-    return this['-tag'] as CategoryType
+    return this['_tag'] as CategoryType
   }
 
   /** Array of functions checking constrains on values of this type */
