@@ -21,23 +21,33 @@ const prepareForReact: t.types.TraversalFunc<any> = (
 ) => {
   switch (type.category) {
     case 'Object':
-      switch (position) {
-        case 'BeforeChildren':
-          let newValue = observe(instance)
-          return newValue
-          break
-        case 'AfterChild':
-        // instance[context.lastEntry.extra.propName?] =
-        case 'AfterAllChildren':
+    case 'Array':
+      if (position === 'AfterAllChildren') {
+        switch (role) {
+          case 'asArrayElement':
+          case 'asRoot':
+          case 'asProperty':
+          case 'asMapKey':
+          case 'asMapValue':
+            return observe(instance)
+          case 'asElementOfTaggedUnion':
+          case 'asElementOfUnion':
+          case 'asIdentifierPart':
+          case 'asIntersectionElement':
+          case 'asFuncArgument':
+          case 'asReturnType':
+            break
+        }
       }
       break
-    case 'Array':
     case 'Intersection':
     case 'TaggedUnion':
     case 'Map':
     case 'Date':
     case 'Union':
       break
+    // nothing to do
+    case 'Function':
     case 'Boolean':
     case 'Literal':
     case 'Null':
@@ -45,11 +55,9 @@ const prepareForReact: t.types.TraversalFunc<any> = (
     case 'String':
     case 'Undefined':
     case 'Void':
-      switch (role) {
-        case 'asProperty':
-      }
+      return currentResult
   }
-  return 1
+  return currentResult
 }
 
 export class Repository<T extends t.Any> {

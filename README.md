@@ -24,13 +24,16 @@
 - Extensive error reports collected during data validations
 
 #### Serialization/Deserialization
-- Transformation to/from Data Transfer Objects (tree data structures) which can be directly used by JSON.stringify and JSON.parse functions
+- Graph cyclic data structures are transformed to/from Data Transfer Objects (JSON tree data structures)
+- Inheritance (subtyping) supported
 - Graph cyclic data structures are supported as an out-of-the-box feature
-- Support for types not supported by JSON stringify and parse functions: maps, unions, date type, object references, etc.
+- No decorators/annotations are needed
+- Support for types not supported by JSON such as maps, unions, dates, object references, etc.
 
 #### Structure Traversal/Processing
-- Input data structure is traversed in a depth-first manner and user supplied function is invoked exactly once at each element of the input 
-
+- Traversal of graph cyclic structures in a depth-first manner
+- A user supplied function is invoked exactly once at each element of the input with a rich meta information about the element's role and position in the structure (e.g. an array element on a specific index position)
+- 
 ## Example
 
 ```ts
