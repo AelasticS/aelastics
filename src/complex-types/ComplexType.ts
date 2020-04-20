@@ -144,7 +144,7 @@ export abstract class ComplexTypeC<
   ): R {
     let pair: TypeInstancePair<Any, any> = [this, instance]
     if (context.traversed.has(pair)) {
-      return context.traversed.get(pair)
+      return currentResult
     }
     context.traversed.set(pair, undefined)
 
@@ -170,10 +170,12 @@ export abstract class ComplexTypeC<
           },
           context
         )
+        // after one child
+        accumulator = f(this, instance, accumulator, 'AfterChild', role, extra, context)
       }
-      // after children
-      accumulator = f(this, instance, accumulator, 'AfterAllChildren', role, extra, context)
     }
+    // after children
+    accumulator = f(this, instance, accumulator, 'AfterAllChildren', role, extra, context)
     context.popEntry()
     return accumulator
   }

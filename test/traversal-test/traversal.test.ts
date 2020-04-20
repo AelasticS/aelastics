@@ -2,7 +2,13 @@ import { Place, Belgrade } from '../example/travel-network'
 import { types } from '../../src/aelastics-types'
 import TraversalFunc = types.TraversalFunc
 
-const countNodes: TraversalFunc<number> = (
+interface Counters {
+  AfterAllChildren: number
+  BeforeChildren: number
+  AfterChild: number
+}
+
+const countNodes: TraversalFunc<Counters> = (
   type,
   value,
   currentResult,
@@ -11,51 +17,45 @@ const countNodes: TraversalFunc<number> = (
   extra,
   context
 ) => {
-  switch (type.category) {
-    case 'Object':
-      if (position === 'AfterAllChildren') {
-        switch (role) {
-          case 'asArrayElement':
-            return currentResult + 1
-          case 'asRoot':
-            return currentResult + 1
-          case 'asProperty':
-          case 'asMapKey':
-          case 'asMapValue':
-          case 'asElementOfTaggedUnion':
-          case 'asElementOfUnion':
-          case 'asIdentifierPart':
-          case 'asIntersectionElement':
-          case 'asFuncArgument':
-          case 'asReturnType':
-            break
-        }
+  if (type.category === 'Object') {
+    if (position === 'BeforeChildren') {
+      switch (role) {
+        case 'asArrayElement':
+        case 'asRoot':
+          currentResult.BeforeChildren += 1
       }
-      break
-    case 'Array':
-    case 'Intersection':
-    case 'TaggedUnion':
-    case 'Map':
-    case 'Date':
-    case 'Union':
-      break
-    // nothing to do
-    case 'Function':
-    case 'Boolean':
-    case 'Literal':
-    case 'Null':
-    case 'Number':
-    case 'String':
-    case 'Undefined':
-    case 'Void':
-      return currentResult
+    }
+    if (position === 'AfterChild') {
+      switch (role) {
+        case 'asArrayElement':
+        case 'asRoot':
+          currentResult.AfterChild += 1
+      }
+    }
+    if (position === 'AfterAllChildren') {
+      switch (role) {
+        case 'asArrayElement':
+        case 'asRoot':
+          currentResult.AfterAllChildren += 1
+      }
+    }
   }
+  console.log(
+    `${type.category}:${role}:${value.name}, position:${position}, counter:${JSON.stringify(
+      currentResult
+    )}`
+  )
   return currentResult
 }
+
 describe('Test cases for traversal', () => {
   test('that private array is updated - added new ', () => {
-    let count = Place.traverse(Belgrade, countNodes, 0)
-    expect(count).toEqual(3)
+    let count = Place.traverse(Belgrade, countNodes, {
+      AfterChild: 0,
+      AfterAllChildren: 0,
+      BeforeChildren: 0
+    })
+    expect(count.AfterAllChildren).toEqual(4)
   })
 
   test('that public array is frozen', () => {
