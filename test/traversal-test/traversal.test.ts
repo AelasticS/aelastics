@@ -49,20 +49,12 @@ const countNodes: TraversalFunc<Counters> = (
 }
 
 describe('Test cases for traversal', () => {
-  test('that private array is updated - added new ', () => {
+  test('that objects in cyclic graph are visited exactly once', () => {
     let count = Place.traverse(Belgrade, countNodes, {
       AfterChild: 0,
       AfterAllChildren: 0,
       BeforeChildren: 0
     })
     expect(count.AfterAllChildren).toEqual(4)
-  })
-
-  test('that public array is frozen', () => {
-    expect(1).toEqual(1)
-  })
-
-  test('that private array is updated - deleted one', () => {
-    expect(0).toEqual(0)
   })
 })
