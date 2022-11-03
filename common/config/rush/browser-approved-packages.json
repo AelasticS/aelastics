@@ -3,6 +3,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@rushstack/eslint-config",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@rushstack/heft",
       "allowedCategories": [ "production" ]
     },
@@ -15,7 +19,35 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "aelastics-monorepo-tools",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "aelastics-result",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "mobx",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "my-controls",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "ts-jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "tslib",
       "allowedCategories": [ "production" ]
     },
     {
