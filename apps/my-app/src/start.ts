@@ -1,4 +1,6 @@
-import { MyClass } from 'my-controls';
+// import { MyClass } from 'my-controls';
 
-let myClass: MyClass = new MyClass();
-myClass.doSomething();
+// let myClass: MyClass = new MyClass();
+// myClass.doSomething();
+
+console.log("Hello, world!");
