@@ -27,6 +27,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "aelastics-types",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "eslint",
       "allowedCategories": [ "production" ]
     },

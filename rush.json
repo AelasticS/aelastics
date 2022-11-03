@@ -497,6 +497,12 @@
       "tags": ["libraries", "web"]
     },
     {
+      "packageName": "generic-metamodel",
+      "projectFolder": "libraries/generic-metamodel",
+      "reviewCategory": "production",
+      "tags": ["libraries", "web"]
+    },
+    {
       "packageName": "my-toolchain",
       "projectFolder": "tools/my-toolchain",
       "reviewCategory": "tools",
