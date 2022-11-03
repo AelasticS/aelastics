@@ -42,6 +42,37 @@ importers:
       my-toolchain: link:../../tools/my-toolchain
       typescript: 4.8.3
 
+  ../../libraries/aelastics-store:
+    specifiers:
+      '@rushstack/eslint-config': ~3.1.1
+      '@rushstack/heft': ^0.48.7
+      '@rushstack/heft-jest-plugin': ~0.3.44
+      '@types/heft-jest': 1.0.3
+      '@types/node': 18.11.9
+      '@types/uuid': ~8.3.4
+      aelastics-result: workspace:*
+      aelastics-types: workspace:*
+      eslint: ~7.15.0
+      mobx: ^5.15.6
+      tslib: ^1.10.0
+      typescript: ^4.8.3
+      uuid: ~9.0.0
+    dependencies:
+      aelastics-result: link:../aelastics-result
+      aelastics-types: link:../aelastics-types
+      mobx: 5.15.7
+      uuid: 9.0.0
+    devDependencies:
+      '@rushstack/eslint-config': 3.1.1_eslint@7.15.0+typescript@4.8.3
+      '@rushstack/heft': 0.48.7
+      '@rushstack/heft-jest-plugin': 0.3.44_@rushstack+heft@0.48.7
+      '@types/heft-jest': 1.0.3
+      '@types/node': 18.11.9
+      '@types/uuid': 8.3.4
+      eslint: 7.15.0
+      tslib: 1.14.1
+      typescript: 4.8.3
+
   ../../libraries/aelastics-types:
     specifiers:
       '@rushstack/eslint-config': ~3.1.1
@@ -1045,6 +1076,10 @@ packages:
 
   /@types/tapable/1.0.6:
     resolution: {integrity: sha512-W+bw9ds02rAQaMvaLYxAbJ6cvguW/iJXNT6lTssS1ps6QdrMKttqEAMEG/b5CR8TZl3/L7/lH0ZV5nNR1LXikA==}
+    dev: true
+
+  /@types/uuid/8.3.4:
+    resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
     dev: true
 
   /@types/yargs-parser/21.0.0:
@@ -3919,6 +3954,11 @@ packages:
       querystringify: 2.2.0
       requires-port: 1.0.0
     dev: true
+
+  /uuid/9.0.0:
+    resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
+    hasBin: true
+    dev: false
 
   /v8-compile-cache/2.3.0:
     resolution: {integrity: sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA==}

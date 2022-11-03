@@ -497,6 +497,12 @@
       "tags": ["libraries", "web"]
     },
     {
+      "packageName": "aelastics-store",
+      "projectFolder": "libraries/aelastics-store",
+      "reviewCategory": "production",
+      "tags": ["libraries", "web"]
+    },
+    {
       "packageName": "generic-metamodel",
       "projectFolder": "libraries/generic-metamodel",
       "reviewCategory": "production",

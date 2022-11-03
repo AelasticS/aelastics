@@ -55,6 +55,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "uuid",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "whatwg-fetch",
       "allowedCategories": [ "production" ]
     }
