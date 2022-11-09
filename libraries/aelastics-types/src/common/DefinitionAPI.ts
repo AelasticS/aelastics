@@ -110,9 +110,14 @@ export const taggedUnion = <P extends InterfaceDecl>(
  */
 export const entityRef = <T extends ObjectType<any, readonly string[]>>(
   t: T,
-  name: string = `referenceTo${t.name}`,
+  name?: string,
   schema: TypeSchema = DefaultSchema
-) => new EntityReference<T>(name, t, schema);
+) => 
+{
+  if (name === undefined || name === '') name = schema.generateName(`referenceTo${t.name}}>`);
+  let obj = new EntityReference<T>(name, t, schema);
+  return obj;
+};
 
 /**
  *  Boolean type

@@ -503,6 +503,12 @@
       "tags": ["libraries", "web"]
     },
     {
+      "packageName": "aelastics-synthesis",
+      "projectFolder": "libraries/aelastics-synthesis",
+      "reviewCategory": "production",
+      "tags": ["libraries", "web"]
+    },
+    {
       "packageName": "generic-metamodel",
       "projectFolder": "libraries/generic-metamodel",
       "reviewCategory": "production",

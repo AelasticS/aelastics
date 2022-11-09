@@ -19,6 +19,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "@types/uuid",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "aelastics-monorepo-tools",
       "allowedCategories": [ "production" ]
     },
@@ -32,6 +36,10 @@
     },
     {
       "name": "eslint",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "generic-metamodel",
       "allowedCategories": [ "production" ]
     },
     {
