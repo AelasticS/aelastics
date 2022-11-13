@@ -14,7 +14,7 @@ export class MultiStore<ID> {
     public eventLog = new EventLog();
     protected repos: Map<t.Any, Repository<any>> = new Map();
     protected server?: ServerProxy;
-    protected instances: Map<ID, t.ObjectLiteral> = new Map
+    protected readonly instances: Map<ID, t.ObjectLiteral> = new Map
 
     constructor(server?: ServerProxy) {
         this.server = server;
@@ -49,12 +49,15 @@ export class MultiStore<ID> {
 
     }
 
-    public getObjectByID(type: t.Any, id:ID) {
+    public getObjectByID(id:ID) {
         return this.instances.get(id)
     }
 
     public async fetchObjectByID(type: t.Any, id:ID) {
-        return this.getObjectByID(type, id)
+        // read from server
+        // deseralize
+        // add to this.instances
+        return this.getObjectByID(id)
     }
 
     public async persist () {
@@ -64,8 +67,16 @@ export class MultiStore<ID> {
     public new<T extends t.ObjectLiteral>(type: t.Any, initValue: T): T {
         const rep = this.getRepos(type);
         const obj = rep.create<T>(type, initValue);
-        this.instances.set(obj[objectUUID], obj)
+        this.add(type, obj)
         return obj;
+    }
+
+    public add<T extends t.ObjectLiteral>(type: t.Any, obj: T) {
+        this.instances.set(obj[objectUUID], obj)
+    }
+
+    public remove<T extends t.ObjectLiteral>(obj: T) {
+        this.instances.delete(obj[objectUUID])
     }
 
     public delete<T extends t.ObjectLiteral>(object: T): void {
