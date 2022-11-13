@@ -6,7 +6,6 @@ export interface IModelElementProps extends STX.InstanceProps {
   name: string
 }
 
-
 export type IEERSchemaProps = Partial<e.IEERSchema> & STX.InstanceProps
 export type IKernelProps = Partial<e.IKernel> & STX.InstanceProps
 export type IDomainProps = Partial<e.IDomain> & STX.InstanceProps
@@ -47,18 +46,11 @@ export const Domain: STX.Template<IDomainProps, e.IDomain> = (props,store, model
 
 
 export interface EERComps {
-  Kernel: STX.Template<IKernelProps, e.IKernel>
+  Kernel: STX.Template<IKernelProps, e.IKernel>,
+  Attribute: STX.Template<IAttributeProps, e.IAttribute>
 }
-
-export const sinisa:EERComps = {
-  Kernel: (props:IKernelProps, store:any, model:any) => {
-    return STX.createChild(e.Kernel, props, STX.createConnectFun({}, model), store)
-  }
-}
-
 
 export const getEER = (model:IModel, store: any):EERComps => ({
-  Kernel: (props:IKernelProps, store:any, model:any) => {
-    return STX.createChild(e.Kernel, props, STX.createConnectFun({}, model), store)
-  }
+  Kernel: Kernel,
+  Attribute:Attribute
 })

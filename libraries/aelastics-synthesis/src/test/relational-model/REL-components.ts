@@ -8,7 +8,6 @@ export type IColumnProps = Partial<r.IColumn> & STX.InstanceProps
 export type IIndexProps = Partial<r.IIndex> & STX.InstanceProps
 export type IForeignKeyProps = Partial<r.IForeignKey> & STX.InstanceProps
 
-
 export const RelSchema: STX.Template<IRelSchemaProps, r.IRelSchema> = (props,store) => {
     return STX.createChild(r.RelSchema, props, STX.createConnectFun({
       // parentPropName:"domain", parentPropType:'Object'
