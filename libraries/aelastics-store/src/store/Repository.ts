@@ -72,7 +72,7 @@ export class Repository<T extends t.Any> {
     return obj as P;
   }
 
-  delete(objectType: t.ObjectType<any, any>, obj: t.TypeOf<typeof objectType>) {
+  public delete(objectType: t.ObjectType<any, any>, obj: t.TypeOf<typeof objectType>) {
     // TODO: log delete operation
     // objectType.deleteInstance(obj)
     objectType.allProperties.forEach((propType: t.Any, propName: string) => {
