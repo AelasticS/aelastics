@@ -81,6 +81,7 @@ importers:
       '@types/heft-jest': 1.0.3
       '@types/node': 18.11.9
       aelastics-result: workspace:*
+      aelastics-store: workspace:*
       aelastics-types: workspace:*
       eslint: ~7.15.0
       generic-metamodel: workspace:*
@@ -88,6 +89,7 @@ importers:
       typescript: ^4.8.3
     dependencies:
       aelastics-result: link:../aelastics-result
+      aelastics-store: link:../aelastics-store
       aelastics-types: link:../aelastics-types
       generic-metamodel: link:../generic-metamodel
     devDependencies:

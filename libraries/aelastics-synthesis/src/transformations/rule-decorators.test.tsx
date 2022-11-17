@@ -13,10 +13,11 @@ import { M2M, E2E } from "./rule-decorators"
 import { IModel } from "generic-metamodel";
 import * as e from '../test/eer-model/EER.meta.model.type'
 import * as r from '../test/relational-model/REL.meta.model.type'
-import { Attribute, Domain, sinisa, EERComps, EERSchema, getEER, Kernel, } from '../test/eer-model/EER-components'
+import { Attribute, Domain, EERComps, EERSchema, getEER, Kernel, } from '../test/eer-model/EER-components'
 import { Column } from '../test/relational-model/REL-components'
 import { Table, RelSchema } from '../test/relational-model/REL-components'
 import { abstractM2M } from './abstractM2M';
+import { MapStore } from "../jsx/store"
 
 const eerSchema1 = <EERSchema id='1' name='Persons' MDA_level='M1'>
     <Kernel id='2' name='Person'>
@@ -41,6 +42,10 @@ class EER2Rel extends abstractM2M<e.IEERSchema, r.IRelSchema> {
 
     public transform(): STX.Child<r.IRelSchema> {
         let s = this.source
+        
+        let EER = getEER(s, new MapStore())
+
+        let t1 = <EER.Kernel id='2' name='sss'> </EER.Kernel>
         return (
             <RelSchema name={s.name} content="" MDA_level="M1" id={"1"}>
                 {s.elements
@@ -87,9 +92,6 @@ describe("Test E2E decorator", () => {
     })
 
     it("tests @M2M decorator", () => {
-        <sinisa.Kernel>
-
-        </sinisa.Kernel>
         let m = new EER2Rel(eerSchema1)
         expect(m).toHaveProperty("name", "Persons")
     })

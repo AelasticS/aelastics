@@ -31,6 +31,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "aelastics-store",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "aelastics-types",
       "allowedCategories": [ "production" ]
     },
