@@ -21,4 +21,5 @@ let sf1: fmConfig.IGroupFeature = {
   attributes: [cAttr1],
   name: "odabrani solitary feature",
   reference: featureModel.f1,
+  children: [],
 };
