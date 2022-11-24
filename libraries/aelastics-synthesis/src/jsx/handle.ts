@@ -1,8 +1,8 @@
-import { Any, TypeCategory } from 'aelastics-types'
+import { Any, TypeCategory, ObjectLiteral } from 'aelastics-types'
 import { IModel, IModelElement } from 'generic-metamodel'
 import { MapStore, Store } from "./store"
 
-export type Instance = { [key: string]: any }
+export type Instance = ObjectLiteral
 
 export namespace STX {
   export type InstanceProps = { $id?: string, $ref?: Instance, $ref_id?: string }
@@ -16,14 +16,14 @@ export namespace STX {
 
   export type ConnectFun = ((parent: Instance, child: Instance) => void)
 
-  export type Assoc = {
+  export type ParentChildAssoc = {
     childPropName?: string
     childPropType?: TypeCategory
     parentPropName?: string
     parentPropType?: TypeCategory
   }
 
-  export function createConnectFun(a: Assoc, model?:IModel): ConnectFun {
+  export function createConnectFun(a: ParentChildAssoc, model?:IModel): ConnectFun {
     let fcn: ConnectFun = (parent: Instance, child: Instance) => {
       if (!child)
         return 
