@@ -1,5 +1,6 @@
 import * as t from 'aelastics-types'
 import * as g from 'generic-metamodel'
+import { IModel, IModelElement } from 'generic-metamodel'
 import { ModelStore } from './ModelsStore'
 
 export type ChildParentAssoc = {
@@ -18,9 +19,16 @@ export type RefProps = {
     $ref_id?: string
 } 
 
+
 export type WithRefProps<P> = RefProps & Partial<P>
 export type WithoutRefProps<P> = Exclude<P, RefProps>
+export type RenderPros = {
+    children: ElementInstance<g.IModelElement>[]
+    model:IModel
+    store:ModelStore
+}
 
+export type WithRenderProps<P> = WithRefProps<P> & RenderPros
 
 export type Template<P extends WithRefProps<g.IModelElement>> = (props: P) => Element<P>
 

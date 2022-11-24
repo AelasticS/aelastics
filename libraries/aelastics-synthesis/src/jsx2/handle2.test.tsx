@@ -1,5 +1,5 @@
 /** @jsx hm */
-import {hm, WithRefProps, Template, create, useContext, ElementInstance} from './handle2'
+import {hm, WithRefProps, Template, create, useContext, ElementInstance, render} from './handle2'
 import * as g from 'generic-metamodel'
 import * as t from 'aelastics-types'
 import { ModelStore } from './ModelsStore'
@@ -15,8 +15,8 @@ export type IElementProps =  WithRefProps<g.IModelElement>
 export const Element: Template<IElementProps>  = (props) => {
     const ctx = useContext()
     const f:(props: IElementProps) => ElementInstance<g.IModelElement> = (props:IElementProps)=> {
-        const model = create<g.IModel>(g.Model, props, ctx)
-        return model
+        const el = create<g.IModelElement>(g.ModelElement, props, ctx)
+        return el
     }
     return {
         create:f,
@@ -31,8 +31,9 @@ export type IModelProps = WithRefProps<g.IModel> &  {store:ModelStore}
 export const Model: Template<IModelProps>  = (props) => {
     const ctx = useContext()
     const f:(props: IModelProps) => ElementInstance<g.IModel> = (props:IModelProps)=> {
+        ctx.store = props.store
         const model = create<g.IModel>(g.Model, props, ctx)
-        // ctx.model = model.instance
+        ctx.model = model.instance
         return model
     }
     return {
@@ -49,34 +50,32 @@ export const ModelCpx = (props:IModelProps) => {
  
     </Model>
 }
-const  C1 = (props:{name:string}) => {
-    return <Element name = {props.name}/>
-}
-let c0 = <Element name='e1'/>
-let c1 = <C1 name ='c1'/>
-let r0 = c0.type(c0.props)
-let r1 = c1.type(c1.props)
-let m = <Model store={new ModelStore()} >
-        <Element name = "e1">
-        </Element>
-        <Element name = "e2">
-            <Element name = "e2.1">
-            { ModelCpx({store:new ModelStore()})}
-            { 2+3 } {[1,2,3].map((e)=>e)}
-                "text"
-            </Element>
-        </Element>
-    </Model>
+// const  C1 = (props:{name:string}) => {
+//     return <Element name = {props.name}/>
+// }
+// let c0 = <Element name='e1'/>
+// let c1 = <C1 name ='c1'/>
+// let r0 = c0.type(c0.props)
+// let r1 = c1.type(c1.props)
+// let m = <Model store={new ModelStore()} >
+//         <Element name = "e1">
+//         </Element>
+//         <Element name = "e2">
+//             <Element name = "e2.1">
+//             { ModelCpx({store:new ModelStore()})}
+//             { 2+3 } {[1,2,3].map((e)=>e)}
+//                 "text"
+//             </Element>
+//         </Element>
+//     </Model>
 
-function render (f:any) {
-
-}
 
 
 
 describe("Dummy test", () => {
-    let m = <Model store ={new ModelStore()}>
-
+    let m = <Model name='model1' store ={new ModelStore()}>
+            <Element name='el1'>
+            </Element>
         </Model>
     render(m)
     it("works if true is truthy", () => {
