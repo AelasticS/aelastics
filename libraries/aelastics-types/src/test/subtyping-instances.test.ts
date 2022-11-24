@@ -94,6 +94,11 @@ export const rootFolder: t.TypeOf<typeof Directory> = {
 
 
 describe('Tests for subtyping - same schema types', () => {
+
+  it('should File type be a type of Item', () => {
+    expect(File.isOfType(Item)).toBeTruthy
+  })
+
   it('should convert to DTO graph with concrete subtype specified', () => {
     let myFile1:any = Item.createInstance(myFileTemplate)
     expect(myFile1["@@aelastics/type"]).toEqual("/DefaultSchema/FileSchema/File")

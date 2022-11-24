@@ -14,7 +14,7 @@ describe('Test cases for Number type', () => {
     let num = 'cs'
     expect(isSuccess(isNumber.validate((num as unknown) as number))).toBe(false)
   })
-
+  
   it("should not be Number type in case of 'undefined'", () => {
     const isNumberUndefined = t.number.derive()
     let num = undefined
@@ -25,6 +25,12 @@ describe('Test cases for Number type', () => {
     const isNumber = t.number.derive()
     let num = null
     expect(isSuccess(isNumber.validate((num as unknown) as number))).toBe(false)
+  })
+
+  test('derived number is a of type number', () => {
+    const numberInRange = t.number.derive().inRange(0, 100)
+    let num: number = 23
+    expect(numberInRange.isOfType(t.number)).toBe(true)
   })
 
   it('should be in range of Number values', () => {

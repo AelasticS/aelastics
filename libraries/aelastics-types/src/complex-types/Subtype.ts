@@ -7,6 +7,7 @@ import { ObjectType, InterfaceDecl } from './ObjectType'
 import { TypeSchema } from '../type/TypeSchema'
 import { Any } from '../common/DefinitionAPI'
 import { TypeCategory } from '../type/TypeDefinisions'
+import { Type } from '../type/Type'
 
 export class Subtype<
   P extends InterfaceDecl,
@@ -33,6 +34,12 @@ export class Subtype<
     return this.superType.identifier
   }
 
+  public isOfType(t: Type<any, any, any>): boolean {
+      if (super.isOfType(t))
+        return true
+      else 
+        return this.superType.isOfType(t)
+  }
   // get all properties from class hierarchy - overridden properties are not included!
   get allProperties(): Map<string, Any> {
     let mp = this.superType.allProperties

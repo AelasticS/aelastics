@@ -43,6 +43,7 @@ export abstract class Type<V, G, T> {
   readonly typeCategory: TypeCategory;
   readonly isSystemType: boolean = false;
   public ownerSchema: TypeSchema;
+  public derivedFrom?: Type<any, any, any> 
 
   /** Array of functions checking constrains on values of this type */
   private validators: Validator<V>[] = [];
@@ -74,6 +75,7 @@ export abstract class Type<V, G, T> {
   }
 
   abstract isSimple(): boolean;
+  
 
   public derive(name?: string, schema: TypeSchema = DefaultSchema): this {
     if (name === undefined || name === '') {
@@ -83,6 +85,16 @@ export abstract class Type<V, G, T> {
     derived.derivedFrom = this;
     return derived;
   }
+
+  public isOfType(t:Type<any,any,any>):boolean {
+    if (t === this)
+      return true
+    else if (this.derivedFrom && this.derivedFrom.isOfType(t))
+           return true
+    else
+      return false  
+}
+
 
   public addValidator(validator: Validator<V>): this {
     if (this.isSystemType) {
