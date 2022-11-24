@@ -56,18 +56,16 @@ let c0 = <Element name='e1'/>
 let c1 = <C1 name ='c1'/>
 let r0 = c0.type(c0.props)
 let r1 = c1.type(c1.props)
-let m = <Model store="m1" >
+let m = <Model store={new ModelStore()} >
         <Element name = "e1">
         </Element>
         <Element name = "e2">
             <Element name = "e2.1">
-            { ModelCpx({store:"a"})}
+            { ModelCpx({store:new ModelStore()})}
             { 2+3 } {[1,2,3].map((e)=>e)}
                 "text"
             </Element>
         </Element>
-        <ModelCpx store = "e5">
-        </ModelCpx>
     </Model>
 
 function render (f:any) {
@@ -77,7 +75,7 @@ function render (f:any) {
 
 
 describe("Dummy test", () => {
-    let m = <Model store ="m1">
+    let m = <Model store ={new ModelStore()}>
 
         </Model>
     render(m)
