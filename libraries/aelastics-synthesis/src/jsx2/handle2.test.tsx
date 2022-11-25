@@ -31,9 +31,7 @@ export type IModelProps = WithRefProps<g.IModel> &  {store:ModelStore}
 export const Model: Template<IModelProps>  = (props) => {
     const ctx = useContext()
     const f:(props: IModelProps) => ElementInstance<g.IModel> = (props:IModelProps)=> {
-        ctx.store = props.store
         const model = create<g.IModel>(g.Model, props, ctx)
-        ctx.model = model.instance
         return model
     }
     return {
@@ -79,5 +77,5 @@ describe("Dummy test", () => {
         </Model>
     render(m)
     it("works if true is truthy", () => {
-      expect(true).toBeTruthy()
+      expect(m.e).toBeTruthy()
     })})
