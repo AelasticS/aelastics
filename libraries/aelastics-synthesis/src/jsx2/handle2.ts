@@ -86,7 +86,7 @@ export function create<R extends g.IModelElement>
 
 export function hm<P extends WithRefProps<g.IModelElement>>(t: Template<P>, props: P, ...children: Element<any>[]): Element<P> {
   let childElem = t(props)
-  childElem.children = children
+  childElem.children.push(...children)
   return childElem
 }
 
