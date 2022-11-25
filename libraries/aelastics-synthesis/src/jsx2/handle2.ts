@@ -84,12 +84,6 @@ export function create<R extends g.IModelElement>
   }
 }
 
-export function hm<P extends WithRefProps<g.IModelElement>>(t: Template<P>, props: P, ...children: Element<any>[]): Element<P> {
-  let childElem = t(props)
-  childElem.children.push(...children)
-  return childElem
-}
-
 const modelStack: Array<g.IModel> = []
 
 export const pushModel = (m: g.IModel) => {
@@ -149,6 +143,13 @@ const cnParentChild = (parent: g.IModelElement, child: g.IModelElement, a: Child
 }
 
 
+
+export function hm<P extends WithRefProps<g.IModelElement>>(t: Template<P>, props: P, ...children: Element<any>[]): Element<P> {
+  let childElem = t(props)
+  children.flat
+  childElem.children.push(...children.flat())
+  return childElem
+}
 
 export function render<P extends g.IModelElement>(el: Element<P>): P {
   if('store' in el.props) {
