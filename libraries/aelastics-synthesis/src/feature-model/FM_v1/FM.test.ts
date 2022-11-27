@@ -2,13 +2,13 @@
  *
  */
 
-import * as fm from "./fm-meta.model.type";
+import * as fm from "./fm-meta.model-V1.type";
 
 // let testFM = new fm.FeatureDiagram();
 
 export let r: fm.IRoot = {
   attributes: [],
-  name: "feature root ",
+  name: "Body",
   minCardinality: "1",
   maxCardinality: "1",
 };

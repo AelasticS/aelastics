@@ -3,7 +3,7 @@
  */
 
 import * as fmConfig from "./fm-configuration-meta.model";
-import * as featureModel from "./FM.test";
+import * as featureModel from "./../FM_v1/FM.test";
 
 let conf1: fmConfig.IFMConfiguration = {
   forModel: featureModel.diagram,
