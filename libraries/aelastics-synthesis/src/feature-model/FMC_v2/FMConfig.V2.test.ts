@@ -20,8 +20,18 @@ let wiper: fmc.ISolitaryFeature = {
   reference: fm.wiper,
 };
 
-let cruiseControl: fmc.ISolitaryFeature = {
+let adaptiveInGroup: fmc.ISolitaryFeature = {
   children: [],
+  reference: fm.adaptiveInGroup,
+};
+
+let gropu1: fmc.IGroupFeature = {
+  children: [adaptiveInGroup],
+  reference: fm.rainCtrld,
+};
+
+let cruiseControl: fmc.ISolitaryFeature = {
+  children: [gropu1],
   reference: fm.cruiseControl,
 };
 
@@ -41,25 +51,49 @@ const expStructure = {
   or: [],
 };
 
-// const exp = {
-//   operation: "and",
-//   statements: [
-//     {
-//       Wiper: {
-//         Adaptive: {
-//           RainControl: true,
-//         },
-//       },
-//     },
-//     {
-//       CruiseControle: {
-//         Adaptive: {
-//           Radar: true,
-//         },
-//       },
-//     },
-//   ],
-// };
+const checkIfCruiseControlIsEnabled = (
+  model: fmc.IFMConfiguration
+): boolean => {
+  if (model.selectedFeatures.length === 0) {
+    return false;
+  }
+
+  const root = model.selectedFeatures.find((element: fmc.ISelectedFeature) => {
+    return element.reference.name == "Body Electronics System";
+  });
+
+  if (!root) {
+    return false;
+  }
+
+  const wiper = root.children
+    .find((element: fmc.ISelectedFeature) => element.reference.name == "Wiper")
+    ?.children.find((element: fmc.ISelectedFeature) => {
+      return element.reference.name == "Adaptive";
+    });
+
+  if (!wiper) {
+    return false;
+  }
+
+  const rainCtrld = adaptive.children.find((element: fmc.ISelectedFeature) => {
+    return element.reference.name == "Rain-Ctrld";
+  });
+
+  if (!rainCtrld) {
+    return false;
+  }
+
+  const cruiseControl = root.children.find((element: fmc.ISelectedFeature) => {
+    return element.reference.name == "Cruise Control";
+  });
+
+  if (!cruiseControl) {
+    return false;
+  }
+
+  return true;
+};
 
 const exp = {
   operation: "and",
@@ -121,7 +155,7 @@ const validateFeature = (
 
 describe("Test FMConfig v2", () => {
   test("validate expression", () => {
-    let result = validateExpression(exp, fmConfig);
+    let result = checkIfCruiseControlIsEnabled(fmConfig);
     console.log(result);
   });
 });
