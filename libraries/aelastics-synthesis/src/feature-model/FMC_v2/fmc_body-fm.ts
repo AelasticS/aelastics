@@ -59,7 +59,7 @@ export const bodyElectronicsSystem = t.object(
     optionalFeature: t.optional(t.boolean),
   },
   "FMC_BodyFM_TypeSchema",
-  FMC_BodyFM_TypeSchema
+  FMC_BodyFM_TypeSchema 
 );
 
 export type IbodyElectronicsSystem = t.TypeOf<typeof bodyElectronicsSystem>;
