@@ -92,4 +92,4 @@ const aaa = (p: TestType) =>
   (<{ attr2: string; attr4: boolean }>p.exclusiveGroup).attr4;
 
 
-  const aaa2 = (p: TestType) => p.exclusiveGroup.attr4? p.exclusiveGroup.attr4
+//   const aaa2 = (p: TestType) => p.exclusiveGroup.attr4? p.exclusiveGroup.attr4
