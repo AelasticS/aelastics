@@ -29,8 +29,10 @@ export class ModelStore  {
       return this.store.getObjectByID(id)
     }
 
-    public newModel(type: t.Any, initValue: t.ObjectLiteral): t.ObjectLiteral {
-      const m = this.store.new(type, initValue)
+    public newModel(type: t.Any, initValue: IModel, ownerModel?:IModel): t.ObjectLiteral {
+      const m = this.store.new<IModel>(type, initValue)
+      if (ownerModel)
+        ownerModel.elements.push(m)
       return m
     }
 

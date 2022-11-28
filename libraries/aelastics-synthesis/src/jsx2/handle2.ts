@@ -1,6 +1,7 @@
 import * as t from 'aelastics-types'
 import * as g from 'generic-metamodel'
 import { IModel, IModelElement } from 'generic-metamodel'
+import { Context, useContext } from './context'
 import { ModelStore } from './ModelsStore'
 
 export type ChildParentAssoc = {
@@ -43,16 +44,10 @@ export type ElementInstance<P extends g.IModelElement> = {
   type: t.Any,
   instance: P
 }
-
-export type Context = {
-  store: ModelStore,
-  localIDs: Map<string, g.IModelElement>,
-  model: g.IModel
-}
-
 export function create<R extends g.IModelElement>
   (t: t.Any, props: WithRefProps<R>, {
     store, localIDs, model }: Context): ElementInstance<R> {
+
   let el: R
 
   if (props?.$ref) // is object reference to an existing element
@@ -70,7 +65,9 @@ export function create<R extends g.IModelElement>
   else {
     // create element
     if (t.isOfType(g.Model))
-      el = store.newModel(t, props) as R
+      el = store.newModel(t, props as unknown as IModel, model) as R
+    else if (!model)
+      throw new Error("No model in the context!")
     else
       el = store.newModelElement(model, t, props as R) as R
 
@@ -84,38 +81,6 @@ export function create<R extends g.IModelElement>
   }
 }
 
-const modelStack: Array<g.IModel> = []
-
-export const pushModel = (m: g.IModel) => {
-  modelStack.push(m)
-  globalConext.model = m
-}
-
-export const popModel = () => {
-  modelStack.pop()
-  globalConext.model = modelStack[modelStack.length - 1]
-}
-
-const storeStack: Array<ModelStore> = []
-
-export const pushStore = (s: ModelStore) => {
-  storeStack.push(s)
-  globalConext.store = s
-}
-
-export const popStore = () => {
-  storeStack.pop()
-  globalConext.store = storeStack[storeStack.length - 1]
-}
-
-const globalConext: Context = {
-  localIDs: new Map<string, g.IModelElement>(),
-  model: { name: "Model1" } as g.IModel,
-  store: undefined as unknown as ModelStore,
-}
-export const useContext: () => Context = () => {
-  return globalConext
-}
 
 const cnParentChild = (parent: g.IModelElement, child: g.IModelElement, a: ChildParentAssoc) => {
   if (!child)
@@ -146,14 +111,14 @@ const cnParentChild = (parent: g.IModelElement, child: g.IModelElement, a: Child
 
 export function hm<P extends WithRefProps<g.IModelElement>>(t: Template<P>, props: P, ...children: Element<any>[]): Element<P> {
   let childElem = t(props)
-  children.flat
   childElem.children.push(...children.flat())
   return childElem
 }
 
 export function render<P extends g.IModelElement>(el: Element<P>): P {
-  if('store' in el.props) {
-    pushStore( (<any>el.props).store) 
+  let { pushModel, popModel, popStore, pushStore } = useContext()
+  if ('store' in el.props) {
+    pushStore((<any>el.props).store)
   }
   const parent = el.create(el.props)
   if (parent.type.isOfType(g.Model)) { // push model to context
@@ -166,8 +131,8 @@ export function render<P extends g.IModelElement>(el: Element<P>): P {
   if (parent.type.isOfType(g.Model)) { // return old model
     popModel()
   }
-  if('store' in el.props) {
-    popStore() 
+  if ('store' in el.props) {
+    popStore()
   }
   return parent.instance as P
 }

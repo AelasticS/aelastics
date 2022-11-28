@@ -1,9 +1,10 @@
 /** @jsx hm */
-import { hm, WithRefProps, Template, create, useContext, ElementInstance, render, Element } from './handle2'
+import { hm, WithRefProps, Template, create, ElementInstance, render, Element } from './handle2'
 import * as g from 'generic-metamodel'
 import * as t from 'aelastics-types'
 import { ModelStore } from './ModelsStore'
-import { IModelElement } from 'generic-metamodel'
+import { IModel, IModelElement } from 'generic-metamodel'
+import { useContext } from './context'
 
 export type IDomain = {
     name: string
@@ -75,20 +76,20 @@ export const Model: Template<IModelProps> = (props) => {
 
 describe("Test jsx", () => {
 
-    // it("should create a model with one element", () => {
-    //     let e = <Model name='model1' store={new ModelStore()}>
-    //         <Elem name='el1'>
-    //         </Elem>
-    //     </Model>
-    //     let m = render(e) as IModelProps
-    //     expect(m).toEqual(expect.objectContaining({
-    //         name: 'model1',
-    //         elements: expect.arrayContaining(
-    //             [expect.objectContaining({ name: "el1" })]
-    //         )
-    //     }
-    //     ))
-    // })
+    it("should create a model with one element", () => {
+        let e = <Model name='model1' store={new ModelStore()}>
+            <Elem name='el1'>
+            </Elem>
+        </Model>
+        let m = render(e) as IModelProps
+        expect(m).toEqual(expect.objectContaining({
+            name: 'model1',
+            elements: expect.arrayContaining(
+                [expect.objectContaining({ name: "el1" })]
+            )
+        }
+        ))
+    })
 
     it("should create a model with 3 dynamic elements using model template", () => {
         let ModelCpx = (p: { m: string, e: string, n: number }) => {
@@ -120,19 +121,52 @@ describe("Test jsx", () => {
         ))
     })
     it("should create a model with HOC element", () => {
-        let hOC = (E:Template<any>) => (props:{name:string}) => {
-        return <Model name='model1' store={new ModelStore()}>
-            <E name= {props.name}></E>
+        let hOC = (E: Template<any>) => (props: { name: string }) => {
+            return <Model name='model1 HOC' store={new ModelStore()}>
+                <E name={props.name}></E>
             </Model>
         }
         let Comp = hOC(Elem)
-        let m = render(<Comp name='HOC'/>) as g.IModel
+        let m = render(<Comp name='HOC' />) as g.IModel
         expect(m).toEqual(expect.objectContaining({
-            name: 'model1',
+            name: 'model1 HOC',
             elements: expect.arrayContaining(
                 [expect.objectContaining({ name: "HOC" })]
             )
         }
         ))
     })
+
+    it("should create a model with one submodel", () => {
+        let e = <Model name='model1 with submodel' store={new ModelStore()}>
+            <Elem name='model elem1' />
+            <Model name='submodel1' store={new ModelStore()}>
+                <Elem name='model elem2' />
+            </Model>
+        </Model>
+
+        let m = render(e) as g.IModel
+        let e1 = m.elements![1]
+
+        expect(e1.name).toEqual('submodel1')
+    })
+
+    it("should create a model with one element obtained by a function", () => {
+        const fElem = () => {
+            return <Elem name='el1' />
+        }
+
+        let e = <Model name='model1' store={new ModelStore()}>
+            {fElem()}
+        </Model>
+        let m = render(e) as IModelProps
+        expect(m).toEqual(expect.objectContaining({
+            name: 'model1',
+            elements: expect.arrayContaining(
+                [expect.objectContaining({ name: "el1" })]
+            )
+        }
+        ))
+    })
 })
+
