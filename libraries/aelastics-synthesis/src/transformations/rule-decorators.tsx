@@ -5,23 +5,92 @@
 
 import { STX } from '../jsx/handle'
 import * as t from "aelastics-types"
+import * as g from 'generic-metamodel'
 import {M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace} from './transformation.model.components'
 import { abstractM2M } from './abstractM2M'
 import { IModel } from 'generic-metamodel'
+import {Element} from './../jsx2/element'
+
+
 export interface IM2MDecorator { input: t.Any, output: t.Any }
 export interface IE2EDecorator { input: t.Any, output: t.Any }
 
-// class descriptor v2
-export const M2M = ({ input, output }: IM2MDecorator) => {
-   return function (target: Function) {
-    console.log(`New transformation "${target['name']}" from "${input}" to "${output}" is created`);
 
-    let tr = <M2M_Transformation from={input.name} to={output.name} />
-
-  }
+type M2M_Ctor = {
+    new (s: string): abstractM2M<any, any>;
 }
 
+// // class descriptor  { input, output }: IM2MDecorator
+export const M2M = ({ input, output }: IM2MDecorator) => {
+    return function<T extends abstractM2M<any,any>> (target: new (...args:any[]) => T): new (...args:any[]) => T {
+        // save a reference to the original constructor
+        const original = target;
+        // a utility function to generate instances of a class
+        function construct(constructor: new (...args:any[]) => T, args: any[]):T {
+            const c:any = function () {
+                // @ts-ignore
+                return constructor.apply(this, args);
+            }
+            c.prototype = constructor.prototype;
+            let obj = new c();
+            return obj
+        }
+        // the new constructor behaviour
+        const f: any = function (...args: any[]) {
+            let tr =  construct(original, args);
+            // remeber input and output model schemas
+            tr.context.input.type = input
+            tr.context.output.type = output
+            return tr
+        }
 
+        // copy prototype so instanceof operator still works
+        f.prototype = original.prototype;
+
+        // return new constructor (will override original)
+        return f;
+    }
+}
+// // class descriptor v2
+// // export const M2M = ({ input, output }: IM2MDecorator) => {
+// //    return function (target: Function) {
+// //     console.log(`New transformation "${target['name']}" from "${input}" to "${output}" is created`);
+
+// //     let tr = <M2M_Transformation from={input.name} to={output.name} />
+
+// //   }
+// // }
+
+// export const M2M_v1 = ({ input, output }: IM2MDecorator) => {
+//     return function<T extends abstractM2M<any,any>> (target: new (...args:any[]) => T): new (...args:any[]) => T {
+//         // save a reference to the original constructor
+//         const original = target;
+//         // a utility function to generate instances of a class
+//         function construct(constructor: new (...args:any[]) => T, args: any[]):T {
+//             const c: any = function () {
+//                 // @ts-ignore
+//                 return constructor.apply(this, args);
+//             }
+//             c.prototype = constructor.prototype;
+//             let obj = new c();
+//             return obj
+//         }
+//         // the new constructor behaviour
+//         const f: any = function (...args: any[]) {
+//             // console.log(`New transformation "${original['name']}" from "${input.name}" to "${output.name}" is created`);
+//             console.log(`New transformation "${original['name']}" from "${input}" to "${output}" is created`);
+            
+//             let tr = construct(original, args);
+//             return tr
+//         }
+
+//         // copy prototype so instanceof operator still works
+//         f.prototype = original.prototype;
+
+//         // return new constructor (will override original)
+//         return f;
+//     }
+// }
 
 // method descriptor
 export const E2E = function ({ input, output }: IE2EDecorator) {
@@ -36,12 +105,12 @@ export const E2E = function ({ input, output }: IE2EDecorator) {
         // set the new function
         descriptor.value = function (...args: any[]) {
             let a= args[0]
-            let r = original(...args) // original.apply(this, args);
-            console.log(`New trace "${propertyKey}" from "${input}:${a}" to "${output}::${r}" is created`);
+            let r = original(...args) as Element<any>// original.apply(this, args);
             // create trace
+            // r.create // let information for renderer
             let tr = 
             <E2E_Transformation $ref_id={trE2E.id}>
-                <E2E_Trace from={a.id} to={r.id}/>
+                <E2E_Trace from={a.id} to={ a.id /*r.id*/}/>
             </E2E_Transformation>
             return r;
         }
@@ -49,36 +118,7 @@ export const E2E = function ({ input, output }: IE2EDecorator) {
     }
 }
 
-// // class descriptor v1
-// export const M2M_v1 = (input:string, output:string /*{ input, output }: IM2MDecorator*/) => {
-//     return function (target: Function) {
-//         // save a reference to the original constructor
-//         const original = target;
 
-//         // a utility function to generate instances of a class
-//         function construct(constructor: Function, args: any[]) {
-//             const c: any = function () {
-//                 // @ts-ignore
-//                 return constructor.apply(this, args);
-//             }
-//             c.prototype = constructor.prototype;
-//             return new c();
-//         }
-
-//         // the new constructor behaviour
-//         const f: any = function (...args: any[]) {
-//             // console.log(`New transformation "${original['name']}" from "${input.name}" to "${output.name}" is created`);
-//             console.log(`New transformation "${original['name']}" from "${input}" to "${output}" is created`);
-//             return construct(original, args);
-//         }
-
-//         // copy prototype so instanceof operator still works
-//         f.prototype = original.prototype;
-
-//         // return new constructor (will override original)
-//         return f;
-//     }
-// }
 
 // export const Polymorphic = 1
 // @Rule("rule1", "card is") @Extends()

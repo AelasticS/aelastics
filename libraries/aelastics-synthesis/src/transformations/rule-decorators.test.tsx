@@ -40,6 +40,9 @@ const s1 = eerSchema1
 })
 class EER2Rel extends abstractM2M<e.IEERSchema, r.IRelSchema> {
 
+    constructor(s:e.IEERSchema) {
+        super(s)
+    }
     public transform(): STX.Child<r.IRelSchema> {
         let s = this.source
         

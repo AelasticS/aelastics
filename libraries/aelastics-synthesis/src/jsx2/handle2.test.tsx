@@ -1,10 +1,11 @@
 /** @jsx hm */
-import { hm, WithRefProps, Template, create, ElementInstance, render, Element } from './handle2'
+import {hm, render} from './handle2'
+
+import {WithRefProps, Template, ElementInstance, Element} from './element'
 import * as g from 'generic-metamodel'
 import * as t from 'aelastics-types'
 import { ModelStore } from './ModelsStore'
-import { IModel, IModelElement } from 'generic-metamodel'
-import { useContext } from './context'
+import { Context} from './context'
 
 export type IDomain = {
     name: string
@@ -14,36 +15,43 @@ export type IDomain = {
 
 export type IElementProps = WithRefProps<g.IModelElement>
 
+// export const Elem: Template<IElementProps> = (props) => {
+//     const ctx = useContext()
+//     const f: (props: IElementProps) => ElementInstance<g.IModelElement> = (props: IElementProps) => {
+//         const el = create<g.IModelElement>(g.ModelElement, props, ctx)
+//         return el
+//     }
+//     return {
+//         create: f,
+//         props: props,
+//         children: [],
+//         assoc: {}
+//     }
+// }
+
 export const Elem: Template<IElementProps> = (props) => {
-    const ctx = useContext()
-    const f: (props: IElementProps) => ElementInstance<g.IModelElement> = (props: IElementProps) => {
-        const el = create<g.IModelElement>(g.ModelElement, props, ctx)
-        return el
-    }
-    return {
-        create: f,
-        props: props,
-        children: [],
-        assoc: {}
-    }
+    return new Element(g.ModelElement,props, {})
 }
 
 export type IModelProps = WithRefProps<g.IModel> & { store: ModelStore }
 
-export const Model: Template<IModelProps> = (props) => {
-    const ctx = useContext()
-    const f: (props: IModelProps) => ElementInstance<g.IModel> = (props: IModelProps) => {
-        const model = create<g.IModel>(g.Model, props, ctx)
-        return model
-    }
-    return {
-        create: f,
-        props: props,
-        children: [],
-        assoc: {}
-    }
-}
+// export const Model: Template<IModelProps> = (props) => {
+//     const ctx = useContext()
+//     const f: (props: IModelProps) => ElementInstance<g.IModel> = (props: IModelProps) => {
+//         const model = create<g.IModel>(g.Model, props, ctx)
+//         return model
+//     }
+//     return {
+//         create: f,
+//         props: props,
+//         children: [],
+//         assoc: {}
+//     }
+// }
 
+export const Model: Template<IModelProps> = (props) => {
+    return new Element(g.Model,props, {})
+}
 
 // export const ModelCpx = (props: IModelProps) => {
 //     return <Model store={props.store} name='' description=' ' id='' label=''>
@@ -77,11 +85,12 @@ export const Model: Template<IModelProps> = (props) => {
 describe("Test jsx", () => {
 
     it("should create a model with one element", () => {
-        let e = <Model name='model1' store={new ModelStore()}>
+        let e:Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <Elem name='el1'>
             </Elem>
         </Model>
-        let m = render(e) as IModelProps
+        let m = e.render(new Context())
+        //let m = render(e) as IModelProps
         expect(m).toEqual(expect.objectContaining({
             name: 'model1',
             elements: expect.arrayContaining(
@@ -102,13 +111,12 @@ describe("Test jsx", () => {
             </Elem> */}
             </Model>)
         }
+        let me:Element<g.IModelElement> = <ModelCpx m='model' e='elem' n={3}>
+                <Elem name='extra elem' />
+            </ModelCpx>
 
-        let me = <ModelCpx m='model' e='elem' n={3}>
-            <Elem name='extra elem' />
-        </ModelCpx>
-
-        let m = render(me) as IModelProps
-
+        // let m = render(me) as IModelProps
+        let m = me.render(new Context())
         expect(m).toEqual(expect.objectContaining({
             name: 'model',
             elements: expect.arrayContaining([
@@ -120,6 +128,7 @@ describe("Test jsx", () => {
         }
         ))
     })
+
     it("should create a model with HOC element", () => {
         let hOC = (E: Template<any>) => (props: { name: string }) => {
             return <Model name='model1 HOC' store={new ModelStore()}>
@@ -127,7 +136,7 @@ describe("Test jsx", () => {
             </Model>
         }
         let Comp = hOC(Elem)
-        let m = render(<Comp name='HOC' />) as g.IModel
+        let m = render(<Comp name='HOC'/>) as g.IModel
         expect(m).toEqual(expect.objectContaining({
             name: 'model1 HOC',
             elements: expect.arrayContaining(
@@ -146,8 +155,7 @@ describe("Test jsx", () => {
         </Model>
 
         let m = render(e) as g.IModel
-        let e1 = m.elements![1]
-
+        let e1 = m.elements[1]
         expect(e1.name).toEqual('submodel1')
     })
 

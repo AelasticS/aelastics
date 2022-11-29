@@ -5,6 +5,7 @@
 
 import { IModel } from "generic-metamodel";
 import {STX} from "../jsx/handle"
+import { Context } from "../jsx2/context";
 import {M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace} from './transformation.model.components'
 import { IM2M_Transformation } from "./transformation.model.type";
 
@@ -12,7 +13,7 @@ import { IM2M_Transformation } from "./transformation.model.type";
 export abstract class abstractM2M<S extends IModel, T extends IModel> {
     // transformation type
     public m2mTRansformation?: IM2M_Transformation 
-    
+    public context:Context = new Context()
     
     public constructor(readonly source: S) {
             
