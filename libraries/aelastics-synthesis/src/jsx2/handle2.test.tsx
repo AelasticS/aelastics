@@ -30,56 +30,14 @@ export type IElementProps = WithRefProps<g.IModelElement>
 // }
 
 export const Elem: Template<IElementProps> = (props) => {
-    return new Element(g.ModelElement,props, {})
+    return new Element(g.ModelElement,props, undefined)
 }
 
 export type IModelProps = WithRefProps<g.IModel> & { store: ModelStore }
 
-// export const Model: Template<IModelProps> = (props) => {
-//     const ctx = useContext()
-//     const f: (props: IModelProps) => ElementInstance<g.IModel> = (props: IModelProps) => {
-//         const model = create<g.IModel>(g.Model, props, ctx)
-//         return model
-//     }
-//     return {
-//         create: f,
-//         props: props,
-//         children: [],
-//         assoc: {}
-//     }
-// }
-
 export const Model: Template<IModelProps> = (props) => {
-    return new Element(g.Model,props, {})
+    return new Element(g.Model,props, undefined)
 }
-
-// export const ModelCpx = (props: IModelProps) => {
-//     return <Model store={props.store} name='' description=' ' id='' label=''>
-
-//     </Model>
-// }
-
-
-// const  C1 = (props:{name:string}) => {
-//     return <Element name = {props.name}/>
-// }
-// let c0 = <Element name='e1'/>
-// let c1 = <C1 name ='c1'/>
-// let r0 = c0.type(c0.props)
-// let r1 = c1.type(c1.props)
-// let m = <Model store={new ModelStore()} >
-//         <Element name = "e1">
-//         </Element>
-//         <Element name = "e2">
-//             <Element name = "e2.1">
-//             { ModelCpx({store:new ModelStore()})}
-//             { 2+3 } {[1,2,3].map((e)=>e)}
-//                 "text"
-//             </Element>
-//         </Element>
-//     </Model>
-
-
 
 
 describe("Test jsx", () => {

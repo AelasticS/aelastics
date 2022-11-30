@@ -1,4 +1,3 @@
-import * as t from 'aelastics-types'
 import * as g from 'generic-metamodel'
 import { Context } from './context'
 import { Element, Template, WithRefProps } from './element'
