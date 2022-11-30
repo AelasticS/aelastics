@@ -69,6 +69,7 @@ export const GroupFeature = t.subtype(
 
 export const FeatureDiagram = t.object(
   {
+    name: t.string,
     root: SolitaryFeature,
     elements: t.arrayOf(FMConcept), // ovo je od opsteg modela ostalo... mozda i ne treba
   },
