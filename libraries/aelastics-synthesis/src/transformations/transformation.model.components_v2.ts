@@ -1,4 +1,4 @@
-import { Element, Template, WithRefProps } from '../jsx2/element'
+import { Element, Template, WithRefProps } from '../jsx/element'
 import * as tr from './transformation.model.type'
 
 

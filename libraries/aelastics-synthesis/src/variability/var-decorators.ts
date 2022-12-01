@@ -1,7 +1,7 @@
 // https://luckylibora.medium.com/typescript-method-decorators-in-depth-problems-and-solutions-74387d51e6a
 
 import { Any } from "aelastics-types"
-import { abstractM2M } from "../transformations/abstractM2M"
+import { abstractM2M } from "../transformations/abstractM2M_v2"
 
 
 // https://stackoverflow.com/questions/55179461/reflection-in-javascript-how-to-intercept-an-object-for-function-enhancement-d

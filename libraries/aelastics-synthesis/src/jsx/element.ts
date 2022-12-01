@@ -5,6 +5,7 @@ import { Context } from './context'
 import { ModelStore } from './ModelsStore'
 
 export type RefProps = {
+    $id?:string,
     $local_id?: string,
     $ref?: g.IModelElement,
     $ref_local_id?: string

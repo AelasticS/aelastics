@@ -1,5 +1,5 @@
 /** @jsx hm */
-import { hm, render } from './handle2'
+import { hm, render } from './handle'
 
 import { WithRefProps, Template, ElementInstance, Element, CpxTemplate } from './element'
 import * as g from 'generic-metamodel'

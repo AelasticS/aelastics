@@ -5,12 +5,12 @@
 
 import * as t from "aelastics-types"
 import { IModel } from "generic-metamodel";
-import { hm } from "../jsx2/handle2"
-import { Context } from "../jsx2/context";
+import { hm } from "../jsx/handle"
+import { Context } from "../jsx/context";
 import { M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace } from './transformation.model.components_v2'
 import { IM2M_Transformation } from "./transformation.model.type";
-import { CpxTemplate, Element, Super, Template } from "../jsx2/element";
-import { ModelStore } from "../jsx2/ModelsStore";
+import { CpxTemplate, Element, Super, Template } from "../jsx/element";
+import { ModelStore } from "../jsx/ModelsStore";
 
 type IODescr = { type?: t.Any, instance?: IModel }
 

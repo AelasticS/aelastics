@@ -7,7 +7,7 @@
 
 
 
-import {  hm } from '../jsx2/handle2'
+import {  hm } from '../jsx/handle'
 import { M2M, E2E } from "./rule-decorators"
 import * as e from '../test/eer-model/EER.meta.model.type'
 import * as r from '../test/relational-model/REL.meta.model.type'
@@ -15,9 +15,9 @@ import { Attribute, Domain, EERSchema, Kernel, } from '../test/eer-model/EER-com
 import { Column } from '../test/relational-model/REL-components'
 import { Table, RelSchema } from '../test/relational-model/REL-components'
 import { abstractM2M } from './abstractM2M_v2';
-import { Element, Template } from '../jsx2/element'
-import { Context } from '../jsx2/context'
-import { ModelStore } from '../jsx2/ModelsStore'
+import { Element, Template } from '../jsx/element'
+import { Context } from '../jsx/context'
+import { ModelStore } from '../jsx/ModelsStore'
 
 const eerSchema1:Element<e.IEERSchema> = <EERSchema id='1' name='Persons' MDA_level='M1' store={new ModelStore()}>
     <Kernel id='2' name='Person'>

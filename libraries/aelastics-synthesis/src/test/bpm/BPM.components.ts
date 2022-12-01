@@ -1,84 +1,52 @@
 import * as bpmn from './BPM.meta.model.type'
-import { STX, Instance } from '../../jsx/handle'
+import { CpxTemplate, Element, Template, WithRefProps } from '../../jsx/element'
+import { ModelStore } from '../../jsx/ModelsStore'
 
-export type INodeProps = Partial<bpmn.INode> & STX.InstanceProps
-export type IProcessProps = Partial<bpmn.IProcess> & STX.InstanceProps
-export type IDocumentProps = Partial<bpmn.IDocument> & STX.InstanceProps
-export type IRoleProps = Partial<bpmn.IRole> & STX.InstanceProps
-export type ITaskProps = Partial<bpmn.ITask> & STX.InstanceProps
-export type ISubProcessProps = Partial<bpmn.ISubProcess> & STX.InstanceProps
+export type IModelProps = WithRefProps<bpmn.IProcess> & { store?: ModelStore }
 
-
-export type IParallelProps = Partial<bpmn.IParallel> & STX.InstanceProps
-export type ISequenceProps = Partial<bpmn.ISequence> & STX.InstanceProps
-export type ISwitchProps = Partial<bpmn.ISwitch> & STX.InstanceProps
-export type ICaseProps = Partial<bpmn.ICase> & STX.InstanceProps
-
-const cnGen = (prop:string) => (parent:Instance, child:Instance) => {
-    child[prop] = parent
+export const Process: CpxTemplate<IModelProps, bpmn.IProcess> = (props) => {
+    return new Element(bpmn.Process, props, undefined)
 }
 
-const cnNodes = STX.createConnectFun({
-    childPropName:"parent",
-    childPropType:'Object',
-    parentPropName:"children",
-    parentPropType:'Array'
-})
-
-const cnInputDoc = STX.createConnectFun({
-    childPropName:"inputIn",
-    childPropType:'Array',
-    parentPropName:"inputs",
-    parentPropType:'Array'
-})
-
-const cnOutputDoc = STX.createConnectFun({
-    childPropName:"outputIn",
-    childPropType:'Array',
-    parentPropName:"outputs",
-    parentPropType:'Array'
-})
-
-
-export const Document: STX.Template<IDocumentProps, bpmn.IDocument> = (props, store) => {
-    return STX.createChild(bpmn.Document, props, cnNodes, store)
-}
-export const InputDocument: STX.Template<IDocumentProps, bpmn.IDocument> = (props, store) => {
-    return STX.createChild(bpmn.Document, props, cnInputDoc, store)
-}
-export const OutputDocument: STX.Template<IDocumentProps, bpmn.IDocument> = (props, store) => {
-    return STX.createChild(bpmn.Document, props, cnOutputDoc, store)
+export const Document: Template<bpmn.IDocument> = (props) => {
+    return new Element(bpmn.Document, props, 'children')
 }
 
-export const Process: STX.Template<IProcessProps, bpmn.IProcess> = (props, store) => {
-    return STX.createChild(bpmn.Process, props, cnNodes, store) 
+export const InputDocument: Template<bpmn.IDocument> = (props) => {
+    return new Element(bpmn.Document, props, 'inputs')
 }
 
-export const Role: STX.Template<IRoleProps, bpmn.IRole> = (props, store) => {
-    return STX.createChild(bpmn.Role, props, cnNodes, store)
+export const OutputDocument: Template<bpmn.IDocument> = (props) => {
+    return new Element(bpmn.Document, props, 'outputs')
 }
 
-export const Task: STX.Template<ITaskProps, bpmn.ITask> = (props, store) => {
-    return STX.createChild(bpmn.Task, props, cnNodes, store) 
+export const Role: Template<bpmn.IRole> = (props) => {
+    return new Element(bpmn.Role, props, 'roles')
 }
 
-export const SubProcess: STX.Template<ISubProcessProps, bpmn.ISubProcess> = (props, store) => {
-    return STX.createChild(bpmn.SubProcess, props, cnNodes, store)
+export const Task: Template<bpmn.ITask> = (props) => {
+    return new Element(bpmn.Task, props, 'children')
 }
 
-export const Parallel: STX.Template<IParallelProps, bpmn.IParallel> = (props, store) => {
-    return STX.createChild(bpmn.Parallel, props, cnNodes, store) 
+export const SubProcess: Template<bpmn.ISubProcess> = (props) => {
+    return new Element(bpmn.SubProcess, props, 'children')
 }
 
-export const Sequence: STX.Template<ISequenceProps, bpmn.ISequence> = (props, store) => {
-    return STX.createChild(bpmn.Sequence, props, cnNodes, store) 
+export const Parallel: Template<bpmn.IParallel> = (props) => {
+    return new Element(bpmn.Parallel, props, 'children')
 }
 
-export const Switch: STX.Template<ISwitchProps, bpmn.ISwitch> = (props, store) => {
-    return STX.createChild(bpmn.Switch, props, cnNodes, store) 
+export const Sequence: Template<bpmn.ISequence> = (props) => {
+    return new Element(bpmn.Sequence, props, 'children')
 }
-export const Case: STX.Template<ICaseProps, bpmn.ICase> = (props, store) => {
-    return STX.createChild(bpmn.Case, props, cnNodes, store)
+
+export const Switch: Template<bpmn.ISwitch> = (props) => {
+    return new Element(bpmn.Switch, props, 'children')
 }
+
+export const Case: Template<bpmn.ICase> = (props) => {
+    return new Element(bpmn.Case, props, 'children')
+}
+
 
 

@@ -1,21 +1,16 @@
 import * as t from "aelastics-types"
+import { ModelElement, Model } from "generic-metamodel";
 
 export const BPM_Schema = t.schema("BPMN-Schema");
 
-export const IDType = t.number.derive('IDType').positive
-export const NameType = t.string.derive('NameType').alphanumeric.maxLength(128)
-
-export const BPM_Element = t.entity({
-    id: IDType,
-    name: NameType
-}, ['id'] as const, "BPMN_Element", BPM_Schema);
-export const Node = t.subtype(BPM_Element, {
+export const Node = t.subtype(ModelElement, {
     children:t.arrayOf(t.link(BPM_Schema, "Node")),
     parent:t.link(BPM_Schema, "Node")
 
 }, "Node", BPM_Schema);
-export const Role = t.subtype(BPM_Element, {}, "Role", BPM_Schema);
-export const Process = t.subtype(BPM_Element, {
+export const Role = t.subtype(ModelElement, {}, "Role", BPM_Schema);
+
+export const Process = t.subtype(Model, {
     roles:t.arrayOf(Role)
 }, "Process", BPM_Schema);
 
