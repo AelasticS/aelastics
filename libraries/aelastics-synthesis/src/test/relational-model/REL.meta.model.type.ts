@@ -41,7 +41,7 @@ export const ForeignKey = t.subtype(ModelElement, {
 
 export const Table = t.subtype(ModelElement, {
   columns: t.arrayOf(Column),
-  indexes: t.arrayOf(Column),
+  indexes: t.arrayOf(Index),
   foreignKeys:t.arrayOf(ForeignKey)
 }, "Table", RelModel_TypeSchema);
 

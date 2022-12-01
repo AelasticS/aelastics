@@ -1,6 +1,7 @@
 import * as e from './EER.meta.model.type'
 import { STX } from '../../jsx/handle'
-import { IModel } from 'generic-metamodel'
+import { CpxTemplate, Element, Template, WithRefProps } from '../../jsx2/element'
+import { ModelStore } from '../../jsx2/ModelsStore'
 
 export interface IModelElementProps extends STX.InstanceProps {
   name: string
@@ -22,35 +23,26 @@ const cnNodes = STX.createConnectFun({
   parentPropType:'Array'
 })
 
-export const EERSchema: STX.Template<IEERSchemaProps, e.IEERSchema> = (props, store, model) => {
-  return STX.createChild(e.EERSchema, props, STX.createConnectFun({}, model), store)
+// export const EERSchema: Template<e.IEERSchema> = (props) => {
+//   return new Element(e.EERSchema, props, undefined)
+// }
+
+export type IModelProps = WithRefProps<e.IEERSchema> & { store?: ModelStore }
+
+export const EERSchema: CpxTemplate<IModelProps, e.IEERSchema> = (props) => {
+    return new Element(e.EERSchema, props, undefined)
 }
 
-export const Kernel: STX.Template<IKernelProps, e.IKernel> = (props, store, model) => {
-  return STX.createChild(e.Kernel, props, STX.createConnectFun({}, model), store)
+export const Kernel: Template<e.IKernel> = (props) => {
+  return new Element(e.Kernel, {objectClassification:"Kernel",  ...props}, undefined)
 }
 
-export const Attribute: STX.Template<IAttributeProps, e.IAttribute> = (props,store, model) => {
-  return STX.createChild(e.Attribute, props, STX.createConnectFun({
-    parentPropName:"attributes", parentPropType:'Array',
-    childPropName:"attrEntity", childPropType:'Object'
-  }, model), store)
+export const Attribute: Template<e.IAttribute> = (props) => {
+  return new Element(e.Attribute, props, 'attributes')
 }
 
-export const Domain: STX.Template<IDomainProps, e.IDomain> = (props,store, model) => {
-  return STX.createChild(e.Domain, props, STX.createConnectFun({
-    parentPropName:"attrDomain", parentPropType:'Object'
-   // childPropName:"", childPropType:'Array'
-  }, model), store)
+export const Domain: Template<e.IDomain> = (props) => {
+  return new Element(e.Domain, props, 'attrDomain')
 }
 
 
-export interface EERComps {
-  Kernel: STX.Template<IKernelProps, e.IKernel>,
-  Attribute: STX.Template<IAttributeProps, e.IAttribute>
-}
-
-export const getEER = (model:IModel, store: any):EERComps => ({
-  Kernel: Kernel,
-  Attribute:Attribute
-})

@@ -1,11 +1,11 @@
 /** @jsx hm */
-import {hm, render} from './handle2'
+import { hm, render } from './handle2'
 
-import {WithRefProps, Template, ElementInstance, Element} from './element'
+import { WithRefProps, Template, ElementInstance, Element, CpxTemplate } from './element'
 import * as g from 'generic-metamodel'
 import * as t from 'aelastics-types'
 import { ModelStore } from './ModelsStore'
-import { Context} from './context'
+import { Context } from './context'
 
 export type IDomain = {
     name: string
@@ -29,21 +29,21 @@ export type IElementProps = WithRefProps<g.IModelElement>
 //     }
 // }
 
-export const Elem: Template<IElementProps> = (props) => {
-    return new Element(g.ModelElement,props, undefined)
+export const Elem: Template<g.IModelElement> = (props) => {
+    return new Element(g.ModelElement, props, undefined)
 }
 
 export type IModelProps = WithRefProps<g.IModel> & { store: ModelStore }
 
-export const Model: Template<IModelProps> = (props) => {
-    return new Element(g.Model,props, undefined)
+export const Model: CpxTemplate< IModelProps, g.IModel> = (props) => {
+    return new Element(g.Model, props, undefined)
 }
 
 
 describe("Test jsx", () => {
 
     it("should create a model with one element", () => {
-        let e:Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
+        let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <Elem name='el1'>
             </Elem>
         </Model>
@@ -59,19 +59,18 @@ describe("Test jsx", () => {
     })
 
     it("should create a model with 3 dynamic elements using model template", () => {
-        let ModelCpx = (p: { m: string, e: string, n: number }) => {
-
-            return (<Model name={p.m} store={new ModelStore()}>
-                {
-                    Array<number>(p.n).fill(1).map((e, i) => <Elem name={`${p.e}${i}`} />)
-                }
-                {/* <Elem name={p.e}>
-            </Elem> */}
-            </Model>)
+        let ModelCpx:CpxTemplate<{ m: string, e: string, n: number }, g.IModel> = (p) => {
+            return (
+                <Model name={p.m} store={new ModelStore()}>
+                    {
+                        Array<number>(p.n).fill(1).map((e, i) => <Elem name={`${p.e}${i}`} />)
+                    }
+                </Model>
+            )
         }
-        let me:Element<g.IModelElement> = <ModelCpx m='model' e='elem' n={3}>
-                <Elem name='extra elem' />
-            </ModelCpx>
+        let me: Element<g.IModelElement> = <ModelCpx m='model' e='elem' n={3}>
+            <Elem name='extra elem' />
+        </ModelCpx>
 
         // let m = render(me) as IModelProps
         let m = me.render(new Context())
@@ -94,7 +93,7 @@ describe("Test jsx", () => {
             </Model>
         }
         let Comp = hOC(Elem)
-        let m = render(<Comp name='HOC'/>) as g.IModel
+        let m = render(<Comp name='HOC' />) as g.IModel
         expect(m).toEqual(expect.objectContaining({
             name: 'model1 HOC',
             elements: expect.arrayContaining(

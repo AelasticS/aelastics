@@ -16,13 +16,6 @@ export type ElementInstance<P extends g.IModelElement> = {
     instance: P
 }
 
-// export type ChildParentAssoc = {
-//     childPropName?: string
-//     childPropType?: t.TypeCategory
-//     parentPropName?: string
-//     parentPropType?: t.TypeCategory
-// }
-
 export type WithRefProps<P> = RefProps & Partial<P>
 export type WithoutRefProps<P> = Exclude<P, RefProps>
 export type InstanceCreation<P extends WithRefProps<g.IModelElement>> = 
@@ -34,11 +27,20 @@ export type RenderPros = {
     store: ModelStore
 }
 
-export type Template<P extends WithRefProps<g.IModelElement>> = (props: P) => Element<P>
+// export type Template<P extends WithRefProps<g.IModelElement>, 
+//       R extends Partial<g.IModelElement> = P> = (props: P) => Element<R>
 
-export class Element<P extends WithRefProps<g.IModelElement>> {
+
+export type Template<P extends g.IModelElement> = (props: WithRefProps<P>) => Element<WithRefProps<P>, P>
+
+export type CpxTemplate<P extends {}, R extends g.IModelElement> = (props: P) => Element<P, R>
+
+export type Super<P extends {}, R extends g.IModelElement> = Template<R> | CpxTemplate<P, R>
+
+
+export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     public children: Element<any>[] = []
-
+    public makeTrace:boolean = false
     constructor(
         public readonly type: t.Any, 
         public readonly props: P, 
@@ -93,6 +95,7 @@ export class Element<P extends WithRefProps<g.IModelElement>> {
            if(!propType)
                 throw new Error()
            cnParentChild(childElement.parentProp, t.findTypeCategory(propType), parent.instance, child)
+            // toDO: create trace!
           }
         })
         if (parent.type.isOfType(g.Model)) { // return old model

@@ -1,17 +1,16 @@
 
 import * as g from 'generic-metamodel'
 import { ModelStore } from './ModelsStore'
-import * as t from "aelastics-types"
+
 
 let contextInstance: Context | undefined
-type IODescr = {type?:t.Any, instance?:g.IModel}
+
 
 export class Context {
-    private storeStack: Array<ModelStore> = []
-    private modelStack: Array<g.IModel> = []
+    public storeStack: Array<ModelStore> = []
+    public modelStack: Array<g.IModel> = []
     public localIDs: Map<string, g.IModelElement> = new Map()
-    public input: IODescr={}
-    public output: IODescr={}
+
 
     constructor() {
         // if (contextInstance) {

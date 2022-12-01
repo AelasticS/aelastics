@@ -6,10 +6,11 @@
 import { STX } from '../jsx/handle'
 import * as t from "aelastics-types"
 import * as g from 'generic-metamodel'
-import {M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace} from './transformation.model.components'
-import { abstractM2M } from './abstractM2M'
+import {M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace} from './transformation.model.components_v2'
+import { abstractM2M, IM2M } from './abstractM2M_v2'
 import { IModel } from 'generic-metamodel'
-import {Element} from './../jsx2/element'
+import {CpxTemplate, Element} from './../jsx2/element'
+import { AnySchema } from 'aelastics-types/lib/annotations/Annotation'
 
 
 export interface IM2MDecorator { input: t.Any, output: t.Any }
@@ -20,8 +21,47 @@ type M2M_Ctor = {
     new (s: string): abstractM2M<any, any>;
 }
 
-// // class descriptor  { input, output }: IM2MDecorator
+
+// type Class<T = any> =  abstract new (...args: any[]) => T;
+
+// function DecoratorName(attr: any) {
+//     return function _DecoratorName<T extends Class<abstractM2M<any, any>>>(constr: T){
+//       return abstract class extends constr {
+//         public transform(): STX.Child<any> {
+//             throw new Error('Method not implemented.')
+//         }
+//         constructor(...args: any[]) {
+//           super(...args)
+//           console.log('Did something after the original constructor!')
+//           console.log('Here is my attribute!', attr.attrName)
+//         }
+//       }
+//     }
+//   }
+
+
+
+type Class<T = any> =  new (...args: any[]) => T;
+
 export const M2M = ({ input, output }: IM2MDecorator) => {
+    return function<T extends Class<IM2M<any, any>>>(target: T){
+    //return function _M2M<T extends new (...args:any[]) => abstractM2M<any, any>>(target: T){
+        return class extends target {
+        constructor(...args: any[]) {
+            super(...args)
+            // remember input and output model schemas
+            this.context.input.type = input
+            this.context.output.type = output
+        }
+      }
+    }
+  }
+
+
+
+
+// // class descriptor  { input, output }: IM2MDecorator
+export const M2M_v0 = ({ input, output }: IM2MDecorator) => {
     return function<T extends abstractM2M<any,any>> (target: new (...args:any[]) => T): new (...args:any[]) => T {
         // save a reference to the original constructor
         const original = target;
@@ -106,12 +146,12 @@ export const E2E = function ({ input, output }: IE2EDecorator) {
         descriptor.value = function (...args: any[]) {
             let a= args[0]
             let r = original(...args) as Element<any>// original.apply(this, args);
-            // create trace
-            // r.create // let information for renderer
-            let tr = 
-            <E2E_Transformation $ref_id={trE2E.id}>
-                <E2E_Trace from={a.id} to={ a.id /*r.id*/}/>
-            </E2E_Transformation>
+            r.makeTrace = true // let information for renderer
+            // r.create 
+            // let tr = 
+            // <E2E_Transformation $ref_id={trE2E.id}>
+            //     <E2E_Trace from={a.id} to={ a.id /*r.id*/}/>
+            // </E2E_Transformation>
             return r;
         }
         return descriptor
