@@ -56,23 +56,24 @@ class EER2RelTransformation extends abstractM2M<e.IEERSchema, r.IRelSchema> {
         }
 
 
-    // @E2E({
-    //     input: e.Entity,
-    //     output: r.Table
-    // })
+    @E2E({
+        input: e.Entity,
+        output: r.Table
+    })
     Entity2Table(e: e.IEntity): Element<r.ITable> {
+        let f = (a: e.IAttribute) => 
+                    this.Attribute2Column(a)
         return (
             <Table name={e.name}>
-                {e.attributes.map((a)               => 
-                this.Attribute2Column(a))}
+                {e.attributes.map(f)}
             </Table>
         );
     }
 
-    // @E2E({
-    //     input: e.Attribute,
-    //     output: r.Column
-    // })
+    @E2E({
+        input: e.Attribute,
+        output: r.Column
+    })
     Attribute2Column(a: e.IAttribute): Element<r.IColumn> {
         return (
             <Column name={a.name}>
