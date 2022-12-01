@@ -21,9 +21,9 @@ export interface ISpecOption {
 // method decorator
 export const SpecPoint = (name:string) => {
     return function  (target:abstractM2M<any, any>, propertyKey: string, descriptor: PropertyDescriptor) {
-        descriptor.value = function (...args: any[]) {
+        descriptor.value = function (this:abstractM2M<any, any>, ...args: any[]) {
               const a:IModelElement = args[0]
-              const aType= target.context.store.getTypeOf(a)
+              const aType= this.context.store.getTypeOf(a)
               const options:ISpecOption[] = descriptor.value[name]
               const option = options.find((option)=>{
                 return option.inputType.isOfType(aType)
