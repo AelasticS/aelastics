@@ -42,4 +42,8 @@ export class ModelStore  {
       return el
     }
 
+    public getTypeOf(e:IModelElement):t.Any {
+      return this.store.getType(e)
+    }
+
 }
