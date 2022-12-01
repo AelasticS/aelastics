@@ -41,7 +41,6 @@ export type Super<P extends {}, R extends g.IModelElement> = Template<R> | CpxTe
 
 export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     public children: Element<any>[] = []
-    public makeTrace:boolean = false
     constructor(
         public readonly type: t.Any, 
         public readonly props: P, 

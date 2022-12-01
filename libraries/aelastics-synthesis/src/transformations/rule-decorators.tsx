@@ -146,7 +146,6 @@ export const E2E = function ({ input, output }: IE2EDecorator) {
         descriptor.value = (...args: any[]) => {
             let a= args[0]
             let r = original.apply(target,args) as Element<any>
-            r.makeTrace = true // let information for renderer
             // r.create 
             // let tr = 
             // <E2E_Transformation $ref_id={trE2E.id}>
