@@ -8,13 +8,13 @@
 
 
 import {  hm } from '../jsx/handle'
-import { M2M, E2E } from "./rule-decorators"
+import { M2M, E2E } from "./trace-decorators"
 import * as e from '../test/eer-model/EER.meta.model.type'
 import * as r from '../test/relational-model/REL.meta.model.type'
 import { Attribute, Domain, EERSchema, Kernel, } from '../test/eer-model/EER-components'
 import { Column } from '../test/relational-model/REL-components'
 import { Table, RelSchema } from '../test/relational-model/REL-components'
-import { abstractM2M } from './abstractM2M_v2';
+import { abstractM2M } from './abstractM2M';
 import { Element, Template } from '../jsx/element'
 import { Context } from '../jsx/context'
 import { ModelStore } from '../jsx/ModelsStore'

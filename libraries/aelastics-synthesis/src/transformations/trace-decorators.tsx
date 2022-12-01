@@ -7,7 +7,7 @@ import { hm } from '../jsx/handle'
 import * as t from "aelastics-types"
 import * as g from 'generic-metamodel'
 import {M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace} from './transformation.model.components_v2'
-import { abstractM2M, IM2M } from './abstractM2M_v2'
+import { abstractM2M, IM2M } from './abstractM2M'
 import { IModel } from 'generic-metamodel'
 import {CpxTemplate, Element} from '../jsx/element'
 import { AnySchema } from 'aelastics-types/lib/annotations/Annotation'

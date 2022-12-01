@@ -37,9 +37,7 @@ export abstract class abstractM2M<S extends IModel, D extends IModel> implements
   }
   
   abstract template(props: S): Element<S, D>
-//    {
-//     throw new Error('Method not implemented.')
-// }
+
   public transform(source:S): D {
     return this.template(source).render(this.context)
   }
