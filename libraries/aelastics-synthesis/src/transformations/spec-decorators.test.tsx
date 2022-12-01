@@ -12,7 +12,7 @@ import { M2M, E2E } from "./trace-decorators"
 import { SpecPoint, SpecOption} from "./spec-decorators"
 import * as e from '../test/eer-model/EER.meta.model.type'
 import * as r from '../test/relational-model/REL.meta.model.type'
-import { Attribute, Domain, EERSchema, Kernel} from '../test/eer-model/EER-components'
+import { Attribute, Domain, EERSchema, Kernel, Weak} from '../test/eer-model/EER-components'
 import { Column } from '../test/relational-model/REL-components'
 import { Table, RelSchema } from '../test/relational-model/REL-components'
 import { abstractM2M } from './abstractM2M';
@@ -20,7 +20,9 @@ import { Element } from '../jsx/element'
 import { Context } from '../jsx/context'
 import { ModelStore } from '../jsx/ModelsStore'
 
-const eerSchema1:Element<e.IEERSchema> = <EERSchema id='1' name='Persons' MDA_level='M1' store={new ModelStore()}>
+const testStore = new ModelStore()
+
+const eerSchema1:Element<e.IEERSchema> = <EERSchema id='1' name='Persons' MDA_level='M1' store={testStore}>
     <Kernel id='2' name='Person'>
         <Attribute id='3' name='PersonID'>
             <Domain id='4' name='number' />
@@ -29,6 +31,14 @@ const eerSchema1:Element<e.IEERSchema> = <EERSchema id='1' name='Persons' MDA_le
             <Domain id='6' name='string' />
         </Attribute>
     </Kernel>
+    <Weak id='11' name='Child'>
+        <Attribute id='13' name='ChildID'>
+            <Domain id='14' name='number' />
+        </Attribute>
+        <Attribute id='15' name='ChildName'>
+            <Domain id='16' name='string' />
+        </Attribute>
+    </Weak>
 </EERSchema>
 
 const s1:e.IEERSchema = eerSchema1.render(new Context())
@@ -49,8 +59,8 @@ class EER2RelTransformation extends abstractM2M<e.IEERSchema, r.IRelSchema> {
             return (
                 <RelSchema name={s.name} content="" MDA_level="M1" id={"1"}>
                     {s.elements
-                        .filter((e) => e.objectClassification == "Kernel")
-                        .map((e) => this.Entity2Table(e as e.IEntity)
+                        .filter((el) => this.context.store.isInstanceOf(el, e.Entity)) //  el.objectClassification == "Kernel")
+                        .map((el) => this.Entity2Table(el as e.IEntity)
                         )}
                 </RelSchema>
             )
@@ -110,7 +120,7 @@ class EER2RelTransformation extends abstractM2M<e.IEERSchema, r.IRelSchema> {
 
 describe("Test model transformations", () => {
     it("tests eer to tables", () => {
-        let m = new EER2RelTransformation(new ModelStore())
+        let m = new EER2RelTransformation(testStore)
         let r = m.transform(s1)
         expect(r).toHaveProperty("name", "Persons")
         expect(r).toEqual(expect.objectContaining({

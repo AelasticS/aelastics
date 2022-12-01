@@ -11,7 +11,7 @@ export class ModelStore  {
     }
 
     public async fetchModel (type: t.Any, id:string) {
-      this.store.registerTypeSchemas([type.ownerSchema])
+      this.store.registerTypeSchema(type.ownerSchema)
       const m = await this.store.fetchObjectByID(type, id) as IModel
       
       m.elements.forEach((e) => {
@@ -44,6 +44,15 @@ export class ModelStore  {
 
     public getTypeOf(e:IModelElement):t.Any {
       return this.store.getType(e)
+    }
+
+    public isInstanceOf(e:IModelElement, type:t.Any):boolean {
+      const elType = this.store.getType(e)
+      return elType.isOfType(type)
+    }
+
+    public registerTypeSchemas(schemas:t.TypeSchema[]) {
+      schemas.forEach((s)=>this.store.registerTypeSchema(s))
     }
 
 }
