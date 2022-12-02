@@ -10,7 +10,7 @@ import { objectType, objectUUID } from './CommonConstants';
  */
 
 export class MultiStore<ID> {
-    public readonly schemas: t.TypeSchema[] = [];
+    public readonly schemas: Map<string, t.TypeSchema> = new Map();
     public eventLog = new EventLog();
     protected repos: Map<t.Any, Repository<any>> = new Map();
     protected server?: ServerProxy;
@@ -20,17 +20,18 @@ export class MultiStore<ID> {
         this.server = server;
     }
 
-    registerTypeSchemas(schemas: t.TypeSchema[]) {
-        schemas.push(...schemas)
+    registerTypeSchema(schema: t.TypeSchema) {
+        if (!this.schemas.has(schema.absolutePathName))
+            this.schemas.set(schema.absolutePathName, schema)
     }
         
     protected getTypeSchemaName<T extends t.ObjectLiteral>(obj: T): string {
-        return obj[objectType].substring(0, obj[objectType].lastIndexOf("/") + 1);
+        return obj[objectType].substring(0, obj[objectType].lastIndexOf("/"));
     }
 
     protected getTypeSchema<T extends t.ObjectLiteral>(obj: T): t.TypeSchema {
         const schemaName = this.getTypeSchemaName(obj)
-        const schema = this.schemas.find(((s) => s.name === schemaName))
+        const schema = this.schemas.get(schemaName)
         if (!schema)
             throw new Error(`Type schema '${schemaName}' does not exist`);
         return schema
@@ -65,6 +66,7 @@ export class MultiStore<ID> {
     }
 
     public new<T extends t.ObjectLiteral>(type: t.Any, initValue: T): T {
+        this.registerTypeSchema(type.ownerSchema)
         const rep = this.getRepos(type);
         const obj = rep.create<T>(type, initValue);
         this.add(type, obj)

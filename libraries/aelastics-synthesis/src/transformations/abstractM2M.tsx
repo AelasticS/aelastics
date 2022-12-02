@@ -1,30 +1,45 @@
-/** @jsx STX.h */
+/** @jsx hm */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
+import * as t from "aelastics-types"
 import { IModel } from "generic-metamodel";
-import {STX} from "../jsx/handle"
-import {M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace} from './transformation.model.components'
+import { hm } from "../jsx/handle"
+import { Context } from "../jsx/context";
+import { M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace } from './transformation.model.components_v2'
 import { IM2M_Transformation } from "./transformation.model.type";
+import { CpxTemplate, Element, Super, Template } from "../jsx/element";
+import { ModelStore } from "../jsx/ModelsStore";
 
+type IODescr = { type?: t.Any, instance?: IModel }
 
-export abstract class abstractM2M<S extends IModel, T extends IModel> {
-    // transformation type
-    public m2mTRansformation?: IM2M_Transformation 
-    
-    
-    public constructor(readonly source: S) {
-            
-    } 
+class M2MContext extends Context {
+  public input: IODescr = {}
+  public output: IODescr = {}
+}
 
-    public abstract transform():STX.Child<T>
+export interface IM2M<S extends IModel, D extends IModel> {
+  context: M2MContext
+  m2mTRansformation?: IM2M_Transformation
+  template(props: S): Element<S, D>
+  transform(source:S): D
+}
 
-      public execute ():T {
-        let dest = this.transform().instance
-        // make M2M trace 
-        let tr =  <M2M_Trace from={{id:this.source.id}} to={{id:dest.id}} instanceOf={this.m2mTRansformation}/>
-        return dest
-    }
- 
+export abstract class abstractM2M<S extends IModel, D extends IModel> implements IM2M<S, D> {
+  // transformation type
+  public m2mTRansformation?: IM2M_Transformation
+  public context: M2MContext = new M2MContext()
+
+  public constructor(store?:ModelStore) {
+    if(store)
+      this.context.pushStore(store)
+  }
+  
+  abstract template(props: S): Element<S, D>
+
+  public transform(source:S): D {
+    return this.template(source).render(this.context)
+  }
+
 }

@@ -1,23 +1,26 @@
-/** @jsx STX.h */
+/** @jsx hm */
 /*
  * Copyright (c) AelasticS 2022.
  */
+
+import {hm} from '../../jsx/handle'
 import * as t from "aelastics-types"
-import { STX } from '../../jsx/handle'
-import { Process, IProcessProps, Sequence, Task, ISequenceProps, Document, OutputDocument, InputDocument, Parallel, ITaskProps } from './BPM.components'
+import { Process, Sequence, Task, Document, OutputDocument, InputDocument, Parallel} from './BPM.components'
 import { IProcess, ISequence, ITask } from './BPM.meta.model.type'
 import { dep1 } from './example-department'
 import { IOrganization } from './organization.model.type'
+import { ModelStore } from '../../jsx/ModelsStore'
+import { Element } from '../../jsx/element'
 
-export const Approval_X_times_Par: (x: number) => STX.Template<IProcessProps, IProcess> =
-    (x) => {
-        let f: STX.Template<IProcessProps, IProcess> = () => {
+// export const Approval_X_times_Par: (x: number) => Element<IProcess> = (x) => {
+    export const Approval_X_times_Par = (x: number) => () => {
+        let f: () => Element<IProcess> = () => {
             let tasks =  Array<string>() // create approval tasks names
             for (let i = 1; i <= x; i++) {
                 tasks.push(`${i}`)
             }
             return (
-                <Process name='Approval'>
+                <Process name='Approval' store={new ModelStore()}>
                     <Sequence>
                         <Task name='write' />
                         <Parallel>
@@ -30,7 +33,7 @@ export const Approval_X_times_Par: (x: number) => STX.Template<IProcessProps, IP
         }
         return f;
     }
-
+/*
     export const Approval_X_Par: (x: number, isParallel: boolean) => STX.Template<IProcessProps, IProcess> =
     (x, isParallel) => {
         let f: STX.Template<IProcessProps, IProcess> = (props) => {
@@ -57,6 +60,8 @@ export const Approval_X_times_Par: (x: number) => STX.Template<IProcessProps, IP
         return f
     }
 
+
+
     export const GenericApprovalHOC: (x: number, isParallel: boolean, WorkerTask: STX.Template<ITaskProps, ITask>)
     => STX.Template<IProcessProps, IProcess> =
     (x, isParallel, WorkerTask) => {
@@ -82,6 +87,8 @@ export const Approval_X_times_Par: (x: number) => STX.Template<IProcessProps, IP
         }
         return f
     }
+
+ */   
 /*
     const Approval_2_Seq_v2 = (Approval: STX.Template<IProcessProps, IProcess>) => {
         return <Process name='Approval'>

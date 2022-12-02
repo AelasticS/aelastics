@@ -102,6 +102,10 @@ export class ObjectType<P extends InterfaceDecl, I extends readonly string[]> ex
     return [this.keys, this.types, this.len];
   }
 
+  getTypeOfProp(name:string): Any | undefined {
+    return this.allProperties.get(name)
+  }
+
   init(n: Node): Interface<P> {
     let obj = {}
     // TODO:  is '@@aelastics/type' property needed?
