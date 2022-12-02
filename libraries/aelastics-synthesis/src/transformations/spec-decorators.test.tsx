@@ -59,7 +59,7 @@ class EER2RelTransformation extends abstractM2M<e.IEERSchema, r.IRelSchema> {
             return (
                 <RelSchema name={s.name} content="" MDA_level="M1" id={"1"}>
                     {s.elements
-                        .filter((el) => this.context.store.isInstanceOf(el, e.Entity)) //  el.objectClassification == "Kernel")
+                        .filter((el) => this.context.store.isTypeOf(el, e.Entity)) //  el.objectClassification == "Kernel")
                         .map((el) => this.Entity2Table(el as e.IEntity)
                         )}
                 </RelSchema>
