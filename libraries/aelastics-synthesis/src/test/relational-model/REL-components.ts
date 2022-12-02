@@ -27,3 +27,4 @@ export const ForeignKey: Template<r.IForeignKey> = (props) => {
 export const Table: Template<r.ITable> = (props) => {
   return new Element(r.Table, props, undefined)
 }
+

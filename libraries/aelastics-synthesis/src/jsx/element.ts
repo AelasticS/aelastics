@@ -41,25 +41,54 @@ export type Super<P extends {}, R extends g.IModelElement> = Template<R> | CpxTe
 
 export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     public children: Element<any>[] = []
+    public isAbstract:boolean = false
+    public subElement?:Element<any>
     constructor(
         public readonly type: t.Any, 
-        public readonly props: P, 
-        public readonly parentProp?:string) {
+        public props: P, 
+        public readonly parentProp?:string
+        ) {
     }
-    public create<R extends g.IModelElement>({ store, localIDs, model }: Context): ElementInstance<g.IModelElement> {
-        let el: g.IModelElement
 
-        if (this.props?.$ref) // is object reference to an existing element
+    private setProps(el:ElementInstance<g.IModelElement>, props:P):ElementInstance<g.IModelElement> {
+      const typeProps = (el.instance as any as t.ObjectType<any, any>).allProperties
+      // toDo
+      return el
+    }
+
+    public create<R extends g.IModelElement>(ctx: Context): ElementInstance<g.IModelElement> {
+        let el: g.IModelElement
+        const { store, localIDs, model } = ctx
+
+        // handle abstract element (ignore $ref and $ref_id props)
+        if (this.isAbstract) { 
+          if(!this.subElement)
+            throw new Error("elements is abstacrt bit has no subElement!")
+                      // copy props from abstract element 
+            this.subElement.props = {...this.props, ...this.subElement.props}
+          // create subelement  
+          const sub = this.subElement.create(ctx)
+
+          this.setProps(sub, this.props)
+          return sub
+        }
+
+        // handle normal element
+        if (this.props?.$ref) {// is object reference to an existing element
             el = this.props.$ref as R
+            return this.setProps({type: this.type, instance: el}, this.props)
+        }
         else if (this.props?.$ref_id) {
             el = store.getModelElement(this.props.$ref_id) as R
             if (!el)
                 throw new ReferenceError(`Not existing object referenced with ref_id=${this.props.$ref_id} by element '${this.type.fullPathName}'`)
+            return this.setProps({type: this.type, instance: el}, this.props)
         }
         else if (this.props?.$ref_local_id) { // is local id reference to an existing element
             el = localIDs.get(this.props.$ref_local_id) as R
             if (!el)
                 throw new ReferenceError(`Not existing object referenced with ref_id=${this.props.$ref_local_id} by element '${this.type.fullPathName}'`)
+            return this.setProps({type: this.type, instance: el}, this.props)
         }
         else {
             // create element
@@ -72,9 +101,9 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
             if (this.props?.$local_id) // if exist local id
                 localIDs.set(this.props.$local_id, el)
+            return {type: this.type, instance: el}
         }
-
-        return {type: this.type, instance: el}
+        
     }
 
     // produce/create elements

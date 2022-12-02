@@ -2,6 +2,7 @@
 
 import { Any } from "aelastics-types"
 import { IModelElement } from "generic-metamodel"
+import { Element } from "../jsx/element"
 import { abstractM2M } from "./abstractM2M"
 
 
@@ -20,8 +21,10 @@ export interface ISpecOption {
 
 // method decorator
 export const SpecPoint = (name:string) => {
-    return function  (target:abstractM2M<any, any>, propertyKey: string, descriptor: PropertyDescriptor) {
-        descriptor.value = function (this:abstractM2M<any, any>, ...args: any[]) {
+    return function  (target:any, propertyKey: string, descriptor: PropertyDescriptor) {
+      // save original method
+      const original:(...a:any[]) => Element<any> = target[propertyKey]  
+      descriptor.value = function (this:abstractM2M<any, any>, ...args: any[]) {
               const a:IModelElement = args[0]
               const aType= this.context.store.getTypeOf(a)
               const options:ISpecOption[] = descriptor.value[name]
@@ -31,8 +34,15 @@ export const SpecPoint = (name:string) => {
               if(!option) {
                 throw new Error(`No specilized method found`)
               }
-              let result = (target as any)[option.specMethod](...args);
-              return result;
+              // get result form original method
+              let orgResult = original.apply(target, args)
+              // get result from specialized method
+              let specResult:Element<IModelElement> = (target as any)[option.specMethod](...args);
+              // connect corresponding results(elemnets)
+              orgResult.subElement = specResult
+              orgResult.isAbstract = true
+              // return result fofromrm original method
+              return orgResult;
             }
         descriptor.value[__SpecPoint] = name
         descriptor.value[name] = []
