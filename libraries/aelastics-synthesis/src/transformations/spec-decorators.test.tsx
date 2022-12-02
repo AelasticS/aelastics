@@ -77,7 +77,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     }
 
     @SpecOption('Entity2Table', et.Kernel)
-    Kernel2Table(k: et.IKernel): Element<rt.ITable> { // inherit table name
+    Kernel2Table(k: et.IKernel): Element<rt.ITable> { // inherit table name and column from super rule
         return (
             <r.Table>  
                 <r.Column name = {`${k.name}ID`}>
@@ -110,7 +110,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 }
 
 describe("Test spec decorators", () => {
-    it("tests spec Entit2Table ", () => {
+    it("tests specialization of Entit2Table rule", () => {
         let m = new EER2RelTransformation(testStore)
         let r = m.transform(s1)
         expect(r).toHaveProperty("name", "Persons")
@@ -118,8 +118,8 @@ describe("Test spec decorators", () => {
                 expect.objectContaining({ 
                     name: "Person",
                     columns:expect.arrayContaining([
-                        expect.objectContaining({ name: "PersonID" }),
-                        expect.objectContaining({ name: "PersonName" })
+                        expect.objectContaining({ name: "PersonID" }), // from Kernel2Table
+                        expect.objectContaining({ name: "PersonName" }) // from Entity2Table
                     ])
                 }),
                 expect.objectContaining({ name: "Weak_Child" }),
