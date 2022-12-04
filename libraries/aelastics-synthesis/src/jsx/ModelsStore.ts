@@ -46,7 +46,7 @@ export class ModelStore  {
       return this.store.getType(e)
     }
 
-    public isInstanceOf(e:IModelElement, type:t.Any):boolean {
+    public isTypeOf(e:IModelElement, type:t.Any):boolean {
       const elType = this.store.getType(e)
       return elType.isOfType(type)
     }
