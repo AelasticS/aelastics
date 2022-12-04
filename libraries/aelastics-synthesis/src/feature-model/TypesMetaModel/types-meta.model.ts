@@ -5,6 +5,7 @@ import * as t from "aelastics-types";
 
 export const TypesMM_TypeSchema = t.schema("TypesMM_TypeSchema");
 
+// #####################  ZA BRISANJE   ########################
 export const ModelElement = t.object(
   {
     // name must be proper alphanumeric
@@ -27,6 +28,8 @@ export const Model = t.subtype(
 
 export type IModelElement = t.TypeOf<typeof ModelElement>;
 export type IModel = t.TypeOf<typeof Model>;
+
+// #################  KRAJ DELA ZA BRISANJE  #####################
 
 export const Type = t.subtype(ModelElement, {}, "Type", TypesMM_TypeSchema);
 
