@@ -4,18 +4,35 @@
  */
 
 import * as t from "aelastics-types";
-import { ModelElement, Model } from "generic-metamodel";
 
 export const FMModel_TypeSchema = t.schema("FMModelSchema");
 
-// export const FMConcept = t.subtype(
-//   ModelElement,
-//   {},
-//   "FMConcept",
-//   FMModel_TypeSchema
-// );
+// #####################  ZA BRISANJE   ########################
 
-export const FMConcept = t.object(
+export const ModelElement = t.object(
+  {
+    name: t.string,
+  },
+  "ModelElement",
+  FMModel_TypeSchema
+);
+
+export const Model = t.subtype(
+  ModelElement,
+  {
+    elements: t.arrayOf(ModelElement),
+  },
+  "Model",
+  FMModel_TypeSchema
+);
+
+export type IModelElement = t.TypeOf<typeof ModelElement>;
+export type IModel = t.TypeOf<typeof Model>;
+
+// #################  KRAJ DELA ZA BRISANJE  #####################
+
+export const FMConcept = t.subtype(
+  ModelElement,
   {
     name: t.string,
   },
@@ -58,20 +75,11 @@ export const GroupFeature = t.subtype(
   FMModel_TypeSchema
 );
 
-// export const FeatureDiagram = t.subtype(
-//   Model,
-//   {
-//     root: Root,
-//   },
-//   "FeatureDiagram",
-//   FMModel_TypeSchema
-// );
-
-export const FeatureDiagram = t.object(
+export const FeatureDiagram = t.subtype(
+  Model,
   {
     name: t.string,
     root: SolitaryFeature,
-    elements: t.arrayOf(FMConcept), // ovo je od opsteg modela ostalo... mozda i ne treba
   },
   "FeatureDiagram",
   FMModel_TypeSchema
