@@ -18,11 +18,11 @@ export const FeatureDiagram: CpxTemplate<IModelProps, fm.IFeatureDiagram> = (
 };
 
 export const SolitaryFeature: Template<fm.ISolitaryFeature> = (props) => {
-  return new Element(fm.SolitaryFeature, props, undefined);
+  return new Element(fm.SolitaryFeature, props, "subfeatures");
 };
 
 export const GroupFeature: Template<fm.IGroupFeature> = (props) => {
-  return new Element(fm.GroupFeature, props, undefined);
+  return new Element(fm.GroupFeature, props, "subfeatures");
 };
 
 export const Attribute: Template<fm.IAttribute> = (props) => {
