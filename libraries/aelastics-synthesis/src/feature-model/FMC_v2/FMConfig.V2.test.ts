@@ -3,7 +3,7 @@
  */
 
 import * as fmc from "./fm-configuration-meta.mode.V2";
-import * as fm from "./../FM_v2/fm_v2.test";
+import * as fm from "../FM_MetaModel/fm_instance.test";
 
 let RainControl: fmc.ISolitaryFeature = {
   children: [],

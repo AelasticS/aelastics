@@ -1,8 +1,8 @@
 /** @jsx hm */
 
 import { Object, Property, hm, TypeModel } from "./components_trans";
-import { IFeature, IFeatureDiagram } from "./FM_v2/fm-meta.model-V2.type";
-import * as fmi from "./FM_v2/fm_v2.test";
+import { IFeature, IFeatureDiagram } from "./FM_MetaModel/fm-meta.model-V2.type";
+import * as fmi from "./FM_MetaModel/fm_instance.test";
 import { IObject } from "./TypesMetaModel/types-meta.model";
 
 let f = (fmi: IFeatureDiagram) => {
