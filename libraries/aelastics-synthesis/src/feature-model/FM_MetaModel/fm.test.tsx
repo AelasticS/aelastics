@@ -1,0 +1,33 @@
+/** @jsx hm */
+
+import { hm } from "../../jsx/handle";
+import { Element } from "../../jsx/element";
+import * as fm from "./fm-meta.model-V2.type";
+import {
+  Attribute,
+  FeatureDiagram,
+  GroupFeature,
+  SolitaryFeature,
+} from "./fm-components";
+
+const fmModelDiagram: Element<fm.IFeatureDiagram> = (
+  <FeatureDiagram name="Body Electronics System Feature Model">
+    <SolitaryFeature name="Body Electronics System" minCardinality={0} maxCardinality={-1}>
+      <SolitaryFeature name="Wiper" minCardinality={0} maxCardinality={2}>
+        <SolitaryFeature name="Constant" minCardinality={1} maxCardinality={1}></SolitaryFeature>
+        <SolitaryFeature name="Adaptive" minCardinality={0} maxCardinality={1}>
+          <SolitaryFeature name="Rain-Ctrld" minCardinality={0} maxCardinality={1}></SolitaryFeature>
+        </SolitaryFeature>
+      </SolitaryFeature>
+      <SolitaryFeature name="Cruise Control" minCardinality={0} maxCardinality={1}>
+        <GroupFeature name="Group in Cruise Control" minCardinality={1} maxCardinality={1}>
+          <SolitaryFeature name="Standard" minCardinality={0} maxCardinality={1}></SolitaryFeature>
+          <SolitaryFeature name="Adaptive" minCardinality={0} maxCardinality={1}>
+            <Attribute name="Najmanja vrednost" type='string'></Attribute>
+            <SolitaryFeature name="Radar" minCardinality={0} maxCardinality={1}></SolitaryFeature>
+          </SolitaryFeature>
+        </GroupFeature>
+      </SolitaryFeature>
+    </SolitaryFeature>
+  </FeatureDiagram>
+);

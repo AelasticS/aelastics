@@ -4,30 +4,31 @@
  */
 
 import * as t from "aelastics-types";
+import { Model, ModelElement } from "generic-metamodel";
 
 export const FMModel_TypeSchema = t.schema("FMModelSchema");
 
 // #####################  ZA BRISANJE   ########################
 
-export const ModelElement = t.object(
-  {
-    name: t.string,
-  },
-  "ModelElement",
-  FMModel_TypeSchema
-);
+// export const ModelElement = t.object(
+//   {
+//     name: t.string,
+//   },
+//   "ModelElement",
+//   FMModel_TypeSchema
+// );
 
-export const Model = t.subtype(
-  ModelElement,
-  {
-    elements: t.arrayOf(ModelElement),
-  },
-  "Model",
-  FMModel_TypeSchema
-);
+// export const Model = t.subtype(
+//   ModelElement,
+//   {
+//     elements: t.arrayOf(ModelElement),
+//   },
+//   "Model",
+//   FMModel_TypeSchema
+// );
 
-export type IModelElement = t.TypeOf<typeof ModelElement>;
-export type IModel = t.TypeOf<typeof Model>;
+// export type IModelElement = t.TypeOf<typeof ModelElement>;
+// export type IModel = t.TypeOf<typeof Model>;
 
 // #################  KRAJ DELA ZA BRISANJE  #####################
 
@@ -77,6 +78,5 @@ export const FeatureDiagram = t.subtype(
 
 export type IAttribute = t.TypeOf<typeof Attribute>;
 export type IFeatureDiagram = t.TypeOf<typeof FeatureDiagram>;
-export type IFeature = t.TypeOf<typeof Feature>;
 export type ISolitaryFeature = t.TypeOf<typeof SolitaryFeature>;
 export type IGroupFeature = t.TypeOf<typeof GroupFeature>;
