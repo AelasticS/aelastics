@@ -2,38 +2,48 @@
  *
  */
 import * as t from "aelastics-types";
+import { Model, ModelElement } from "generic-metamodel";
 
 export const TypesMM_TypeSchema = t.schema("TypesMM_TypeSchema");
 
 // #####################  ZA BRISANJE   ########################
-export const ModelElement = t.object(
-  {
-    // name must be proper alphanumeric
-    // label is logically same as name, but can it be consisting of several words (and shown in multiple lines)
-    // label is shown and entered in UI; name is computed from label by removing all extra spaces and newlines
-    name: t.string,
-  },
-  "ModelElement",
-  TypesMM_TypeSchema
-);
+// export const ModelElement = t.object(
+//   {
+//     // name must be proper alphanumeric
+//     // label is logically same as name, but can it be consisting of several words (and shown in multiple lines)
+//     // label is shown and entered in UI; name is computed from label by removing all extra spaces and newlines
+//     name: t.string,
+//   },
+//   "ModelElement",
+//   TypesMM_TypeSchema
+// );
 
-export const Model = t.subtype(
-  ModelElement,
-  {
-    elements: t.arrayOf(ModelElement),
-  },
-  "Model",
-  TypesMM_TypeSchema
-);
+// export const Model = t.subtype(
+//   ModelElement,
+//   {
+//     elements: t.arrayOf(ModelElement),
+//   },
+//   "Model",
+//   TypesMM_TypeSchema
+// );
 
-export type IModelElement = t.TypeOf<typeof ModelElement>;
-export type IModel = t.TypeOf<typeof Model>;
+// export type IModelElement = t.TypeOf<typeof ModelElement>;
+// export type IModel = t.TypeOf<typeof Model>;
 
 // #################  KRAJ DELA ZA BRISANJE  #####################
 
 export const Type = t.subtype(ModelElement, {}, "Type", TypesMM_TypeSchema);
 
 export const TypeModel = t.subtype(Model, {}, "TypeModel", TypesMM_TypeSchema);
+
+export const Optional = t.subtype(
+  Type,
+  {
+    optioonalType: Type,
+  },
+  "Optional",
+  TypesMM_TypeSchema
+);
 
 export const Property = t.subtype(
   ModelElement,
@@ -103,3 +113,4 @@ export type ISubtype = t.TypeOf<typeof Subtype>;
 export type IUnion = t.TypeOf<typeof Union>;
 export type IProperty = t.TypeOf<typeof Property>;
 export type ITypeModel = t.TypeOf<typeof TypeModel>;
+export type IType = t.TypeOf<typeof Type>;
