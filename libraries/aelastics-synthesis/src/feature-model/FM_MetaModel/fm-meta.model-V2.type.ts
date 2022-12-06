@@ -80,3 +80,4 @@ export type IAttribute = t.TypeOf<typeof Attribute>;
 export type IFeatureDiagram = t.TypeOf<typeof FeatureDiagram>;
 export type ISolitaryFeature = t.TypeOf<typeof SolitaryFeature>;
 export type IGroupFeature = t.TypeOf<typeof GroupFeature>;
+export type IFeature = t.TypeOf<typeof Feature>;
