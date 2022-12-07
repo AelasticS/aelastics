@@ -15,7 +15,7 @@ import {
 } from "../Types_MetaModel/types-components";
 import * as t from "../Types_MetaModel/types-meta.model";
 
-class FM2TypesTransformations extends abstractM2M<
+export class FM2TypesTransformations extends abstractM2M<
   fm.IFeatureDiagram,
   t.ITypeModel
 > {
@@ -100,21 +100,3 @@ class FM2TypesTransformations extends abstractM2M<
   //     );
   //   }
 }
-
-// nije testirano. tek treba se testira
-
-describe("Test model transformations", () => {
-  it("tests eer to tables", () => {
-    let m = new FM2TypesTransformations(new ModelStore());
-    // let r = m.transform(s1)
-    // expect(r).toHaveProperty("name", "Persons")
-    // expect(r).toEqual(expect.objectContaining({
-    //     name: 'Persons',
-    //     elements: expect.arrayContaining([
-    //         expect.objectContaining({ name: "Person" }),
-    //         expect.objectContaining({ name: "PersonID" })
-    //     ])
-    // }
-    // ))
-  });
-});
