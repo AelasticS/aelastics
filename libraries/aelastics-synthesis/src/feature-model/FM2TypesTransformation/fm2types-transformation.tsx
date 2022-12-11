@@ -25,7 +25,7 @@ export class FM2TypesTransformations extends abstractM2M<
 
   template(fd: fm.IFeatureDiagram) {
     return (
-      <TypeModel name={fd.name} MDA_level="M2">
+      <TypeModel name={fd.name + "_type_model"} MDA_level="M2">
         {fd.elements.map((e) => this.Feature2Type(e as fm.IFeature))}
       </TypeModel>
     );
@@ -52,7 +52,7 @@ export class FM2TypesTransformations extends abstractM2M<
   @SpecPoint()
   Feature2Object(f: fm.IFeature): Element<t.IType> {
     return (
-      <TypeObject name={f.name}>
+      <TypeObject name={f.name + '_type'}>
         {f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature))}
       </TypeObject>
     );
@@ -76,26 +76,10 @@ export class FM2TypesTransformations extends abstractM2M<
     return <Property name={a.name}></Property>;
   }
 
-  // Feature2ArrayType(f: fm.IFeature): Element<t.IType> {
-  //   return <ArrayType>
-
-  //   </ArrayType>;
-  // }
-
   Feature2Array(f: fm.IFeature): Element<t.IType> {
     // ovde je dovoljno da se napravi jedan tip (taj konkretan)
     let type = this.Feature2Object(f);
 
     return <TypeArray>{this.Feature2Object(f)}</TypeArray>;
   }
-
-  //unija nije potrebna
-
-  //   Feature2Union(f: fm.IFeature): Element<t.IUnion> {
-  //     return (
-  //       <Union>
-  //         {f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature))}
-  //       </Union>
-  //     );
-  //   }
 }
