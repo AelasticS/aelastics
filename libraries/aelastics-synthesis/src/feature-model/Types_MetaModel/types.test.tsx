@@ -11,6 +11,9 @@ import {
   TypeSubtype,
   TypeOptional,
   TypeOfOptional,
+  PropertyDomain,
+  TypeArray,
+  ArrayElementType,
 } from "./types-components";
 import { Context } from "../../jsx/context";
 import { ModelStore } from "../../jsx/ModelsStore";
@@ -40,6 +43,8 @@ import { ModelStore } from "../../jsx/ModelsStore";
 
 const store = new ModelStore();
 
+let a = typeof store;
+
 const typeModel: Element<t.ITypeModel> = (
   <TypeModel name="prvi type model" store={store}>
     <TypeObject name="Objekat" $local_id="1">
@@ -53,13 +58,21 @@ const typeModel: Element<t.ITypeModel> = (
       <TypeSupertype $ref_local_id="1"></TypeSupertype>
     </TypeSubtype>
     <TypeObject name="OpcioniObjekat" $local_id="2">
-      <Property name="prop1" />
-      <Property name="prop2" />
+      <Property name="prop1">
+        <PropertyDomain name="int" $local_id="3"></PropertyDomain>
+      </Property>
+      <Property
+        name="prop2"
+        domain={<PropertyDomain $ref_local_id="3"></PropertyDomain>}
+      />
       <Property name="prop3" />
     </TypeObject>
     <TypeOptional name="Opcioni tip">
       <TypeOfOptional $ref_local_id="2"></TypeOfOptional>
     </TypeOptional>
+    <TypeArray name="niz">
+      <ArrayElementType name="tip elementa niza"></ArrayElementType>
+    </TypeArray>
   </TypeModel>
 );
 
@@ -126,6 +139,29 @@ describe("Type instance", () => {
     expect(model.elements.find((e) => e.name == "OpcioniObjekat")).toBe(
       (model.elements.find((e) => e.name == "Opcioni tip") as t.IOptional)
         .optionalType
+    );
+  });
+
+  it("Test property domain ", () => {
+    expect(model.elements.filter((e) => e.name == "int").length).toEqual(1);
+  });
+
+  it("Test array type", () => {
+    expect(model).toEqual(
+      expect.objectContaining({
+        name: "prvi type model",
+        elements: expect.arrayContaining([
+          expect.objectContaining({
+            name: "niz",
+          }),
+        ]),
+      })
+    );
+
+    expect(
+      (model.elements.find((e) => e.name == "niz") as t.IArray).elementType
+    ).toBe(
+      model.elements.find((e) => e.name == "tip elementa niza") as t.IType
     );
   });
 });

@@ -39,6 +39,10 @@ export const ArrayElementType: Template<t.IType> = (props) => {
   return new Element(t.Type, props, "elementType");
 };
 
+export const PropertyDomain: Template<t.IType> = (props) => {
+  return new Element(t.Type, props, "domain");
+};
+
 export const TypeUnion: Template<t.IUnion> = (props) => {
   return new Element(t.Union, props, undefined);
 };
