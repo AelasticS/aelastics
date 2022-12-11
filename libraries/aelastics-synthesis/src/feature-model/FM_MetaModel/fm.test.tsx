@@ -72,10 +72,6 @@ const fmModelDiagram: Element<fm.IFeatureDiagram> = (
   </FeatureDiagram>
 );
 
-// const context: Context = ;
-// context.pushStore(testStore);
-// context.pushStore(new ModelStore());
-
 let m1: fm.IFeatureDiagram = fmModelDiagram.render(new Context());
 
 describe("FM compontents", () => {
