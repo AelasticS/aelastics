@@ -39,7 +39,7 @@ export const TypeModel = t.subtype(Model, {}, "TypeModel", TypesMM_TypeSchema);
 export const Optional = t.subtype(
   Type,
   {
-    optioonalType: Type,
+    optionalType: Type,
   },
   "Optional",
   TypesMM_TypeSchema
@@ -66,7 +66,7 @@ export const Object = t.subtype(
 export const Subtype = t.subtype(
   Object,
   {
-    superType: Type,
+    superType: Object,
   },
   "Subtype",
   TypesMM_TypeSchema
@@ -103,9 +103,9 @@ export const Union = t.subtype(
 type ISimpleType = t.TypeOf<typeof SimpleType>;
 const SimpleType = t.subtype(Type, {}, "SimpleType", TypesMM_TypeSchema);
 
-export const number: ISimpleType = { name: "Number" };
-export const boolean: ISimpleType = { name: "Boolean" };
-export const string: ISimpleType = { name: "String" };
+// export const number: ISimpleType = { name: "Number" };
+// export const boolean: ISimpleType = { name: "Boolean" };
+// export const string: ISimpleType = { name: "String" };
 
 export type IObject = t.TypeOf<typeof Object>;
 export type IArray = t.TypeOf<typeof Array>;
@@ -114,3 +114,4 @@ export type IUnion = t.TypeOf<typeof Union>;
 export type IProperty = t.TypeOf<typeof Property>;
 export type ITypeModel = t.TypeOf<typeof TypeModel>;
 export type IType = t.TypeOf<typeof Type>;
+export type IOptional = t.TypeOf<typeof Optional>;
