@@ -7,12 +7,11 @@ import { abstractM2M } from "../../transformations/abstractM2M";
 import * as fm from "../FM_MetaModel/fm-meta.model-V2.type";
 import { SpecPoint, SpecOption } from "../../transformations/spec-decorators";
 import {
-  Array,
-  ArrayType,
-  Optional,
   Property,
+  TypeArray,
   TypeModel,
-  Union,
+  TypeObject,
+  TypeOptional,
 } from "../Types_MetaModel/types-components";
 import * as t from "../Types_MetaModel/types-meta.model";
 
@@ -44,7 +43,7 @@ export class FM2TypesTransformations extends abstractM2M<
     }
 
     if (f.minCardinality === 0) {
-      type = <Optional>{type}</Optional>;
+      type = <TypeOptional>{type}</TypeOptional>;
     }
 
     return type;
@@ -53,39 +52,41 @@ export class FM2TypesTransformations extends abstractM2M<
   @SpecPoint()
   Feature2Object(f: fm.IFeature): Element<t.IType> {
     return (
-      <Object name={f.name}>
+      <TypeObject name={f.name}>
         {f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature))}
-      </Object>
+      </TypeObject>
     );
   }
 
   @SpecOption("Feature2Object", fm.SolitaryFeature)
   Solitary2Object(f: fm.ISolitaryFeature): Element<t.IObject> {
     return (
-      <Object>
+      <TypeObject>
         {f.attributes?.map((e) => this.Attribute2Property(e as fm.IAttribute))}
-      </Object>
+      </TypeObject>
     );
   }
 
   @SpecOption("Feature2Object", fm.GroupFeature)
   Group2Object(f: fm.IGroupFeature): Element<t.IObject> {
-    return <Object></Object>;
+    return <TypeObject></TypeObject>;
   }
 
   Attribute2Property(a: fm.IAttribute): Element<t.IProperty> {
     return <Property name={a.name}></Property>;
   }
 
-  Feature2ArrayType(f: fm.IFeature): Element<t.IType> {
-    return <ArrayType></ArrayType>;
-  }
+  // Feature2ArrayType(f: fm.IFeature): Element<t.IType> {
+  //   return <ArrayType>
+
+  //   </ArrayType>;
+  // }
 
   Feature2Array(f: fm.IFeature): Element<t.IType> {
     // ovde je dovoljno da se napravi jedan tip (taj konkretan)
-    let type = this.Feature2ArrayType(f);
+    let type = this.Feature2Object(f);
 
-    return <Array>{this.Feature2ArrayType(f)}</Array>;
+    return <TypeArray>{this.Feature2Object(f)}</TypeArray>;
   }
 
   //unija nije potrebna
