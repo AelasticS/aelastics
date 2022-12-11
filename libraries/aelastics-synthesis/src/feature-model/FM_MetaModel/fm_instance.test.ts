@@ -100,5 +100,9 @@
 //   name: "Body Electronics System Feature Model ",
 // };
 
-
 // // todo TREBA ISPITISATI TESTOVE
+describe("FM instance", () => {
+  it("tests example", () => {
+    expect(true).toBeTruthy();
+  });
+});

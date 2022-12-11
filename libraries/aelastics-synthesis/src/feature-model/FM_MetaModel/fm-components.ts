@@ -21,6 +21,10 @@ export const SolitaryFeature: Template<fm.ISolitaryFeature> = (props) => {
   return new Element(fm.SolitaryFeature, props, "subfeatures");
 };
 
+export const RootFeature: Template<fm.ISolitaryFeature> = (props) => {
+  return new Element(fm.SolitaryFeature, props, undefined);
+};
+
 export const GroupFeature: Template<fm.IGroupFeature> = (props) => {
   return new Element(fm.GroupFeature, props, "subfeatures");
 };
