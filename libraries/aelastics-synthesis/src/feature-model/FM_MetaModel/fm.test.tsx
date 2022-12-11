@@ -102,7 +102,11 @@ describe("FM compontents", () => {
           expect.objectContaining({
             name: "Body Electronics System",
             subfeatures: expect.arrayContaining([
-              expect.objectContaining({ name: "Wiper" }),
+              expect.objectContaining({
+                name: "Wiper",
+                minCardinality: 0,
+                maxCardinality: 2,
+              }),
               expect.objectContaining({ name: "Cruise Control" }),
             ]),
           }),
