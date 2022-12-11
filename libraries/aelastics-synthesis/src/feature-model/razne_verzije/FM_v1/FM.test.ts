@@ -67,3 +67,9 @@ export let grupaPodgrupe: fm.ISolitaryFeature = {
   maxCardinality: "1",
   parent: elGrupe1,
 };
+
+describe("FM v1 test", () => {
+  it("tests example", () => {
+    expect(true).toBeTruthy();
+  });
+});

@@ -1,7 +1,3 @@
-/**
- *
- */
-
 import * as fmConfig from "./fm-configuration-meta.model";
 import * as featureModel from "../FM_v1/FM.test";
 
@@ -23,3 +19,9 @@ let sf1: fmConfig.IGroupFeature = {
   reference: featureModel.f1,
   children: [],
 };
+
+describe("FMC gf v1 test", () => {
+  it("tests example", () => {
+    expect(true).toBeTruthy();
+  });
+});
