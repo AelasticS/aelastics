@@ -52,7 +52,7 @@ export class FM2TypesTransformations extends abstractM2M<
   @SpecPoint()
   Feature2Object(f: fm.IFeature): Element<t.IType> {
     return (
-      <TypeObject name={f.name + '_type'}>
+      <TypeObject name={f.name + "_type"}>
         {f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature))}
       </TypeObject>
     );
@@ -80,6 +80,7 @@ export class FM2TypesTransformations extends abstractM2M<
     // ovde je dovoljno da se napravi jedan tip (taj konkretan)
     let type = this.Feature2Object(f);
 
-    return <TypeArray>{this.Feature2Object(f)}</TypeArray>;
+    // @ts-ignore
+    return <TypeArray elementType={type}></TypeArray>;
   }
 }

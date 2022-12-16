@@ -35,20 +35,20 @@ export const TypeArray: Template<t.IArray> = (props) => {
   return new Element(t.Array, props, undefined);
 };
 
-export const ArrayElementType: Template<t.IType> = (props) => {
-  return new Element(t.Type, props, "elementType");
-};
-
-export const PropertyDomain: Template<t.IType> = (props) => {
-  return new Element(t.Type, props, "domain");
-};
-
 export const TypeUnion: Template<t.IUnion> = (props) => {
   return new Element(t.Union, props, undefined);
 };
 
 export const TypeOptional: Template<t.IOptional> = (props) => {
   return new Element(t.Optional, props, undefined);
+};
+
+export const ArrayElementType: Template<t.IType> = (props) => {
+  return new Element(t.Type, props, "elementType");
+};
+
+export const PropertyDomain: Template<t.IType> = (props) => {
+  return new Element(t.Type, props, "domain");
 };
 
 export const TypeOfOptional: Template<t.IType> = (props) => {
