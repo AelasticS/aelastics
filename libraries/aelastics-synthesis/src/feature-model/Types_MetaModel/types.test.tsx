@@ -88,13 +88,13 @@ let model: t.ITypeModel = typeModel.render(new Context());
 
 describe("Type instance", () => {
   it("Test model instance", () => {
-    expect(model).toHaveProperty("name", "prvi type model");
+    expect(model).toHaveProperty("name", "PrviTypeModel");
   });
 
   it("Test object type", () => {
     expect(model).toEqual(
       expect.objectContaining({
-        name: "prvi type model",
+        name: "PrviTypeModel",
         elements: expect.arrayContaining([
           expect.objectContaining({
             name: "Objekat",
@@ -112,13 +112,13 @@ describe("Type instance", () => {
   it("Test subptype type", () => {
     expect(model).toEqual(
       expect.objectContaining({
-        name: "prvi type model",
+        name: "PrviTypeModel",
         elements: expect.arrayContaining([
           expect.objectContaining({
             name: "Subtype",
             properties: expect.arrayContaining([
-              expect.objectContaining({ name: "prop2" }),
-              expect.objectContaining({ name: "prop1" }),
+              expect.objectContaining({ name: "prop4" }),
+              expect.objectContaining({ name: "prop5" }),
             ]),
           }),
         ]),
@@ -135,7 +135,7 @@ describe("Type instance", () => {
   it("Test optional type", () => {
     expect(model).toEqual(
       expect.objectContaining({
-        name: "prvi type model",
+        name: "PrviTypeModel",
         elements: expect.arrayContaining([
           expect.objectContaining({
             name: "Opcioni tip",
