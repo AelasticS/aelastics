@@ -17,6 +17,63 @@ export type ElementInstance<P extends g.IModelElement> = {
     instance: P
 }
 
+/*
+
+Models (Schema) as functions
+arity can be 0 - fixed models
+
+transformations as models with 
+templates are definition of functions
+Higher order trasnformations 
+
+A functional aproach to model driven enginerineg
+YAMDE
+
+
+a concept can be : 
+        - namespace - container of other concepts - function which map to a set of concepts
+        - template (model fragment) - a graph - complex function (composition of functions)
+        - model - a namespace with associated template (structure of model)
+        - model transformation is tempplate with constraint that inputs and outputs are models
+        - model element - atomic concept - simple function
+        - anotation - function from a concept to concept which follows the  structure
+        - anotation model -
+        - megamodel -  elements are models
+        - each model has its metamodel - a model which define constrations on model structure, 
+            i.e a constrain on constactiion on model mapping 
+        - meta model of a meta-model is called meta-meta-model 
+        - there can exist several meta-meta-models (e.g MOF, ECore, Aelastics-Schema, XML Schema, JSON SChema)
+        - 
+
+
+hirarchy of namespaces
+
+namespace is  maping from a name to a concept
+
+
+namespace/package - set of names
+namespace with imposed structure - model
+model is a namespace with resticted structure - model schema
+
+
+
+URL schemas :  <protocol>:<namesepace>.<name>
+examples          file://system/default/ 
+                  file://system/aelastics-schema/   
+                  repo://aelastics/feature-meta-model
+                  repo://dejan/feature/model
+
+export type WithRefProps<P> = RefProps | Partial<P>
+
+<ImportNS ref="url" asName="">
+  <ImportElement ref="url">
+  <ImportModel ref="url">
+</Import>
+
+<Namespace/>
+
+*/
+
 export type WithRefProps<P> = RefProps & Partial<P>
 export type WithoutRefProps<P> = Exclude<P, RefProps>
 export type InstanceCreation<P extends WithRefProps<g.IModelElement>> = 
