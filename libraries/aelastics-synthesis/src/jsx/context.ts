@@ -1,42 +1,31 @@
 
+import { truncate } from 'fs'
 import * as g from 'generic-metamodel'
 import { ModelStore } from './ModelsStore'
+import { IStack, ArrayStack } from './stack'
 
-
-let contextInstance: Context | undefined
-
+let maxlocalID: number = 0
 
 export class Context {
-    public storeStack: Array<ModelStore> = []
-    public modelStack: Array<g.IModel> = []
+    public readonly storeStack: IStack<ModelStore> = new ArrayStack()
+    public readonly modelStack: IStack<g.IModel> = new ArrayStack()
+    public readonly namespaceStack: IStack<g.INamespace> = new ArrayStack // used to resolve names
     public localIDs: Map<string, g.IModelElement> = new Map()
 
 
-    constructor() {
-        // if (contextInstance) {
-        //     throw new Error("New context instance cannot be created!");
-        // }
-        contextInstance = this;
+    // used to generate unique names, if ommited during creation of model elements
+    public get generateID():string {  
+        return (++maxlocalID).toString()
     }
 
     public get store(): ModelStore {
-        if (this.storeStack.length > 0)
-            return this.storeStack[this.storeStack.length - 1]
-        else
+        try {
+            return this.storeStack.peek()
+        }
+        catch (e: any) {
             throw new Error("No store in the context!");
-    }
 
-    public get model(): g.IModel | undefined {
-        if (this.modelStack.length > 0)
-            return this.modelStack[this.modelStack.length - 1]
-    }
-
-    public pushModel = (m: g.IModel) => {
-        this.modelStack.push(m)
-    }
-
-    public popModel = () => {
-        this.modelStack.pop()
+        }
     }
 
     public pushStore = (s: ModelStore) => {
@@ -47,10 +36,50 @@ export class Context {
         this.storeStack.pop()
     }
 
+    public get model(): g.IModel | undefined {
+        try {
+            return this.modelStack.peek()
+        }
+        catch (e: any) {
+            return undefined;
+
+        }
+    }
+
+    public pushModel = (m: g.IModel) => {
+        this.modelStack.push(m)
+        // model is also namespace
+        this.namespaceStack.push(m)
+    }
+
+    public popModel = () => {
+        const m = this.modelStack.pop()
+        // remove namespacess within the model
+        while(this.namespaceStack.peek() != m) {
+            this.namespaceStack.pop
+        }
+        // model is also namespace
+        this.namespaceStack.pop()
+    }
+
+    public get namespace(): g.INamespace | undefined {
+        try {
+            return this.namespaceStack.peek()
+        }
+        catch (e: any) {
+            return undefined;
+
+        }
+    }
+
+    public pushNamespace = (m: g.INamespace) => {
+        this.namespaceStack.push(m)
+    }
+
+    public popNamespace = () => {
+        this.namespaceStack.pop()
+    }
+
+
 }
 
-export const useContext = (): Context => {
-    if (!contextInstance)
-        contextInstance = new Context()
-    return contextInstance
-}
