@@ -29,12 +29,14 @@ export const Namespace = t.subtype(ModelElement, {
 }, "Namespace", ModelSchema);
 
 
+// TODO: add "status" property: Draft, Valid, Approved, Published, Archieved
 export const Model = t.subtype(Namespace, {
     MDA_level: t.optional(t.string.derive().oneOf(['M0', 'M1', 'M2', 'M3'])),
     diagrams: t.arrayOf(Diagram),
 }, "Model", ModelSchema);
 
-// t.inverseProps(ModelElement, 'parentModel', Model, 'elements')
+// TODO: make parentModel and namespace to be reference type
+t.inverseProps(ModelElement, 'parentModel', Model, 'elements')
 
 export type IModelElement = t.TypeOf<typeof ModelElement>
 export type INamespace = t.TypeOf<typeof Namespace>
