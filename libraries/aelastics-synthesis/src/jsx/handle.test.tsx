@@ -69,7 +69,7 @@ describe("Test jsx", () => {
             )
         }
         let me: Element<g.IModelElement> = <ModelCpx m='model' e='elem' n={3}>
-            <Elem name='extra elem' />
+            <Elem name='extra_elem' />
         </ModelCpx>
 
         // let m = render(me) as IModelProps
@@ -80,7 +80,7 @@ describe("Test jsx", () => {
                 expect.objectContaining({ name: "elem0" }),
                 expect.objectContaining({ name: "elem1" }),
                 expect.objectContaining({ name: "elem2" }),
-                expect.objectContaining({ name: "extra elem" })
+                expect.objectContaining({ name: "extra_elem" })
             ])
         }
         ))
@@ -88,14 +88,14 @@ describe("Test jsx", () => {
 
     it("should create a model with HOC element", () => {
         let hOC = (E: Template<any>) => (props: { name: string }) => {
-            return <Model name='model1 HOC' store={new ModelStore()}>
+            return <Model name='model1_HOC' store={new ModelStore()}>
                 <E name={props.name}></E>
             </Model>
         }
         let Comp = hOC(Elem)
         let m = render(<Comp name='HOC' />) as g.IModel
         expect(m).toEqual(expect.objectContaining({
-            name: 'model1 HOC',
+            name: 'model1_HOC',
             elements: expect.arrayContaining(
                 [expect.objectContaining({ name: "HOC" })]
             )
@@ -103,15 +103,18 @@ describe("Test jsx", () => {
         ))
     })
 
+
     it("should create a model with one submodel", () => {
-        let e = <Model name='model1 with submodel' store={new ModelStore()}>
-            <Elem name='model elem1' />
-            <Model name='submodel1' store={new ModelStore()}>
-                <Elem name='model elem2' />
+        let s = new ModelStore()
+        let e = <Model name='model1 with submodel' store={s}>
+            <Elem name='model_elem1' />
+            <Model name='submodel1' store={s}>
+                <Elem name='model_elem2' />
             </Model>
         </Model>
 
         let m = render(e) as g.IModel
+        expect(m.elements.length).toEqual(2)
         let e1 = m.elements[1]
         expect(e1.name).toEqual('submodel1')
     })

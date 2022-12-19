@@ -76,15 +76,15 @@ let m1: fm.IFeatureDiagram = fmModelDiagram.render(new Context());
 
 describe("FM compontents", () => {
   it("tests FM diagram instance", () => {
-    expect(m1).toHaveProperty("name", "Body Electronics System Feature Model");
+    expect(m1).toHaveProperty("label", "Body Electronics System Feature Model");
   });
 
   it("tests FM root element", () => {
     expect(m1).toEqual(
       expect.objectContaining({
-        name: "Body Electronics System Feature Model",
+        label: "Body Electronics System Feature Model",
         elements: expect.arrayContaining([
-          expect.objectContaining({ name: "Body Electronics System" }),
+          expect.objectContaining({ label: "Body Electronics System" }),
         ]),
       })
     );
@@ -93,21 +93,22 @@ describe("FM compontents", () => {
   it("tests FM elements", () => {
     expect(m1).toEqual(
       expect.objectContaining({
-        name: "Body Electronics System Feature Model",
+        label: "Body Electronics System Feature Model",
         elements: expect.arrayContaining([
           expect.objectContaining({
-            name: "Body Electronics System",
+            label: "Body Electronics System",
             subfeatures: expect.arrayContaining([
               expect.objectContaining({
                 name: "Wiper",
                 minCardinality: 0,
                 maxCardinality: 2,
               }),
-              expect.objectContaining({ name: "Cruise Control" }),
+              expect.objectContaining({ label: "Cruise Control" }),
             ]),
           }),
         ]),
       })
     );
   });
+
 });

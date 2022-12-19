@@ -82,7 +82,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         // handle abstract element (ignore $ref and $ref_id props)
         if (this.isAbstract) { 
           if(!this.subElement)
-            throw new Error("elements is abstacrt bit has no subElement!")
+            throw new Error("elements is abstract but has no subElement!")
                       // copy props from abstract element 
             this.subElement.props = {...this.props, ...this.subElement.props}
           // create subelement  

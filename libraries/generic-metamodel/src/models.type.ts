@@ -14,7 +14,8 @@ export const ModelSchema = t.schema("RepModelSchema");
 
 
 export const ModelElement = t.subtype(RepositoryObject,{
-    // name must be proper alphanumeric
+    // name must be RegExp("^[a-zA-Z0-9_.-]+$")
+    path: t.optional(t.string),
     // label is logically same as name, but can it be consisting of several words (and shown in multiple lines)
     // label is shown and entered in UI; name is computed from label by removing all extra spaces and newlines
     label: t.string,
@@ -33,7 +34,7 @@ export const Model = t.subtype(Namespace, {
     diagrams: t.arrayOf(Diagram),
 }, "Model", ModelSchema);
 
-t.inverseProps(ModelElement, 'parentModel', Model, 'elements')
+// t.inverseProps(ModelElement, 'parentModel', Model, 'elements')
 
 export type IModelElement = t.TypeOf<typeof ModelElement>
 export type INamespace = t.TypeOf<typeof Namespace>

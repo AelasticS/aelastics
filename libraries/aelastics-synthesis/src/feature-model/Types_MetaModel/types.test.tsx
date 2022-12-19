@@ -132,6 +132,7 @@ describe("Type instance", () => {
     // );
   });
 
+  /*
   it("Test optional type", () => {
     expect(model).toEqual(
       expect.objectContaining({
@@ -144,4 +145,5 @@ describe("Type instance", () => {
       })
     );
   });
+*/
 });

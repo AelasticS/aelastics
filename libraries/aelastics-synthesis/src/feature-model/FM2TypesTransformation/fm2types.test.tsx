@@ -22,6 +22,6 @@ describe("Test model transformations", () => {
   it("tests fm diagram to type model", () => {
     let trans = new FM2TypesTransformations(new ModelStore());
     let result = trans.transform(model);
-    expect(result).toHaveProperty("name", "Prvi feature dijagram_type_model");
+    expect(result).toHaveProperty("label", "Prvifeaturedijagram_type_model");
   });
 });
