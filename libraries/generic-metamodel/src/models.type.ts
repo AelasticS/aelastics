@@ -19,12 +19,13 @@ export const ModelElement = t.subtype(RepositoryObject,{
     // label is shown and entered in UI; name is computed from label by removing all extra spaces and newlines
     label: t.string,
     content: t.string.derive('65535').maxLength(65535),
-    parentModel: t.optional(t.link(ModelSchema, 'Model')) // to be defined
+    parentModel: t.optional(t.link(ModelSchema, 'Model')), // to be defined as Ref
+    namespace: t.optional(t.link(ModelSchema, 'Namespace')) // to be defined as Ref
 },  "ModelElement", ModelSchema);
 
 export const Namespace = t.subtype(ModelElement, {
     elements: t.arrayOf(ModelElement)
-}, "Model", ModelSchema);
+}, "Namespace", ModelSchema);
 
 
 export const Model = t.subtype(Namespace, {
