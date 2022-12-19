@@ -88,14 +88,15 @@ export const inverseProps = (
 ) => {
   // tslint:disable-next-line:no-constant-condition
   // check that props exist
-  let fp = firstType.interfaceDecl[firstProp] as Any
+  // let fp = firstType.interfaceDecl[firstProp] as Any
+  let fp = firstType.allProperties.get(firstProp) as Any
   if (!fp) {
     throw new ServiceError(
       'ValidationError',
       `Property '${firstProp}' on type '${firstType.name}' does not extist.`
     )
   }
-  let sp = secondType.interfaceDecl[secondProp] as Any
+  let sp = secondType.allProperties.get(secondProp) as Any
   if (!sp) {
     throw new ServiceError(
       'ValidationError',
