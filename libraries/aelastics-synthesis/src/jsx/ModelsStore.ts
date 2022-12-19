@@ -1,5 +1,5 @@
 import {MultiStore} from 'aelastics-store'
-import { IModel, IModelElement } from 'generic-metamodel'
+import { IModel, IModelElement, INamespace } from 'generic-metamodel'
 import * as t from 'aelastics-types'
 import { ServerProxy } from 'aelastics-store'
 
@@ -31,14 +31,17 @@ export class ModelStore  {
 
     public newModel(type: t.Any, initValue: IModel, ownerModel?:IModel): t.ObjectLiteral {
       const m = this.store.new<IModel>(type, initValue)
-      if (ownerModel)
+      if (ownerModel)  // TODO: add namespace too!
         ownerModel.elements.push(m)
       return m
     }
 
-    public newModelElement(model:IModel, type: t.Any, initValue: IModelElement): IModelElement {
+    public newModelElement(model:IModel, namespace:INamespace, type: t.Any, initValue: IModelElement): IModelElement {
+      // validatea name
+      // name.replace(/\s/g, '')
       const el = this.store.new<IModelElement>(type, initValue)
       model.elements.push(el)
+      namespace.elements.push(el)
       return el
     }
 
@@ -55,4 +58,10 @@ export class ModelStore  {
       schemas.forEach((s)=>this.store.registerTypeSchema(s))
     }
 
+    importModel() {}
+    exportModel () {}
+    serializeModel() {}
+    deserializeModel() {}
+
+    
 }

@@ -19,44 +19,6 @@ export type ElementInstance<P extends g.IModelElement> = {
 
 /*
 
-Models (Schema) as functions
-arity can be 0 - fixed models
-
-transformations as models with 
-templates are definition of functions
-Higher order trasnformations 
-
-A functional aproach to model driven enginerineg
-YAMDE
-
-
-a concept can be : 
-        - namespace - container of other concepts - function which map to a set of concepts
-        - template (model fragment) - a graph - complex function (composition of functions)
-        - model - a namespace with associated template (structure of model)
-        - model transformation is tempplate with constraint that inputs and outputs are models
-        - model element - atomic concept - simple function
-        - anotation - function from a concept to concept which follows the  structure
-        - anotation model -
-        - megamodel -  elements are models
-        - each model has its metamodel - a model which define constrations on model structure, 
-            i.e a constrain on constactiion on model mapping 
-        - meta model of a meta-model is called meta-meta-model 
-        - there can exist several meta-meta-models (e.g MOF, ECore, Aelastics-Schema, XML Schema, JSON SChema)
-        - 
-
-
-hirarchy of namespaces
-
-namespace is  maping from a name to a concept
-
-
-namespace/package - set of names
-namespace with imposed structure - model
-model is a namespace with resticted structure - model schema
-
-
-
 URL schemas :  <protocol>:<namesepace>.<name>
 examples          file://system/default/ 
                   file://system/aelastics-schema/   
@@ -115,7 +77,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
     public create<R extends g.IModelElement>(ctx: Context): ElementInstance<g.IModelElement> {
         let el: g.IModelElement
-        const { store, localIDs, model } = ctx
+        const { store, localIDs, model, namespace } = ctx
 
         // handle abstract element (ignore $ref and $ref_id props)
         if (this.isAbstract) { 
@@ -148,13 +110,16 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
             return this.setProps({type: this.type, instance: el}, this.props)
         }
         else {
+            // provide name for the element
+            if(!("name" in this.props) || this.props.name == undefined || this.props.name === "") 
+            {}
             // create element
             if (this.type.isOfType(g.Model))
                 el = store.newModel(this.type, this.props as unknown as g.IModel, model) as R
-            else if (!model)
-                throw new Error("No model in the context!")
+            else if (!model || !namespace)
+                throw new Error("No model or namespace in the context!")
             else
-                el = store.newModelElement(model, this.type, this.props as g.IModelElement) as R
+                el = store.newModelElement(model, namespace, this.type, this.props as g.IModelElement) as R
 
             if (this.props?.$local_id) // if exist local id
                 localIDs.set(this.props.$local_id, el)
@@ -169,6 +134,9 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
           ctx.pushStore((<any>this.props).store)
         }
         const parent = this.create(ctx)
+        // if (parent.type.isOfType(g.Namespace)) { // push model to context
+        //   ctx.pushModel(<g.INamespace>parent.instance)
+        // }        
         if (parent.type.isOfType(g.Model)) { // push model to context
           ctx.pushModel(<g.IModel>parent.instance)
         }
