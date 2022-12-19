@@ -7,7 +7,7 @@ const reg = new RegExp("^[a-zA-Z0-9_.-]+$")
 
 export class ModelStore {
   private store: MultiStore<string>
-
+  private mapOfNames: Map<string, IModelElement> = new Map()
   constructor(server?: ServerProxy) {
     this.store = new MultiStore(server)
   }
@@ -27,11 +27,11 @@ export class ModelStore {
     return m
   }
 
-  public getModel(id: string) {
-    return this.store.getObjectByID(id)
+  public getByName(name: string): IModelElement | undefined {
+    return this.mapOfNames.get(name)
   }
 
-  public getModelElement(id: string) {
+  public getByID(id: string) {
     return this.store.getObjectByID(id)
   }
 
@@ -45,6 +45,8 @@ export class ModelStore {
       ownerModel.elements.push(m)
     if (namespace)
       namespace.elements.push(m)
+    // add to map of names
+    this.mapOfNames.set(this.getNameWithPath(m), m)
     return m
   }
 
@@ -53,12 +55,14 @@ export class ModelStore {
       throw new Error(`newNamespace: type ${type.name} is not a namespace.`)
     const data = { ...initValue }
     this.normalizeName(data, type.name, namespace)
-    const m = this.store.new<INamespace>(type, data)
+    const n = this.store.new<INamespace>(type, data)
     if (ownerModel)
-      ownerModel.elements.push(m)
+      ownerModel.elements.push(n)
     if (namespace)
-      namespace.elements.push(m)
-    return m
+      namespace.elements.push(n)
+    // add to map of names
+    this.mapOfNames.set(this.getNameWithPath(n), n)
+    return n
   }
 
   public newModelElement(model: IModel, namespace: INamespace, type: t.Any, initValue: IModelElement): IModelElement {
@@ -68,8 +72,10 @@ export class ModelStore {
     this.normalizeName(data, type.name, namespace)
     const el = this.store.new<IModelElement>(type, data)
     model.elements.push(el)
-    if(namespace != model)
+    if (namespace != model)
       namespace.elements.push(el)
+    // add to map of names
+    this.mapOfNames.set(this.getNameWithPath(el), el)
     return el
   }
 

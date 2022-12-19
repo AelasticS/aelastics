@@ -99,7 +99,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
             return this.setProps({type: this.type, instance: el}, this.props)
         }
         else if (this.props?.$ref_id) {
-            el = store.getModelElement(this.props.$ref_id) as R
+            el = store.getByID(this.props.$ref_id) as R
             if (!el)
                 throw new ReferenceError(`Not existing object referenced with ref_id=${this.props.$ref_id} by element '${this.type.fullPathName}'`)
             return this.setProps({type: this.type, instance: el}, this.props)
