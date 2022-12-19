@@ -7,6 +7,7 @@ import { IStack, ArrayStack } from './stack'
 let maxlocalID: number = 0
 
 export class Context {
+    // TODO: remove multiple stores ?
     public readonly storeStack: IStack<ModelStore> = new ArrayStack()
     public readonly modelStack: IStack<g.IModel> = new ArrayStack()
     public readonly namespaceStack: IStack<g.INamespace> = new ArrayStack // used to resolve names

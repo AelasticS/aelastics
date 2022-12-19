@@ -73,6 +73,7 @@ export class ModelStore {
     return el
   }
 
+  // TODO: add repository owner as a top level namespace
   private normalizeName(el: IModelElement, typeName: string, namesepace?: INamespace) {
     // trim
     if (!el.name) {

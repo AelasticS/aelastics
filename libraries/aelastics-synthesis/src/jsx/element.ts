@@ -65,7 +65,8 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     constructor(
         public readonly type: t.Any, 
         public props: P, 
-        public readonly parentProp?:string
+//TODO: introduce type (Child|Parent, propName) and utility function
+        public readonly parentProp?:string  
         ) {
     }
 
