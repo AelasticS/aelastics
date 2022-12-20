@@ -5,11 +5,9 @@ import { Context } from './context'
 import { ModelStore } from './ModelsStore'
 
 export type RefProps = {
-    $id?:string,
-    $local_id?: string,
     $ref?: g.IModelElement,
-    $ref_local_id?: string
-    $ref_id?: string
+    $refByID?: string
+    $refByName?: string
 }
 
 export type ElementInstance<P extends g.IModelElement> = {
@@ -72,13 +70,27 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
     private setProps(el:ElementInstance<g.IModelElement>, props:P):ElementInstance<g.IModelElement> {
       const typeProps = (el.instance as any as t.ObjectType<any, any>).allProperties
-      // toDo
+      // TODO
       return el
     }
 
-    public create<R extends g.IModelElement>(ctx: Context): ElementInstance<g.IModelElement> {
-        let el: g.IModelElement
-        const { store, localIDs, model, namespace } = ctx
+    // TODO: find full path name
+    private getFullPathName (name:string, ctx: Context) {
+
+      // split name
+      let nsArray = name.split('/')
+      let ctxArray = ctx.namespaceStack.elements
+      let i = ctxArray.length -1
+      while (ctxArray[i].name != nsArray[i] && i >= 0) i--;
+      if (i === 0)
+        return `/${name}`
+      else 
+        return name
+    }
+
+    public create(ctx: Context): ElementInstance<g.IModelElement> {
+        let el: g.IModelElement | undefined
+        const { store, currentModel: model, currentNamespace: namespace } = ctx
 
         // handle abstract element (ignore $ref and $ref_id props)
         if (this.isAbstract) { 
@@ -95,35 +107,32 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
         // handle normal element
         if (this.props?.$ref) {// is object reference to an existing element
-            el = this.props.$ref as R
+            el = this.props.$ref 
             return this.setProps({type: this.type, instance: el}, this.props)
         }
-        else if (this.props?.$ref_id) {
-            el = store.getByID(this.props.$ref_id) as R
+        else if (this.props?.$refByID) {
+            el = store.getByID(this.props.$refByID)
             if (!el)
-                throw new ReferenceError(`Not existing object referenced with ref_id=${this.props.$ref_id} by element '${this.type.fullPathName}'`)
+                throw new ReferenceError(`Not existing object referenced with id=${this.props.$refByID} by element '${this.type.fullPathName}'`)
             return this.setProps({type: this.type, instance: el}, this.props)
         }
-        else if (this.props?.$ref_local_id) { // is local id reference to an existing element
-            el = localIDs.get(this.props.$ref_local_id) as R
+        else if (this.props?.$refByName) { // is reference to an existing element by name
+          const fullPathName = `/${this.props.$refByName}`  
+          el = store.getByName(fullPathName)
             if (!el)
-                throw new ReferenceError(`Not existing object referenced with ref_id=${this.props.$ref_local_id} by element '${this.type.fullPathName}'`)
+                throw new ReferenceError(`Not existing object referenced with name "${this.props.$refByName}" by element '${this.type.fullPathName}'`)
             return this.setProps({type: this.type, instance: el}, this.props)
         }
         else {
-            // provide name for the element
-            if(!("name" in this.props) || this.props.name == undefined || this.props.name === "") 
-            {}
             // create element
             if (this.type.isOfType(g.Model))
-                el = store.newModel(this.type, this.props as unknown as g.IModel, model) as R
-            else if (!model || !namespace)
-                throw new Error("No model or namespace in the context!")
+                el = store.newModel(this.type, this.props as unknown as g.IModel, model, namespace)
+             else   if (this.type.isOfType(g.Namespace))
+                el = store.newNamespace(this.type, this.props as unknown as g.INamespace, model, namespace)
+            else if (!model || !namespace )  // model element must be in a model
+                throw new Error("No model in the context, but an element must be in a model!")
             else
-                el = store.newModelElement(model, namespace, this.type, this.props as g.IModelElement) as R
-
-            if (this.props?.$local_id) // if exist local id
-                localIDs.set(this.props.$local_id, el)
+                el = store.newModelElement(model, namespace, this.type, this.props as g.IModelElement)
             return {type: this.type, instance: el}
         }
         

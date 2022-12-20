@@ -11,7 +11,6 @@ export class Context {
     public readonly storeStack: IStack<ModelStore> = new ArrayStack()
     public readonly modelStack: IStack<g.IModel> = new ArrayStack()
     public readonly namespaceStack: IStack<g.INamespace> = new ArrayStack // used to resolve names
-    public localIDs: Map<string, g.IModelElement> = new Map()
 
 
     // used to generate unique names, if ommited during creation of model elements
@@ -37,7 +36,7 @@ export class Context {
         this.storeStack.pop()
     }
 
-    public get model(): g.IModel | undefined {
+    public get currentModel(): g.IModel | undefined {
         try {
             return this.modelStack.peek()
         }
@@ -63,7 +62,7 @@ export class Context {
         this.namespaceStack.pop()
     }
 
-    public get namespace(): g.INamespace | undefined {
+    public get currentNamespace(): g.INamespace | undefined {
         try {
             return this.namespaceStack.peek()
         }

@@ -31,11 +31,11 @@ export class ModelStore {
     return this.mapOfNames.get(name)
   }
 
-  public getByID(id: string) {
-    return this.store.getObjectByID(id)
+  public getByID(id: string) :IModelElement | undefined {
+    return this.store.getObjectByID(id) as IModelElement | undefined
   }
 
-  public newModel(type: t.Any, initValue: IModel, ownerModel?: IModel, namespace?: INamespace,): t.ObjectLiteral {
+  public newModel(type: t.Any, initValue: IModel, ownerModel?: IModel, namespace?: INamespace,): IModel {
     if (!type.isOfType(Model))
       throw new Error(`newModel: type ${type.name} is not a model.`)
     const data = { ...initValue }
@@ -50,7 +50,7 @@ export class ModelStore {
     return m
   }
 
-  public newNamespace(type: t.Any, initValue: IModel, ownerModel?: IModel, namespace?: INamespace,): t.ObjectLiteral {
+  public newNamespace(type: t.Any, initValue: INamespace, ownerModel?: IModel, namespace?: INamespace,): INamespace {
     if (!type.isOfType(Namespace))
       throw new Error(`newNamespace: type ${type.name} is not a namespace.`)
     const data = { ...initValue }
@@ -99,7 +99,7 @@ export class ModelStore {
       // set full name - starting with topmost namespace
       el.path = namesepace ?
         `${this.getNameWithPath(namesepace)}/${el.name}`
-        : `/${el.name}`
+        : `/`
     }
   }
 

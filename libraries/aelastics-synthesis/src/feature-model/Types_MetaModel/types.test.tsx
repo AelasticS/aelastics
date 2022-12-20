@@ -40,35 +40,35 @@ const store = new ModelStore();
 import { importPredefinedTypes } from "./predefined-model";
 
 const typeModel: Element<t.ITypeModel> = (
-  <TypeModel $local_id="PrviTypeModel" name="PrviTypeModel" store={store}>
-    {importPredefinedTypes("PrviTypeModel")}
-    <TypeObject name="Objekat" $local_id="1">
-      <Property name="prop1">
-        <PropertyDomain $ref_local_id="number"></PropertyDomain>
+  <TypeModel name="FirstTypeModel" store={store}>
+    {importPredefinedTypes("FirstTypeModel")}
+    <TypeObject name="Person">
+      <Property name="firstName">
+        <PropertyDomain $refByName="number"></PropertyDomain>
       </Property>
-      <Property name="prop2" />
-      <Property name="prop3" />
+      <Property name="address" />
+      <Property name="age" />
     </TypeObject>
-    <TypeSubtype name="Subtype">
-      <Property name="prop4" />
-      <Property name="prop5" />
-      <TypeSupertype $ref_local_id="1"></TypeSupertype>
+    <TypeSubtype name="Worker">
+      <Property name="professon" />
+      <Property name="salary" />
+      <TypeSupertype $refByName="SomeObject"></TypeSupertype>
     </TypeSubtype>
-    <TypeObject name="OpcioniObjekat" $local_id="2">
+    <TypeObject name="Object">
       <Property name="prop6" />
     </TypeObject>
 
     {/* prvi nacin. lose zato sto se pravi apstraktni tip, ako se zaboravi ref_local_id */}
-    <TypeOptional name="Opcioni tip">
-      <TypeOfOptional $ref_local_id="2"></TypeOfOptional>
-      <TypeOfOptional $ref_local_id="2"></TypeOfOptional>
+    <TypeOptional name="SomeOptionalType">
+      <TypeOfOptional $refByName="Person"></TypeOfOptional>
+      <TypeOfOptional $refByName="Person"></TypeOfOptional>
     </TypeOptional>
 
     {/* drugi nacin. testirati da li radi */}
 
     {/* <TypeOptional
       name="Opcioni tip"
-      optionalType={<TypeObject $ref_local_id="2"></TypeObject>}
+      optionalType={<TypeObject $refByName="OpcioniObjekat"></TypeObject>}
     ></TypeOptional> */}
 
     {/* treci nacin je da se uvede specijali jsx element REF. napraviti i testirati da li radi */}
@@ -76,7 +76,7 @@ const typeModel: Element<t.ITypeModel> = (
     {/* <TypeOptional
       name="Opcioni tip"
       optionalType={
-        <TypeObject name="OpcioniObjekat" $local_id="2">
+        <TypeObject $refByName="OpcioniObjekat">
           <Property name="prop5" />
         </TypeObject>
       }
@@ -88,20 +88,20 @@ let model: t.ITypeModel = typeModel.render(new Context());
 
 describe("Type instance", () => {
   it("Test model instance", () => {
-    expect(model).toHaveProperty("name", "PrviTypeModel");
+    expect(model).toHaveProperty("name", "FirstTypeModel");
   });
 
   it("Test object type", () => {
     expect(model).toEqual(
       expect.objectContaining({
-        name: "PrviTypeModel",
+        name: "FirstTypeModel",
         elements: expect.arrayContaining([
           expect.objectContaining({
-            name: "Objekat",
+            name: "Person",
             properties: expect.arrayContaining([
-              expect.objectContaining({ name: "prop3" }),
-              expect.objectContaining({ name: "prop2" }),
-              expect.objectContaining({ name: "prop1" }),
+              expect.objectContaining({ name: "age" }),
+              expect.objectContaining({ name: "address" }),
+              expect.objectContaining({ name: "firstName" }),
             ]),
           }),
         ]),
@@ -109,16 +109,16 @@ describe("Type instance", () => {
     );
   });
 
-  it("Test subptype type", () => {
+  it("Test subtype type", () => {
     expect(model).toEqual(
       expect.objectContaining({
-        name: "PrviTypeModel",
+        name: "FirstTypeModel",
         elements: expect.arrayContaining([
           expect.objectContaining({
-            name: "Subtype",
+            name: "Worker",
             properties: expect.arrayContaining([
-              expect.objectContaining({ name: "prop4" }),
-              expect.objectContaining({ name: "prop5" }),
+              expect.objectContaining({ name: "professon" }),
+              expect.objectContaining({ name: "salary" }),
             ]),
           }),
         ]),

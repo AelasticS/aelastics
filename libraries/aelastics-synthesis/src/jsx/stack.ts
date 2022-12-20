@@ -3,6 +3,7 @@ export interface IStack<T> {
     pop(): T;
     peek(): T;
     get size(): number;
+    get elements():T[]
 }
 
 
@@ -10,7 +11,7 @@ export class ArrayStack<T> implements IStack<T> {
     private storage: T[] = [];
 
     constructor(private capacity: number = Infinity) { }
-
+    
     push(item: T): void {
         if (this.size === this.capacity) {
             throw Error("Stack has reached max capacity, you cannot add more items");
@@ -39,5 +40,9 @@ export class ArrayStack<T> implements IStack<T> {
 
     get size(): number {
         return this.storage.length;
+    }
+
+    get elements(): T[] {
+        return [...this.storage];
     }
 }
