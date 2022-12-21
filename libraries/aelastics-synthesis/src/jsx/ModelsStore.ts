@@ -78,6 +78,7 @@ export class ModelStore {
     // check duplicates
     if (this.mapOfNames.has(fullQName))
       throw new Error(`addNamespace: Duplicate name "${fullQName}"`);
+      // TODO: check that id is reused, not generated (from serialization?) - if id exist, do not generate on multistore
     this.store.add(initValue)
     return initValue as INamespace;
   }
