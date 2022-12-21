@@ -69,12 +69,19 @@ export class MultiStore<ID> {
         this.registerTypeSchema(type.ownerSchema)
         const rep = this.getRepos(type);
         const obj = rep.create<T>(type, initValue);
-        this.add(type, obj)
+        this.add(obj)
         return obj;
     }
 
-    public add<T extends t.ObjectLiteral>(type: t.Any, obj: T) {
-        this.instances.set(obj[objectUUID], obj)
+    public add<T extends t.ObjectLiteral>(obj: T) {
+        if("id" in obj) {
+            (obj as any)["id"] = obj[objectUUID]
+            if(this.instances.has (obj.id))
+                throw new Error(`MultiStore.add: duplicate id:${obj.id} for object name:"${obj.name}"`)
+            this.instances.set(obj.id, obj)
+        }
+        else 
+         this.instances.set(obj[objectUUID], obj)
     }
 
     public remove<T extends t.ObjectLiteral>(obj: T) {
