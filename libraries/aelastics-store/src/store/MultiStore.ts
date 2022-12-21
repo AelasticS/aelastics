@@ -65,7 +65,7 @@ export class MultiStore<ID> {
 
     }
 
-    public new<T extends t.ObjectLiteral>(type: t.Any, initValue: T): T {
+    public new<T extends t.ObjectLiteral>(type: t.Any, initValue: Partial<T>): T {
         this.registerTypeSchema(type.ownerSchema)
         const rep = this.getRepos(type);
         const obj = rep.create<T>(type, initValue);

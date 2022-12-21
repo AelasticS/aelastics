@@ -41,7 +41,7 @@ import { importPredefinedTypes } from "./predefined-model";
 
 const typeModel: Element<t.ITypeModel> = (
   <TypeModel name="FirstTypeModel" store={store}>
-    {importPredefinedTypes("FirstTypeModel")}
+    {importPredefinedTypes("../FirstTypeModel")}
     <TypeObject name="Person">
       <Property name="firstName">
         <PropertyDomain $refByName="number"></PropertyDomain>
@@ -52,7 +52,7 @@ const typeModel: Element<t.ITypeModel> = (
     <TypeSubtype name="Worker">
       <Property name="professon" />
       <Property name="salary" />
-      <TypeSupertype $refByName="SomeObject"></TypeSupertype>
+      <TypeSupertype $refByName="Person"></TypeSupertype>
     </TypeSubtype>
     <TypeObject name="Object">
       <Property name="prop6" />
@@ -60,6 +60,11 @@ const typeModel: Element<t.ITypeModel> = (
 
     {/* prvi nacin. lose zato sto se pravi apstraktni tip, ako se zaboravi ref_local_id */}
     <TypeOptional name="SomeOptionalType">
+      <TypeOfOptional $refByName="Person"></TypeOfOptional>
+      <TypeOfOptional $refByName="Person"></TypeOfOptional>
+    </TypeOptional>
+    
+    <TypeOptional name="SomeOptionalType2">
       <TypeOfOptional $refByName="Person"></TypeOfOptional>
       <TypeOfOptional $refByName="Person"></TypeOfOptional>
     </TypeOptional>

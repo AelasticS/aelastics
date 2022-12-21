@@ -2,8 +2,10 @@ import { MultiStore } from 'aelastics-store'
 import { IModel, IModelElement, INamespace, Model, ModelElement, Namespace } from 'generic-metamodel'
 import * as t from 'aelastics-types'
 import { ServerProxy } from 'aelastics-store'
+import { Element } from './element'
 
-const reg = new RegExp("^[a-zA-Z0-9_.-]+$")
+// "^[\\$a-zA-Z0-9_\\.\\-]+$"
+const reg = new RegExp("^[\\$a-zA-Z0-9_\\.\\-]+$")   // old "^[a-zA-Z0-9_\.\-/]+$"
 
 export class ModelStore {
   private store: MultiStore<string>
@@ -35,7 +37,7 @@ export class ModelStore {
     return this.store.getObjectByID(id) as IModelElement | undefined
   }
 
-  public newModel(type: t.Any, initValue: IModel, ownerModel?: IModel, namespace?: INamespace,): IModel {
+  public newModel(type: t.Any, initValue: Partial<IModel>, ownerModel?: IModel, namespace?: INamespace,): IModel {
     if (!type.isOfType(Model))
       throw new Error(`newModel: type ${type.name} is not a model.`)
     const data = { ...initValue }
@@ -50,7 +52,7 @@ export class ModelStore {
     return m
   }
 
-  public newNamespace(type: t.Any, initValue: INamespace, ownerModel?: IModel, namespace?: INamespace,): INamespace {
+  public newNamespace(type: t.Any, initValue: Partial<INamespace>, ownerModel?: IModel, namespace?: INamespace,): INamespace {
     if (!type.isOfType(Namespace))
       throw new Error(`newNamespace: type ${type.name} is not a namespace.`)
     const data = { ...initValue }
@@ -65,13 +67,13 @@ export class ModelStore {
     return n
   }
 
-  public newModelElement(model: IModel, namespace: INamespace, type: t.Any, initValue: IModelElement): IModelElement {
+  public newModelElement(model: Partial<IModel>, namespace: INamespace, type: t.Any, initValue: IModelElement): IModelElement {
     if (!type.isOfType(ModelElement))
       throw new Error(`newModelElement: type ${type.name} is not a model element.`)
     const data = { ...initValue }
     this.normalizeName(data, type.name, namespace)
     const el = this.store.new<IModelElement>(type, data)
-    model.elements.push(el)
+    model.elements!.push(el)
     if (namespace != model)
       namespace.elements.push(el)
     // add to map of names
@@ -80,12 +82,13 @@ export class ModelStore {
   }
 
   // TODO: add repository owner as a top level namespace
-  private normalizeName(el: IModelElement, typeName: string, namesepace?: INamespace) {
-    // trim
+  private normalizeName(el: Partial<IModelElement>, typeName: string, namesepace?: INamespace) {
+
     if (!el.name) {
       el.name = `${typeName}_${ModelStore.getRandomInt()}`
     }
     else {
+    // trim
       const newName = el.name.replace(/\s/g, '')
       // validate
       if (!reg.test(newName))
@@ -96,15 +99,13 @@ export class ModelStore {
       }
       // set normalized name
       el.name = newName
-      // set full name - starting with topmost namespace
-      el.path = namesepace ?
-        `${this.getNameWithPath(namesepace)}/${el.name}`
-        : `/`
+      // set path to its namespace
+      el.path = namesepace ? this.getNameWithPath(namesepace) : ""
     }
   }
 
   public getNameWithPath(el: IModelElement): string {
-    return `${el.path}/${el.name}`
+    return el.path || el.path != "" ? `${el.path}/${el.name}` : `//${el.name}`
   }
 
 
