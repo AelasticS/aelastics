@@ -32,7 +32,7 @@ export class ModelStore {
 
     m.elements.forEach((e) => {
       const elType = this.store.getType(e);
-      this.store.add(elType, e);
+      this.store.add(e);
     });
 
     return m;
@@ -78,7 +78,7 @@ export class ModelStore {
     // check duplicates
     if (this.mapOfNames.has(fullQName))
       throw new Error(`addNamespace: Duplicate name "${fullQName}"`);
-    //this.store.add()
+    this.store.add(initValue)
     return initValue as INamespace;
   }
 
