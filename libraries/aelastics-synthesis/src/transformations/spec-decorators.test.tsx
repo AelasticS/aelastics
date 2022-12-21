@@ -29,10 +29,10 @@ const eerSchema1:Element<et.IEERSchema> = <e.EERSchema id='1' name='Persons' MDA
     </e.Kernel>
     <e.Weak id='11' name='Child'>
         <e.Attribute id='13' name='ChildID'>
-            <e.Domain id='14' name='number' />
+            <e.Domain name ='number' />
         </e.Attribute>
         <e.Attribute id='15' name='ChildName'>
-            <e.Domain id='16' name='string' />
+            <e.Domain $refByName='string' />
         </e.Attribute>
     </e.Weak>
 </e.EERSchema>
@@ -53,7 +53,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
     template(s:et.IEERSchema){
             return (
-                <r.RelSchema name={s.name} content="" MDA_level="M1" id={"1"}>
+                <r.RelSchema name={`${s.name} Relational Schema`} content="" MDA_level="M1">
                     {s.elements
                         .filter((el) => this.context.store.isTypeOf(el, et.Entity)) 
                         .map((el) => this.Entity2Table(el as et.IEntity)
@@ -113,7 +113,7 @@ describe("Test spec decorators", () => {
     it("tests specialization of Entit2Table rule", () => {
         let m = new EER2RelTransformation(testStore)
         let r = m.transform(s1)
-        expect(r).toHaveProperty("name", "Persons")
+        expect(r).toHaveProperty("name", "PersonsRelationalSchema")
         expect(r.elements).toEqual(expect.arrayContaining([
                 expect.objectContaining({ 
                     name: "Person",

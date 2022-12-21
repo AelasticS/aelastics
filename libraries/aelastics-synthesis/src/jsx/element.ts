@@ -86,7 +86,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     return el;
   }
 
-  // TODO: find full path name
+  // Find full path name
   public static getFullPathName(reference: string, ctx: Context): string {
     try {
       // split reference into segments
@@ -127,23 +127,26 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     }
   }
 
-  public create(ctx: Context): ElementInstance<g.IModelElement> {
+  public create(ctx: Context, forImport:boolean): ElementInstance<g.IModelElement> {
     let el: g.IModelElement | undefined;
     const { store, currentModel: model, currentNamespace: namespace } = ctx;
 
-    // handle abstract element (ignore $ref and $ref_id props)
+    // handle abstract element (ignore $id and $ref  props)
     if (this.isAbstract) {
       if (!this.subElement)
         throw new Error("elements is abstract but has no subElement!");
       // copy props from abstract element
       this.subElement.props = { ...this.props, ...this.subElement.props };
       // create subelement
-      const sub = this.subElement.create(ctx);
+      const sub = this.subElement.create(ctx, forImport);
       // take children from spec
       this.children.push(...this.subElement.children);
       return sub;
     }
 
+    if (forImport && this.props.id) { // handle import of the element
+      
+    }
     // handle normal element
     if (this.props.$ref) {
       // is object reference to an existing element
@@ -166,15 +169,9 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         );
       return this.setProps({ type: this.type, instance: el }, this.props);
     } else {
-      // create element with a full qualified name
-      // const fullPathName =  Element.getFullPathName(this.props.name!, ctx)
-      // if(!this.props.label) {
-      //   this.props.label = this.props.name
-      // }
-      // this.props.name = fullPathName
-      // this.props.path = namespace?.name
-
+      // create element 
       if (this.type.isOfType(g.Model))
+
         el = store.newModel(
           this.type,
           this.props as unknown as g.IModel,
@@ -205,11 +202,11 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   }
 
   // produce/create elements
-  public render<P extends g.IModelElement>(ctx: Context): P {
+  public render<P extends g.IModelElement>(ctx: Context, isImport:boolean = false): P {
     if ("store" in this.props) {
       ctx.pushStore((<any>this.props).store);
     }
-    const parent = this.create(ctx);
+    const parent = this.create(ctx, isImport);
     // if (parent.type.isOfType(g.Namespace)) { // push model to context
     //   ctx.pushModel(<g.INamespace>parent.instance)
     // }
@@ -220,7 +217,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let objType = parent.type as t.ObjectType<any, any>;
     let mapPropTypes = objType.allProperties;
     this.children.forEach((childElement) => {
-      const child = childElement.render(ctx);
+      const child = childElement.render(ctx, isImport);
       if (childElement.parentProp) {
         // connect parent and child
         let propType = mapPropTypes.get(childElement.parentProp);

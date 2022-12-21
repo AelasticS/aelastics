@@ -55,7 +55,7 @@ const fmModelDiagram: Element<fm.IFeatureDiagram> = (
             maxCardinality={1}
           ></SolitaryFeature>
           <SolitaryFeature
-            name="Adaptive"
+            name="Adaptive_Duplicate_line_34"
             minCardinality={0}
             maxCardinality={1}
           >
