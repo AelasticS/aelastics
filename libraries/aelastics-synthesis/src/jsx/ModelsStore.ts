@@ -176,8 +176,11 @@ export class ModelStore {
 
   async importNamespace(path: string, ctx: Context) {
     const [pathType, segments] = doParseURL(path);
-    const dynElemennt: Element<IModelElement> = await import(path);
-    dynElemennt.render(ctx);
+    const module = await import(path);
+    const el:Element<IModelElement> = module.default()
+    if (el.type.isOfType(Namespace))
+      return el.render(ctx);
+    throw new Error(`ImportNamespace: element ${el.type.name} is not a namespace or model`)
   }
 
   importModel(modelPath: string, namesepace: INamespace) {}
