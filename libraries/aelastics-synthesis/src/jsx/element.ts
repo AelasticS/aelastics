@@ -64,17 +64,45 @@ export type Super<P extends {}, R extends g.IModelElement> =
   | Template<R>
   | CpxTemplate<P, R>;
 
+  export type ConnectionInfo = 
+  {
+    propName:string,
+    isParentProp: boolean,
+    isReconnectAllowed:boolean
+  }
+  export function defaultConnectionInfo(propName:string):ConnectionInfo {
+    return {
+      propName: propName,
+      isParentProp:true,
+      isReconnectAllowed:false
+    }
+  }
+
 export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public children: Element<any>[] = [];
   public isAbstract: boolean = false;
   public subElement?: Element<any>;
+  public readonly connectionInfo?: ConnectionInfo
+
+
+
   constructor(
     public readonly type: t.Any,
     public props: P,
     //TODO: introduce type (Child|Parent, propName) and utility function
     // to forbid reconnections
-    public readonly parentProp?: string
-  ) {}
+    // public readonly parentProp?: string
+    public  connInfo?: string | ConnectionInfo
+  ) {
+    if(typeof connInfo === "string")
+      this.connectionInfo = {
+        propName: connInfo,
+        isParentProp:true,
+        isReconnectAllowed:true  // TODO: chcenge back to false after changing ccraetion of objects in transducers
+      }
+      else
+      this.connectionInfo = connInfo
+  }
 
   private setProps(
     el: ElementInstance<g.IModelElement>,
@@ -82,7 +110,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   ): ElementInstance<g.IModelElement> {
     const typeProps = (el.instance as any as t.ObjectType<any, any>)
       .allProperties;
-    // TODO
+    // TODO: copy only properties defined in the type definition
     return el;
   }
 
@@ -202,6 +230,11 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   }
 
   // produce/create elements
+  // TODO: first render (create) all children and merge with props and then create
+  // because props objects are created empty in transducer
+  // OR change the transducer to avoid creation of empty objects
+  // example PesonNAme and string in ModelStore.test.ts
+
   public render<P extends g.IModelElement>(ctx: Context, isImport:boolean = false): P {
     if ("store" in this.props) {
       ctx.pushStore((<any>this.props).store);
@@ -218,15 +251,16 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let mapPropTypes = objType.allProperties;
     this.children.forEach((childElement) => {
       const child = childElement.render(ctx, isImport);
-      if (childElement.parentProp) {
+      if (childElement.connectionInfo) {
         // connect parent and child
-        let propType = mapPropTypes.get(childElement.parentProp);
+        let propType = mapPropTypes.get(childElement.connectionInfo.propName);
         if (!propType) throw new Error();
         cnParentChild(
-          childElement.parentProp,
+          childElement.connectionInfo.propName,
           t.findTypeCategory(propType),
           parent.instance,
-          child
+          child,
+          childElement.connectionInfo.isReconnectAllowed
         );
         // toDO: create trace!
       }
@@ -242,16 +276,24 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   }
 }
 
+
+// TODO: implement check reconnect allowed
+// TODO: test reconnect allowed
 let cnParentChild = (
   prop: string | undefined,
   propType: t.TypeCategory | undefined,
   obj1: any,
-  obj2: any
+  obj2: any,
+  isReconnectAllowed:boolean
+
 ) => {
   if (prop) {
     switch (propType) {
       case "Object":
+        if(!isReconnectAllowed && obj1[prop] )
+            throw new Error(`cnParentChild: reconnection not allowed between "${obj1.name}" and "${obj2.name }" via property "${prop}"`)
         obj1[prop] = obj2;
+
         break;
       case "Array":
         if (obj1[prop] === undefined) obj1[prop] = new Array();

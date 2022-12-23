@@ -16,7 +16,12 @@ import { Context } from "./context";
 // "^[\\$a-zA-Z0-9_\\.\\-]+$"
 const reg = new RegExp("^[\\$a-zA-Z0-9_\\.\\-]+$"); // old "^[a-zA-Z0-9_\.\-/]+$"
 
-export enum AccessProtocol {"repo", "jsx-file", "json-file", "types-file"}
+export enum AccessProtocol {
+  "repo", // access model repository
+  "jsx-file", // access typescript file with a model in jsx notation
+  "json-file", // access typescript file with a model serialized with aelastic-types in json notation
+  "types-file",
+} // access typescript file with a  meta-model expressd using aelastic-types definition functions
 
 export class ModelStore {
   private store: MultiStore<string>;
@@ -80,8 +85,8 @@ export class ModelStore {
     // check duplicates
     if (this.mapOfNames.has(fullQName))
       throw new Error(`addNamespace: Duplicate name "${fullQName}"`);
-      // TODO: check that id is reused, not generated (from serialization?) - if id exist, do not generate on multistore
-    this.store.add(initValue)
+    // TODO: check that id is reused, not generated (from serialization?) - if id exist, do not generate on multistore
+    this.store.add(initValue);
     return initValue as INamespace;
   }
 
@@ -133,7 +138,7 @@ export class ModelStore {
     return el;
   }
 
-  // TODO: add repository owner as a top level namespace
+  // it should be fully qualified name without whitespaces (i.e absoluth path)  
   private normalizeName(
     el: Partial<IModelElement>,
     typeName: string,
@@ -176,14 +181,24 @@ export class ModelStore {
     schemas.forEach((s) => this.store.registerTypeSchema(s));
   }
 
-
-  async importNamespace(protocol:AccessProtocol, path: string, ctx: Context) {
-    const [pathType, segments] = doParseURL(path);
-    const module = await import(path);
-    const el:Element<IModelElement> = module.default()
-    if (el.type.isOfType(Namespace))
-      return el.render(ctx);
-    throw new Error(`ImportNamespace: element ${el.type.name} is not a namespace or model`)
+  async importNamespace(protocol: AccessProtocol, path: string, ctx: Context) {
+    switch (protocol) {
+      case AccessProtocol["jsx-file"]:
+        const [pathType, segments] = doParseURL(path);
+        const module = await import(path);
+        const el: Element<IModelElement> = module.default();
+        if (el.type.isOfType(Namespace)) return el.render(ctx);
+        throw new Error(
+          `ImportNamespace: element ${el.type.name} is not a namespace or model`
+        );
+        break;
+      case AccessProtocol.repo:
+        throw new Error("AccessProtocol.repo is not yet supported");
+      case AccessProtocol["jsx-file"]:
+        throw new Error("AccessProtocol.jsx-file is not yet supported");
+      case AccessProtocol["types-file"]:
+        throw new Error("AccessProtocol.types-file is not yet supported");
+    }
   }
 
   importModel(modelPath: AccessProtocol, namesepace: INamespace) {}
@@ -192,4 +207,7 @@ export class ModelStore {
   serializeModel() {}
   deserializeModel() {}
   validateModel() {}
+}
+function swicth(protocol: AccessProtocol) {
+  throw new Error("Function not implemented.");
 }
