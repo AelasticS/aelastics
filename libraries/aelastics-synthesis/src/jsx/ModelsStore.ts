@@ -16,6 +16,8 @@ import { Context } from "./context";
 // "^[\\$a-zA-Z0-9_\\.\\-]+$"
 const reg = new RegExp("^[\\$a-zA-Z0-9_\\.\\-]+$"); // old "^[a-zA-Z0-9_\.\-/]+$"
 
+export enum AccessProtocol {"repo", "jsx-file", "json-file", "types-file"}
+
 export class ModelStore {
   private store: MultiStore<string>;
   private mapOfNames: Map<string, IModelElement> = new Map();
@@ -174,7 +176,8 @@ export class ModelStore {
     schemas.forEach((s) => this.store.registerTypeSchema(s));
   }
 
-  async importNamespace(path: string, ctx: Context) {
+
+  async importNamespace(protocol:AccessProtocol, path: string, ctx: Context) {
     const [pathType, segments] = doParseURL(path);
     const module = await import(path);
     const el:Element<IModelElement> = module.default()
@@ -183,7 +186,7 @@ export class ModelStore {
     throw new Error(`ImportNamespace: element ${el.type.name} is not a namespace or model`)
   }
 
-  importModel(modelPath: string, namesepace: INamespace) {}
+  importModel(modelPath: AccessProtocol, namesepace: INamespace) {}
 
   exportModel() {}
   serializeModel() {}
