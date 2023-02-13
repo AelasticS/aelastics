@@ -1,5 +1,6 @@
 /*
  * Copyright (c) AelasticS 2020.
+  
  */
 
 import { Node } from '../common/Node'
