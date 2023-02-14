@@ -8,30 +8,6 @@ import { Model, ModelElement } from "generic-metamodel";
 
 export const FMModel_TypeSchema = t.schema("FMModelSchema");
 
-// #####################  ZA BRISANJE   ########################
-
-// export const ModelElement = t.object(
-//   {
-//     name: t.string,
-//   },
-//   "ModelElement",
-//   FMModel_TypeSchema
-// );
-
-// export const Model = t.subtype(
-//   ModelElement,
-//   {
-//     elements: t.arrayOf(ModelElement),
-//   },
-//   "Model",
-//   FMModel_TypeSchema
-// );
-
-// export type IModelElement = t.TypeOf<typeof ModelElement>;
-// export type IModel = t.TypeOf<typeof Model>;
-
-// #################  KRAJ DELA ZA BRISANJE  #####################
-
 export const Attribute = t.subtype(
   ModelElement,
   {
@@ -49,7 +25,7 @@ export const Feature = t.subtype(
 
     // ne znam kako da stavim da treba da bude >= 1, ali i >= minCardinality
     maxCardinality: t.number.derive().greaterThanOrEqual(1),
-    subfeatures: t.optional(t.arrayOf(t.link(FMModel_TypeSchema, "Feature"))),
+    subfeatures: t.arrayOf(t.link(FMModel_TypeSchema, "Feature")),
   },
   "Feature",
   FMModel_TypeSchema
@@ -57,7 +33,7 @@ export const Feature = t.subtype(
 
 export const SolitaryFeature = t.subtype(
   Feature,
-  { attributes: t.optional(t.arrayOf(Attribute)) },
+  { attributes: t.arrayOf(Attribute) },
   "SolitaryFeature",
   FMModel_TypeSchema
 );
