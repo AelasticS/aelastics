@@ -60,9 +60,18 @@ export class FM2TypesTransformations extends abstractM2M<
 
   @SpecOption("Feature2Object", fm.SolitaryFeature)
   Solitary2Object(f: fm.ISolitaryFeature): Element<t.IObject> {
+    // TODO: handle optional type (undefined) - to be documented
+    // return (
+    //   <TypeObject>
+    //     {f.attributes
+    //       ? f.attributes.map((e) => this.Attribute2Property(e as fm.IAttribute))
+    //       : []}
+    //   </TypeObject>
+    // );
+
     return (
       <TypeObject>
-        {f.attributes?.map((e) => this.Attribute2Property(e as fm.IAttribute))}
+        {f.attributes.map((e) => this.Attribute2Property(e as fm.IAttribute))}
       </TypeObject>
     );
   }
@@ -77,10 +86,8 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   Feature2Array(f: fm.IFeature): Element<t.IType> {
-    // ovde je dovoljno da se napravi jedan tip (taj konkretan)
-    let type = this.Feature2Object(f);
-
+    //TODO Inspect syntax error
     // @ts-ignore
-    return <TypeArray elementType={type}></TypeArray>;
+    return <TypeArray elementType={this.Feature2Object(f)}></TypeArray>;
   }
 }
