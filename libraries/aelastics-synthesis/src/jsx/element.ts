@@ -5,7 +5,6 @@ import { Context } from "./context";
 import { ModelStore } from "./ModelsStore";
 import { doParseURL, PathType } from "./path";
 
-
 // export type RefProps = { $ref?:g.IModelElement} | {$refByID?:string} | {$refByName?:string}
 export type RefProps = {
   $ref?: g.IModelElement;
@@ -64,27 +63,24 @@ export type Super<P extends {}, R extends g.IModelElement> =
   | Template<R>
   | CpxTemplate<P, R>;
 
-  export type ConnectionInfo = 
-  {
-    propName:string,
-    isParentProp: boolean,
-    isReconnectAllowed:boolean
-  }
-  export function defaultConnectionInfo(propName:string):ConnectionInfo {
-    return {
-      propName: propName,
-      isParentProp:true,
-      isReconnectAllowed:false
-    }
-  }
+export type ConnectionInfo = {
+  propName: string;
+  isParentProp: boolean;
+  isReconnectAllowed: boolean;
+};
+export function defaultConnectionInfo(propName: string): ConnectionInfo {
+  return {
+    propName: propName,
+    isParentProp: true,
+    isReconnectAllowed: false,
+  };
+}
 
 export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public children: Element<any>[] = [];
   public isAbstract: boolean = false;
   public subElement?: Element<any>;
-  public readonly connectionInfo?: ConnectionInfo
-
-
+  public readonly connectionInfo?: ConnectionInfo;
 
   constructor(
     public readonly type: t.Any,
@@ -92,16 +88,15 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     //TODO: introduce type (Child|Parent, propName) and utility function
     // to forbid reconnections
     // public readonly parentProp?: string
-    public  connInfo?: string | ConnectionInfo
+    public connInfo?: string | ConnectionInfo
   ) {
-    if(typeof connInfo === "string")
+    if (typeof connInfo === "string")
       this.connectionInfo = {
         propName: connInfo,
-        isParentProp:true,
-        isReconnectAllowed:true  // TODO: chcenge back to false after changing ccraetion of objects in transducers
-      }
-      else
-      this.connectionInfo = connInfo
+        isParentProp: true,
+        isReconnectAllowed: true, // TODO: chcenge back to false after changing ccraetion of objects in transducers
+      };
+    else this.connectionInfo = connInfo;
   }
 
   private setProps(
@@ -136,15 +131,15 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       let ctxArrayIndex = ctxArray.length - 1;
       let urlSegmentIndex = 0;
 
-      while (ctxArrayIndex >= 0 && urlSegmentIndex <= urlSegments.length-1) {
+      while (ctxArrayIndex >= 0 && urlSegmentIndex <= urlSegments.length - 1) {
         // move up namespace if path segment is '..'
         if (urlSegments[urlSegmentIndex] != "..") {
           // construct absolute path and return
-          const fname = ctx.store.getNameWithPath(ctxArray[ctxArrayIndex])
+          const fname = ctx.store.getNameWithPath(ctxArray[ctxArrayIndex]);
           return `${fname}/${urlSegments.join("/")}`;
         }
         // continue iteration
-        urlSegments.shift()
+        urlSegments.shift();
         ctxArrayIndex--;
         // urlSegmentIndex++;
       }
@@ -155,7 +150,10 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     }
   }
 
-  public create(ctx: Context, forImport:boolean): ElementInstance<g.IModelElement> {
+  public create(
+    ctx: Context,
+    forImport: boolean
+  ): ElementInstance<g.IModelElement> {
     let el: g.IModelElement | undefined;
     const { store, currentModel: model, currentNamespace: namespace } = ctx;
 
@@ -172,8 +170,8 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       return sub;
     }
 
-    if (forImport && this.props.id) { // handle import of the element
-      
+    if (forImport && this.props.id) {
+      // handle import of the element
     }
     // handle normal element
     if (this.props.$ref) {
@@ -189,7 +187,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       return this.setProps({ type: this.type, instance: el }, this.props);
     } else if (this.props?.$refByName) {
       // is reference to an existing element by name
-      const fullPathName =  Element.getFullPathName(this.props.$refByName, ctx) // `${this.props.$refByName}`;
+      const fullPathName = Element.getFullPathName(this.props.$refByName, ctx); // `${this.props.$refByName}`;
       el = store.getByName(fullPathName);
       if (!el)
         throw new ReferenceError(
@@ -197,9 +195,8 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         );
       return this.setProps({ type: this.type, instance: el }, this.props);
     } else {
-      // create element 
+      // create element
       if (this.type.isOfType(g.Model))
-
         el = store.newModel(
           this.type,
           this.props as unknown as g.IModel,
@@ -235,7 +232,10 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   // OR change the transducer to avoid creation of empty objects
   // example PesonNAme and string in ModelStore.test.ts
 
-  public render<P extends g.IModelElement>(ctx: Context, isImport:boolean = false): P {
+  public render<P extends g.IModelElement>(
+    ctx: Context,
+    isImport: boolean = false
+  ): P {
     if ("store" in this.props) {
       ctx.pushStore((<any>this.props).store);
     }
@@ -250,11 +250,20 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let objType = parent.type as t.ObjectType<any, any>;
     let mapPropTypes = objType.allProperties;
     this.children.forEach((childElement) => {
+      if (!childElement) {
+        throw new Error(
+          `childElement undefined for parent "${this.props.name}" of type "${this.type.fullPathName}"`
+        );
+      }
+
       const child = childElement.render(ctx, isImport);
       if (childElement.connectionInfo) {
         // connect parent and child
         let propType = mapPropTypes.get(childElement.connectionInfo.propName);
-        if (!propType) throw new Error();
+        if (!propType)
+          throw new Error(
+            `Undefined propType property for childElement "${childElement.props.name}"`
+          );
         cnParentChild(
           childElement.connectionInfo.propName,
           t.findTypeCategory(propType),
@@ -276,7 +285,6 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   }
 }
 
-
 // TODO: implement check reconnect allowed
 // TODO: test reconnect allowed
 let cnParentChild = (
@@ -284,14 +292,15 @@ let cnParentChild = (
   propType: t.TypeCategory | undefined,
   obj1: any,
   obj2: any,
-  isReconnectAllowed:boolean
-
+  isReconnectAllowed: boolean
 ) => {
   if (prop) {
     switch (propType) {
       case "Object":
-        if(!isReconnectAllowed && obj1[prop] )
-            throw new Error(`cnParentChild: reconnection not allowed between "${obj1.name}" and "${obj2.name }" via property "${prop}"`)
+        if (!isReconnectAllowed && obj1[prop])
+          throw new Error(
+            `cnParentChild: reconnection not allowed between "${obj1.name}" and "${obj2.name}" via property "${prop}"`
+          );
         obj1[prop] = obj2;
 
         break;
