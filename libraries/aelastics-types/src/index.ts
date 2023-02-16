@@ -3,6 +3,8 @@
  */
 
 export * from './common/DefinitionAPI'
+export * from './common/Node'
+
 export * from './type/TypeDefinisions'
 export { ITransformer, WhatToDo } from './transducers/Transformer'
 export { IMapFun, identityReducer, naturalReducer , stepperReducer, transducer} from './transducers/Transducer'

@@ -102,6 +102,31 @@ importers:
       tslib: 1.14.1
       typescript: 4.8.3
 
+  ../../libraries/aelastics-transducers:
+    specifiers:
+      '@rushstack/eslint-config': ~3.1.1
+      '@rushstack/heft': ^0.48.7
+      '@rushstack/heft-jest-plugin': ~0.3.44
+      '@types/heft-jest': 1.0.3
+      '@types/node': 18.11.9
+      aelastics-result: workspace:*
+      aelastics-types: workspace:*
+      eslint: ~7.15.0
+      tslib: ^1.10.0
+      typescript: ^4.8.3
+    dependencies:
+      aelastics-result: link:../aelastics-result
+      aelastics-types: link:../aelastics-types
+    devDependencies:
+      '@rushstack/eslint-config': 3.1.1_eslint@7.15.0+typescript@4.8.3
+      '@rushstack/heft': 0.48.7
+      '@rushstack/heft-jest-plugin': 0.3.44_@rushstack+heft@0.48.7
+      '@types/heft-jest': 1.0.3
+      '@types/node': 18.11.9
+      eslint: 7.15.0
+      tslib: 1.14.1
+      typescript: 4.8.3
+
   ../../libraries/aelastics-types:
     specifiers:
       '@rushstack/eslint-config': ~3.1.1
