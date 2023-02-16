@@ -1,6 +1,6 @@
 /** @jsx hm */
 /*
- * Copyright (c) AelasticS 2022.
+ * Copyright (c) AelasticS 2023.
  */
 
 import * as t from "aelastics-types"
@@ -38,6 +38,7 @@ export abstract class abstractM2M<S extends IModel, D extends IModel> implements
   
   abstract template(props: S): Element<S, D>
 
+  // TODO: add arguments: globalConfig and localConfig
   public transform(source:S): D {
     return this.template(source).render(this.context)
   }
