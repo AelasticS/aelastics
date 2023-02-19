@@ -8,9 +8,10 @@ import { Wrap } from './transformers/Wrap';
 import { Map } from './transformers/Map';
 import { Filter } from './transformers/Filter';
 import { RecursiveTransformer } from './transformers/RecursiveTransformer';
+import { NaturalReducer } from './transformers/NaturalReducer';
+import { IdentityReducer } from './transformers/IdentityReducer';
 /*
-import { NaturalReducer } from './NaturalReducer';
-import { IdentityReducer } from './IdentityReducer';
+
 import { ToDTOGraph } from './ToDTOGraph';
 import { FromDTOGraph } from './FromDTOGraph';
 import { Validation } from './Validation';
@@ -130,15 +131,15 @@ export const wrap = (f: (result: any, item: any, currNode: Node) => any) => {
   return new Wrap(f);
 };
 
-// const nrXF = new NaturalReducer();
-// export const naturalReducer = (): ITransformer => {
-//   return nrXF; // new NaturalReducer()
-// };
+const nrXF = new NaturalReducer();
+export const naturalReducer = (): ITransformer => {
+  return nrXF; // new NaturalReducer()
+};
 
-// const idXF = new IdentityReducer();
-// export const identityReducer = (): ITransformer => {
-//   return idXF;
-// };
+const idXF = new IdentityReducer();
+export const identityReducer = (): ITransformer => {
+  return idXF;
+};
 
 // const nrStXF = new StepperReducer();
 // export const stepperReducer = (): ITransformer => {
