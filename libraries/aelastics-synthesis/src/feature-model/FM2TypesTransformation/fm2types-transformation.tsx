@@ -4,7 +4,7 @@ import { Element } from "../../jsx/element";
 import { hm } from "../../jsx/handle";
 import { ModelStore } from "../../jsx/ModelsStore";
 import { abstractM2M } from "../../transformations/abstractM2M";
-import * as fm from "../FM_MetaModel/fm-meta.model-V2.type";
+import * as fm from "../FM_MetaModel/fm-meta.model.type";
 import { SpecPoint, SpecOption } from "../../transformations/spec-decorators";
 import {
   Property,
@@ -60,18 +60,9 @@ export class FM2TypesTransformations extends abstractM2M<
 
   @SpecOption("Feature2Object", fm.SolitaryFeature)
   Solitary2Object(f: fm.ISolitaryFeature): Element<t.IObject> {
-    // TODO: handle optional type (undefined) - to be documented
-    // return (
-    //   <TypeObject>
-    //     {f.attributes
-    //       ? f.attributes.map((e) => this.Attribute2Property(e as fm.IAttribute))
-    //       : []}
-    //   </TypeObject>
-    // );
-
     return (
       <TypeObject>
-        {f.attributes.map((e) => this.Attribute2Property(e as fm.IAttribute))}
+        {f.attributes?.map((e) => this.Attribute2Property(e as fm.IAttribute))}
       </TypeObject>
     );
   }
@@ -86,8 +77,9 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   Feature2Array(f: fm.IFeature): Element<t.IType> {
-    //TODO Inspect syntax error
-    // @ts-ignore
-    return <TypeArray elementType={this.Feature2Object(f)}></TypeArray>;
+    // ovde je dovoljno da se napravi jedan tip (taj konkretan)
+    let type = this.Feature2Object(f);
+
+    return <TypeArray elementType={<TypeObject></TypeObject>}></TypeArray>;
   }
 }

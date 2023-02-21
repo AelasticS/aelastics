@@ -2,7 +2,7 @@
 
 import { hm } from "../../jsx/handle";
 import { Element } from "../../jsx/element";
-import * as fm from "./fm-meta.model-V2.type";
+import * as fm from "./fm-meta.model.type";
 import {
   Attribute,
   FeatureDiagram,
@@ -59,7 +59,7 @@ const fmModelDiagram: Element<fm.IFeatureDiagram> = (
             minCardinality={0}
             maxCardinality={1}
           >
-            <Attribute name="Najmanja vrednost" type="string"></Attribute>
+            <Attribute name="minimalValue" type="string"></Attribute>
             <SolitaryFeature
               name="Radar"
               minCardinality={0}

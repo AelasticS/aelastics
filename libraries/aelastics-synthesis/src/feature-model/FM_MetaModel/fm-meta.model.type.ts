@@ -20,10 +20,10 @@ export const Attribute = t.subtype(
 export const Feature = t.subtype(
   ModelElement,
   {
-    // ideja je da se * predstavi kao -1, da bi mogla bilo koji broj da se upise
+    // cardinality * define as -1
     minCardinality: t.number.derive().greaterThanOrEqual(-1),
 
-    // ne znam kako da stavim da treba da bude >= 1, ali i >= minCardinality
+    // TODO add validation maxCardinality >= minCardinality
     maxCardinality: t.number.derive().greaterThanOrEqual(1),
     subfeatures: t.arrayOf(t.link(FMModel_TypeSchema, "Feature")),
   },

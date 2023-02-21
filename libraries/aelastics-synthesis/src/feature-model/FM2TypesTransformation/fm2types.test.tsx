@@ -2,7 +2,7 @@
 
 import { Element, ElementInstance } from "../../jsx/element";
 import { hm } from "../../jsx/handle";
-import * as fm from "../FM_MetaModel/fm-meta.model-V2.type";
+import * as fm from "../FM_MetaModel/fm-meta.model.type";
 
 import { FM2TypesTransformations } from "./fm2types-transformation";
 import { ModelStore } from "../../jsx/ModelsStore";

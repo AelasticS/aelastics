@@ -8,7 +8,7 @@ import {
   FeatureDiagram as FM_FeatureDiagram,
   Feature as FM_Feature,
   Attribute as FM_Attribute,
-} from "../FM_v1/fm-meta.model-V1.type";
+} from "../FM_MetaModel/fm-meta.model.type";
 import { ModelElement, Model } from "generic-metamodel";
 
 export const FMConfigModel_TypeSchema = t.schema("FMConfigModel_TypeSchema");
@@ -25,19 +25,8 @@ export const Attribute = t.object(
 
 export const SelectedFeature = t.object(
   {
-    name: t.string,
-    attributes: t.arrayOf(Attribute),
-    children: t.arrayOf(
-      t.object(
-        {
-          name: t.string,
-          attributes: t.arrayOf(Attribute),
-          reference: FM_Feature, // referencira Feature as FM metamodela. Da li treba ovo ili interfejs
-        },
-        "SelectedFeature",
-        FMConfigModel_TypeSchema
-      )
-    ),
+    // name: t.string, // nema smisla ovde, jer se ime dobija po vezi. Osim kod instance, ali onda spustiti na podtip
+    children: t.arrayOf(t.link(FMConfigModel_TypeSchema, "SelectedFeature")),
     reference: FM_Feature, // referencira Feature as FM metamodela. Da li treba ovo ili interfejs
   },
   "SelectedFeature",
@@ -57,14 +46,6 @@ export const GroupFeature = t.subtype(
   "GroupFeature",
   FMConfigModel_TypeSchema
 );
-
-export const Instance = t.subtype(
-  SelectedFeature,
-  {},
-  "GroupFeature",
-  FMConfigModel_TypeSchema
-);
-
 export const FMConfiguration = t.object(
   {
     name: t.string,
@@ -79,5 +60,4 @@ export type ISelectedFeature = t.TypeOf<typeof SelectedFeature>;
 export type IFMConfiguration = t.TypeOf<typeof FMConfiguration>;
 export type ISolitaryFeature = t.TypeOf<typeof SolitaryFeature>;
 export type IGroupFeature = t.TypeOf<typeof GroupFeature>;
-export type IInstance = t.TypeOf<typeof Instance>;
 export type IAttribute = t.TypeOf<typeof Attribute>;
