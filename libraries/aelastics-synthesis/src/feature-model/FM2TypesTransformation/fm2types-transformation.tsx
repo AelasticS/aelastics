@@ -77,8 +77,7 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   Feature2Array(f: fm.IFeature): Element<t.IType> {
-    // ovde je dovoljno da se napravi jedan tip (taj konkretan)
-    let type = this.Feature2Object(f);
+    let type: Element<t.IType> = this.Feature2Object(f);
 
     return <TypeArray elementType={<TypeObject></TypeObject>}></TypeArray>;
   }
