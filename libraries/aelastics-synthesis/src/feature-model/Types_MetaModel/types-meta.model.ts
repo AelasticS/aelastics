@@ -6,32 +6,6 @@ import { Model, ModelElement } from "generic-metamodel";
 
 export const TypesMM_TypeSchema = t.schema("TypesMM_TypeSchema");
 
-// #####################  ZA BRISANJE   ########################
-// export const ModelElement = t.object(
-//   {
-//     // name must be proper alphanumeric
-//     // label is logically same as name, but can it be consisting of several words (and shown in multiple lines)
-//     // label is shown and entered in UI; name is computed from label by removing all extra spaces and newlines
-//     name: t.string,
-//   },
-//   "ModelElement",
-//   TypesMM_TypeSchema
-// );
-
-// export const Model = t.subtype(
-//   ModelElement,
-//   {
-//     elements: t.arrayOf(ModelElement),
-//   },
-//   "Model",
-//   TypesMM_TypeSchema
-// );
-
-// export type IModelElement = t.TypeOf<typeof ModelElement>;
-// export type IModel = t.TypeOf<typeof Model>;
-
-// #################  KRAJ DELA ZA BRISANJE  #####################
-
 export const Type = t.subtype(ModelElement, {}, "Type", TypesMM_TypeSchema);
 
 export const TypeModel = t.subtype(Model, {}, "TypeModel", TypesMM_TypeSchema);
@@ -100,16 +74,12 @@ export const Union = t.subtype(
   TypesMM_TypeSchema
 );
 
-type ISimpleType = t.TypeOf<typeof SimpleType>;
+// type ISimpleType = t.TypeOf<typeof SimpleType>;
 const SimpleType = t.subtype(Type, {}, "SimpleType", TypesMM_TypeSchema);
 
 export const Number = t.subtype(SimpleType, {}, "Number", TypesMM_TypeSchema);
 export const String = t.subtype(SimpleType, {}, "String", TypesMM_TypeSchema);
 export const Boolean = t.subtype(SimpleType, {}, "Boolean", TypesMM_TypeSchema);
-
-// export const number: ISimpleType = { name: "Number" };
-// export const boolean: ISimpleType = { name: "Boolean" };
-// export const string: ISimpleType = { name: "String" };
 
 export type IObject = t.TypeOf<typeof Object>;
 export type IArray = t.TypeOf<typeof Array>;

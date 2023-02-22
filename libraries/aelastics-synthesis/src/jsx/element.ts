@@ -94,7 +94,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       this.connectionInfo = {
         propName: connInfo,
         isParentProp: true,
-        isReconnectAllowed: true, // TODO: chcenge back to false after changing ccraetion of objects in transducers
+        isReconnectAllowed: true, // TODO: change back to false after changing creation of objects in transducers
       };
     else this.connectionInfo = connInfo;
   }

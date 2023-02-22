@@ -16,19 +16,19 @@ import {
 import { Context } from "../../jsx/context";
 import { ModelStore } from "../../jsx/ModelsStore";
 
-// let a = <Object name="ime"></Object>;
-// let b = <Object $ref={a}></Object>; // efekat je da je b = a
+// let a = <Object name="name"></Object>;
+// let b = <Object $ref={a}></Object>; // same as b = a
 
-// let c: t.IType = <Object name="ime" $local_id="55"></Object>;
-// let d = <Object $ref_local_id="55"></Object>; // efekat je da je b = a
+// let c: t.IType = <Object name="name" $local_id="55"></Object>;
+// let d = <Object $ref_local_id="55"></Object>; // same as je d = c
 
 // let g = c as t.IObject;
 
 const store = new ModelStore();
 
-// const primeriReferenciranja: Element<t.ITypeModel> = (
-//   <TypeModel name="prvi type model" store={store}>
-//     <Object name="Objekat" $local_id="1">
+// const exampleOfReferencing: Element<t.ITypeModel> = (
+//   <TypeModel name="TypeModel" store={store}>
+//     <Object name="Object" $local_id="1">
 //       <Property name="prop1" />
 //       <Property name="prop2" />
 //       <Property name="prop3" />
@@ -74,34 +74,35 @@ const typeModel: Element<t.ITypeModel> = (
       </Property>
     </TypeObject>
 
-    {/* prvi nacin. lose zato sto se pravi apstraktni tip, ako se zaboravi ref_local_id */}
+    {/* TODO method 1: Bad example - if refByName is forgotten, then an abstract type will be created */}
     {/* <TypeOptional name="SomeOptionalType">
-      <TypeOfOptional $refByName="Person"></TypeOfOptional>
       <TypeOfOptional $refByName="Person"></TypeOfOptional>
     </TypeOptional>
 
-    <TypeOptional name="SomeOptionalType2">
-      <TypeOfOptional $refByName="Person"></TypeOfOptional>
-      <TypeOfOptional $refByName="Person"></TypeOfOptional>
-    </TypeOptional> */}
-
-    {/* drugi nacin. testirati da li radi */}
-
+    {/* TODO method 2: It should be tested */}
     {/* <TypeOptional
-      name="Opcioni tip"
-      optionalType={<TypeObject $refByName="OpcioniObjekat"></TypeObject>}
+      name="OptionalCompany"
+      optionalType={<TypeObject $refByName="Company"></TypeObject>}
     ></TypeOptional> */}
 
-    {/* treci nacin je da se uvede specijali jsx element REF. napraviti i testirati da li radi */}
-    {/* <TypeOptional name="Opcioni tip" optionalType={<Ref $ref_local_id="2" />}></TypeOptional> */}
+    {/* TODO method 3: create special jsx element REF. It should be implemented and tested */}
     {/* <TypeOptional
-      name="Opcioni tip"
+      name="OptionalType"
+      optionalType={<Ref $ref_local_id="2" />}
+    ></TypeOptional> */}
+
+    {/* TODO method 4: what is the meaning of the following code. 
+    What is the meaning of the added prop5 in the ref object? 
+    Is there a need to implement this method?  */}
+    {/* <TypeOptional
+      name="OptionalCompany"
       optionalType={
-        <TypeObject $refByName="OpcioniObjekat">
+        <TypeObject $refByName="Company">
           <Property name="prop5" />
         </TypeObject>
       }
     ></TypeOptional> */}
+    
   </TypeModel>
 );
 
@@ -186,30 +187,9 @@ describe("Type instance", () => {
       (e) => e.name == "OptionalCompany"
     );
 
-    let companyType = model.elements.find(
-      (e) => e.name == "Company"
-    );
+    let companyType = model.elements.find((e) => e.name == "Company");
 
     expect((optCompanyProperty as t.IProperty).domain).toBe(optCompanyType);
     expect((optCompanyProperty as t.IProperty).domain).not.toBe(companyType);
   });
-
-  // TODO: srediti ako postoji bolji nacin
-  // provera da li je superType attributa na Subtype tipu
-  // expect((model.elements[5] as t.ISubtype).superType).toEqual(
-  //   model.elements[1] as t.IType
-  // );
-
-  // it("Test optional type", () => {
-  //   expect(model).toEqual(
-  //     expect.objectContaining({
-  //       name: "PrviTypeModel",
-  //       elements: expect.arrayContaining([
-  //         expect.objectContaining({
-  //           name: "Opcioni tip",
-  //         }),
-  //       ]),
-  //     })
-  //   );
-  // });
 });
