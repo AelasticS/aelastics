@@ -11,6 +11,7 @@ import {
   TypeArray,
   TypeModel,
   TypeObject,
+  TypeOfOptional,
   TypeOptional,
 } from "../Types_MetaModel/types-components";
 import * as t from "../Types_MetaModel/types-meta.model";
@@ -79,6 +80,20 @@ export class FM2TypesTransformations extends abstractM2M<
   Feature2Array(f: fm.IFeature): Element<t.IType> {
     let type: Element<t.IType> = this.Feature2Object(f);
 
-    return <TypeArray elementType={<TypeObject></TypeObject>}></TypeArray>;
+    // TODO method 1 - add element into structure
+    // @ts-ignore
+    return (
+      <TypeArray
+        name={type.props.name + "_array"}
+        // elementType={type.render(this.context)}
+      ></TypeArray>
+    );
+
+    // TODO method 2 - reference element by name
+    // return (
+    //   <TypeArray>
+    //     <TypeOfOptional $refByName={type.props.name}></TypeOfOptional>
+    //   </TypeArray>
+    // );
   }
 }
