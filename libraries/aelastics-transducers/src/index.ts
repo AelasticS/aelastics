@@ -3,4 +3,5 @@
  */
 
 export * from './transformers/ITransformer'
+export * from "./Transducer"
 // export { ITransformer, WhatToDo } from './transducers/Transformer'

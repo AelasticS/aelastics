@@ -82,6 +82,7 @@ importers:
       '@types/node': 18.11.9
       aelastics-result: workspace:*
       aelastics-store: workspace:*
+      aelastics-transducers: workspace:*
       aelastics-types: workspace:*
       eslint: ~7.15.0
       generic-metamodel: workspace:*
@@ -90,6 +91,7 @@ importers:
     dependencies:
       aelastics-result: link:../aelastics-result
       aelastics-store: link:../aelastics-store
+      aelastics-transducers: link:../aelastics-transducers
       aelastics-types: link:../aelastics-types
       generic-metamodel: link:../generic-metamodel
     devDependencies:

@@ -35,6 +35,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "aelastics-transducers",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "aelastics-types",
       "allowedCategories": [ "production" ]
     },
