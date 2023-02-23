@@ -81,10 +81,11 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public isAbstract: boolean = false;
   public subElement?: Element<any>;
   public readonly connectionInfo?: ConnectionInfo;
+  public props: P;
 
   constructor(
     public readonly type: t.Any,
-    public props: P,
+    props: P,
     //TODO: introduce type (Child|Parent, propName) and utility function
     // to forbid reconnections
     // public readonly parentProp?: string
@@ -97,6 +98,8 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         isReconnectAllowed: true, // TODO: change back to false after changing creation of objects in transducers
       };
     else this.connectionInfo = connInfo;
+
+    this.props = props ? props : ({} as P);
   }
 
   private setProps(
