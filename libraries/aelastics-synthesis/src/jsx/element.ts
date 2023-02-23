@@ -102,14 +102,19 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     this.props = props ? props : ({} as P);
   }
 
-  private setProps(
-    el: ElementInstance<g.IModelElement>,
-    props: P
-  ): ElementInstance<g.IModelElement> {
-    const typeProps = (el.instance as any as t.ObjectType<any, any>)
-      .allProperties;
-    // TODO: copy only properties defined in the type definition
-    return el;
+  private renderProps(props: P, ctx: Context, isImport: boolean): {} {
+    let renderedProps = {};
+
+    for (const [key, value] of Object.entries(props)) {
+      let tmp =
+        value instanceof Element<P> ? value.render(ctx, isImport) : value;
+      Object.defineProperty(renderedProps, key, {
+        value: tmp,
+        enumerable: true,
+      });
+    }
+
+    return renderedProps;
   }
 
   // Find full path name
@@ -180,14 +185,28 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     if (this.props.$ref) {
       // is object reference to an existing element
       el = this.props.$ref;
-      return this.setProps({ type: this.type, instance: el }, this.props);
+
+      if (Object.keys(this.props).length > 1) {
+        throw new Error(
+          `Element '${this.type.fullPathName}' has $ref property - cannot have additional properties!`
+        );
+      }
+
+      return { type: this.type, instance: el };
     } else if (this.props?.$refByID) {
       el = store.getByID(this.props.$refByID);
       if (!el)
         throw new ReferenceError(
           `Not existing object referenced with id=${this.props.$refByID} by element '${this.type.fullPathName}'`
         );
-      return this.setProps({ type: this.type, instance: el }, this.props);
+
+      if (Object.keys(this.props).length > 1) {
+        throw new Error(
+          `Element '${this.type.fullPathName}' has $refByID property - cannot have additional properties!`
+        );
+      }
+
+      return { type: this.type, instance: el };
     } else if (this.props?.$refByName) {
       // is reference to an existing element by name
       const fullPathName = Element.getFullPathName(this.props.$refByName, ctx); // `${this.props.$refByName}`;
@@ -196,20 +215,29 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         throw new ReferenceError(
           `Not existing object referenced with name "${this.props.$refByName}" by element '${this.type.fullPathName}'`
         );
-      return this.setProps({ type: this.type, instance: el }, this.props);
+
+      if (Object.keys(this.props).length > 1) {
+        throw new Error(
+          `Element '${this.type.fullPathName}' has $refByName property - cannot have additional properties!`
+        );
+      }
+
+      return { type: this.type, instance: el };
     } else {
+      let renderedProps = this.renderProps(this.props, ctx, forImport);
+
       // create element
       if (this.type.isOfType(g.Model))
         el = store.newModel(
           this.type,
-          this.props as unknown as g.IModel,
+          renderedProps as unknown as g.IModel,
           model,
           namespace
         );
       else if (this.type.isOfType(g.Namespace))
         el = store.newNamespace(
           this.type,
-          this.props as unknown as g.INamespace,
+          renderedProps as unknown as g.INamespace,
           model,
           namespace
         );
@@ -218,13 +246,15 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         throw new Error(
           "No model in the context, but an element must be in a model!"
         );
-      else
+      else {
         el = store.newModelElement(
           model,
           namespace,
           this.type,
-          this.props as g.IModelElement
+          renderedProps as g.IModelElement
         );
+      }
+
       return { type: this.type, instance: el };
     }
   }
