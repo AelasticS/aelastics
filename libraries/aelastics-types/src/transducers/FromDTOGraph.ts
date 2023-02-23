@@ -2,6 +2,14 @@
  * Copyright (c) AelasticS 2020.
  */
 
+
+// TODO :  Serialization using annotations
+//      annotations:  serialize: no| containment | reference
+//
+//    format: JSON, JSON_Extended
+//    model export import 
+
+
 import { ITransformer, WhatToDo } from './Transformer'
 import { Node } from '../common/Node'
 import { InstanceReference } from '../type/TypeDefinisions'

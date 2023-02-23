@@ -32,3 +32,5 @@ export { EntityType, findTypeCategory } from './complex-types/EntityType'
 export { OptionalType } from './special-types/Optional'
 export { EntityReference } from './special-types/EntityReference'
 export { LinkType } from './special-types/LinkType'
+
+export {AnnotationSchema, Annotation} from './annotations/Annotation'
