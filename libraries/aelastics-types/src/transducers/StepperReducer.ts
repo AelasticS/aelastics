@@ -15,7 +15,7 @@ export class StepperReducer implements ITransformer {
   init(value: any , currNode: Node): [any , WhatToDo] {
     return [value , 'continue']
   }
-
+ 
   result(result: any , currNode: Node): [any , WhatToDo] {
     return [ result, 'continue']
   }

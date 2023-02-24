@@ -57,6 +57,7 @@ export class ObjectStore<R extends any> {
   }
 
   private resolveTypeFromObject(obj: {}):t.Any {
+    //@ts-ignore
     const path = obj[objectType];
   
     for (const schema of this.schemas.values()) {

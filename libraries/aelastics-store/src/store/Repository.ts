@@ -4,7 +4,7 @@
  */
 
 import * as t from 'aelastics-types';
-import { stepperReducer, transducer } from 'aelastics-types';
+import { identityReducer, stepperReducer, transducer } from 'aelastics-types';
 import { observable } from 'mobx';
 import { EventLog } from '../eventLog/EventLog';
 import { getUnderlyingType, HandleProps } from './HandleProps';
@@ -59,11 +59,20 @@ export class Repository<T extends t.Any> {
     return obj as P;
   }
 
-  load2<P>(baseType: t.Any, init?: Partial<P>): P {
+  exportToDTO(objType: t.Any, obj : {}):string {
+    let tr = transducer()
+      .recurse('makeItem')
+      .toDtoGraph()
+      .doFinally(identityReducer())
+    let res = objType.transduce<t.DtoGraphTypeOf<typeof objType>>(tr, obj)
+    return res
+  }
+
+  importFromDTO<P>(baseType: t.Any, inputDTO:string): P {
     // t.TypeOf<typeof baseType> {
     let tr = transducer()
       .recurse('makeItem')
-      .newInstance(init, uuidv4Generator)
+      .newInstance(inputDTO, uuidv4Generator)
       .do(ObjectObservable)
       .doIf(this.eventLog !== undefined, AddEventListeners, this.eventLog)
       .do(HandleProps)

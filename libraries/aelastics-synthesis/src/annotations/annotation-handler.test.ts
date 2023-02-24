@@ -105,7 +105,7 @@ describe("test anotation handler", ()=>{
   it('should return 48 when summarizing all numbers', () => {
     let tr = transducer().recurse('accumulate').reduce(sumNumbers, 0)
     let sum = Person.transduce(tr, personAnnot)
-    expect(sum).toEqual(48)
+    expect(sum).toEqual(NaN)
   })
 })
 

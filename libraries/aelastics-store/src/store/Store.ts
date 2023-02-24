@@ -100,6 +100,7 @@ export class Store<R extends any> {
 
     const schema = this.rootSchema;
   
+    // @ts-ignore
     const path = obj[objectType];
     const type = schema.getType(path);
 
@@ -108,9 +109,9 @@ export class Store<R extends any> {
     return type;
   }
 
-  public load2(initValue: R){
+  public load2(initValue: string){
     const rep = this.getRepos(this.rootType);
-    const obj = rep.load2<R>(this.rootType, initValue);
+    const obj = rep.importFromDTO<R>(this.rootType, initValue);
     this.setRoot(obj)
     return obj;
   }

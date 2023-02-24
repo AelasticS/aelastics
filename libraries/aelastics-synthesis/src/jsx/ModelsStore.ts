@@ -1,4 +1,6 @@
-import { MultiStore } from "aelastics-store";
+import * as fs from 'fs';
+import {stepperReducer, transducer} from 'aelastics-types'
+import { MultiStore, AddEventListeners, ObjectObservable } from "aelastics-store";
 import {
   IModel,
   IModelElement,
@@ -12,6 +14,7 @@ import { ServerProxy } from "aelastics-store";
 import { Element } from "./element";
 import { doParseURL } from "./path";
 import { Context } from "./context";
+import { FILE } from "dns";
 
 // "^[\\$a-zA-Z0-9_\\.\\-]+$"
 const reg = new RegExp("^[\\$a-zA-Z0-9_\\.\\-]+$"); // old "^[a-zA-Z0-9_\.\-/]+$"
@@ -201,12 +204,22 @@ export class ModelStore {
     }
   }
 
-  importModel(modelPath: AccessProtocol, namesepace: INamespace) {}
+  importModel(modelPath: AccessProtocol, namesepace: INamespace) {
+    throw new Error("Function not implemented.");
+  }
 
-  exportModel() {}
-  serializeModel() {}
-  deserializeModel() {}
-  validateModel() {}
+  importModelFromJSON(modelPath: string, namesepace: INamespace) {
+    const jsonString = fs.readFileSync(modelPath,'utf8');
+
+  }
+
+  exportModelToJSonFile() {
+    throw new Error("Function not implemented.");
+  }
+
+  validateModel() {
+    throw new Error("Function not implemented.");
+  }
 }
 function swicth(protocol: AccessProtocol) {
   throw new Error("Function not implemented.");
