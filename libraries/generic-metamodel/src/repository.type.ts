@@ -5,6 +5,7 @@ import { Model } from "./models.type";
 
 export const RepositoryShema = t.schema("RepositoryShema");
 
+// TODO name must be RegExp("^[a-zA-Z0-9_.-]+$")
 export const RepositoryObject =  t.entity({
     id: IDType,
     name: NameType,

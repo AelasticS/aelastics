@@ -2,15 +2,9 @@
 import * as t from "./types-meta.model";
 import { ModelStore } from "../../jsx/ModelsStore";
 import {
-  CpxTemplate,
   Element,
   Template,
-  WithRefProps,
 } from "../../jsx/element";
-
-// export type IModelProps = WithRefProps<t.ITypeModel> & {
-//   store?: ModelStore;
-// };
 
 export const TypeNumber: Template<t.INumber> = (props) => {
   return new Element(t.Number, props, undefined);

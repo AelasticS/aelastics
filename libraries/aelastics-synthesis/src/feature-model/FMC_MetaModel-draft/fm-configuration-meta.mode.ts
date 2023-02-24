@@ -8,37 +8,27 @@ import {
   FeatureDiagram as FM_FeatureDiagram,
   Feature as FM_Feature,
   Attribute as FM_Attribute,
-} from "../FM_v1/fm-meta.model-V1.type";
+} from "../FM_MetaModel/fm-meta.model.type";
 import { ModelElement, Model } from "generic-metamodel";
 
 export const FMConfigModel_TypeSchema = t.schema("FMConfigModel_TypeSchema");
 
-export const Attribute = t.object(
+export const Attribute = t.subtype(
+  ModelElement,
   {
     name: t.string,
     value: t.string,
-    reference: FM_Attribute, // referencira Attribute as FM metamodela. Da li treba ovo ili interfejs
+    reference: FM_Attribute, // TODO It should refer to an Attribute or an IAttribute?
   },
   "Attribute",
   FMConfigModel_TypeSchema
 );
 
-export const SelectedFeature = t.object(
+export const SelectedFeature = t.subtype(
+  ModelElement,
   {
-    name: t.string,
-    attributes: t.arrayOf(Attribute),
-    children: t.arrayOf(
-      t.object(
-        {
-          name: t.string,
-          attributes: t.arrayOf(Attribute),
-          reference: FM_Feature, // referencira Feature as FM metamodela. Da li treba ovo ili interfejs
-        },
-        "SelectedFeature",
-        FMConfigModel_TypeSchema
-      )
-    ),
-    reference: FM_Feature, // referencira Feature as FM metamodela. Da li treba ovo ili interfejs
+    children: t.arrayOf(t.link(FMConfigModel_TypeSchema, "SelectedFeature")),
+    reference: FM_Feature, // TODO It should refer to a Feature or an IFeature?
   },
   "SelectedFeature",
   FMConfigModel_TypeSchema
@@ -57,19 +47,11 @@ export const GroupFeature = t.subtype(
   "GroupFeature",
   FMConfigModel_TypeSchema
 );
-
-export const Instance = t.subtype(
-  SelectedFeature,
-  {},
-  "GroupFeature",
-  FMConfigModel_TypeSchema
-);
-
-export const FMConfiguration = t.object(
+export const FMConfiguration = t.subtype(
+  Model,
   {
-    name: t.string,
     selectedFeatures: t.arrayOf(SelectedFeature),
-    forModel: FM_FeatureDiagram, // referencira FeatureDiagram as FM metamodela. Da li treba ovo ili interfejs
+    forModel: FM_FeatureDiagram, // TODO It should refer to a FeatureDiagram or an IFeatureDiagram?
   },
   "FMConfiguration",
   FMConfigModel_TypeSchema
@@ -79,5 +61,4 @@ export type ISelectedFeature = t.TypeOf<typeof SelectedFeature>;
 export type IFMConfiguration = t.TypeOf<typeof FMConfiguration>;
 export type ISolitaryFeature = t.TypeOf<typeof SolitaryFeature>;
 export type IGroupFeature = t.TypeOf<typeof GroupFeature>;
-export type IInstance = t.TypeOf<typeof Instance>;
 export type IAttribute = t.TypeOf<typeof Attribute>;

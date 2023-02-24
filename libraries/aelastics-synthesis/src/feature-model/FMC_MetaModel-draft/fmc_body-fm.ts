@@ -20,9 +20,9 @@ export const bodyElectronicsSystem = t.object(
     ),
     cruiseControl: t.object(
       {
-        cena: t.number, // attribute
+        price: t.number, // attribute
 
-        // primer 1
+        // example 1
 
         // exclusiveGroup: t.taggedUnion(
         //   {
@@ -35,22 +35,30 @@ export const bodyElectronicsSystem = t.object(
         //   "exclusiveGroup"
         // ),
 
-
-        // primer 2
+        // example 2
 
         exclusiveGroup: t.optional(
-            t.object({
-            attribute: t.string, // atribute
-            Standard: t.object({}, "Standard", FMC_BodyFM_TypeSchema),
-            Standard2: t.optional(t.object({}, "Standard", FMC_BodyFM_TypeSchema)),
-            Adaptive: t.arrayOf(
-              t.object({}, "Adaptive", FMC_BodyFM_TypeSchema)
-            ),
-        }, 'exclusiveGroup', FMC_BodyFM_TypeSchema)
-        .addValidator({predicate: (value) =>  value.Standard != undefined ||  value.Standard2 != undefined,
-        message: (value)=> 'neka poruka o gresci' }))
-        
-
+          t
+            .object(
+              {
+                attribute: t.string, // atribute
+                Standard: t.object({}, "Standard", FMC_BodyFM_TypeSchema),
+                Standard2: t.optional(
+                  t.object({}, "Standard", FMC_BodyFM_TypeSchema)
+                ),
+                Adaptive: t.arrayOf(
+                  t.object({}, "Adaptive", FMC_BodyFM_TypeSchema)
+                ),
+              },
+              "exclusiveGroup",
+              FMC_BodyFM_TypeSchema
+            )
+            .addValidator({
+              predicate: (value) =>
+                value.Standard != undefined || value.Standard2 != undefined,
+              message: (value) => "Some error message",
+            })
+        ),
       },
       "cruiseControl",
       FMC_BodyFM_TypeSchema
@@ -59,7 +67,7 @@ export const bodyElectronicsSystem = t.object(
     optionalFeature: t.optional(t.boolean),
   },
   "FMC_BodyFM_TypeSchema",
-  FMC_BodyFM_TypeSchema 
+  FMC_BodyFM_TypeSchema
 );
 
 export type IbodyElectronicsSystem = t.TypeOf<typeof bodyElectronicsSystem>;
@@ -79,17 +87,16 @@ type UnionTest =
 type TestType = {
   name: string;
   exclusiveGroup: UnionTest;
-  descr: "prvi" | "drugi";
+  descr: "first" | "second";
 };
 
 const ddd: TestType = {
-  name: "ime",
+  name: "name",
   exclusiveGroup: { attr4: true, attr2: "sfdsff" },
-  descr: "prvi",
+  descr: "first",
 };
 
 const aaa = (p: TestType) =>
   (<{ attr2: string; attr4: boolean }>p.exclusiveGroup).attr4;
-
 
 //   const aaa2 = (p: TestType) => p.exclusiveGroup.attr4? p.exclusiveGroup.attr4

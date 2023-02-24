@@ -160,9 +160,8 @@
 //   });
 // });
 
-
-describe("FMC v2 instance", () => {
-    it("tests example", () => {
-      expect(true).toBeTruthy();
-    });
+describe("FMC instance", () => {
+  it("tests example", () => {
+    expect(true).toBeTruthy();
   });
+});

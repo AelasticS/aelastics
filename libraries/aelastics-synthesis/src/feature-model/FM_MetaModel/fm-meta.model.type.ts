@@ -8,30 +8,6 @@ import { Model, ModelElement } from "generic-metamodel";
 
 export const FMModel_TypeSchema = t.schema("FMModelSchema");
 
-// #####################  ZA BRISANJE   ########################
-
-// export const ModelElement = t.object(
-//   {
-//     name: t.string,
-//   },
-//   "ModelElement",
-//   FMModel_TypeSchema
-// );
-
-// export const Model = t.subtype(
-//   ModelElement,
-//   {
-//     elements: t.arrayOf(ModelElement),
-//   },
-//   "Model",
-//   FMModel_TypeSchema
-// );
-
-// export type IModelElement = t.TypeOf<typeof ModelElement>;
-// export type IModel = t.TypeOf<typeof Model>;
-
-// #################  KRAJ DELA ZA BRISANJE  #####################
-
 export const Attribute = t.subtype(
   ModelElement,
   {
@@ -44,12 +20,12 @@ export const Attribute = t.subtype(
 export const Feature = t.subtype(
   ModelElement,
   {
-    // ideja je da se * predstavi kao -1, da bi mogla bilo koji broj da se upise
+    // cardinality * define as -1
     minCardinality: t.number.derive().greaterThanOrEqual(-1),
 
-    // ne znam kako da stavim da treba da bude >= 1, ali i >= minCardinality
+    // TODO add validation maxCardinality >= minCardinality
     maxCardinality: t.number.derive().greaterThanOrEqual(1),
-    subfeatures: t.optional(t.arrayOf(t.link(FMModel_TypeSchema, "Feature"))),
+    subfeatures: t.arrayOf(t.link(FMModel_TypeSchema, "Feature")),
   },
   "Feature",
   FMModel_TypeSchema
@@ -57,7 +33,7 @@ export const Feature = t.subtype(
 
 export const SolitaryFeature = t.subtype(
   Feature,
-  { attributes: t.optional(t.arrayOf(Attribute)) },
+  { attributes: t.arrayOf(Attribute) },
   "SolitaryFeature",
   FMModel_TypeSchema
 );
