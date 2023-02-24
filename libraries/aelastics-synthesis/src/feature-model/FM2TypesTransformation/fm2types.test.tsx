@@ -23,12 +23,15 @@ import {
 import { Context } from "../../jsx/context";
 
 const store = new ModelStore();
-const store2 = new ModelStore();
-
 const ctx: Context = new Context();
+ctx.pushStore(store);
+
+const store2 = new ModelStore();
+const ctx2: Context = new Context();
+ctx2.pushStore(store2);
 
 const featureModel: Element<fm.IFeatureDiagram> = (
-  <FeatureDiagram name="FirstFMDiagram" store={store}>
+  <FeatureDiagram name="FirstFMDiagram">
     <RootFeature
       name="BodyElectronicsSystem"
       minCardinality={1}
@@ -38,7 +41,7 @@ const featureModel: Element<fm.IFeatureDiagram> = (
 );
 
 const resultTypeModel: Element<t.ITypeModel> = (
-  <TypeModel name="FirstFMDiagram_type_model" store={store2}>
+  <TypeModel name="FirstFMDiagram_type_model">
     <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
   </TypeModel>
 );
@@ -49,8 +52,10 @@ describe("Test FM2Type transformations", () => {
   it("tests root feature to type model", () => {
     let trans = new FM2TypesTransformations(store);
     let result = trans.transform(model);
-    // expect(result).toEqual(resultTypeModel.render(ctx));
-    expect(result).toBeTruthy();
+
+    let resultModel = resultTypeModel.render(ctx2);
+    // expect(result).toEqual(resultModel);
+    // expect(result).toBeTruthy();
   });
 
   // it("tests root optional to type model", () => {
@@ -63,34 +68,26 @@ describe("Test FM2Type transformations", () => {
   //     ></RootFeature>
   //   </FeatureDiagram>
   // );
+
   // // TODO Example 1 of result type model
   // const resultTypeModel: Element<t.ITypeModel> = (
-  //   <TypeModel name="FirstFMDiagram_type_model" store={store2}>
-  //     <TypeOptional
-  //       optionalType={
-  //         <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
-  //       }
-  //     ></TypeOptional>
-  //   </TypeModel>
+  // <TypeModel name="FirstFMDiagram_type_model" store={store2}>
+  //   <TypeOptional
+  //     optionalType={
+  //       <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
+  //     }
+  //   ></TypeOptional>
+  // </TypeModel>
   // );
+
   // // TODO Example 2 of result type model
-  // const resultTypeModel2: Element<t.ITypeModel> = (
-  //   <TypeModel name="FirstFMDiagram_type_model" store={store2}>
-  //     <TypeOptional>
-  //       <TypeOfOptional>
-  //         <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
-  //       </TypeOfOptional>
-  //     </TypeOptional>
-  //   </TypeModel>
-  // );
-  // // TODO Example 3 of result type model
   // const resultTypeModel3: Element<t.ITypeModel> = (
-  //   <TypeModel name="FirstFMDiagram_type_model" store={store2}>
-  //     <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
-  //     <TypeOptional>
-  //       <TypeOfOptional $refByName="BodyElectronicsSystem_type" />
-  //     </TypeOptional>
-  //   </TypeModel>
+  <TypeModel name="FirstFMDiagram_type_model" store={store2}>
+    <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
+    <TypeOptional>
+      <TypeOfOptional $refByName="BodyElectronicsSystem_type" />
+    </TypeOptional>
+  </TypeModel>;
   // );
   // const model: fm.IFeatureDiagram = featureModel.render(ctx);
   // let trans = new FM2TypesTransformations(store);

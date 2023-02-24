@@ -7,6 +7,7 @@ import { abstractM2M } from "../../transformations/abstractM2M";
 import * as fm from "../FM_MetaModel/fm-meta.model.type";
 import { SpecPoint, SpecOption } from "../../transformations/spec-decorators";
 import {
+  ArrayElementType,
   Property,
   TypeArray,
   TypeModel,
@@ -14,11 +15,11 @@ import {
   TypeOfOptional,
   TypeOptional,
 } from "../Types_MetaModel/types-components";
-import * as t from "../Types_MetaModel/types-meta.model";
+import * as tmm from "../Types_MetaModel/types-meta.model";
 
 export class FM2TypesTransformations extends abstractM2M<
   fm.IFeatureDiagram,
-  t.ITypeModel
+  tmm.ITypeModel
 > {
   constructor(store: ModelStore) {
     super(store);
@@ -32,7 +33,7 @@ export class FM2TypesTransformations extends abstractM2M<
     );
   }
 
-  Feature2Type(f: fm.IFeature): Element<t.IType> {
+  Feature2Type(f: fm.IFeature): Element<tmm.IType> {
     let type = undefined;
     if (
       f.maxCardinality == 1 ||
@@ -51,7 +52,7 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   @SpecPoint()
-  Feature2Object(f: fm.IFeature): Element<t.IType> {
+  Feature2Object(f: fm.IFeature): Element<tmm.IType> {
     return (
       <TypeObject name={f.name + "_type"}>
         {f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature))}
@@ -60,7 +61,7 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   @SpecOption("Feature2Object", fm.SolitaryFeature)
-  Solitary2Object(f: fm.ISolitaryFeature): Element<t.IObject> {
+  Solitary2Object(f: fm.ISolitaryFeature): Element<tmm.IObject> {
     return (
       <TypeObject>
         {f.attributes?.map((e) => this.Attribute2Property(e as fm.IAttribute))}
@@ -69,30 +70,27 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   @SpecOption("Feature2Object", fm.GroupFeature)
-  Group2Object(f: fm.IGroupFeature): Element<t.IObject> {
+  Group2Object(f: fm.IGroupFeature): Element<tmm.IObject> {
     return <TypeObject></TypeObject>;
   }
 
-  Attribute2Property(a: fm.IAttribute): Element<t.IProperty> {
+  Attribute2Property(a: fm.IAttribute): Element<tmm.IProperty> {
     return <Property name={a.name}></Property>;
   }
 
-  Feature2Array(f: fm.IFeature): Element<t.IType> {
-    let type: Element<t.IType> = this.Feature2Object(f);
-
-    // TODO method 1 - add element into structure
-    // @ts-ignore
+  Feature2Array(f: fm.IFeature): Element<tmm.IType> {
     return (
-      <TypeArray
-        name={type.props.name + "_array"}
-        // elementType={type.render(this.context)}
-      ></TypeArray>
+      // @ts-ignore
+      <TypeArray elementType={this.Feature2Object(f)}></TypeArray>
     );
 
-    // TODO method 2 - reference element by name
+    // TODO method 2 - working
     // return (
     //   <TypeArray>
-    //     <TypeOfOptional $refByName={type.props.name}></TypeOfOptional>
+    //     {typeOfElement}
+    //     <ArrayElementType
+    //       $refByName={typeOfElement.props.name}
+    //     ></ArrayElementType>
     //   </TypeArray>
     // );
   }
