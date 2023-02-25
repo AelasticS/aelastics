@@ -41,6 +41,7 @@ export class AppStore<IdType> {
     private readonly idGenerators:Map<string, ()=>IdType>;
     private chunks: Map<string, CacheChunk<IdType>> = new Map();
     private logState: LogStateType;
+    //@ts-ignore
     private log: Events.EventLog;
 
 

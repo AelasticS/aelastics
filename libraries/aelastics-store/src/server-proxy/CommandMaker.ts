@@ -22,7 +22,9 @@ export type ObjectCommand = Create | Delete | Update | Connect | Disconnect;
 type MergeResult = 'merged' | 'not_merged' | 'cancel';
 
 export abstract class Command {
+  // @ts-ignore
   readonly operationType: Operation;
+  // @ts-ignore
   firstObjID: ObjectProps;
   readonly firstObjType: string;
   readonly versioning : boolean;
@@ -148,7 +150,7 @@ export class Update extends Command {
 
   readonly operationType: Operation = Operation.update;
   props: ObjectProps;
-  type: string;
+  type: string = '';
 
 
   constructor(oc: EventLog.PropertyChanged, versioning: boolean = false) {
@@ -226,6 +228,7 @@ export class Connect extends Command {
       case EventLog.EventType.ElementRemoved:
         const cr = c as EventLog.CollectionElementRemoved;
         if (this.assocName !== cr.property) return 'not_merged';
+  // @ts-ignore
         if (this.secondObjID === cr.secondArgObject[objectUUID]) return 'cancel';
       case EventLog.EventType.ObjectCreated:
       case EventLog.EventType.ObjectDeleted:
@@ -238,22 +241,24 @@ export class Connect extends Command {
 
 export class Disconnect extends Command {
   readonly operationType: Operation = Operation.disconnect;
-  assocName: string;
-  private _secondObj: ObjectProps;
+  assocName: string = '';
+  private _secondObj: ObjectProps | undefined;
 
   public get secondObjID(): ObjectProps {
-    return this._secondObj;
+    return this._secondObj!;
   }
   public set secondObjID(value: ObjectProps) {
     this._secondObj = value;
   }
 
   constructor(oc: EventLog.CollectionElementRemoved | EventLog.PropertyChanged, versioning: boolean = false) {
+    // @ts-ignore
     super(oc.object[OBJECT_TYPE_PROPERTY], versioning);
     this.firstObjID = this.firstObjID = {propNames: [], propValues: []};
   }
 
   mergeWith(c: EventLog.OperationEvent): MergeResult {
+    // @ts-ignore
     if (this.firstObjID !== c.object[objectUUID]) return 'not_merged';
     switch (c.type) {
       case EventLog.EventType.PropertyChanged:
@@ -264,6 +269,7 @@ export class Disconnect extends Command {
       case EventLog.EventType.ElementInserted:
         const cr = c as EventLog.CollectionElementRemoved;
         if (this.assocName !== cr.property) return 'not_merged';
+        // @ts-ignore
         if (this.secondObjID === cr.secondArgObject[objectUUID]) return 'cancel';
       case EventLog.EventType.ObjectCreated:
       case EventLog.EventType.ObjectDeleted:

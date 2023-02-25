@@ -303,6 +303,7 @@ export function makeObjectPropInverseToObjectProp(
       if (this[objectStatus] === StatusValue.Deleted) {
         throw new Error(`Access to deleted object via property '${propName}'`);
       }
+  // @ts-ignore
       return this[`${prefixValue}${propName}`];
     },
     set [propName](newValue: any) {

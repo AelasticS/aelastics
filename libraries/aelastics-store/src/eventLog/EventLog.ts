@@ -3,6 +3,8 @@
 /* tslint:disable:array-type */
 /* tslint:disable:ban-types */
 
+import { ObjectLiteral } from "aelastics-types";
+
 //  Transaction is changed to Action!
 
 // import * as Store from "./AppStore"
@@ -173,7 +175,7 @@ export class Action extends LogItem {
 }
 
 export abstract class OperationEvent extends LogItem {
-  public object: Object;
+  public object: ObjectLiteral;
 
   constructor(obj: Object, type: EventType) {
     super(type);
