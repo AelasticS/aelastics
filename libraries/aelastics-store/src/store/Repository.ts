@@ -4,7 +4,7 @@
  */
 
 import * as t from 'aelastics-types';
-import { identityReducer, stepperReducer, transducer } from 'aelastics-types';
+import { identityReducer, ObjectLiteral, stepperReducer, transducer } from 'aelastics-types';
 import { observable } from 'mobx';
 import { EventLog } from '../eventLog/EventLog';
 import { getUnderlyingType, HandleProps } from './HandleProps';
@@ -59,7 +59,7 @@ export class Repository<T extends t.Any> {
     return obj as P;
   }
 
-  exportToDTO(objType: t.Any, obj : {}):string {
+  exportToDTO(objType: t.Any, obj : ObjectLiteral):ObjectLiteral {
     let tr = transducer()
       .recurse('makeItem')
       .toDtoGraph()
