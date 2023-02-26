@@ -9,6 +9,7 @@ import { objectType, objectUUID } from './CommonConstants';
  * Store - keeps application state
  */
 
+
 export class MultiStore<ID> {
     public readonly schemas: Map<string, t.TypeSchema> = new Map();
     public eventLog = new EventLog();

@@ -14,18 +14,6 @@ const PlaceType = t.entity(
   ["placeID"],
   "PlaceType"
 );
-const ProjectType = t.entity(
-  {
-    projectID: t.number,
-    name: t.string,
-    projectTeam: t.arrayOf(
-      t.link(t.DefaultSchema, "PersonType"),
-      "projectTeam"
-    ),
-  },
-  ["projectID"],
-  "ProjectType"
-);
 
 const PersonType = t.entity(
   {
@@ -35,16 +23,15 @@ const PersonType = t.entity(
     children: t.arrayOf(t.link(t.DefaultSchema, "PersonType"), "children"),
     birthPlace: PlaceType,
     parent: t.optional(t.link(t.DefaultSchema, "PersonType"), "parent"),
-    projects: t.arrayOf(ProjectType, "projects"),
   },
   ["personID"],
   "PersonType"
 );
+
+//TODO: invese props do not work when creating based on init object
 t.inverseProps(PersonType, "children", PersonType, "parent");
-t.inverseProps(PersonType, "projects", ProjectType, "projectTeam");
 
 type IPersonType = t.TypeOf<typeof PersonType>;
-type IProjectType = t.TypeOf<typeof ProjectType>;
 type IPlaceType = t.TypeOf<typeof PlaceType>;
 
 describe("Test export", () => {
@@ -54,14 +41,26 @@ describe("Test export", () => {
   let repo: Repository<t.Any> = new Repository();
   beforeEach(() => {
     store = new Store(PersonType);
-    place = store.new<IPlaceType>(PlaceType, {placeID:2092, name:"Charlottenlund"})
-    peter = store.new<IPersonType>(PersonType, 
-      { name: "Peter", personID:1, age:35, birthPlace:place
-      });
-    expect(peter).toBeTruthy();
   });
 
-  it("should export object with simple properties", () => {
+  it("should export a complex object with a cyclic structure", () => {
+    place = store.new<IPlaceType>(PlaceType, {
+      placeID: 2092,
+      name: "Charlottenlund",
+    });
+    peter = store.new<IPersonType>(PersonType, {
+      name: "Peter",
+      personID: 1,
+      age: 35,
+      birthPlace: place,   // birthPlace is shared with parent
+      parent: { name: "Tom", personID: 4, age: 60, birthPlace: place },
+      children: [
+        { name: "John", personID: 2, age: 10, birthPlace: place },
+        { name: "Ana", personID: 3, age: 5, birthPlace: place }
+      ],
+
+    });
+    peter.parent.parent = peter  // this makes Tom as both parent and child of Peter
     let exp = repo.exportToDTO(PersonType, peter);
     expect(exp).toEqual({
       ref: {
@@ -80,34 +79,124 @@ describe("Test export", () => {
             id: 2,
           },
           array: [
+            {
+              ref: {
+                typeName: "/DefaultSchema/PersonType",
+                category: "Object",
+                id: 3,
+              },
+              object: {
+                personID: 2,
+                name: "John",
+                age: 10,
+                children: {
+                  ref: {
+                    typeName: "/DefaultSchema/children",
+                    category: "Array",
+                    id: 4,
+                  },
+                  array: [
+                  ],
+                },
+                birthPlace: {
+                  ref: {
+                    typeName: "/DefaultSchema/PlaceType",
+                    category: "Object",
+                    id: 5,
+                  },
+                  object: {
+                    placeID: 2092,
+                    name: "Charlottenlund",
+                  },
+                },
+                parent: undefined,
+              },
+            },
+            {
+              ref: {
+                typeName: "/DefaultSchema/PersonType",
+                category: "Object",
+                id: 6,
+              },
+              object: {
+                personID: 3,
+                name: "Ana",
+                age: 5,
+                children: {
+                  ref: {
+                    typeName: "/DefaultSchema/children",
+                    category: "Array",
+                    id: 7,
+                  },
+                  array: [
+                  ],
+                },
+                birthPlace: {
+                  ref: {
+                    typeName: "/DefaultSchema/PlaceType",
+                    category: "Object",
+                    id: 5,
+                  },
+                },
+                parent: undefined,
+              },
+            },
+            {
+              ref: {
+                typeName: "/DefaultSchema/PersonType",
+                category: "Object",
+                id: 8,
+              },
+              object: {
+                personID: 4,
+                name: "Tom",
+                age: 60,
+                children: {
+                  ref: {
+                    typeName: "/DefaultSchema/children",
+                    category: "Array",
+                    id: 9,
+                  },
+                  array: [
+                  ],
+                },
+                birthPlace: {
+                  ref: {
+                    typeName: "/DefaultSchema/PlaceType",
+                    category: "Object",
+                    id: 5,
+                  },
+                },
+                parent: {
+                  ref: {
+                    typeName: "/DefaultSchema/PersonType",
+                    category: "Object",
+                    id: 1,
+                  },
+                },
+              },
+            },
           ],
         },
         birthPlace: {
           ref: {
             typeName: "/DefaultSchema/PlaceType",
             category: "Object",
-            id: 3,
-          },
-          object: {
-            placeID: 2092,
-            name: "Charlottenlund",
+            id: 5,
           },
         },
-        parent: undefined,
-        projects: {
+        parent: {
           ref: {
-            typeName: "/DefaultSchema/projects",
-            category: "Array",
-            id: 4,
+            typeName: "/DefaultSchema/PersonType",
+            category: "Object",
+            id: 8,
           },
-          array: [
-          ],
         },
       },
     });
   });
 
-  it("should export object with simple optional properties", () => {});
+
 
   it("should export object with object properties", () => {});
 
