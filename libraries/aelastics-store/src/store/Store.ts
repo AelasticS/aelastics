@@ -13,6 +13,7 @@ import { isSuccess } from 'aelastics-result';
 import {objectType} from './CommonConstants';
 import { Schema } from 'inspector';
 import { Command, ObjectCommand } from '../server-proxy/CommandMaker';
+import { ObjectLiteral } from 'aelastics-types';
 
 /**
  * // TODO identifier generation
@@ -109,7 +110,7 @@ export class Store<R extends any> {
     return type;
   }
 
-  public load2(initValue: string){
+  public load2(initValue: ObjectLiteral){
     const rep = this.getRepos(this.rootType);
     const obj = rep.importFromDTO<R>(this.rootType, initValue);
     this.setRoot(obj)
