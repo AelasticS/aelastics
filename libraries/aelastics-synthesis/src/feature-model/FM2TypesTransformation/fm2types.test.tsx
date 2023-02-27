@@ -35,8 +35,24 @@ const featureModel: Element<fm.IFeatureDiagram> = (
     <RootFeature
       name="BodyElectronicsSystem"
       minCardinality={1}
-      maxCardinality={-1}
-    ></RootFeature>
+      maxCardinality={1}
+    >
+      <SolitaryFeature
+        name="singleSolitary"
+        minCardinality={1}
+        maxCardinality={1}
+      ></SolitaryFeature>
+      <SolitaryFeature
+        name="OptionalSolitary"
+        minCardinality={0}
+        maxCardinality={1}
+      ></SolitaryFeature>
+      <SolitaryFeature
+        name="ArraySolitary"
+        minCardinality={1}
+        maxCardinality={-1}
+      ></SolitaryFeature>
+    </RootFeature>
   </FeatureDiagram>
 );
 

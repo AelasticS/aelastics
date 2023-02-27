@@ -7,12 +7,10 @@ import { abstractM2M } from "../../transformations/abstractM2M";
 import * as fm from "../FM_MetaModel/fm-meta.model.type";
 import { SpecPoint, SpecOption } from "../../transformations/spec-decorators";
 import {
-  ArrayElementType,
   Property,
   TypeArray,
   TypeModel,
   TypeObject,
-  TypeOfOptional,
   TypeOptional,
 } from "../Types_MetaModel/types-components";
 import * as tmm from "../Types_MetaModel/types-meta.model";
@@ -28,7 +26,7 @@ export class FM2TypesTransformations extends abstractM2M<
   template(fd: fm.IFeatureDiagram) {
     return (
       <TypeModel name={fd.name + "_type_model"} MDA_level="M2">
-        {fd.elements.map((e) => this.Feature2Type(e as fm.IFeature))}
+        {fd.rootFeatures.map((e) => this.Feature2Type(e as fm.IFeature))}
       </TypeModel>
     );
   }
@@ -45,7 +43,8 @@ export class FM2TypesTransformations extends abstractM2M<
     }
 
     if (f.minCardinality === 0) {
-      type = <TypeOptional>{type}</TypeOptional>;
+      // @ts-ignore
+      type = <TypeOptional optionalType={type}></TypeOptional>;
     }
 
     return type;
@@ -55,7 +54,15 @@ export class FM2TypesTransformations extends abstractM2M<
   Feature2Object(f: fm.IFeature): Element<tmm.IType> {
     return (
       <TypeObject name={f.name + "_type"}>
-        {f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature))}
+        {f.subfeatures?.map((e) => {
+          return (
+            <Property
+              name={e.name + "_prop"}
+              // @ts-ignore
+              domain={this.Feature2Type(e as fm.IFeature)}
+            ></Property>
+          );
+        })}
       </TypeObject>
     );
   }
@@ -75,6 +82,7 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   Attribute2Property(a: fm.IAttribute): Element<tmm.IProperty> {
+    // TODO map IAttribute type to domain
     return <Property name={a.name}></Property>;
   }
 
