@@ -35,7 +35,8 @@ import { ObjectLiteral } from 'aelastics-types';
 export class Store<R extends any> {
   public readonly rootType: t.Any;
   public  eventLog = new EventLog();
-  private repos: Map<t.Any, Repository<any>> = new Map();
+ // private repos: Map<t.Any, Repository<any>> = new Map();
+  private repo:Repository<t.Any> = new Repository(this.eventLog)
   private server?: ServerProxy;
   //  @observable
   public root: R | undefined; // = undefined as any
@@ -44,15 +45,6 @@ export class Store<R extends any> {
     this.rootType = rootType;
     this.root = root;
     this.server = server;
-  }
-
-  private getRepos(type: t.Any): Repository<t.Any> {
-    let rep = this.repos.get(type);
-    if (!rep) {
-      rep = new Repository(this.eventLog);
-      this.repos.set(type, rep);
-    }
-    return rep;
   }
 
   public get rootSchema():t.TypeSchema {
@@ -71,28 +63,24 @@ export class Store<R extends any> {
 
   // public new(type: t.Any, initValue?: Partial<t.TypeOf<typeof type>>): t.TypeOf<typeof type> {
   public new<P>(type: t.Any, initValue?: Partial<P>): P {
-    const rep = this.getRepos(type);
-    const obj = rep.create(type, initValue);
+    const obj = this.repo.create(type, initValue);
     return obj;
   }
 
   public new1<P>(type: t.Any, initValue: P): P {
-    const rep = this.getRepos(type);
-    const obj = rep.create<P>(type, initValue);
+    const obj = this.repo.create<P>(type, initValue);
     return obj;
   }
 
   public new2<P>(type: t.Any, initValue: P): P {
-    const rep = this.getRepos(type);
-    const obj = rep.create2<P>(type, initValue);
+    const obj = this.repo.create2<P>(type, initValue);
     return obj;
   }
   
   public delete<P>(object: P): void {
     let type = this.resolveTypeFromObject(object as Object);
-    const rep = this.getRepos(type);
     if (type.typeCategory !== 'Object') throw new Error(`You cannot delete typeCategory ${type.typeCategory}`);
-    const obj = rep.delete(type as t.ObjectType<any,any>, object as any);
+    const obj = this.repo.delete(type as t.ObjectType<any,any>, object as any);
   }
 
 
@@ -111,8 +99,7 @@ export class Store<R extends any> {
   }
 
   public load2(initValue: ObjectLiteral){
-    const rep = this.getRepos(this.rootType);
-    const obj = rep.importFromDTO<R>(this.rootType, initValue);
+    const obj = this.repo.importFromDTO<R>(this.rootType, initValue);
     this.setRoot(obj)
     return obj;
   }
