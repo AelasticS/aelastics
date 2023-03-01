@@ -1,7 +1,5 @@
 export * from './store/Store';
 export * from './store/MultiStore';
-export * from './store/ObjectStore';
-export * from './store/PersistentStore';
 export * from './store/Repository';
 export * from './server-proxy/ServerProxyManager';
 export * from './server-proxy/ServerRequestResponse.type'
