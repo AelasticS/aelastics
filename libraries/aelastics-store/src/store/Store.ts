@@ -123,6 +123,7 @@ export class Store<R extends ObjectLiteral> {
     this.eventLog.clear();
   }
 
+  /*
   public load(rootID: string){
 
   }
@@ -133,5 +134,5 @@ export class Store<R extends ObjectLiteral> {
     // query izvrsava repository za t2 i on formira objekte preko HandleProps
     // setovati po ulaznom objektu properti sa dobijenim objektom/ima (bez event log-a!)
   }
-
+*/
 }
