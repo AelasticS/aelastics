@@ -47,9 +47,7 @@ export class Store<R extends any> {
     this.server = server;
   }
 
-  public get rootSchema():t.TypeSchema {
-    return this.rootType.ownerSchema;
-  }
+
 
   //  @action
   public setRoot(root: R | undefined) {
@@ -87,7 +85,7 @@ export class Store<R extends any> {
 
   private resolveTypeFromObject(obj: {}):t.Any {
 
-    const schema = this.rootSchema;
+    const schema = this.rootType.ownerSchema 
   
     // @ts-ignore
     const path = obj[objectType];
