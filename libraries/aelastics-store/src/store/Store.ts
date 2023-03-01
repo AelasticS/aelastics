@@ -10,7 +10,7 @@ import { EventLog } from '../eventLog/EventLog';
 import { ServerProxy } from '../server-proxy/ServerProxy';
 import { getUnderlyingType } from './HandleProps';
 import { isSuccess } from 'aelastics-result';
-import {objectType} from './CommonConstants';
+import {IStoreObject, objectType} from './CommonConstants';
 import { Schema } from 'inspector';
 import { Command, ObjectCommand } from '../server-proxy/CommandMaker';
 import { ObjectLiteral } from 'aelastics-types';
@@ -32,7 +32,7 @@ import { ObjectLiteral } from 'aelastics-types';
  * Store - keeps application state
  */
 
-export class Store<R extends any> {
+export class Store<R extends ObjectLiteral> {
   public readonly rootType: t.Any;
   public  eventLog = new EventLog();
  // private repos: Map<t.Any, Repository<any>> = new Map();
@@ -60,17 +60,17 @@ export class Store<R extends any> {
   }
 
   // public new(type: t.Any, initValue?: Partial<t.TypeOf<typeof type>>): t.TypeOf<typeof type> {
-  public new<P>(type: t.Any, initValue?: Partial<P>): P {
+  public new<P extends ObjectLiteral>(type: t.Any, initValue?: Partial<P>): P {
     const obj = this.repo.deepCreate(type, initValue);
     return obj;
   }
 
-  public deepCreate<P>(type: t.Any, initValue: P): P {
+  public deepCreate<P extends ObjectLiteral>(type: t.Any, initValue: P): IStoreObject<P> {
     const obj = this.repo.deepCreate<P>(type, initValue);
     return obj;
   }
 
-  public create<P>(type: t.Any, initValue: P): P {
+  public create<P extends ObjectLiteral>(type: t.Any, initValue: P): IStoreObject<P> {
     const obj = this.repo.create<P>(type, initValue);
     return obj;
   }

@@ -16,6 +16,7 @@ import { getUnderlyingType, HandleProps } from "./HandleProps";
 import { AddEventListeners } from "../eventLog/AddEventListenersTransformer";
 import { ObjectObservable } from "../eventLog/ObservableTransformer";
 import { v4 as uuidv4 } from "uuid";
+import { IStoreObject } from "./CommonConstants";
 
 let counter: number = 100;
 
@@ -29,7 +30,7 @@ export class Repository<T extends t.Any> {
     this.eventLog = eventLog;
   }
   // static create(baseType: t.Any, init?: Partial<t.TypeOf<typeof baseType>>): { [key: string]: any };
-  deepCreate<P>(baseType: t.Any, init?: Partial<P>): P {
+  deepCreate<P extends ObjectLiteral>(baseType: t.Any, init?: Partial<P>):IStoreObject<P> {
     // t.TypeOf<typeof baseType> {
 
     let tr = transducer()
@@ -48,10 +49,10 @@ export class Repository<T extends t.Any> {
       );
       //  console.log(this.eventLog.getAllActions())
     }
-    return obj as P;
+    return obj as IStoreObject<P>;
   }
 
-  create<P>(baseType: t.Any, init: P): P {
+  create<P extends ObjectLiteral>(baseType: t.Any, init: P): IStoreObject<P> {
     let tr = transducer()
       // .recurse('makeItem')
       .newInstance(init, uuidv4Generator)
@@ -67,7 +68,7 @@ export class Repository<T extends t.Any> {
       );
       //  console.log(this.eventLog.getAllActions())
     }
-    return obj as P;
+    return obj as IStoreObject<P>;
   }
 
   exportToDTO(objType: t.Any, obj: ObjectLiteral): ObjectLiteral {
@@ -79,7 +80,7 @@ export class Repository<T extends t.Any> {
     return res;
   }
 
-  importFromDTO<P>(baseType: t.Any, inputDTO: ObjectLiteral): P {
+  importFromDTO<P extends ObjectLiteral>(baseType: t.Any, inputDTO: ObjectLiteral): IStoreObject<P> {
     let tr = transducer()
       .recurse("makeItem")
       .fromDtoGraph()
