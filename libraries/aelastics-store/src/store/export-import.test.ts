@@ -45,11 +45,11 @@ describe("Test export", () => {
   });
 
   it("should export a complex object with a cyclic structure", () => {
-    place = store.new<IPlaceType>(PlaceType, {
+    place = store.deepCreate<IPlaceType>(PlaceType, {
       placeID: 2092,
       name: "Charlottenlund",
     });
-    peter = store.new<IPersonType>(PersonType, {
+    peter = store.deepCreate<IPersonType>(PersonType, {
       name: "Peter",
       personID: 1,
       age: 35,

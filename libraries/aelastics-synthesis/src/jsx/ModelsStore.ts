@@ -70,7 +70,7 @@ export class ModelStore {
     // check duplicates
     if (this.mapOfNames.has(fullQName))
       throw new Error(`newModel: Duplicate name "${fullQName}"`);
-    const m = this.store.new<IModel>(type, data);
+    const m = this.store.deepCreate<IModel>(type, data);
     if (ownerModel) ownerModel.elements.push(m);
     if (namespace) namespace.elements.push(m);
     // add to map of names
@@ -108,7 +108,7 @@ export class ModelStore {
     if (this.mapOfNames.has(fullQName))
       throw new Error(`newNamespace: Duplicate name "${fullQName}"`);
 
-    const n = this.store.new<INamespace>(type, data);
+    const n = this.store.deepCreate<INamespace>(type, data);
     if (ownerModel) ownerModel.elements.push(n);
     if (namespace) namespace.elements.push(n);
     // add to map of names
@@ -133,7 +133,7 @@ export class ModelStore {
     if (this.mapOfNames.has(fullQName))
       throw new Error(`newModelElement: Duplicate name "${fullQName}"`);
 
-    const el = this.store.new<IModelElement>(type, data);
+    const el = this.store.deepCreate<IModelElement>(type, data);
     model.elements!.push(el);
     if (namespace != model) namespace.elements.push(el);
     // add to map of names

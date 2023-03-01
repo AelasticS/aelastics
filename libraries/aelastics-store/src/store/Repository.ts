@@ -29,7 +29,7 @@ export class Repository<T extends t.Any> {
     this.eventLog = eventLog;
   }
   // static create(baseType: t.Any, init?: Partial<t.TypeOf<typeof baseType>>): { [key: string]: any };
-  create<P>(baseType: t.Any, init?: Partial<P>): P {
+  deepCreate<P>(baseType: t.Any, init?: Partial<P>): P {
     // t.TypeOf<typeof baseType> {
 
     let tr = transducer()
@@ -51,7 +51,7 @@ export class Repository<T extends t.Any> {
     return obj as P;
   }
 
-  create2<P>(baseType: t.Any, init: P): P {
+  create<P>(baseType: t.Any, init: P): P {
     let tr = transducer()
       // .recurse('makeItem')
       .newInstance(init, uuidv4Generator)

@@ -61,17 +61,17 @@ export class Store<R extends any> {
 
   // public new(type: t.Any, initValue?: Partial<t.TypeOf<typeof type>>): t.TypeOf<typeof type> {
   public new<P>(type: t.Any, initValue?: Partial<P>): P {
-    const obj = this.repo.create(type, initValue);
+    const obj = this.repo.deepCreate(type, initValue);
     return obj;
   }
 
-  public new1<P>(type: t.Any, initValue: P): P {
+  public deepCreate<P>(type: t.Any, initValue: P): P {
+    const obj = this.repo.deepCreate<P>(type, initValue);
+    return obj;
+  }
+
+  public create<P>(type: t.Any, initValue: P): P {
     const obj = this.repo.create<P>(type, initValue);
-    return obj;
-  }
-
-  public new2<P>(type: t.Any, initValue: P): P {
-    const obj = this.repo.create2<P>(type, initValue);
     return obj;
   }
   
@@ -96,8 +96,11 @@ export class Store<R extends any> {
     return type;
   }
 
-  public load2(initValue: ObjectLiteral){
-    const obj = this.repo.importFromDTO<R>(this.rootType, initValue);
+  public importDTO(initValue: ObjectLiteral){
+    const tmpRepo = new Repository()
+    // avoid eventLog 
+    // const obj = this.repo.importFromDTO<R>(this.rootType, initValue);
+    const obj = tmpRepo.importFromDTO<R>(this.rootType, initValue);
     this.setRoot(obj)
     return obj;
   }
