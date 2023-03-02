@@ -154,6 +154,39 @@ importers:
       tslib: 1.14.1
       typescript: 4.8.3
 
+  ../../libraries/examples:
+    specifiers:
+      '@rushstack/eslint-config': ~3.1.1
+      '@rushstack/heft': ^0.48.7
+      '@rushstack/heft-jest-plugin': ~0.3.44
+      '@types/heft-jest': 1.0.3
+      '@types/node': 18.11.9
+      aelastics-result: workspace:*
+      aelastics-store: workspace:*
+      aelastics-synthesis: workspace:*
+      aelastics-transducers: workspace:*
+      aelastics-types: workspace:*
+      eslint: ~7.15.0
+      generic-metamodel: workspace:*
+      tslib: ^1.10.0
+      typescript: ^4.8.3
+    dependencies:
+      aelastics-result: link:../aelastics-result
+      aelastics-store: link:../aelastics-store
+      aelastics-synthesis: link:../aelastics-synthesis
+      aelastics-transducers: link:../aelastics-transducers
+      aelastics-types: link:../aelastics-types
+      generic-metamodel: link:../generic-metamodel
+    devDependencies:
+      '@rushstack/eslint-config': 3.1.1_eslint@7.15.0+typescript@4.8.3
+      '@rushstack/heft': 0.48.7
+      '@rushstack/heft-jest-plugin': 0.3.44_@rushstack+heft@0.48.7
+      '@types/heft-jest': 1.0.3
+      '@types/node': 18.11.9
+      eslint: 7.15.0
+      tslib: 1.14.1
+      typescript: 4.8.3
+
   ../../libraries/generic-metamodel:
     specifiers:
       '@rushstack/eslint-config': ~3.1.1
@@ -591,7 +624,7 @@ packages:
       '@jest/console': 27.5.1
       '@jest/reporters': 27.4.6
       '@jest/test-result': 27.5.1
-      '@jest/transform': 27.4.6
+      '@jest/transform': 27.5.1
       '@jest/types': 27.5.1
       '@types/node': 18.11.9
       ansi-escapes: 4.3.2
@@ -604,11 +637,11 @@ packages:
       jest-haste-map: 27.5.1
       jest-message-util: 27.5.1
       jest-regex-util: 27.5.1
-      jest-resolve: 27.4.6
+      jest-resolve: 27.5.1
       jest-resolve-dependencies: 27.5.1
       jest-runner: 27.5.1
       jest-runtime: 27.5.1
-      jest-snapshot: 27.4.6
+      jest-snapshot: 27.5.1
       jest-util: 27.5.1
       jest-validate: 27.5.1
       jest-watcher: 27.5.1
@@ -674,7 +707,7 @@ packages:
       '@bcoe/v8-coverage': 0.2.3
       '@jest/console': 27.5.1
       '@jest/test-result': 27.5.1
-      '@jest/transform': 27.4.6
+      '@jest/transform': 27.5.1
       '@jest/types': 27.5.1
       '@types/node': 18.11.9
       chalk: 4.1.2
@@ -688,7 +721,7 @@ packages:
       istanbul-lib-source-maps: 4.0.1
       istanbul-reports: 3.1.5
       jest-haste-map: 27.5.1
-      jest-resolve: 27.4.6
+      jest-resolve: 27.5.1
       jest-util: 27.5.1
       jest-worker: 27.5.1
       slash: 3.0.0
@@ -1028,6 +1061,7 @@ packages:
 
   /@sinonjs/commons/1.8.4:
     resolution: {integrity: sha512-RpmQdHVo8hCEHDVpO39zToS9jOhR6nw+/lQAzRNq9ErrGV9IeHM71XCn68svVl/euFeVW6BWX4p35gkhbOcSIQ==}
+    deprecated: Breaks compatibility with ES5, use v1.8.5
     dependencies:
       type-detect: 4.0.8
     dev: true
@@ -2627,7 +2661,7 @@ packages:
       jest-get-type: 27.5.1
       jest-jasmine2: 27.5.1
       jest-regex-util: 27.5.1
-      jest-resolve: 27.4.6
+      jest-resolve: 27.5.1
       jest-runner: 27.5.1
       jest-util: 27.5.1
       jest-validate: 27.5.1
@@ -2981,7 +3015,7 @@ packages:
       '@babel/plugin-syntax-typescript': 7.20.0_@babel+core@7.19.6
       '@babel/traverse': 7.20.1
       '@babel/types': 7.20.0
-      '@jest/transform': 27.4.6
+      '@jest/transform': 27.5.1
       '@jest/types': 27.5.1
       '@types/babel__traverse': 7.18.2
       '@types/prettier': 2.7.1

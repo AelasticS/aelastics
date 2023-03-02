@@ -4,19 +4,19 @@
   "packages": [
     {
       "name": "@rushstack/eslint-config",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "@rushstack/heft",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "@rushstack/heft-jest-plugin",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "@types/heft-jest",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "@types/uuid",
@@ -28,27 +28,31 @@
     },
     {
       "name": "aelastics-result",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "aelastics-store",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "aelastics-synthesis",
+      "allowedCategories": [ "prototypes" ]
     },
     {
       "name": "aelastics-transducers",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "aelastics-types",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "generic-metamodel",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "jest",
@@ -68,7 +72,7 @@
     },
     {
       "name": "tslib",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "uuid",
