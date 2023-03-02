@@ -35,7 +35,7 @@ export const SpecPoint = () => {
                 throw new Error(`No specilized method found`)
               }
               // get result form original method
-              let orgResult = original.apply(target, args)
+              let orgResult = original.apply(this, args)
               // get result from specialized method
               let specResult:Element<IModelElement> = (target as any)[option.specMethod](...args);
               // connect corresponding results(elemnets)
