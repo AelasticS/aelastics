@@ -8,7 +8,7 @@ import {
   EventType,
   PropertyChanged
 } from '../eventLog/EventLog';
-import { Store } from './Store';
+import { Aggregate } from './Aggregate';
 
 const PlaceType = t.entity({ placeID: t.number, name: t.string }, ['placeID'], 'PlaceType');
 const ProjectType = t.entity(
@@ -41,13 +41,13 @@ type IPersonType = t.TypeOf<typeof PersonType>;
 type IProjectType = t.TypeOf<typeof ProjectType>;
 
 describe('example abstract model', () => {
-  let store: Store<any>;
+  let store: Aggregate<any>;
   let log: EventLog;
   let peter: IPersonType;
   beforeEach(() => {
-    store = new Store(PersonType);
+    store = new Aggregate(PersonType);
     log = store.eventLog
-    peter = store.new<IPersonType>(PersonType, { name: 'Peter' });
+    peter = store.deepCreate<IPersonType>(PersonType, { name: 'Peter' });
     expect(peter).toBeTruthy();
   });
   it('should log the change of the not inversed property', () => {
@@ -73,7 +73,7 @@ describe('example abstract model', () => {
   });
   it('should log the change of the parent', () => {
     log.createAction('update parent');
-    let child = store.new<IPersonType>(PersonType, { name: 'child' });
+    let child = store.deepCreate<IPersonType>(PersonType, { name: 'child' });
     child.parent = peter;
     expect(peter.children.includes(child)).toBeTruthy();
     expect(log.lastAction.events.length).toEqual(2);
@@ -88,7 +88,7 @@ describe('example abstract model', () => {
         );
       }) > -1
     );
-    let parent2 = store.new<IPersonType>(PersonType, { name: 'parent2' });
+    let parent2 = store.deepCreate<IPersonType>(PersonType, { name: 'parent2' });
     child.parent = parent2;
 
     expect(child.parent).toEqual(parent2);
@@ -111,7 +111,7 @@ describe('example abstract model', () => {
   });
   it('should log the change of the children', () => {
     log.createAction('update parent');
-    let child1 = store.new<IPersonType>(PersonType, { name: 'child1' });
+    let child1 = store.deepCreate<IPersonType>(PersonType, { name: 'child1' });
     peter.children.push(child1);
     expect(child1.parent === peter).toBeTruthy(); // set child's parent property
     expect(log.lastAction.events.length).toEqual(2);
@@ -128,7 +128,7 @@ describe('example abstract model', () => {
       }) > -1
     );
 
-    let parent2 = store.new<IPersonType>(PersonType, { name: 'parent2' });
+    let parent2 = store.deepCreate<IPersonType>(PersonType, { name: 'parent2' });
     parent2.children.push(child1);
     expect(log.lastAction.events.length).toEqual(4);
     expect(child1.parent === parent2).toBeTruthy(); // set child's parent property
@@ -145,7 +145,7 @@ describe('example abstract model', () => {
       }) > -1
     );
 
-    let child2 = store.new<IPersonType>(PersonType, { name: 'child2' });
+    let child2 = store.deepCreate<IPersonType>(PersonType, { name: 'child2' });
     child2.parent = peter;
     parent2.children[0] = child2; // replace new child
     expect(child1.parent === undefined).toBeTruthy(); // nullified child1's parent property
@@ -166,7 +166,7 @@ describe('example abstract model', () => {
   });
   test('array-to-array inverse properties, when push, pop ', () => {
     log.createAction('update array-to-array inverse properties');
-    let project1 = store.new<IProjectType>(ProjectType, { name: 'project1' });
+    let project1 = store.deepCreate<IProjectType>(ProjectType, { name: 'project1' });
     peter.projects.push(project1);
     expect(project1.projectTeam.includes(peter)).toBeTruthy();
     project1.projectTeam.pop();
@@ -174,8 +174,8 @@ describe('example abstract model', () => {
   });
   test('array-to-array inverse properties, when replacing', () => {
     log.createAction('update array-to-array inverse properties');
-    let project1 = store.new<IProjectType>(ProjectType, { name: 'project1' });
-    let project2 = store.new<IProjectType>(ProjectType, { name: 'project2' });
+    let project1 = store.deepCreate<IProjectType>(ProjectType, { name: 'project1' });
+    let project2 = store.deepCreate<IProjectType>(ProjectType, { name: 'project2' });
     peter.projects.push(project1);
     expect(project1.projectTeam.includes(peter)).toBeTruthy();
     peter.projects[0] = project2;

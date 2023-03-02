@@ -7,7 +7,7 @@
 
 import * as t from "aelastics-types";
 import { Repository } from "./Repository";
-import { MultiStore } from "./MultiStore";
+import { Store } from "./Store";
 import exp from "constants";
 
 const PlaceType = t.entity(
@@ -36,12 +36,12 @@ type IPersonType = t.TypeOf<typeof PersonType>;
 type IPlaceType = t.TypeOf<typeof PlaceType>;
 
 describe("Test export", () => {
-  let store: MultiStore<any>;
+  let store: Store<any>;
   let peter: IPersonType;
   let place: IPlaceType;
   let repo: Repository<t.Any> = new Repository();
   beforeEach(() => {
-    store = new MultiStore<string>();
+    store = new Store<string>();
   });
 
   it("should export a complex object with a cyclic structure", () => {
@@ -199,11 +199,11 @@ describe("Test export", () => {
 });
 
 describe("Test import", ()=>{
-  let store: MultiStore<any>;
+  let store: Store<any>;
   let repo: Repository<t.Any> = new Repository();
 
   beforeEach(() => {
-    store = new MultiStore<string>();
+    store = new Store<string>();
   });
 
   it("should import from JSON an object with cyclic structure into store", ()=>{

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {stepperReducer, transducer} from 'aelastics-types'
-import { MultiStore, AddEventListeners, ObjectObservable } from "aelastics-store";
+import { Store, AddEventListeners, ObjectObservable } from "aelastics-store";
 import {
   IModel,
   IModelElement,
@@ -27,10 +27,10 @@ export enum AccessProtocol {
 } // access typescript file with a  meta-model expressd using aelastic-types definition functions
 
 export class ModelStore {
-  private store: MultiStore<string>;
+  private store: Store<string>;
   private mapOfNames: Map<string, IModelElement> = new Map();
   constructor(server?: ServerProxy) {
-    this.store = new MultiStore(server);
+    this.store = new Store(server);
   }
   static getRandomInt() {
     return Math.floor(Math.random() * 999999999999);

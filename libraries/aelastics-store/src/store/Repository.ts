@@ -52,7 +52,7 @@ export class Repository<T extends t.Any> {
     return obj as IStoreObject<P>;
   }
 
-  create<P extends ObjectLiteral>(baseType: t.Any, init: P): IStoreObject<P> {
+  create<P extends ObjectLiteral>(baseType: t.Any, init?: Partial<P>): IStoreObject<P> {
     let tr = transducer()
       // .recurse('makeItem')
       .newInstance(init, uuidv4Generator)
