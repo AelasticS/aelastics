@@ -32,16 +32,16 @@ import { ObjectLiteral } from 'aelastics-types';
  * Aggreagate - DDD aggregate is a cluster of domain objects that can be treated as a single unit.
  */
 
-export class Aggregate<R extends ObjectLiteral> {
+export class Aggregate<R extends ObjectLiteral, ID = string> {
   public readonly rootType: t.Any;
   public  eventLog = new EventLog();
  // private repos: Map<t.Any, Repository<any>> = new Map();
-  private repo:Repository<t.Any> = new Repository(this.eventLog)
+  private repo:Repository<t.Any, ID> = new Repository(this.eventLog)
   private server?: ServerProxy;
   //  @observable
-  public root: IStoreObject<R> | undefined; // = undefined as any
+  public root: IStoreObject<ID, R> | undefined; // = undefined as any
 
-  constructor(rootType: t.Any, root?: IStoreObject<R>, server?: ServerProxy) {
+  constructor(rootType: t.Any, root?: IStoreObject<ID, R>, server?: ServerProxy) {
     this.rootType = rootType;
     this.root = root;
     this.server = server;
@@ -49,17 +49,17 @@ export class Aggregate<R extends ObjectLiteral> {
 
 
   //  @action
-  public createRoot(initValue?: Partial<R>): IStoreObject<R> {
+  public createRoot(initValue?: Partial<R>): IStoreObject<ID, R> {
     this['root'] = this.deepCreate(this.rootType, initValue);
     return this['root']
   }
 
-  public deepCreate<P extends ObjectLiteral>(type: t.Any, initValue?: Partial<P>): IStoreObject<P> {
+  public deepCreate<P extends ObjectLiteral>(type: t.Any, initValue?: Partial<P>): IStoreObject<ID, P> {
     const obj = this.repo.deepCreate<P>(type, initValue);
     return obj;
   }
 
-  public create<P extends ObjectLiteral>(type: t.Any, initValue?: Partial<P>): IStoreObject<P> {
+  public create<P extends ObjectLiteral>(type: t.Any, initValue?: Partial<P>): IStoreObject<ID, P> {
     const obj = this.repo.create<P>(type, initValue);
     return obj;
   }
@@ -85,7 +85,7 @@ export class Aggregate<R extends ObjectLiteral> {
   }
 
   public importDTO(initValue: ObjectLiteral){
-    const tmpRepo = new Repository()
+    const tmpRepo = new Repository<t.Any, ID>()
     // avoid eventLog 
     // const obj = this.repo.importFromDTO<R>(this.rootType, initValue);
     const obj = tmpRepo.importFromDTO<R>(this.rootType, initValue);

@@ -39,7 +39,7 @@ describe("Test export", () => {
   let store: Store<any>;
   let peter: IPersonType;
   let place: IPlaceType;
-  let repo: Repository<t.Any> = new Repository();
+  let repo: Repository<t.Any, string> = new Repository();
   beforeEach(() => {
     store = new Store<string>();
   });
@@ -200,7 +200,7 @@ describe("Test export", () => {
 
 describe("Test import", ()=>{
   let store: Store<any>;
-  let repo: Repository<t.Any> = new Repository();
+  let repo: Repository<t.Any, string> = new Repository();
 
   beforeEach(() => {
     store = new Store<string>();

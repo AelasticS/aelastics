@@ -15,6 +15,7 @@ import { Element } from "./element";
 import { doParseURL } from "./path";
 import { Context } from "./context";
 import { FILE } from "dns";
+import { IStoreObject } from 'aelastics-store/lib/store/CommonConstants';
 
 // "^[\\$a-zA-Z0-9_\\.\\-]+$"
 const reg = new RegExp("^[\\$a-zA-Z0-9_\\.\\-]+$"); // old "^[a-zA-Z0-9_\.\-/]+$"
@@ -36,12 +37,12 @@ export class ModelStore {
     return Math.floor(Math.random() * 999999999999);
   }
 
-  public async fetchModel(type: t.Any, id: string) {
+  public async fetchModel(type: t.Any, id: string): Promise<IModel|undefined> {
     this.store.registerTypeSchema(type.ownerSchema);
-    const m = (await this.store.fetchObjectByID(type, id)) as IModel;
-
-    m.elements.forEach((e) => {
-      const elType = this.store.getType(e);
+    const m = (await this.store.fetchObjectByID(type, id)) as IModel|undefined
+    
+    m?.elements.forEach((e) => {
+      //@ts-ignore
       this.store.add(e);
     });
 
@@ -78,6 +79,7 @@ export class ModelStore {
     return m;
   }
 
+  /*
   public addNamespace(
     type: t.Any,
     initValue: Partial<INamespace>,
@@ -92,6 +94,7 @@ export class ModelStore {
     this.store.add(initValue);
     return initValue as INamespace;
   }
+*/
 
   public newNamespace(
     type: t.Any,
@@ -172,10 +175,12 @@ export class ModelStore {
   }
 
   public getTypeOf(e: IModelElement): t.Any {
+    // @ts-ignore
     return this.store.getType(e);
   }
 
   public isTypeOf(e: IModelElement, type: t.Any): boolean {
+    //@ts-ignore
     const elType = this.store.getType(e);
     return elType.isOfType(type);
   }

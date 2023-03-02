@@ -16,15 +16,11 @@ export class NewInstance implements ITransformer {
   private _currentTemplate: any[] = [];
   private _generateID?: () => any;
   
-
-
   constructor(xf: ITransformer, templateObj?: any, generateID?: () => any) {
     this.xf = xf;
     this.templateObj = templateObj;
     this._generateID = generateID;
   }
-
-
 
   init(value: any, currNode: Node): [any, WhatToDo] {
 
@@ -41,9 +37,13 @@ export class NewInstance implements ITransformer {
           currNode.instance = this.templateObj;
     }
     let [r, a] = this.xf.init(value, currNode);
+ 
+    return [r, a];
+  }
+
+  result(result: any, currNode: Node): [any, WhatToDo] {
     let typeName: string;
     if (
-      // TODO:subtyping test
       currNode.type.typeCategory === 'Object' &&
       //  r['@@aelastics/type'] === undefined &&
       currNode.instance !== undefined &&
@@ -53,9 +53,8 @@ export class NewInstance implements ITransformer {
       let type = System.getType(typeName);
       if (type) currNode.type = type;
     }
-    // TODO:  is '@@aelastics/type' property needed?
     
-    Object.defineProperty(r, '@@aelastics/type', {
+    Object.defineProperty(result, '@@aelastics/type', {
       value: currNode.type.fullPathName,
       writable: true,
       enumerable: false,
@@ -63,16 +62,12 @@ export class NewInstance implements ITransformer {
     });
     
     if (this._generateID)
-      Object.defineProperty(r, '@@aelastics/ID', {
+      Object.defineProperty(result, '@@aelastics/ID', {
         value: this._generateID(),
         writable: true,
         enumerable: true,
         configurable: true
       });
-    return [r, a];
-  }
-
-  result(result: any, currNode: Node): [any, WhatToDo] {
     this._currentTemplate.pop();
     return this.xf.result(result, currNode);
   }
@@ -80,6 +75,5 @@ export class NewInstance implements ITransformer {
   step(result: any, value: any, currNode: Node): [any, WhatToDo] {
     if (value === undefined) value = currNode.type.init(currNode);
     return this.xf.step(result, value, currNode);
-    //   return [result, 'continue']
   }
 }

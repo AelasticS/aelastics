@@ -24,13 +24,13 @@ let uuidv4Generator = () => {
   return uuidv4();
 };
 
-export class Repository<T extends t.Any> {
+export class Repository<T extends t.Any, ID = string> {
   readonly eventLog: EventLog | undefined;
   constructor(eventLog?: EventLog) {
     this.eventLog = eventLog;
   }
   // static create(baseType: t.Any, init?: Partial<t.TypeOf<typeof baseType>>): { [key: string]: any };
-  deepCreate<P extends ObjectLiteral>(baseType: t.Any, init?: Partial<P>):IStoreObject<P> {
+  deepCreate<P extends ObjectLiteral>(baseType: t.Any, init?: Partial<P>):IStoreObject<ID, P> {
     // t.TypeOf<typeof baseType> {
 
     let tr = transducer()
@@ -49,10 +49,10 @@ export class Repository<T extends t.Any> {
       );
       //  console.log(this.eventLog.getAllActions())
     }
-    return obj as IStoreObject<P>;
+    return obj as IStoreObject<ID, P>;
   }
 
-  create<P extends ObjectLiteral>(baseType: t.Any, init?: Partial<P>): IStoreObject<P> {
+  create<P extends ObjectLiteral>(baseType: t.Any, init?: Partial<P>): IStoreObject<ID, P> {
     let tr = transducer()
       // .recurse('makeItem')
       .newInstance(init, uuidv4Generator)
@@ -68,7 +68,7 @@ export class Repository<T extends t.Any> {
       );
       //  console.log(this.eventLog.getAllActions())
     }
-    return obj as IStoreObject<P>;
+    return obj as IStoreObject<ID, P>;
   }
 
   exportToDTO(objType: t.Any, obj: ObjectLiteral): ObjectLiteral {
@@ -80,7 +80,7 @@ export class Repository<T extends t.Any> {
     return res;
   }
 
-  importFromDTO<P extends ObjectLiteral>(baseType: t.Any, inputDTO: ObjectLiteral): IStoreObject<P> {
+  importFromDTO<P extends ObjectLiteral>(baseType: t.Any, inputDTO: ObjectLiteral): IStoreObject<ID, P> {
     let tr = transducer()
       .recurse("makeItem")
       .fromDtoGraph()

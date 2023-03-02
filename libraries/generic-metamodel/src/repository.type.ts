@@ -2,17 +2,21 @@ import * as t from "aelastics-types";
 import { DescriptionType, IDType, NameType } from "./basic.type";
 import { Model } from "./models.type";
 
+const objectID = '@@aelastics/ID';
+const objectType = '@@aelastics/type'
 
 export const RepositoryShema = t.schema("RepositoryShema");
 
+
 // TODO name must be RegExp("^[a-zA-Z0-9_.-]+$")
 export const RepositoryObject =  t.entity({
+
     id: IDType,
     name: NameType,
     description: DescriptionType,
     ownerRepository: IDType,
     ownerPackage: IDType,
-    objectType: t.string.derive("ObjectType").oneOf(['Item', 'Package', 'ObjAsPackage']),
+    category: t.string.derive("ObjectType").oneOf(['Item', 'Package', 'ObjAsPackage']),
     objectClassification:IDType
 }, ['id'] as const, 'RepositoryObject', RepositoryShema);
 
