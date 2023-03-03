@@ -3,17 +3,26 @@
  * Author: Sinisa Neskovic
  */
 
-import * as t from 'aelastics-types';
-import { Repository } from './Repository';
-import { observable, action, intercept, observe, IArraySplice, IObservableObject, values } from 'mobx';
-import { EventLog } from '../eventLog/EventLog';
-import { ServerProxy } from '../server-proxy/ServerProxy';
-import { getUnderlyingType } from './HandleProps';
-import { isSuccess } from 'aelastics-result';
-import {IStoreObject, objectType} from './CommonConstants';
-import { Schema } from 'inspector';
-import { Command, ObjectCommand } from '../server-proxy/CommandMaker';
-import { ObjectLiteral } from 'aelastics-types';
+import * as t from "aelastics-types";
+import { Repository } from "./Repository";
+import {
+  observable,
+  action,
+  intercept,
+  observe,
+  IArraySplice,
+  IObservableObject,
+  values,
+} from "mobx";
+import { EventLog } from "../eventLog/EventLog";
+import { ServerProxy } from "../server-proxy/ServerProxy";
+import { getUnderlyingType } from "./HandleProps";
+import { isSuccess } from "aelastics-result";
+import { IStoreObject, objectType } from "./CommonConstants";
+import { Schema } from "inspector";
+import { Command, ObjectCommand } from "../server-proxy/CommandMaker";
+import { ObjectLiteral } from "aelastics-types";
+import { Base } from "./Base";
 
 /**
  * // TODO identifier generation
@@ -32,81 +41,65 @@ import { ObjectLiteral } from 'aelastics-types';
  * Aggreagate - DDD aggregate is a cluster of domain objects that can be treated as a single unit.
  */
 
-export class Aggregate<R extends ObjectLiteral, ID = string> {
+export class Aggregate<R extends ObjectLiteral, ID = string> extends Base<ID> {
   public readonly rootType: t.Any;
-  public  eventLog = new EventLog();
- // private repos: Map<t.Any, Repository<any>> = new Map();
-  private repo:Repository<t.Any, ID> = new Repository(this.eventLog)
-  private server?: ServerProxy;
+
   //  @observable
   public root: IStoreObject<ID, R> | undefined; // = undefined as any
 
-  constructor(rootType: t.Any, root?: IStoreObject<ID, R>, server?: ServerProxy) {
+  constructor(
+    rootType: t.Any,
+    root?: IStoreObject<ID, R>,
+    server?: ServerProxy
+  ) {
+    super(server);
     this.rootType = rootType;
     this.root = root;
-    this.server = server;
   }
-
 
   //  @action
   public createRoot(initValue?: Partial<R>): IStoreObject<ID, R> {
-    this['root'] = this.deepCreate(this.rootType, initValue);
-    return this['root']
+    this["root"] = this.deepCreate(this.rootType, initValue);
+    return this["root"];
   }
 
-  public deepCreate<P extends ObjectLiteral>(type: t.Any, initValue?: Partial<P>): IStoreObject<ID, P> {
-    const obj = this.repo.deepCreate<P>(type, initValue);
-    return obj;
-  }
-
-  public create<P extends ObjectLiteral>(type: t.Any, initValue?: Partial<P>): IStoreObject<ID, P> {
-    const obj = this.repo.create<P>(type, initValue);
-    return obj;
-  }
-  
-  public delete<P>(object: P): void {
-    let type = this.resolveTypeFromObject(object as Object);
-    if (type.typeCategory !== 'Object') throw new Error(`You cannot delete typeCategory ${type.typeCategory}`);
-    const obj = this.repo.delete(type as t.ObjectType<any,any>, object as any);
-  }
-
-
-  private resolveTypeFromObject(obj: {}):t.Any {
-
-    const schema = this.rootType.ownerSchema 
-  
+  public getType<T extends IStoreObject<ID, ObjectLiteral>>(obj: T): t.Any {
+    const schema = this.rootType.ownerSchema;
     // @ts-ignore
     const path = obj[objectType];
     const type = schema.getType(path);
-
-    if (!type) throw new Error(`Object type '${path}' does not exist in schema '${schema.name}'`);
-
+    if (!type)
+      throw new Error(
+        `Object type '${path}' does not exist in schema '${schema.name}'`
+      );
     return type;
   }
 
-  public importDTO(initValue: ObjectLiteral){
-    const tmpRepo = new Repository<t.Any, ID>()
-    // avoid eventLog 
-    // const obj = this.repo.importFromDTO<R>(this.rootType, initValue);
-    const obj = tmpRepo.importFromDTO<R>(this.rootType, initValue);
-    this.root = obj
+  public importDTO(initValue: ObjectLiteral) {
+    const obj = super.importFromDTO(this.rootType, initValue);
+    //@ts-ignore
+    this.root = obj;
     return obj;
   }
 
-  
+  public exportDTO() {
+    if(this.root)
+      return super.exportToDTO(this.rootType, this.root)
+  }
+
   /**
    * Strategies:
-   *  1. subtypes collapsed into supertype/expanded into separte 
+   *  1. subtypes collapsed into supertype/expanded into separte
    *  2. all relationships collapsed into one super rel/expanded into separte rels
    *  3. all attaributes are collapsed
-   * 
+   *
    */
   public save() {
-    if (!this.server) throw new Error('Store without server.');
+    if (!this.server) throw new Error("Store without server.");
     const cmdMaker = this.server.getCommandMaker(this.rootType.ownerSchema);
-    const cmds = cmdMaker.makeCommands(this.eventLog)
-    const req = this.server.getServerRequest<Command, any>(cmds)
-    const res = this.server.execute(req)
+    const cmds = cmdMaker.makeCommands(this.eventLog);
+    const req = this.server.getServerRequest<Command, any>(cmds);
+    const res = this.server.execute(req);
     // TODO: reset store and eventLog, or clear and populate with results
     this.eventLog.clear();
   }
