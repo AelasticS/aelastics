@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "libraries/aelastics-synthesis"
+		},
+		{
+			"path": "libraries/aelastics-types"
+		},
+		{
+			"path": "libraries/aelastics-store"
+		},
+		{
+			"path": "libraries/aelastics-transducers"
+		},
+		{
+			"path": "libraries/examples"
+		}
+	],
+	"settings": {}
+}

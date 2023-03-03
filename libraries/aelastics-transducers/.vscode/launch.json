@@ -7,7 +7,7 @@
         {
           "type": "node",
           "request": "launch",
-          "name": "Debug Jest tests",
+          "name": "Transdusers tests",
           "program": "${workspaceFolder}/node_modules/@rushstack/heft/lib/start.js",
           "cwd": "${workspaceFolder}",
           "args": ["--debug", "test", "--clean"],
