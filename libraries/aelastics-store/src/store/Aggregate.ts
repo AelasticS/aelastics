@@ -42,13 +42,14 @@ import { Base } from "./Base";
  */
 
 export class Aggregate<R extends ObjectLiteral, ID = string> extends Base<ID> {
-  public readonly rootType: t.Any;
+
+  public readonly rootType: t. ObjectType<any,any>;
 
   //  @observable
   public root: IStoreObject<ID, R> | undefined; // = undefined as any
 
   constructor(
-    rootType: t.Any,
+    rootType: t. ObjectType<any,any>,
     root?: IStoreObject<ID, R>,
     server?: ServerProxy
   ) {
@@ -62,10 +63,20 @@ export class Aggregate<R extends ObjectLiteral, ID = string> extends Base<ID> {
     this["root"] = this.deepCreate(this.rootType, initValue);
     return this["root"];
   }
+  public  getTypeSchemaOfObject<
+    T extends IStoreObject<ID, ObjectLiteral>
+  >(obj: T): t.TypeSchema {
+    return this.rootType.ownerSchema;
+  }
+   
+  public getTypeSchemaByFullName(schemaPath: string): t.TypeSchema | undefined {
+    if(this.rootType.ownerSchema.absolutePathName === schemaPath)
+      return this.rootType.ownerSchema
+    return undefined
+  }
 
-  public getType<T extends IStoreObject<ID, ObjectLiteral>>(obj: T): t.Any {
-    const schema = this.rootType.ownerSchema;
-    // @ts-ignore
+  public getTypeOfObject<T extends IStoreObject<ID, ObjectLiteral>>(obj: T): t.Any {
+    const schema = this.getTypeSchemaOfObject(obj);
     const path = obj[objectType];
     const type = schema.getType(path);
     if (!type)
@@ -96,7 +107,7 @@ export class Aggregate<R extends ObjectLiteral, ID = string> extends Base<ID> {
    */
   public save() {
     if (!this.server) throw new Error("Store without server.");
-    const cmdMaker = this.server.getCommandMaker(this.rootType.ownerSchema);
+    const cmdMaker = this.server.getCommandMaker();
     const cmds = cmdMaker.makeCommands(this.eventLog);
     const req = this.server.getServerRequest<Command, any>(cmds);
     const res = this.server.execute(req);

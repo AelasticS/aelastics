@@ -1,7 +1,10 @@
-import { ObjectType, TypeSchema, undefinedType } from 'aelastics-types';
-import * as EventLog from '../eventLog/EventLog';
-import { objectType as OBJECT_TYPE_PROPERTY, objectUUID } from '../store/CommonConstants';
-import {findTypeCategory} from 'aelastics-types'
+import { ObjectType, TypeSchema, undefinedType } from "aelastics-types";
+import * as EventLog from "../eventLog/EventLog";
+import {
+  objectType as OBJECT_TYPE_PROPERTY,
+  objectUUID,
+} from "../store/CommonConstants";
+import { findTypeCategory } from "aelastics-types";
 
 /*
  * Copyright (c) 2020 AelasticS
@@ -15,11 +18,11 @@ export enum Operation {
   update,
   delete,
   connect,
-  disconnect
+  disconnect,
 }
 
 export type ObjectCommand = Create | Delete | Update | Connect | Disconnect;
-type MergeResult = 'merged' | 'not_merged' | 'cancel';
+type MergeResult = "merged" | "not_merged" | "cancel";
 
 export abstract class Command {
   // @ts-ignore
@@ -27,10 +30,10 @@ export abstract class Command {
   // @ts-ignore
   firstObjID: ObjectProps;
   readonly firstObjType: string;
-  readonly versioning : boolean;
+  readonly versioning: boolean;
 
   constructor(objType: string, versioning: boolean = false) {
-    this.firstObjType = objType
+    this.firstObjType = objType;
     this.versioning = versioning;
   }
 
@@ -42,92 +45,80 @@ export abstract class Command {
 }
 
 interface ObjectProps {
-  propNames: string[],
-  propValues: string[]
+  propNames: string[];
+  propValues: string[];
 }
 export class Create extends Command {
   readonly operationType: Operation = Operation.create;
-  readonly type: string;
   props: ObjectProps;
-  
 
-  constructor(oc: EventLog.ObjectCreated, readonly schema: TypeSchema, versioning: boolean = false) {
+  constructor(oc: EventLog.ObjectCreated, versioning: boolean = false) {
     // @ts-ignore
     super(oc.object[OBJECT_TYPE_PROPERTY], versioning);
-    this.firstObjID = {propNames: [], propValues: []};
+    this.firstObjID = { propNames: [], propValues: [] };
     this.props = {
       propNames: [],
-      propValues: []
-    }
-    this.type = oc.className;
-    const t = schema.getType(oc.className);
-    switch (t?.typeCategory) {
-      case 'Object':
-        const ot = t as ObjectType<any, any>;
-        if(ot.identifier)
-        ot.identifier.forEach((key: string)=> {
-          //add to firstObjID
-          this.firstObjID.propNames.push(key)
+      propValues: [],
+    };
+
+    if (oc.objectType.identifier)
+      oc.objectType.identifier.forEach((key: string) => {
+        //add to firstObjID
+        this.firstObjID.propNames.push(key);
+        // @ts-ignore
+        this.firstObjID.propValues.push(oc.object[key]);
+      });
+    let i = 0;
+    oc.objectType.allProperties.forEach((v, k) => {
+      if (!this.firstObjID.propNames.includes(k)) {
+        this.props.propNames[i] = k;
+        let category = findTypeCategory(v);
+        if (category !== "Object")
           // @ts-ignore
-          this.firstObjID.propValues.push(oc.object[key])
-        })
-        let i = 0
-        ot.allProperties.forEach((v, k) => {
-          if(!this.firstObjID.propNames.includes(k)){
-          this.props.propNames[i] = k
-          let category = findTypeCategory(v);
-          if (category !== 'Object') 
+          this.props.propValues[i] = oc.object[k];
+        else {
           // @ts-ignore
-            this.props.propValues[i] = oc.object[k];
-          else{
-            // @ts-ignore
-            if(!oc.object[k])
-              this.props.propValues[i] = "null";
-            else
-            // @ts-ignore
-              this.props.propValues[i] = oc.object[k][objectUUID];
-          }  
-         i++;
+          if (!oc.object[k]) this.props.propValues[i] = "null";
+          // @ts-ignore
+          else this.props.propValues[i] = oc.object[k][objectUUID];
         }
-        });
-        break; 
-    }
+        i++;
+      }
+    });
   }
 
   mergeWith(c: EventLog.Event): MergeResult {
     // @ts-ignore
-    if (this.firstObjID !== c.object[objectUUID]) return 'not_merged';
+    if (this.firstObjID !== c.object[objectUUID]) return "not_merged";
     switch (c.type) {
       case EventLog.EventType.ObjectCreated:
       case EventLog.EventType.ObjectDeleted:
-        return 'cancel';
+        return "cancel";
       case EventLog.EventType.PropertyChanged: {
         const pc = c as EventLog.PropertyChanged;
         let newValue = pc.newValue;
-        let i = this.props.propNames.indexOf(pc.property)
+        let i = this.props.propNames.indexOf(pc.property);
         // @ts-ignore
-        const t = this.schema.getType(pc.object[OBJECT_TYPE_PROPERTY]) as ObjectType<any, any>;
-        if(t === undefined)
-          throw new Error();
-        let property = t.allProperties.get(pc.property)
-        if(property === undefined)
-          throw new Error();
+        const t = this.schema.getType(
+          pc.object[OBJECT_TYPE_PROPERTY]
+        ) as ObjectType<any, any>;
+        if (t === undefined) throw new Error();
+        let property = t.allProperties.get(pc.property);
+        if (property === undefined) throw new Error();
         let category = findTypeCategory(property);
-        if(category === 'Object' && newValue)
-          newValue = newValue[objectUUID];
-        if (i >= 0)
-          this.props.propValues[i] = newValue;
+        if (category === "Object" && newValue) newValue = newValue[objectUUID];
+        if (i >= 0) this.props.propValues[i] = newValue;
         else {
-          this.props.propNames.push(pc.property)
-          this.props.propValues.push(newValue)
+          this.props.propNames.push(pc.property);
+          this.props.propValues.push(newValue);
         }
-        return 'merged';
+        return "merged";
       }
       case EventLog.EventType.ElementInserted:
       case EventLog.EventType.ElementRemoved:
-        return 'not_merged';
+        return "not_merged";
     }
-    return 'not_merged';
+    return "not_merged";
   }
 }
 
@@ -136,57 +127,55 @@ export class Delete extends Command {
   constructor(oc: EventLog.ObjectDeleted, versioning: boolean = false) {
     // @ts-ignore
     super(oc.object[OBJECT_TYPE_PROPERTY], versioning);
-    this.firstObjID = this.firstObjID = {propNames: [], propValues: []};
+    this.firstObjID = this.firstObjID = { propNames: [], propValues: [] };
   }
   mergeWith(c: EventLog.OperationEvent): MergeResult {
     // @ts-ignore
-    if (this.firstObjID !== c.object[objectUUID]) return 'not_merged';
-    else
+    if (this.firstObjID !== c.object[objectUUID]) return "not_merged";
     // @ts-ignore
-      throw new Error(`Operation on deleted object (type: "${c.object[OBJECT_TYPE_PROPERTY]}", ID:${this.firstObjID})`);
+    else
+      throw new Error(
+        `Operation on deleted object (type: "${c.object[OBJECT_TYPE_PROPERTY]}", ID:${this.firstObjID})`
+      );
   }
 }
 export class Update extends Command {
-
   readonly operationType: Operation = Operation.update;
   props: ObjectProps;
-  type: string = '';
-
+  type: string = "";
 
   constructor(oc: EventLog.PropertyChanged, versioning: boolean = false) {
     // @ts-ignore
     super(oc.object[OBJECT_TYPE_PROPERTY], versioning);
-    this.firstObjID = this.firstObjID = {propNames: [], propValues: []};
+    this.firstObjID = this.firstObjID = { propNames: [], propValues: [] };
     this.props = {
       propNames: [],
-      propValues: []
-    }
+      propValues: [],
+    };
     this.props.propNames.push(oc.property);
     this.props.propValues.push(oc.newValue);
   }
   mergeWith(c: EventLog.OperationEvent): MergeResult {
     // @ts-ignore
-    if (this.firstObjID !== c.object[objectUUID]) return 'not_merged';
+    if (this.firstObjID !== c.object[objectUUID]) return "not_merged";
     switch (c.type) {
-      case EventLog.EventType.PropertyChanged:
-        {
-          const pc = c as EventLog.PropertyChanged;
-          let i = this.props.propNames.indexOf(pc.property)
-          if (i >= 0)
-            this.props.propValues[i] = pc.newValue;
-          else {
-            this.props.propNames.push(pc.property)
-            this.props.propValues.push(pc.newValue)
-          }
-          return 'merged';
+      case EventLog.EventType.PropertyChanged: {
+        const pc = c as EventLog.PropertyChanged;
+        let i = this.props.propNames.indexOf(pc.property);
+        if (i >= 0) this.props.propValues[i] = pc.newValue;
+        else {
+          this.props.propNames.push(pc.property);
+          this.props.propValues.push(pc.newValue);
         }
+        return "merged";
+      }
       case EventLog.EventType.ObjectCreated:
       case EventLog.EventType.ObjectDeleted:
       case EventLog.EventType.ElementInserted:
       case EventLog.EventType.ElementRemoved:
-        return 'not_merged';
+        return "not_merged";
     }
-    return 'not_merged';
+    return "not_merged";
   }
 }
 export class Connect extends Command {
@@ -202,10 +191,13 @@ export class Connect extends Command {
     this._secondObjID = value;
   }
 
-  constructor(oc: EventLog.CollectionElementInserted | EventLog.PropertyChanged, versioning: boolean = false) {
+  constructor(
+    oc: EventLog.CollectionElementInserted | EventLog.PropertyChanged,
+    versioning: boolean = false
+  ) {
     // @ts-ignore
     super(oc.object[OBJECT_TYPE_PROPERTY], versioning);
-    this.firstObjID = this.firstObjID = {propNames: [], propValues: []};
+    this.firstObjID = this.firstObjID = { propNames: [], propValues: [] };
     if (oc instanceof EventLog.CollectionElementInserted) {
       // @ts-ignore
       this.secondObjID = oc.secondArgObject[objectUUID];
@@ -217,31 +209,32 @@ export class Connect extends Command {
   }
 
   mergeWith(c: EventLog.OperationEvent): MergeResult {
-    if (this.firstObjID !== c.object[objectUUID]) return 'not_merged';
+    if (this.firstObjID !== c.object[objectUUID]) return "not_merged";
     switch (c.type) {
       case EventLog.EventType.PropertyChanged:
         const pc = c as EventLog.PropertyChanged;
-        if (this.assocName !== pc.property) return 'not_merged';
-        if (pc.newValue === undefined) return 'not_merged';
+        if (this.assocName !== pc.property) return "not_merged";
+        if (pc.newValue === undefined) return "not_merged";
         this.secondObjID = pc.newValue[objectUUID];
-        return 'merged';
+        return "merged";
       case EventLog.EventType.ElementRemoved:
         const cr = c as EventLog.CollectionElementRemoved;
-        if (this.assocName !== cr.property) return 'not_merged';
-  // @ts-ignore
-        if (this.secondObjID === cr.secondArgObject[objectUUID]) return 'cancel';
+        if (this.assocName !== cr.property) return "not_merged";
+        // @ts-ignore
+        if (this.secondObjID === cr.secondArgObject[objectUUID])
+          return "cancel";
       case EventLog.EventType.ObjectCreated:
       case EventLog.EventType.ObjectDeleted:
       case EventLog.EventType.ElementInserted:
-        return 'not_merged';
+        return "not_merged";
     }
-    return 'not_merged';
+    return "not_merged";
   }
 }
 
 export class Disconnect extends Command {
   readonly operationType: Operation = Operation.disconnect;
-  assocName: string = '';
+  assocName: string = "";
   private _secondObj: ObjectProps | undefined;
 
   public get secondObjID(): ObjectProps {
@@ -251,39 +244,46 @@ export class Disconnect extends Command {
     this._secondObj = value;
   }
 
-  constructor(oc: EventLog.CollectionElementRemoved | EventLog.PropertyChanged, versioning: boolean = false) {
+  constructor(
+    oc: EventLog.CollectionElementRemoved | EventLog.PropertyChanged,
+    versioning: boolean = false
+  ) {
     // @ts-ignore
     super(oc.object[OBJECT_TYPE_PROPERTY], versioning);
-    this.firstObjID = this.firstObjID = {propNames: [], propValues: []};
+    this.firstObjID = this.firstObjID = { propNames: [], propValues: [] };
   }
 
   mergeWith(c: EventLog.OperationEvent): MergeResult {
     // @ts-ignore
-    if (this.firstObjID !== c.object[objectUUID]) return 'not_merged';
+    if (this.firstObjID !== c.object[objectUUID]) return "not_merged";
     switch (c.type) {
       case EventLog.EventType.PropertyChanged:
         const pc = c as EventLog.PropertyChanged;
-        if (this.assocName !== pc.property) return 'not_merged';
-        if (pc.newValue === undefined) return 'merged';
-        return 'not_merged';
+        if (this.assocName !== pc.property) return "not_merged";
+        if (pc.newValue === undefined) return "merged";
+        return "not_merged";
       case EventLog.EventType.ElementInserted:
         const cr = c as EventLog.CollectionElementRemoved;
-        if (this.assocName !== cr.property) return 'not_merged';
+        if (this.assocName !== cr.property) return "not_merged";
         // @ts-ignore
-        if (this.secondObjID === cr.secondArgObject[objectUUID]) return 'cancel';
+        if (this.secondObjID === cr.secondArgObject[objectUUID])
+          return "cancel";
       case EventLog.EventType.ObjectCreated:
       case EventLog.EventType.ObjectDeleted:
       case EventLog.EventType.ElementRemoved:
-        return 'not_merged';
+        return "not_merged";
     }
-    return 'not_merged';
+    return "not_merged";
   }
 }
 
 export class CommandMaker {
-  schema: TypeSchema;
-  constructor(schema: TypeSchema) {
-    this.schema = schema;
+  // schema: TypeSchema;
+  //   constructor(schema: TypeSchema) {
+  //     this.schema = schema;
+  //  }
+
+  constructor() {
   }
 
   public makeCommands(log: EventLog.EventLog): ObjectCommand[] {
@@ -292,20 +292,19 @@ export class CommandMaker {
       action.events.forEach((event) => {
         let i = commands.length;
         //TODO:  actions array is empty
-        let res = 'not_merged';
-        if (commands[i])
-          res = commands[i].mergeWith(event);
-        while (i > 0 && res === 'not_merged') {
+        let res = "not_merged";
+        if (commands[i]) res = commands[i].mergeWith(event);
+        while (i > 0 && res === "not_merged") {
           res = commands[--i].mergeWith(event);
         }
         switch (res) {
-          case 'merged':
+          case "merged":
             break;
-          case 'not_merged':
+          case "not_merged":
             const command = this.fromLogItem(event);
             commands.push(command);
             break;
-          case 'cancel':
+          case "cancel":
             commands.splice(i, 1);
             this.cancelCommands(event);
             break;
@@ -369,18 +368,23 @@ export class CommandMaker {
   private fromLogItem(item: EventLog.LogItem): ObjectCommand {
     switch (item.type) {
       case EventLog.EventType.ObjectCreated:
-        return new Create(item as EventLog.ObjectCreated, this.schema);
+        let crItem = item as EventLog.ObjectCreated;
+        return new Create(
+          crItem,
+          false
+        );
         break;
       case EventLog.EventType.ObjectDeleted:
         return new Delete(item as EventLog.ObjectDeleted);
         break;
       case EventLog.EventType.PropertyChanged:
         let i = item as EventLog.PropertyChanged;
-        if (typeof i.newValue === 'object' || typeof i.oldValue === 'object') {
-          if (i.newValue === undefined || i.newValue === null) return new Disconnect(i);
+        if (typeof i.newValue === "object" || typeof i.oldValue === "object") {
+          if (i.newValue === undefined || i.newValue === null)
+            return new Disconnect(i);
           else return new Connect(i);
         } else return new Update(item as EventLog.PropertyChanged);
-      break;
+        break;
       case EventLog.EventType.ElementInserted:
         return new Connect(item as EventLog.CollectionElementInserted);
         break;

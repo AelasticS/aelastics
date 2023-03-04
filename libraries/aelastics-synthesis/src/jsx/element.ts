@@ -13,7 +13,7 @@ export type RefProps = {
 };
 
 export type ElementInstance<P extends g.IModelElement> = {
-  type: t.Any;
+  type: t. ObjectType<any,any>;
   instance: P;
 };
 
@@ -84,7 +84,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public props: P;
 
   constructor(
-    public readonly type: t.Any,
+    public readonly type: t. ObjectType<any,any>,
     props: P,
     //TODO: introduce type (Child|Parent, propName) and utility function
     // to forbid reconnections

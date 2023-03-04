@@ -3,7 +3,7 @@
 /* tslint:disable:array-type */
 /* tslint:disable:ban-types */
 
-import { ObjectLiteral } from "aelastics-types";
+import { ObjectLiteral, ObjectType } from "aelastics-types";
 
 //  Transaction is changed to Action!
 
@@ -138,8 +138,8 @@ export class Action extends LogItem {
     this.name = name;
   }
 
-  public objectCreated(obj: Object, className: string): Action {
-    return this.newOperationEvent(new ObjectCreated(obj, className));
+  public objectCreated(obj: Object, objType: ObjectType<any,any>): Action {
+    return this.newOperationEvent(new ObjectCreated(obj, objType));
   }
 
   public objectDeleted(obj: Object): Action {
@@ -185,12 +185,12 @@ export abstract class OperationEvent extends LogItem {
 
 export class ObjectCreated extends OperationEvent {
   public objectConstructor: Function;
-  public className: string;
+  public objectType: ObjectType<any,any>;
 
-  constructor(obj: Object, className: string) {
+  constructor(obj: Object, objectType: ObjectType<any,any>) {
     super(obj, EventType.ObjectCreated);
     this.objectConstructor = obj.constructor;
-    this.className = className;
+    this.objectType = objectType;
   }
 
   public undo() {

@@ -58,7 +58,7 @@ export class ModelStore {
   }
 
   public newModel(
-    type: t.Any,
+    type: t. ObjectType<any,any>,
     initValue: Partial<IModel>,
     ownerModel?: IModel,
     namespace?: INamespace
@@ -97,7 +97,7 @@ export class ModelStore {
 */
 
   public newNamespace(
-    type: t.Any,
+    type: t. ObjectType<any,any>,
     initValue: Partial<INamespace>,
     ownerModel?: IModel,
     namespace?: INamespace
@@ -122,7 +122,7 @@ export class ModelStore {
   public newModelElement(
     model: Partial<IModel>,
     namespace: INamespace,
-    type: t.Any,
+    type: t. ObjectType<any,any>,
     initValue: IModelElement
   ): IModelElement {
     if (!type.isOfType(ModelElement))

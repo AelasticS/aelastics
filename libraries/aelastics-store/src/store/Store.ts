@@ -40,7 +40,7 @@ export class Store<ID> {
     return obj[objectType].substring(0, obj[objectType].lastIndexOf("/"));
   }
 
-  protected getTypeSchema<T extends IStoreObject<ID, ObjectLiteral>>(
+  protected getTypeSchemaOfObject<T extends IStoreObject<ID, ObjectLiteral>>(
     obj: T
   ): t.TypeSchema {
     const schemaName = this.getTypeSchemaName(obj);
@@ -75,7 +75,7 @@ export class Store<ID> {
   public async persist() {}
 
   public create<P extends ObjectLiteral>(
-    type: t.Any,
+    type: t. ObjectType<any,any>,
     initValue?: Partial<P>
   ): IStoreObject<ID, P> {
     const obj = this.repo.create<P>(type, initValue);
@@ -83,7 +83,7 @@ export class Store<ID> {
   }
 
   public deepCreate<T extends t.ObjectLiteral>(
-    type: t.Any,
+    type: t. ObjectType<any,any>,
     initValue: Partial<T>
   ): IStoreObject<ID, T> {
     this.registerTypeSchema(type.ownerSchema);
@@ -115,16 +115,16 @@ export class Store<ID> {
     const obj = this.repo.delete(type as t.ObjectType<any, any>, object as any);
   }
 
-  public getType<T extends IStoreObject<ID, ObjectLiteral>>(obj: T): t.Any {
+  public getType<T extends IStoreObject<ID, ObjectLiteral>>(obj: T): t.ObjectType<any,any> {
     const typeName = obj[objectType].substring(
       obj[objectType].lastIndexOf("/") + 1
     );
-    const schema = this.getTypeSchema(obj);
+    const schema = this.getTypeSchemaOfObject(obj);
     const type = schema._types.get(typeName);
     if (!type)
       throw new Error(
         `Object type '${typeName}' does not exist in schema '${schema.name}'`
       );
-    return type;
+    return type as  t.ObjectType<any,any>;
   }
 }

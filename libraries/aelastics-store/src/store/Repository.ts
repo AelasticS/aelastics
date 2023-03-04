@@ -30,7 +30,7 @@ export class Repository<T extends t.Any, ID = string> {
     this.eventLog = eventLog;
   }
   // static create(baseType: t.Any, init?: Partial<t.TypeOf<typeof baseType>>): { [key: string]: any };
-  deepCreate<P extends ObjectLiteral>(baseType: t.Any, init?: Partial<P>):IStoreObject<ID, P> {
+  deepCreate<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>):IStoreObject<ID, P> {
     // t.TypeOf<typeof baseType> {
 
     let tr = transducer()
@@ -45,14 +45,14 @@ export class Repository<T extends t.Any, ID = string> {
     if (this.eventLog) {
       this.eventLog.lastAction.objectCreated(
         obj as Object,
-        baseType.fullPathName
+        baseType
       );
       //  console.log(this.eventLog.getAllActions())
     }
     return obj as IStoreObject<ID, P>;
   }
 
-  create<P extends ObjectLiteral>(baseType: t.Any, init?: Partial<P>): IStoreObject<ID, P> {
+  create<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>): IStoreObject<ID, P> {
     let tr = transducer()
       // .recurse('makeItem')
       .newInstance(init, uuidv4Generator)
@@ -64,14 +64,14 @@ export class Repository<T extends t.Any, ID = string> {
     if (this.eventLog) {
       this.eventLog.lastAction.objectCreated(
         obj as Object,
-        baseType.fullPathName
+        baseType
       );
       //  console.log(this.eventLog.getAllActions())
     }
     return obj as IStoreObject<ID, P>;
   }
 
-  exportToDTO(objType: t.Any, obj: ObjectLiteral): ObjectLiteral {
+  exportToDTO(objType: t.ObjectType<any,any>, obj: ObjectLiteral): ObjectLiteral {
     let tr = transducer()
       .recurse("makeItem")
       .toDtoGraph()
@@ -80,12 +80,12 @@ export class Repository<T extends t.Any, ID = string> {
     return res;
   }
 
-  importFromDTO<P extends ObjectLiteral>(baseType: t.Any, inputDTO: ObjectLiteral): IStoreObject<ID, P> {
+  importFromDTO<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, inputDTO: ObjectLiteral): IStoreObject<ID, P> {
     let tr = transducer()
       .recurse("makeItem")
       .fromDtoGraph()
       .doFinally(identityReducer());
-    let res = baseType.transduce<t.DtoGraphTypeOf<typeof baseType>>(tr,inputDTO);
+    let res = baseType.transduce<IStoreObject<ID, P>>(tr,inputDTO);
     return res;
   }
 

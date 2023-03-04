@@ -8,6 +8,7 @@ import { ServerCommand, ServerRequest, ServerResponse } from './ServerRequestRes
 import { ServiceError } from '../../../aelastics-result';
 import { Command, CommandMaker } from './CommandMaker';
 import { TypeSchema } from 'aelastics-types';
+import { Base } from '../store/Base';
 
 /**
  * ServerProxy is an abstract class which represent a proxy to a specific api server.
@@ -116,8 +117,8 @@ export class ServerProxy {
     return new ServerResponse<unknown>();
   }
 
-  public getCommandMaker(schema:TypeSchema):CommandMaker {
-    return new CommandMaker(schema)
+  public getCommandMaker():CommandMaker {
+    return new CommandMaker()
   }
 
   public getServerRequest<C,R>(cmd:C[]):ServerRequest<C,R> {
