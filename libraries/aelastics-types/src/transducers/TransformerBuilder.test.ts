@@ -5,13 +5,15 @@ describe("test TransformerBuilder", () => {
     let oi = new tb.TransformerBuilder()
       .onInit(
         new tb.InitBuilder()
-          .onObject((v, c) => [v, "continue"])
-          .onArray((v, c) => [v, "continue"])
-          .onSimple((v, c) => [v, "continue"])
-          .getInitFun()
+          .onTypeCategory("Object",(v, c) => [v, "continue"])
+          .onTypeCategory("Array",(v, c) => [v, "continue"])
+          .onTypeCategory("Number",(v, c) => [v, "continue"])
+          .onTypeCategory("Simple",(v, c) => [v, "continue"])
+          .onPredicate((value, currNode)=> currNode.type.typeCategory === "Number", (v, c) => [v, "continue"])
+          .build()
       )
-      .getTransformer();
+      .build();
 
     expect(1).toEqual(1);
   });
-});
+})
