@@ -7,7 +7,7 @@ import { DefaultSchema } from '../type/TypeSchema'
 import { compose } from '../transducers/Transformer'
 import { Annotation, AnnotationSchema } from '../annotations/Annotation'
 import { identityReducer , naturalReducer , transducer } from '../transducers/Transducer'
-import { IAnnotationProcessor } from '../transducers/AnnotationProcess'
+import { IAnnotationProcessor } from '../transducers/AnnotationTransformer'
 
 let OptionalNumber = t.optional(t.number)
 let LinkToPerson = t.link(DefaultSchema, 'Person')
@@ -51,15 +51,15 @@ const simpleOrmAnnotSchema = t.object({ attribute: t.string }, 'simple Orm Annot
 const objectOrmAnnotSchema = t.object({ entity: t.string, id: t.string }, 'object Orm Annot Schema')
 const collectionOrmAnnotSchema = t.object({ mapping: t.string }, 'list Orm Annot Schema')
 
-export type ERM_AnnotationSchema = AnnotationSchema<
+export type ORM_AnnotationSchema = AnnotationSchema<
   typeof simpleOrmAnnotSchema,
   typeof objectOrmAnnotSchema,
   typeof collectionOrmAnnotSchema
 >
 
-export type ERM_Annotation<T> = Annotation<T, ERM_AnnotationSchema>
+export type ORM_Annotation<T> = Annotation<T, ORM_AnnotationSchema>
 
-const personAnnot: ERM_Annotation<typeof Person> = {
+const personAnnot: ORM_Annotation<typeof Person> = {
   entity: 'Person',
   id: 'PersonID',
   $props: {
@@ -77,6 +77,8 @@ const personAnnot: ERM_Annotation<typeof Person> = {
     },
   },
 }
+
+
 const p: t.TypeOf<typeof Person> = {
   name: 'Peter',
   male: true,
@@ -104,9 +106,9 @@ const ermProcessor: IAnnotationProcessor = {
       case 'Optional':
         break
     }
-/*    console.log(
-      `INIT: value:${value}, instance:${instance}, name: ${currNode.type.name}, category:${currNode.type.typeCategory}`
-    )*/
+    console.log(
+      `INIT: annot: ${currNode.getAnnotationForNode(personAnnot)}, value:${value}, instance:${instance}, name: ${currNode.type.name}, category:${currNode.type.typeCategory}`
+    )
     return [instance, 'continue']
   },
   result: (result, currNode, p1) => {
@@ -161,7 +163,7 @@ describe('basic test for annotations', () => {
   it('should create a default person cyclic optional', () => {
     let tr = transducer()
       .recurse('makeItem')
-      .processAnnotations({ name: 'erm', annotation: personAnnot }, ermProcessor)
+      .processAnnotations(personAnnot, ermProcessor)
       .doFinally(identityReducer())
     let r = Person.transduce(tr, p)
     expect(r).toEqual(p)

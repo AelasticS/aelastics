@@ -13,8 +13,8 @@ import { ToDTOGraph } from './ToDTOGraph';
 import { FromDTOGraph } from './FromDTOGraph';
 import { Validation } from './Validation';
 import { RecursiveTransformer } from './RecursiveTransformer';
-import { AnnotationProcess, IAnnotationProcessor } from './AnnotationProcess';
-import { NamedAnnotation } from '../annotations/Annotation';
+import { AnnotationTransformer, IAnnotationProcessor } from './AnnotationTransformer';
+import { AnyAnnotation } from '../annotations/Annotation';
 import { NewInstance } from './NewInstance';
 import { StepperReducer } from './StepperReducer';
 
@@ -92,9 +92,9 @@ export class Transducer {
     return this.do(NewInstance, initValues, generateID);
   }
 
-  processAnnotations(annot: NamedAnnotation, t: IAnnotationProcessor): this {
+  processAnnotations(annot: AnyAnnotation, t: IAnnotationProcessor): this {
     let tr = (xf: ITransformer) => {
-      return new AnnotationProcess(annot, t);
+      return new AnnotationTransformer(annot, t)
     };
     this.transformers.push(tr);
     return this;
@@ -110,8 +110,9 @@ export class Transducer {
 
   reduce<A>(stepFn: Reducer<A>, initValue: any): ITransformer {
     let wrap = new Wrap(stepFn, initValue);
-    this.reducer = this.composed(wrap);
-    return this.reducer;
+    return this.doFinally(wrap)
+    // this.reducer = this.composed(wrap);
+    // return this.reducer;
   }
 
   count(): ITransformer {
@@ -163,5 +164,6 @@ export const validate = (): ((xf: ITransformer) => ITransformer) => {
     return new Validation(xf);
   };
 };
+
 
 export const transducer = () => new Transducer();

@@ -58,10 +58,12 @@ export type AnySchema = AnnotationSchema<any, any> // AnnotationSchema<TO>
 // ToDo Sinisa
 export type anyPartSchema<S extends AnySchema> = S[keyof S]
 
-export interface NamedAnnotation {
-  name: string
-  annotation: Annotation<any, any>
-}
+// export interface NamedAnnotation {
+//   name: string
+//   annotation: Annotation<any, any>
+// }
+
+export type AnyAnnotation = Annotation<any, any>
 
 export type Annotation<T, S extends AnySchema> =
   | AnnotateSimple<T, S>

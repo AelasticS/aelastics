@@ -6,16 +6,16 @@
 import { Node } from '../common/Node'
 import { ServiceError } from 'aelastics-result'
 import { ITransformer, WhatToDo } from './Transformer'
-import { NamedAnnotation } from '../annotations/Annotation'
+import { AnyAnnotation } from '../annotations/Annotation'
 
 export interface IAnnotationProcessor {
-  init: (value: any, currNode: Node, p: AnnotationProcess) => [any, WhatToDo]
-  result: (result: any, currNode: Node, p: AnnotationProcess) => [any, WhatToDo]
-  step: (result: any, item: any, currNode: Node, p: AnnotationProcess) => [any, WhatToDo]
+  init: (value: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
+  result: (result: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
+  step: (result: any, item: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
 }
 
-export class AnnotationProcess implements ITransformer {
-  public readonly annotation: any // NamedAnnotation
+export class AnnotationTransformer implements ITransformer {
+  public readonly annotation:  AnyAnnotation
   public readonly processor: IAnnotationProcessor
   private _annotationStack: any[] = []
 
@@ -25,13 +25,18 @@ export class AnnotationProcess implements ITransformer {
       : undefined
   }
 
-  constructor(annotation: NamedAnnotation, p: IAnnotationProcessor) {
+  constructor(annotation: AnyAnnotation, p: IAnnotationProcessor) {
     // ToDo: extend to support an array (a map) of annotations
-    this.annotation = annotation.annotation
+    this.annotation = annotation
     this.processor = p
   }
 
   init(value: any, currNode: Node): [any, WhatToDo] {
+    // set current node to point to this instance
+    if(!this.annotation)
+      new Error(`No annotation - type: ${currNode.type.name}, value:${currNode.instance}`)
+    currNode.annotationTransformers.set(this.annotation, this)
+
     switch (currNode.extra.role) {
       case 'asRoot':
         this._annotationStack.push(this.annotation)
