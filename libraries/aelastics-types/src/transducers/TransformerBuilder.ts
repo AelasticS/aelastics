@@ -9,8 +9,6 @@ import { Node } from "../common/Node";
 import { TypeCategory } from "../type/TypeDefinisions";
 import { ITransformer, WhatToDo } from "./Transformer";
 
-
-
 export class TransformerBuilder {
   private initFs: Array<ITransformer["init"]> = [];
   private stepFs: Array<ITransformer["step"]> = [];
@@ -54,38 +52,30 @@ export class TransformerBuilder {
     return [result, what];
   };
 
-
   private createTransformClass(
     i: ITransformer["init"],
     s: ITransformer["step"],
     r: ITransformer["result"]
   ) {
-
     return class implements ITransformer {
-      constructor(readonly xfNext: ITransformer) { }
+      constructor(readonly xfNext: ITransformer) {}
 
       public init = (input: any, currNode: Node): [any, WhatToDo] => {
-        let [output, w] = i(input, currNode)
-        if (w === "continue")
-          return this.xfNext.init(output, currNode)
-        else
-          return [output, w]
-      }
+        let [output, w] = i(input, currNode);
+        if (w === "continue") return this.xfNext.init(output, currNode);
+        else return [output, w];
+      };
 
       public result(input: any, currNode: Node): [any, WhatToDo] {
-        let [output, w] = r(input, currNode)
-        if (w === "continue")
-          return this.xfNext.result(output, currNode)
-        else
-          return [output, w]
+        let [output, w] = r(input, currNode);
+        if (w === "continue") return this.xfNext.result(output, currNode);
+        else return [output, w];
       }
 
       public step(input: any, item: any, currNode: Node): [any, WhatToDo] {
-        let [output, w] = r(input, currNode)
-        if (w === "continue")
-          return this.xfNext.step(output, item, currNode)
-        else
-          return [output, w]
+        let [output, w] = s(input, item, currNode);
+        if (w === "continue") return this.xfNext.step(output, item, currNode);
+        else return [output, w];
       }
     };
   }
@@ -97,23 +87,15 @@ export class TransformerBuilder {
 
 type FunctionType<T extends any[]> = (args: T) => [any, WhatToDo];
 
-abstract class FunctionBuilder<F extends (...args: any) => [any, WhatToDo]> {
+abstract class FunctionBuilder<F extends (...args: any[]) => [any, WhatToDo]> {
   private arrayOfFun: Array<F> = [];
   //private initFs: Array<FunctionType<Parameters<F>, ReturnType<F>>> = [];
-  private getValue: (args: any[]) => any;
-  private getCurrentNode: (args: any[]) => Node;
+  private getValue: (args: any[]) => any = (args) => args[0];
+  private getCurrentNode: (args: any[]) => Node = (args) => (args.length > 2 ? args[2] : args[1]);
 
-  constructor(
-    getCurrentNode: (args: any[]) => Node = (args) => args[1],
-    getValue: (args: any[]) => any = (args) => args[0]
-  ) {
-    this.getValue = getValue;
-    this.getCurrentNode = getCurrentNode;
-  }
-
-  public onPredicate(predicate: <I extends Parameters<F>>(a: I) => Boolean, fun: F): this {
-    let resF = <F>((args: Parameters<F>): [any, WhatToDo] => {
-      if (predicate(args)) return fun(args);
+  public onPredicate(predicate: <I extends Parameters<F>>(...a: I) => Boolean, fun: F): this {
+    let resF = <F>((...args: Parameters<F>): [any, WhatToDo] => {
+      if (predicate(...args)) return fun(...args);
       else return [this.getValue(args), "continue"];
     });
     this.arrayOfFun.push(resF);
@@ -121,7 +103,7 @@ abstract class FunctionBuilder<F extends (...args: any) => [any, WhatToDo]> {
   }
 
   public onType(type: Any, f: F): this {
-    let predicate: <I extends Parameters<F>>(a: I) => Boolean = (a) => {
+    let predicate: <I extends Parameters<F>>(...a: I) => Boolean = (...a) => {
       return this.getCurrentNode(a).type === type;
     };
     this.onPredicate(predicate, f);
@@ -129,7 +111,7 @@ abstract class FunctionBuilder<F extends (...args: any) => [any, WhatToDo]> {
   }
 
   public onTypeCategory(cat: TypeCategory | "Simple", f: F): this {
-    let predicate: <I extends Parameters<F>>(a: I) => Boolean = (a) => {
+    let predicate: <I extends Parameters<F>>(...a: I) => Boolean = (...a) => {
       let currNode = this.getCurrentNode(a);
       return cat === "Simple" ? currNode.type.isSimple() : currNode.type.typeCategory === cat;
     };
@@ -142,12 +124,8 @@ abstract class FunctionBuilder<F extends (...args: any) => [any, WhatToDo]> {
   }
 }
 
-export class InitBuilder extends FunctionBuilder<ITransformer["init"]> { }
+export class InitBuilder extends FunctionBuilder<ITransformer["init"]> {}
 
-export class StepBuilder extends FunctionBuilder<ITransformer["step"]> {
-  constructor() {
-    super((args) => args[2]);
-  }
-}
+export class StepBuilder extends FunctionBuilder<ITransformer["step"]> {}
 
-export class ResultBuilder extends FunctionBuilder<ITransformer["result"]> { }
+export class ResultBuilder extends FunctionBuilder<ITransformer["result"]> {}

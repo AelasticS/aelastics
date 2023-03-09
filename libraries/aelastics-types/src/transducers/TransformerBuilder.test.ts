@@ -48,17 +48,17 @@ let Tom: IPerson = {
 
 describe("test TransformerBuilder", () => {
   let fInit: ITransformer["init"] = (v, c) => {
-    console.log(`INIT: value:${v}, node type:${c.type.name}`);
+    console.log(`INIT: node type:${c.type.name}, value:${v}, instance:${c.instance}`);
     return [v, "continue"];
   };
 
   let fStep: ITransformer["step"] = (v, i, c) => {
-    console.log(`STEP: value:${v}, node type:${c.type.name}`);
+    console.log(`STEP: node type:${c.type.name}, value:${v}, instance:${c.instance}`);
     return [v, "continue"];
   };
 
   let fResult: ITransformer["init"] = (v, c) => {
-    console.log(`RESULT: value:${v}, node type:${c.type.name}`);
+    console.log(`RESULT: node type:${c.type.name}, value:${v}, instance:${c.instance}`);
     return [v, "continue"];
   };
 
@@ -91,8 +91,8 @@ describe("test TransformerBuilder", () => {
       )
 
       .build();
-    t.transducer().recurse("makeItem").do(oi).doFinally(naturalReducer());
-
-    expect(1).toEqual(1);
+      let tr = t.transducer().recurse("makeItem").do(oi).doFinally(naturalReducer());
+      let r = Person.transduce(tr, Tom)
+      expect(1).toEqual(1);
   });
 });
