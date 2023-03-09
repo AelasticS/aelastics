@@ -1,6 +1,7 @@
 import { ITransformer } from "./Transformer";
 import * as tb from "./TransformerBuilder";
 import * as t from "../index";
+import { naturalReducer } from "../index";
 
 let testSchema = t.schema("testSchema");
 let Child = t.object(
@@ -72,7 +73,14 @@ describe("test TransformerBuilder", () => {
           // .onPredicate((value, currNode) => value === "Number", (v, c) => [v, "continue"])
           .build()
       )
-      .onStep(new tb.StepBuilder().onTypeCategory("Array", fStep).build())
+      .onStep(
+        new tb.StepBuilder()
+          .onTypeCategory("Object", fStep)
+          .onTypeCategory("Array", fStep)
+          .onTypeCategory("Number", fStep)
+          .onTypeCategory("Simple", fStep)
+          .build()
+      )
       .onResult(
         new tb.ResultBuilder()
           .onTypeCategory("Object", fResult)
@@ -83,10 +91,7 @@ describe("test TransformerBuilder", () => {
       )
 
       .build();
-      t.transducer()
-      .recurse("makeItem")
-      // .do(oi)
-      .doFinally(oi);
+    t.transducer().recurse("makeItem").do(oi).doFinally(naturalReducer());
 
     expect(1).toEqual(1);
   });

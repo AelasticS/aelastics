@@ -1,6 +1,6 @@
 /*
  * Author: Sinisa Neskovic
- * 
+ *
  * Copyright (c) 2023 Aelastics
  */
 
@@ -8,6 +8,8 @@ import { Any } from "../common/DefinitionAPI";
 import { Node } from "../common/Node";
 import { TypeCategory } from "../type/TypeDefinisions";
 import { ITransformer, WhatToDo } from "./Transformer";
+
+
 
 export class TransformerBuilder {
   private initFs: Array<ITransformer["init"]> = [];
@@ -52,12 +54,44 @@ export class TransformerBuilder {
     return [result, what];
   };
 
-  public build(): ITransformer {
-    return {
-      init: this.runInits,
-      step: this.runSteps,
-      result: this.runResults,
+
+  private createTransformClass(
+    i: ITransformer["init"],
+    s: ITransformer["step"],
+    r: ITransformer["result"]
+  ) {
+
+    return class implements ITransformer {
+      constructor(readonly xfNext: ITransformer) { }
+
+      public init = (input: any, currNode: Node): [any, WhatToDo] => {
+        let [output, w] = i(input, currNode)
+        if (w === "continue")
+          return this.xfNext.init(output, currNode)
+        else
+          return [output, w]
+      }
+
+      public result(input: any, currNode: Node): [any, WhatToDo] {
+        let [output, w] = r(input, currNode)
+        if (w === "continue")
+          return this.xfNext.result(output, currNode)
+        else
+          return [output, w]
+      }
+
+      public step(input: any, item: any, currNode: Node): [any, WhatToDo] {
+        let [output, w] = r(input, currNode)
+        if (w === "continue")
+          return this.xfNext.step(output, item, currNode)
+        else
+          return [output, w]
+      }
     };
+  }
+
+  public build() {
+    return this.createTransformClass(this.runInits, this.runSteps, this.runResults);
   }
 }
 
@@ -108,9 +142,7 @@ abstract class FunctionBuilder<F extends (...args: any) => [any, WhatToDo]> {
   }
 }
 
-export class InitBuilder extends FunctionBuilder<ITransformer["init"]> {
-
-}
+export class InitBuilder extends FunctionBuilder<ITransformer["init"]> { }
 
 export class StepBuilder extends FunctionBuilder<ITransformer["step"]> {
   constructor() {
@@ -118,6 +150,4 @@ export class StepBuilder extends FunctionBuilder<ITransformer["step"]> {
   }
 }
 
-export class ResultBuilder extends FunctionBuilder<ITransformer["result"]> {
-
-}
+export class ResultBuilder extends FunctionBuilder<ITransformer["result"]> { }

@@ -2,21 +2,21 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { Node } from '../common/Node';
-import { ITransformer, Reducer } from './Transformer';
-import { Wrap } from './Wrap';
-import { NaturalReducer } from './NaturalReducer';
-import { IdentityReducer } from './IdentityReducer';
-import { Map } from './Map';
-import { Filter } from './Filter';
-import { ToDTOGraph } from './ToDTOGraph';
-import { FromDTOGraph } from './FromDTOGraph';
-import { Validation } from './Validation';
-import { RecursiveTransformer } from './RecursiveTransformer';
-import { AnnotationTransformer, IAnnotationProcessor } from './AnnotationTransformer';
-import { AnyAnnotation } from '../annotations/Annotation';
-import { NewInstance } from './NewInstance';
-import { StepperReducer } from './StepperReducer';
+import { Node } from "../common/Node";
+import { ITransformer, Reducer, TransformerClass } from "./Transformer";
+import { Wrap } from "./Wrap";
+import { NaturalReducer } from "./NaturalReducer";
+import { IdentityReducer } from "./IdentityReducer";
+import { Map } from "./Map";
+import { Filter } from "./Filter";
+import { ToDTOGraph } from "./ToDTOGraph";
+import { FromDTOGraph } from "./FromDTOGraph";
+import { Validation } from "./Validation";
+import { RecursiveTransformer } from "./RecursiveTransformer";
+import { AnnotationTransformer, IAnnotationProcessor } from "./AnnotationTransformer";
+import { AnyAnnotation } from "../annotations/Annotation";
+import { NewInstance } from "./NewInstance";
+import { StepperReducer } from "./StepperReducer";
 
 export type IMapFun = (item: any, n: Node) => any;
 
@@ -33,7 +33,7 @@ export class Transducer {
     return this.reducer;
   }
 
-  do(Ctor: { new (xfNext: ITransformer, ...args: any[]): ITransformer }, ...args: any[]): this {
+  do(Ctor: TransformerClass, ...args: any[]): this {
     let tr = (xfNext: ITransformer) => {
       return new Ctor(xfNext, ...args);
     };
@@ -42,11 +42,7 @@ export class Transducer {
   }
 
   // include transformer only if condition is satisfied
-  doIf(
-    condition: boolean,
-    Ctor: { new (xfNext: ITransformer, ...args: any[]): ITransformer },
-    ...args: any[]
-  ): this {
+  doIf(condition: boolean, Ctor: TransformerClass, ...args: any[]): this {
     if (condition) {
       let tr = (xfNext: ITransformer) => {
         return new Ctor(xfNext, ...args);
@@ -60,8 +56,8 @@ export class Transducer {
     return this.do(Map, f);
   }
 
-  recurse(mode: 'accumulate' | 'makeItem'): this {
-    return this.do(RecursiveTransformer, this, mode === 'makeItem');
+  recurse(mode: "accumulate" | "makeItem"): this {
+    return this.do(RecursiveTransformer, this, mode === "makeItem");
   }
 
   filter(f: (item: any, currNode: Node) => boolean): this {
@@ -88,13 +84,13 @@ export class Transducer {
    *    }).transformer().
    *
    */
-  newInstance(initValues?: any, generateID?: () => any ): this {
+  newInstance(initValues?: any, generateID?: () => any): this {
     return this.do(NewInstance, initValues, generateID);
   }
 
   processAnnotations(annot: AnyAnnotation, t: IAnnotationProcessor): this {
     let tr = (xf: ITransformer) => {
-      return new AnnotationTransformer(annot, t)
+      return new AnnotationTransformer(annot, t);
     };
     this.transformers.push(tr);
     return this;
@@ -110,7 +106,7 @@ export class Transducer {
 
   reduce<A>(stepFn: Reducer<A>, initValue: any): ITransformer {
     let wrap = new Wrap(stepFn, initValue);
-    return this.doFinally(wrap)
+    return this.doFinally(wrap);
     // this.reducer = this.composed(wrap);
     // return this.reducer;
   }
@@ -153,7 +149,9 @@ export const map = (f: (currNode: Node) => any): ((xf: ITransformer) => ITransfo
  *
  * @param f
  */
-export const filter = (f: (item: any, currNode: Node) => boolean): ((xf: ITransformer) => ITransformer) => {
+export const filter = (
+  f: (item: any, currNode: Node) => boolean
+): ((xf: ITransformer) => ITransformer) => {
   return function (xf: ITransformer) {
     return new Filter(xf, f);
   };
@@ -164,6 +162,5 @@ export const validate = (): ((xf: ITransformer) => ITransformer) => {
     return new Validation(xf);
   };
 };
-
 
 export const transducer = () => new Transducer();
