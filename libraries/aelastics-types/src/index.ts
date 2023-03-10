@@ -2,6 +2,10 @@
  * Copyright (c) AelasticS 2020.
  */
 
+import * as Trans from "./transducers/index"
+
+export {Trans}
+
 export * from './common/DefinitionAPI'
 export * from './common/Node'
 
