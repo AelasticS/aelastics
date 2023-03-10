@@ -1,6 +1,13 @@
 export abstract class JSX_Element {
-  constructor(readonly name: string = "no name") {}
-  abstract printOut(stringArray: string[], level: number): void;
+  constructor(readonly name: string) {}
+
+  abstract pushJSX(stringArray: string[], level: number, indent: number): void;
+
+  getJSX(level: number, indent: number = 1): string {
+    let localStringArray = new Array<string>();
+    this.pushJSX(localStringArray, level, indent);
+    return localStringArray.join("");
+  }
 }
 
 export class Complex_JSX_Element extends JSX_Element {
@@ -10,40 +17,53 @@ export class Complex_JSX_Element extends JSX_Element {
   addProperty(name: string, value: JSX_Element) {
     this.properties.push(new Property(name, value));
   }
+  getProperty(name:string) {
+    return this.properties.find((p)=>p.name===name)
+  }
 
   addsubElement(value: JSX_Element) {
     this.subElements.push(value);
   }
 
-  printOutProperties(stringArray: string[], level: number) {
-    this.properties.forEach((v, i) => {
-      stringArray.push(
-        ` ${v.name}= ${v.reference.printOut(stringArray, level)} `
-      );
+  getProperties(): string {
+    let s = this.properties.reduce(
+      (prev, current) =>
+        `${prev}${current.name}=${current.reference.getJSX(0)} `,
+      ""
+    );
+    return s;
+    //   this.properties.forEach((v, i) => {
+    //     stringArray.push(
+    //       ` ${v.name}=${v.reference.getJSX(level)} `
+    //     );
+    //   });
+  }
+
+  pushSubElements(stringArray: string[], level: number, indent: number) {
+    this.subElements.forEach((v, i) => {
+      v.pushJSX(stringArray, level, indent);
     });
   }
 
-  printOutSubElements(stringArray: string[], level: number) {
-    this.subElements.forEach((v, i) => {
-        v.printOut(stringArray, level)
-      });
-  }
-
-  printOut(stringArray: string[], level: number): void {
+  pushJSX(stringArray: string[], level: number, indent: number = 1): void {
     // open tag with properties
-    stringArray.push(
-      `<${this.name} ${this.printOutProperties(stringArray, -1)} />\n`
-    );
-    // sub elemnts
-    this.printOutSubElements(stringArray, level + 1);
-    // closed tag
-    stringArray.push(`<${this.name}/>\n`);
+    if (this.subElements.length === 0) {
+      stringArray.push(
+        `${" ".repeat(level * indent)}<${this.name} ${this.getProperties()}/>\n`
+      );
+    } else {
+      stringArray.push(
+        `${" ".repeat(level * indent)}<${this.name} ${this.getProperties()}>\n`
+      );
+      // sub elemnts
+      this.pushSubElements(stringArray, level + 1, indent);
+      // closed tag
+      stringArray.push(`${" ".repeat(level * indent)}</${this.name}>\n`);
+    }
   }
 
-  public toJSX() {
-    let a: string[] = [];
-    this.printOut(a, 0);
-    return a.join();
+  public toJSX(indent: number = 2): string {
+    return this.getJSX(0, indent);
   }
 }
 
@@ -51,28 +71,39 @@ export class Property extends JSX_Element {
   constructor(readonly name: string, readonly reference: JSX_Element) {
     super(name);
   }
-  printOut(stringArray: string[]): void {
+  pushJSX(stringArray: string[]): void {
     stringArray.push(`<${this.name} $refByName="${this.reference.name}"/>`);
   }
 }
 
+/**
+ *
+ */
 export class Reference_JSX_Element extends JSX_Element {
-  constructor(readonly reference: Complex_JSX_Element) {
-    super();
+  constructor(
+    readonly tagName: string,
+    readonly refByType: "refByID" | "refByName",
+    readonly refValue: string
+  ) {
+    super(tagName);
   }
 
-  printOut(stringArray: string[]): void {
-    stringArray.push(`<${this.name} $refByName="${this.reference.name}"/>`);
+  pushJSX(stringArray: string[], level:number, indent:number): void {
+    stringArray.push(
+      `${" ".repeat(level * indent)}<${this.tagName} ${this.refByType.toString()}="${this.refValue}"/>\n`
+    );
   }
 }
 
+/**
+ *
+ */
 export class Simple_JSX_Element extends JSX_Element {
   constructor(readonly value: any) {
-    super();
+    super(value);
   }
 
-  printOut(stringArray: string[]): void {
+  pushJSX(stringArray: string[]): void {
     stringArray.push(`"${this.value}"`);
   }
 }
-
