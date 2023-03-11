@@ -49,7 +49,6 @@ describe("Test jsx-elements", () => {
     expect(jsxStringArray.length).toBeGreaterThan(0);
 
     let jsxString = eModel.toJSX();
-    console.log(jsxString);
-    expect(jsxString.length).toBeGreaterThan(0);
+    expect(jsxString).toEqual("<OrganizationalModel name=\"Org model\" >\n  <Organization name=\"ITU\" address=\"Copenhagen\" >\n    <Oragnization name=\"Computer Science Department\" />\n    <Oragnization name=\"Business IT Department\" />\n  </Organization>\n  <Organization name=\"DTU\" address=\"Lyngby\" >\n    <Oragnization titel=\"Compute\" />\n    <PartnerOrganization refByName=\"Computer Science Department\"/>\n  </Organization>\n</OrganizationalModel>\n");
   });
 });

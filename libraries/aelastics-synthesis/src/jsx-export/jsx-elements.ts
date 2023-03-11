@@ -36,11 +36,6 @@ export class Complex_JSX_Element extends JSX_Element {
       ""
     );
     return s;
-    //   this.properties.forEach((v, i) => {
-    //     stringArray.push(
-    //       ` ${v.name}=${v.reference.getJSX(level)} `
-    //     );
-    //   });
   }
 
   pushSubElements(stringArray: string[], level: number, indent: number) {

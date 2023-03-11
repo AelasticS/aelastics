@@ -23,8 +23,8 @@ export const Organization = t.entity({
     id:ID,
     name: Name,
   //  child: ChildType,
-    employees: t.arrayOf(Employee, "Employees", OrgSchema),
     manager: Employee,
+    employees: t.arrayOf(Employee, "Employees", OrgSchema),
  //   departments: t.arrayOf(t.link(OrgSchema, "Organization")),
 }, ["id"], 'Organization', OrgSchema);
 
@@ -52,16 +52,213 @@ export const dep1: IOrganization = {
     id: 1, name: "Department 1",
   //  child:{name:"John"},
    // departments: [],
+    manager: w1,
     employees: [w1,w2, w3],
-    manager: w1
-
 }
 
 describe ("Test jsx-maker", ()=> {
     test("using builder without annotation", ()=>{
         let cpx = jm.make(Organization, dep1)
-        expect(cpx).toEqual(expect.objectContaining({
-            name:"Organization"
-        }))
+        expect(cpx).toEqual(
+            {
+                name: "Organization",
+                properties: [
+                  {
+                    name: "id",
+                    reference: {
+                      name: 1,
+                      value: 1,
+                    },
+                  },
+                  {
+                    name: "name",
+                    reference: {
+                      name: "Department 1",
+                      value: "Department 1",
+                    },
+                  },
+                ],
+                subElements: [
+                  {
+                    name: "Employee",
+                    properties: [
+                      {
+                        name: "id",
+                        reference: {
+                          name: 1,
+                          value: 1,
+                        },
+                      },
+                      {
+                        name: "name",
+                        reference: {
+                          name: "John",
+                          value: "John",
+                        },
+                      },
+                    ],
+                    subElements: [
+                      {
+                        name: "Place",
+                        properties: [
+                          {
+                            name: "name",
+                            reference: {
+                              name: "London",
+                              value: "London",
+                            },
+                          },
+                          {
+                            name: "state",
+                            reference: {
+                              name: "UK",
+                              value: "UK",
+                            },
+                          },
+                        ],
+                        subElements: [
+                        ],
+                        references: [
+                        ],
+                      },
+                      {
+                        name: "Child",
+                        properties: [
+                          {
+                            name: "name",
+                            reference: {
+                              name: "Paul",
+                              value: "Paul",
+                            },
+                          },
+                        ],
+                        subElements: [
+                        ],
+                        references: [
+                        ],
+                      },
+                      {
+                        name: "Child",
+                        properties: [
+                          {
+                            name: "name",
+                            reference: {
+                              name: "Anna",
+                              value: "Anna",
+                            },
+                          },
+                        ],
+                        subElements: [
+                        ],
+                        references: [
+                        ],
+                      },
+                    ],
+                    references: [
+                    ],
+                  },
+                  {
+                    name: "Employee",
+                    properties: [
+                      {
+                        name: "id",
+                        reference: {
+                          name: 1,
+                          value: 1,
+                        },
+                      },
+                      {
+                        name: "name",
+                        reference: {
+                          name: "Peter",
+                          value: "Peter",
+                        },
+                      },
+                    ],
+                    subElements: [
+                      {
+                        name: "Place",
+                        properties: [
+                          {
+                            name: "name",
+                            reference: {
+                              name: "London",
+                              value: "London",
+                            },
+                          },
+                          {
+                            name: "state",
+                            reference: {
+                              name: "UK",
+                              value: "UK",
+                            },
+                          },
+                        ],
+                        subElements: [
+                        ],
+                        references: [
+                        ],
+                      },
+                    ],
+                    references: [
+                    ],
+                  },
+                  {
+                    name: "Employee",
+                    properties: [
+                      {
+                        name: "id",
+                        reference: {
+                          name: 1,
+                          value: 1,
+                        },
+                      },
+                      {
+                        name: "name",
+                        reference: {
+                          name: "Suzanne",
+                          value: "Suzanne",
+                        },
+                      },
+                    ],
+                    subElements: [
+                      {
+                        name: "Place",
+                        properties: [
+                          {
+                            name: "name",
+                            reference: {
+                              name: "London",
+                              value: "London",
+                            },
+                          },
+                          {
+                            name: "state",
+                            reference: {
+                              name: "UK",
+                              value: "UK",
+                            },
+                          },
+                        ],
+                        subElements: [
+                        ],
+                        references: [
+                        ],
+                      },
+                    ],
+                    references: [
+                    ],
+                  },
+                ],
+                references: [
+                  {
+                    name: "Employee",
+                    tagName: "Employee",
+                    refByType: "refByName",
+                    refValue: "John",
+                  },
+                ],
+              }  
+        )
     })
 })
