@@ -7,7 +7,7 @@
 import { Any } from "../common/DefinitionAPI";
 import { Node } from "../common/Node";
 import { TypeCategory } from "../type/TypeDefinisions";
-import { ITransformer, WhatToDo } from "./Transformer";
+import { ITransformer, TransformerClass, WhatToDo } from "./Transformer";
 
 export class TransformerBuilder {
   private initFs: Array<ITransformer["init"]> = [];
@@ -56,7 +56,7 @@ export class TransformerBuilder {
     i: ITransformer["init"],
     s: ITransformer["step"],
     r: ITransformer["result"]
-  ) {
+  ): TransformerClass {
     return class implements ITransformer {
       constructor(readonly xfNext: ITransformer) {}
 
@@ -80,7 +80,7 @@ export class TransformerBuilder {
     };
   }
 
-  public build() {
+  public build():TransformerClass {
     return this.createTransformClass(this.runInits, this.runSteps, this.runResults);
   }
 }

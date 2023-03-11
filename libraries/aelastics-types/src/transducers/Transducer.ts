@@ -163,4 +163,6 @@ export const validate = (): ((xf: ITransformer) => ITransformer) => {
   };
 };
 
+// TODO:rename to new() or create()
 export const transducer = () => new Transducer();
+

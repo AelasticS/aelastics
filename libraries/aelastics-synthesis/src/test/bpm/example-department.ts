@@ -17,13 +17,13 @@ let w2: IEmployee = {
 
 let w3: IEmployee = {
     id: 1, name: "Suzanne", age: 52, sex: "female",
-    birthPlace: { name: "London", state: "UK" },
+    birthPlace: { name: "New York", state: "USA" },
     children: []
 }
 
 let w4: IEmployee = {
     id: 1, name: "George", age: 33, sex: "male",
-    birthPlace: { name: "London", state: "UK" },
+    birthPlace: { name: "Copenhagen", state: "DK" },
     children: []
 }
 
