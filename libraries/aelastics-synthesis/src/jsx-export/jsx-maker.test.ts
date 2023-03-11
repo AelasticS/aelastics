@@ -23,8 +23,8 @@ export const Organization = t.entity({
     id:ID,
     name: Name,
   //  child: ChildType,
-  //  manager: Employee,
     employees: t.arrayOf(Employee, "Employees", OrgSchema),
+    manager: Employee,
  //   departments: t.arrayOf(t.link(OrgSchema, "Organization")),
 }, ["id"], 'Organization', OrgSchema);
 
@@ -52,8 +52,9 @@ export const dep1: IOrganization = {
     id: 1, name: "Department 1",
   //  child:{name:"John"},
    // departments: [],
-//    manager: w1,
-    employees: [w1,w2, w3]
+    employees: [w1,w2, w3],
+    manager: w1
+
 }
 
 describe ("Test jsx-maker", ()=> {

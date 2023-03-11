@@ -34,9 +34,9 @@ describe("Test jsx-elements", () => {
     const eRef = new je.Reference_JSX_Element(
       "PartnerOrganization",
       "refByName",
-      eTop1.getProperty("name")!.reference.name
+      eDept1.getProperty("name")!.reference.name
     );
-    eTop2.addsubElement(eRef);
+    eTop2.addReference(eRef);
 
     // create an oragnizational model
     const eModel = new je.Complex_JSX_Element("OrganizationalModel");

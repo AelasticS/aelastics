@@ -12,17 +12,21 @@ export abstract class JSX_Element {
 
 export class Complex_JSX_Element extends JSX_Element {
   private readonly properties: Property[] = [];
-  private readonly subElements: JSX_Element[] = [];
+  private readonly subElements: Complex_JSX_Element[] = [];
+  private readonly references: Reference_JSX_Element[] = [];
 
   addProperty(name: string, value: JSX_Element) {
     this.properties.push(new Property(name, value));
   }
-  getProperty(name:string) {
-    return this.properties.find((p)=>p.name===name)
+  getProperty(name: string) {
+    return this.properties.find((p) => p.name === name);
   }
 
-  addsubElement(value: JSX_Element) {
+  addsubElement(value: Complex_JSX_Element) {
     this.subElements.push(value);
+  }
+  addReference(value: Reference_JSX_Element) {
+    this.references.push(value);
   }
 
   getProperties(): string {
@@ -45,6 +49,12 @@ export class Complex_JSX_Element extends JSX_Element {
     });
   }
 
+  pushReferences(stringArray: string[], level: number, indent: number) {
+    this.references.forEach((v, i) => {
+      v.pushJSX(stringArray, level, indent);
+    });
+  }
+
   pushJSX(stringArray: string[], level: number, indent: number = 1): void {
     // open tag with properties
     if (this.subElements.length === 0) {
@@ -57,6 +67,8 @@ export class Complex_JSX_Element extends JSX_Element {
       );
       // sub elemnts
       this.pushSubElements(stringArray, level + 1, indent);
+      // references
+      this.pushReferences(stringArray, level + 1, indent);
       // closed tag
       stringArray.push(`${" ".repeat(level * indent)}</${this.name}>\n`);
     }
@@ -88,9 +100,11 @@ export class Reference_JSX_Element extends JSX_Element {
     super(tagName);
   }
 
-  pushJSX(stringArray: string[], level:number, indent:number): void {
+  pushJSX(stringArray: string[], level: number, indent: number): void {
     stringArray.push(
-      `${" ".repeat(level * indent)}<${this.tagName} ${this.refByType.toString()}="${this.refValue}"/>\n`
+      `${" ".repeat(level * indent)}<${
+        this.tagName
+      } ${this.refByType.toString()}="${this.refValue}"/>\n`
     );
   }
 }
