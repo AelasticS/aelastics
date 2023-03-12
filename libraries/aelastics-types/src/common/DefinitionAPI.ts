@@ -124,19 +124,21 @@ export const entityRef = <T extends ObjectType<any, readonly string[]>>(
  */
 // tslint:disable-next-line:variable-name
 export const boolean: BooleanType = new BooleanType('boolean', 'Boolean', System);
+export const optionalBoolean = optional(boolean)
 
 /**
  *  Number type
  */
 // tslint:disable-next-line:variable-name
 export const number: NumberType = new NumberType('number', 'Number', System);
+export const optionalNumber = optional(number)
 
 /**
  *  String type
  */
 // tslint:disable-next-line:variable-name
 export const string: StringType = new StringType('string', 'String', System);
-
+export const optionalString = optional(string)
 /**
  *  date type
  */
