@@ -36,3 +36,6 @@ export abstract class SimpleType<V, G, T> extends Type<V, G, T> {
     return whatToDo !== 'continue' ? [acc!, whatToDo] : (t.result(acc, n) as any)
   }
 }
+
+export type AnySimpleType = SimpleType<any, any, any>
+

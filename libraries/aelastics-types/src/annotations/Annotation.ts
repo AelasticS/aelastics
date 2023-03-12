@@ -4,9 +4,7 @@
  */
 
 import * as types from '..'
-
-type TO = types.ObjectType<any, any>
-type TS = types.SimpleType<any, any, any>
+import { AnyObjectType, AnySimpleType } from '../index'
 
 // keywordsae
 export enum KeyWord {
@@ -32,14 +30,14 @@ export const isAnnotationKeyWord = (s: string): boolean =>
   s === KeyWord.SUPER
 
 export type AnnotationSchema<
-  S extends TO | TS,
-  O extends TO,
+  S extends AnyObjectType | AnySimpleType,
+  O extends AnyObjectType,
   //  M extends TO = O,
-  A extends TO = O,
+  A extends AnyObjectType = O,
   //  U extends TO = O,
-  TU extends TO = O,
+  TU extends AnyObjectType = O,
   //  I extends TO = O,
-  R extends TO | TS = S
+  R extends AnyObjectType | AnySimpleType = S
   //  F extends TO = O
 > = {
   simpleSchema: S

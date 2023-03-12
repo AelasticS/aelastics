@@ -8,6 +8,8 @@ import { TypeSchema } from '../type/TypeSchema';
 import { OptionalType } from '../special-types/Optional';
 
 
+export type AnyObjectType = ObjectType<any, any>
+
 // keys of a specific type
 type KeysOfType<O, T> = {
   [K in keyof O]: O[K] extends T ? K : never
@@ -146,3 +148,5 @@ export class ObjectType<P extends InterfaceDecl, I extends readonly string[]> ex
     }
   }
 }
+
+
