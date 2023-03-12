@@ -4,7 +4,7 @@ import { hm, render } from './handle'
 import { WithRefProps, Template, ElementInstance, Element, CpxTemplate } from './element'
 import * as g from 'generic-metamodel'
 import * as t from 'aelastics-types'
-import { ModelStore } from './ModelsStore'
+import { ModelStore } from '../index'
 import { Context } from './context'
 
 export type IDomain = {

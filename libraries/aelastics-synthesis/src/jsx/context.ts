@@ -1,6 +1,6 @@
 import { truncate } from "fs";
 import * as g from "generic-metamodel";
-import { ModelStore } from "./ModelsStore";
+import { ModelStore } from '../index';
 import { IStack, ArrayStack } from "./stack";
 import { Config } from "../config";
 import { INamespace } from "generic-metamodel";

@@ -11,7 +11,7 @@ import {
   SolitaryFeature,
 } from "./fm-components";
 import { Context } from "../../jsx/context";
-import { ModelStore } from "../../jsx/ModelsStore";
+import { ModelStore } from '../../index';
 
 const testStore = new ModelStore();
 

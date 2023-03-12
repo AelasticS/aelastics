@@ -17,7 +17,7 @@ import { Table, RelSchema } from '../test/relational-model/REL-components'
 import { abstractM2M } from './abstractM2M';
 import { Element, Template } from '../jsx/element'
 import { Context } from '../jsx/context'
-import { ModelStore } from '../jsx/ModelsStore'
+import { ModelStore } from '../index'
 
 const eerSchema1:Element<e.IEERSchema> = <EERSchema id='1' name='Persons' MDA_level='M1' store={new ModelStore()}>
     <Kernel id='2' name='Person'>

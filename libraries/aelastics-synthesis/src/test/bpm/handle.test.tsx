@@ -6,7 +6,7 @@
 import {hm} from '../../jsx/handle'
 import { Context } from '../../jsx/context';
 import { Element } from '../../jsx/element';
-import { ModelStore } from '../../jsx/ModelsStore';
+import { ModelStore } from '../../index'
 import { Process, Sequence, Task, Document, OutputDocument, InputDocument } from './BPM.components'
 import { IProcess, ISequence } from './BPM.meta.model.type'
 

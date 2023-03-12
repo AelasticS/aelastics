@@ -14,7 +14,7 @@ import {
   PropertyDomain,
 } from "./types-components";
 import { Context } from "../../jsx/context";
-import { ModelStore } from "../../jsx/ModelsStore";
+import { ModelStore } from '../../index';
 
 // let a = <Object name="name"></Object>;
 // let b = <Object $ref={a}></Object>; // same as b = a

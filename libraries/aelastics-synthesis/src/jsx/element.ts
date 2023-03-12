@@ -2,7 +2,7 @@ import * as t from "aelastics-types";
 import { Any } from "aelastics-types";
 import * as g from "generic-metamodel";
 import { Context } from "./context";
-import { ModelStore } from "./ModelsStore";
+import { ModelStore } from '../index';
 import { doParseURL, PathType } from "./path";
 
 // export type RefProps = { $ref?:g.IModelElement} | {$refByID?:string} | {$refByName?:string}

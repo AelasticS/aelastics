@@ -1,5 +1,5 @@
 import * as t from "./types-meta.model";
-import { ModelStore } from "../../jsx/ModelsStore";
+import { ModelStore } from '../../index'
 import {
   CpxTemplate,
   Element,

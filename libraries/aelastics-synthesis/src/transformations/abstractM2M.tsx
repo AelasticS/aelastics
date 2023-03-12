@@ -10,7 +10,7 @@ import { Context } from "../jsx/context";
 import { M2M_Transformation, E2E_Transformation, M2M_Trace, E2E_Trace } from './transformation.model.components_v2'
 import { IM2M_Transformation } from "./transformation.model.type";
 import { CpxTemplate, Element, Super, Template } from "../jsx/element";
-import { ModelStore } from "../jsx/ModelsStore";
+import { ModelStore } from "./../index";
 
 type IODescr = { type?: t.Any, instance?: IModel }
 

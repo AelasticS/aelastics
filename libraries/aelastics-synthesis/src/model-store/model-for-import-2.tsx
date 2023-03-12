@@ -5,10 +5,10 @@
 
 // const EER = getEER({} as IModel, null)
 
-import { hm } from "./handle";
+import { hm } from '../index';
 import * as et from "../test/eer-model/EER.meta.model.type";
 import * as e from "../test/eer-model/EER-components";
-import { Element } from "./element";
+import { Element } from '../index'
 
 const eerSchema1 = (
     <e.Kernel name="Person">

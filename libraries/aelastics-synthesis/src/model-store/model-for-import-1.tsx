@@ -5,10 +5,10 @@
 
 // const EER = getEER({} as IModel, null)
 
-import { hm } from "./handle";
+import { hm } from "../jsx/handle";
 import * as et from "../test/eer-model/EER.meta.model.type";
 import * as e from "../test/eer-model/EER-components";
-import { Element } from "./element";
+import { Element } from "../jsx/element";
 
 const eerSchema1: Element<et.IEERSchema> = (
   <e.EERSchema name="Persons" MDA_level="M1">

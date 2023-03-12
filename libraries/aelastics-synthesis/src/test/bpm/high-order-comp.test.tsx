@@ -9,7 +9,7 @@ import { Process, Sequence, Task, Document, OutputDocument, InputDocument, Paral
 import { IProcess, ISequence, ITask } from './BPM.meta.model.type'
 import { dep1 } from './example-department'
 import { IOrganization } from './organization.model.type'
-import { ModelStore } from '../../jsx/ModelsStore'
+import { ModelStore } from '../../index'
 import { Element } from '../../jsx/element'
 
 // export const Approval_X_times_Par: (x: number) => Element<IProcess> = (x) => {

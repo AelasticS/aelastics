@@ -1,7 +1,7 @@
 import { Context } from "./context";
 import * as g from "generic-metamodel";
 import { Element } from "./element";
-import { ModelStore } from "./ModelsStore";
+import { ModelStore } from '../index'
 
 describe("should correctly find fully qualified name of model elements form references", () => {
   const store = new ModelStore();

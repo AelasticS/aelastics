@@ -17,7 +17,7 @@ import * as r from '../test/relational-model/REL-components'
 import { abstractM2M } from './abstractM2M';
 import { Element } from '../jsx/element'
 import { Context } from '../jsx/context'
-import { ModelStore } from '../jsx/ModelsStore'
+import { ModelStore } from '../index'
 
 const testStore = new ModelStore()
 

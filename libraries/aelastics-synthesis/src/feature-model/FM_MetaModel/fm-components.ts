@@ -1,5 +1,5 @@
 import * as fm from "./fm-meta.model.type";
-import { ModelStore } from "../../jsx/ModelsStore";
+import { ModelStore } from '../../index';
 import {
   CpxTemplate,
   Element,

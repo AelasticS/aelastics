@@ -2,7 +2,7 @@
 
 import { Element } from "../../jsx/element";
 import { hm } from "../../jsx/handle";
-import { ModelStore } from "../../jsx/ModelsStore";
+import { ModelStore } from "../../model-store/ModelsStore";
 import { abstractM2M } from "../../transformations/abstractM2M";
 import * as fm from "../FM_MetaModel/fm-meta.model.type";
 import { SpecPoint, SpecOption } from "../../transformations/spec-decorators";

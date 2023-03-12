@@ -1,5 +1,5 @@
 import exp from "constants"
-import { Context } from "./context"
+import { Context } from '../index'
 import { ModelStore, AccessProtocol } from "./ModelsStore"
 
 describe ("It should import namespaces and models", ()=> {

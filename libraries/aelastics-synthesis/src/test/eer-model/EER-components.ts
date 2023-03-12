@@ -1,6 +1,6 @@
 import * as e from './EER.meta.model.type'
 import { CpxTemplate, Element, Template, WithRefProps } from '../../jsx/element'
-import { ModelStore } from '../../jsx/ModelsStore'
+import { ModelStore } from '../../index'
 
 export type IModelProps = WithRefProps<e.IEERSchema> & { store?: ModelStore }
 

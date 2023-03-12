@@ -11,9 +11,9 @@ import {
 } from "generic-metamodel";
 import * as t from "aelastics-types";
 import { ServerProxy } from "aelastics-store";
-import { Element } from "./element";
-import { doParseURL } from "./path";
-import { Context } from "./context";
+import { Element,  } from '../index'
+import { doParseURL } from "../jsx/path";
+import { Context } from "../jsx/context";
 import { FILE } from "dns";
 import { IStoreObject } from 'aelastics-store/lib/store/CommonConstants';
 

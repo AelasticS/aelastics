@@ -5,7 +5,7 @@ import { hm } from "../../jsx/handle";
 import * as fm from "../FM_MetaModel/fm-meta.model.type";
 
 import { FM2TypesTransformations } from "./fm2types-transformation";
-import { ModelStore } from "../../jsx/ModelsStore";
+import { ModelStore } from '../../index';
 import {
   FeatureDiagram,
   RootFeature,
