@@ -4,10 +4,10 @@
 
 import * as t from '../common/DefinitionAPI'
 import { DefaultSchema } from '../type/TypeSchema'
-import { compose } from '../transducers/Transformer'
 import { Annotation, AnnotationSchema } from '../annotations/Annotation'
-import { identityReducer , naturalReducer , transducer } from '../transducers/Transducer'
-import { IAnnotationProcessor } from '../transducers/AnnotationTransformer'
+import { identityReducer , transducer } from './Transducer'
+import { ITransformer, WhatToDo } from './Transformer'
+import { Node } from '../common/Node'
 
 let OptionalNumber = t.optional(t.number)
 let LinkToPerson = t.link(DefaultSchema, 'Person')
@@ -88,8 +88,15 @@ const p: t.TypeOf<typeof Person> = {
 }
 p.children.push({ name: 'Liza', parent: p })
 
-const ermProcessor: IAnnotationProcessor = {
-  init: (value, currNode, p1) => {
+class ermProcessor implements ITransformer {
+
+  private xf: ITransformer
+
+  constructor(xf: ITransformer) {
+    this.xf = xf
+  }
+
+  init(value:any, currNode: Node): [any, WhatToDo]{
     let instance: any
     if (value) {
       instance = value
@@ -109,15 +116,17 @@ const ermProcessor: IAnnotationProcessor = {
     console.log(
       `INIT: annot: ${currNode.getAnnotationForNode(personAnnot)}, value:${value}, instance:${instance}, name: ${currNode.type.name}, category:${currNode.type.typeCategory}`
     )
-    return [instance, 'continue']
-  },
-  result: (result, currNode, p1) => {
+    return this.xf.init(instance, currNode)
+  }
+
+  result (result:any, currNode: Node): [any, WhatToDo] {
 /*    console.log(
       `RESULT: result:${result}, instance:${currNode.instance}, name: ${currNode.type.name}, category:${currNode.type.typeCategory}`
     )*/
-    return [result, 'continue']
-  },
-  step: (result, item, currNode, p1) => {
+    return this.xf.result(result, currNode)
+  }
+
+  step (result:any, item: any, currNode: Node): [any, WhatToDo] {
     let instance: any
     if (item) {
       instance = item
@@ -155,15 +164,16 @@ const ermProcessor: IAnnotationProcessor = {
 /*    console.log(
       `STEP: value:${result}, item:${item}, name: ${currNode.type.name}, category:${currNode.type.typeCategory}`
     )*/
-    return [result, 'continue']
-  },
+    return this.xf.step(result, item, currNode)
+  }
 }
 
 describe('basic test for annotations', () => {
   it('should create a default person cyclic optional', () => {
     let tr = transducer()
       .recurse('makeItem')
-      .processAnnotations(personAnnot, ermProcessor)
+      .processAnnotations(personAnnot)
+      .do(ermProcessor)
       .doFinally(identityReducer())
     let r = Person.transduce(tr, p)
     expect(r).toEqual(p)

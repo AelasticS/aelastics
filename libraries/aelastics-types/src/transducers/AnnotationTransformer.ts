@@ -3,38 +3,42 @@
   
  */
 
+// TODO: make AnnotationTransformer as usual Transfomer, other can acces annotations via Node
+// Map<AnnotationName, AnnotationTransformer> getCurrentAnnotation, 
 import { Node } from '../common/Node'
 import { ServiceError } from 'aelastics-result'
 import { ITransformer, WhatToDo } from './Transformer'
 import { AnyAnnotation } from '../annotations/Annotation'
 
-export interface IAnnotationProcessor {
-  init: (value: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
-  result: (result: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
-  step: (result: any, item: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
-}
+// export interface IAnnotationProcessor {
+//   init: (value: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
+//   result: (result: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
+//   step: (result: any, item: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
+// }
 
 export class AnnotationTransformer implements ITransformer {
-  public readonly annotation:  AnyAnnotation
-  public readonly processor: IAnnotationProcessor
+  private readonly annotation:  AnyAnnotation
+  private readonly xf: ITransformer
   private _annotationStack: any[] = []
 
+  
+  constructor(xf: ITransformer, a: AnyAnnotation, ) {
+    // ToDo: extend to support an array (a map) of annotations
+    this.annotation = a
+    this.xf = xf
+  }
+  
   get currentAnnotation(): any {
     return this._annotationStack.length > 0
       ? this._annotationStack[this._annotationStack.length - 1]
       : undefined
   }
 
-  constructor(annotation: AnyAnnotation, p: IAnnotationProcessor) {
-    // ToDo: extend to support an array (a map) of annotations
-    this.annotation = annotation
-    this.processor = p
-  }
 
   init(value: any, currNode: Node): [any, WhatToDo] {
     // set current node to point to this instance
-    if(!this.annotation)
-      new Error(`No annotation - type: ${currNode.type.name}, value:${currNode.instance}`)
+    if(!currNode.annotationTransformers?.get(this.annotation))
+      new Error(`No annotation - node type: ${currNode.type.name}, value:${currNode.instance}`)
     currNode.annotationTransformers.set(this.annotation, this)
 
     switch (currNode.extra.role) {
@@ -74,13 +78,13 @@ export class AnnotationTransformer implements ITransformer {
         'Stack too deep.Possible infinitive recursive definition.'
       )
     }
-    return this.processor.init(value, currNode, this)
+    return this.xf.init(value, currNode)
   }
 
   result(result: any, currNode: Node): [any, WhatToDo] {
-    let r = this.processor.result(result, currNode, this)
+    let r = this.xf.result(result, currNode)
     this._annotationStack.pop()
-    return r // [result, 'continue']
+    return r 
   }
 
   step(result: any, value: any, currNode: Node): [any, WhatToDo] {
@@ -104,7 +108,7 @@ export class AnnotationTransformer implements ITransformer {
       }
     } else this._annotationStack.push(undefined)
 
-    let r = this.processor.step(result, value, currNode, this)
+    let r = this.xf.step(result, value, currNode)
     this._annotationStack.pop()
     return r
   }

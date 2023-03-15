@@ -1,6 +1,8 @@
 import * as jsx from "./jsx-elements";
 import * as t from "aelastics-types";
 import { Trans as tr } from "aelastics-types";
+import { AnyAnnotation, AnySchema } from "aelastics-types/lib/annotations/Annotation";
+import { IAnnotationProcessor } from "aelastics-types/lib/transducers/AnnotationTransformer";
 
 const builder = new tr.TransformerBuilder();
 
@@ -10,7 +12,7 @@ const transform2JSXAnnot = builder
       .onTypeCategory("Object", (result, currNode) => {
         result = new jsx.Complex_JSX_Element(currNode.type.name);
         return [result, "continue"];
-      })
+      })   
       .onTypeCategory("Array", (result, currNode) => {
         // result = currNode.parent?.acc
         return [result, "continue"];
@@ -67,13 +69,16 @@ const transform2JSXAnnot = builder
   .build();
 
 export const make = (
-  objType: t.ObjectType<any, any>,
-  obj: t.ObjectLiteral
+  objType: t.AnyObjectType,
+  obj: t.ObjectLiteral,
+    annotation:AnyAnnotation,
+    annnotProc: IAnnotationProcessor
 ): jsx.JSX_Element => {
   // create transformer to JSX model
   let transduser = tr
     .transducer()
     .recurse("makeItem")
+    .processAnnotations(annotation, annnotProc)
     .do(transform2JSXAnnot)
     .doFinally(tr.identityReducer());
   // execute transformer

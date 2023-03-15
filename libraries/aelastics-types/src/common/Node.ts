@@ -5,7 +5,7 @@
 import { Any } from './DefinitionAPI'
 import { ExtraInfo } from '../type/Type'
 import { VisitedNodes } from './VisitedMap'
-import { AnnotationTransformer, IAnnotationProcessor } from '../transducers/AnnotationTransformer'
+import { AnnotationTransformer} from '../transducers/AnnotationTransformer'
 import { AnyAnnotation } from '../annotations/Annotation'
 
 export class Node {
@@ -15,7 +15,7 @@ export class Node {
   extra: ExtraInfo
   parent?: Node
   visited: VisitedNodes
-  annotationTransformers:Map<AnyAnnotation, AnnotationTransformer>
+  annotationTransformers:Map<string, AnnotationTransformer>
   private _revisited: boolean = false
 
   constructor(

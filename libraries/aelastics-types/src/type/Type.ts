@@ -9,8 +9,6 @@ import { DefaultSchema, System, TypeSchema } from './TypeSchema';
 import { failures, ServiceError, ServiceResult, success } from 'aelastics-result';
 import { ITransformer, WhatToDo } from '../transducers/Transformer';
 import { identityReducer, naturalReducer, transducer } from '../transducers/Transducer';
-import { NaturalReducer } from '../transducers/NaturalReducer';
-import { AnnotationTransformer, IAnnotationProcessor } from '../transducers/AnnotationTransformer'
 
 export type RoleType =
   | 'asRoot'

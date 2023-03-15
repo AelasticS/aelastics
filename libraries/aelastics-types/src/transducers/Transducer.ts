@@ -13,8 +13,8 @@ import { ToDTOGraph } from "./ToDTOGraph";
 import { FromDTOGraph } from "./FromDTOGraph";
 import { Validation } from "./Validation";
 import { RecursiveTransformer } from "./RecursiveTransformer";
-import { AnnotationTransformer, IAnnotationProcessor } from "./AnnotationTransformer";
-import { AnyAnnotation } from "../annotations/Annotation";
+import { AnnotationTransformer } from "./AnnotationTransformer";
+import { AnyAnnotation} from "../annotations/Annotation";
 import { NewInstance } from "./NewInstance";
 import { StepperReducer } from "./StepperReducer";
 
@@ -88,12 +88,8 @@ export class Transducer {
     return this.do(NewInstance, initValues, generateID);
   }
 
-  processAnnotations(annot: AnyAnnotation, t: IAnnotationProcessor): this {
-    let tr = (xf: ITransformer) => {
-      return new AnnotationTransformer(annot, t);
-    };
-    this.transformers.push(tr);
-    return this;
+  processAnnotations(annot: AnyAnnotation): this {
+    return this.do(AnnotationTransformer, annot)
   }
 
   toDtoGraph(): this {
