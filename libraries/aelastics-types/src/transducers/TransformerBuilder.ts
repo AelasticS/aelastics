@@ -28,34 +28,12 @@ export class TransformerBuilder {
     return this;
   }
 
-  private runInits: ITransformer["init"] = (value, currNode) => {
-    let what: WhatToDo = "continue";
-    for (let i = 0; i < this.initFs.length && what === "continue"; i++) {
-      [value, what] = this.initFs[i](value, currNode);
-    }
-    return [value, what];
-  };
-
-  private runSteps: ITransformer["step"] = (result, item, currNode) => {
-    let what: WhatToDo = "continue";
-    for (let i = 0; i < this.stepFs.length && what === "continue"; i++) {
-      [result, what] = this.stepFs[i](result, item, currNode);
-    }
-    return [result, what];
-  };
-
-  private runResults: ITransformer["result"] = (result, currNode) => {
-    let what: WhatToDo = "continue";
-    for (let i = 0; i < this.resultFs.length && what === "continue"; i++) {
-      [result, what] = this.resultFs[i](result, currNode);
-    }
-    return [result, what];
-  };
+  
 
   private createTransformClass(
-    i: ITransformer["init"],
-    s: ITransformer["step"],
-    r: ITransformer["result"]
+    initFs: Array<ITransformer["init"]>,
+    stepFs: Array<ITransformer["step"]>,
+    resultFs: Array<ITransformer["result"]>
   ): TransformerClass {
     return class implements ITransformer {
       private args:any[]
@@ -63,28 +41,52 @@ export class TransformerBuilder {
         this.args = args
       }
 
+      private runInits: ITransformer["init"] = (value, currNode) => {
+        let what: WhatToDo = "continue";
+        for (let i = 0; i < initFs.length && what === "continue"; i++) {
+          [value, what] = initFs[i](value, currNode, ...this.args);
+        }
+        return [value, what];
+      };
+    
+      private runSteps: ITransformer["step"] = (result, item, currNode) => {
+        let what: WhatToDo = "continue";
+        for (let i = 0; i < stepFs.length && what === "continue"; i++) {
+          [result, what] = stepFs[i](result, item, currNode, ...this.args);
+        }
+        return [result, what];
+      };
+    
+      private runResults: ITransformer["result"] = (result, currNode) => {
+        let what: WhatToDo = "continue";
+        for (let i = 0; i < resultFs.length && what === "continue"; i++) {
+          [result, what] = resultFs[i](result, currNode,...this.args);
+        }
+        return [result, what];
+      };
+
       public init = (input: any, currNode: Node): [any, WhatToDo] => {
-        let [output, w] = i(input, currNode);
+        let [output, w] = this.runInits(input, currNode);
         if (w === "continue") return this.xfNext.init(output, currNode);
         else return [output, w];
       };
 
       public result(input: any, currNode: Node): [any, WhatToDo] {
-        let [output, w] = r(input, currNode);
+        let [output, w] = this.runResults(input, currNode);
         if (w === "continue") return this.xfNext.result(output, currNode);
         else return [output, w];
       }
 
       public step(input: any, item: any, currNode: Node): [any, WhatToDo] {
-        let [output, w] = s(input, item, currNode);
+        let [output, w] = this.runSteps(input, item, currNode);
         if (w === "continue") return this.xfNext.step(output, item, currNode);
         else return [output, w];
       }
     };
   }
 
-  public build(...args:any[]):TransformerClass {
-    return this.createTransformClass(this.runInits, this.runSteps, this.runResults);
+  public build():TransformerClass {
+    return this.createTransformClass(this.initFs, this.stepFs, this.resultFs);
   }
 }
 
