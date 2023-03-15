@@ -7,9 +7,9 @@ import { Node } from '../common/Node'
 export type WhatToDo = 'continue' | 'terminate' | 'skipChildren' | 'skipChild'
 
 export interface ITransformer {
-  init (value: any , currNode: Node) : [any , WhatToDo]
-  result (result: any , currNode: Node) : [any , WhatToDo]
-  step (result: any , item: any , currNode: Node) : [any , WhatToDo]
+  init (value: any , currNode: Node, ...args:any[]) : [any , WhatToDo]
+  result (result: any , currNode: Node, ...args:any[]) : [any , WhatToDo]
+  step (result: any , item: any , currNode: Node, ...args:any[]) : [any , WhatToDo]
 }
 export type TransformerClass = { new (xfNext: ITransformer, ...args: any[]): ITransformer  }
 
