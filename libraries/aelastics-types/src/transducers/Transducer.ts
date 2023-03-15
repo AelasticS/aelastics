@@ -14,7 +14,7 @@ import { FromDTOGraph } from "./FromDTOGraph";
 import { Validation } from "./Validation";
 import { RecursiveTransformer } from "./RecursiveTransformer";
 import { AnnotationTransformer } from "./AnnotationTransformer";
-import { AnyAnnotation} from "../annotations/Annotation";
+import { AnyAnnotation, TypedAnnotation} from "../annotations/Annotation";
 import { NewInstance } from "./NewInstance";
 import { StepperReducer } from "./StepperReducer";
 
@@ -88,7 +88,7 @@ export class Transducer {
     return this.do(NewInstance, initValues, generateID);
   }
 
-  processAnnotations(annot: AnyAnnotation): this {
+  processAnnotations(annot: TypedAnnotation): this {
     return this.do(AnnotationTransformer, annot)
   }
 

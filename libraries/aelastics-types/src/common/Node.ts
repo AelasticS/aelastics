@@ -6,7 +6,7 @@ import { Any } from './DefinitionAPI'
 import { ExtraInfo } from '../type/Type'
 import { VisitedNodes } from './VisitedMap'
 import { AnnotationTransformer} from '../transducers/AnnotationTransformer'
-import { AnyAnnotation } from '../annotations/Annotation'
+import { TypedAnnotation} from '../annotations/Annotation'
 
 export class Node {
   instance: any
@@ -15,7 +15,7 @@ export class Node {
   extra: ExtraInfo
   parent?: Node
   visited: VisitedNodes
-  annotationTransformers:Map<string, AnnotationTransformer>
+  annotationTransformers:Map<TypedAnnotation, AnnotationTransformer>
   private _revisited: boolean = false
 
   constructor(
@@ -42,11 +42,11 @@ export class Node {
     this._revisited = b
   }
 
-  getAnnotationForNode(a:AnyAnnotation) :any {
-    return this.annotationTransformers.get(a)?.currentAnnotation
+  getCurrentAnnotationElement(a:TypedAnnotation) :any {
+    return this.annotationTransformers.get(a)?.currentAnnotationElement
   }
 
-  getAnnotationTransformer(a:AnyAnnotation) : AnnotationTransformer | undefined {
+  getAnnotationTransformer(a:TypedAnnotation) : AnnotationTransformer | undefined {
     return this.annotationTransformers.get(a)
   }
   

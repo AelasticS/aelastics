@@ -58,7 +58,10 @@ export class TransformerBuilder {
     r: ITransformer["result"]
   ): TransformerClass {
     return class implements ITransformer {
-      constructor(readonly xfNext: ITransformer) {}
+      private args:any[]
+      constructor(readonly xfNext: ITransformer, ...args:any[]) {
+        this.args = args
+      }
 
       public init = (input: any, currNode: Node): [any, WhatToDo] => {
         let [output, w] = i(input, currNode);
@@ -80,8 +83,8 @@ export class TransformerBuilder {
     };
   }
 
-  public build():TransformerClass {
-    return this.createTransformClass(this.runInits, this.runSteps, this.runResults);
+  public build(...args:any[]):TransformerClass {
+    return this.createTransformClass(this.runInits, this.runSteps, this.runResults, ...args);
   }
 }
 

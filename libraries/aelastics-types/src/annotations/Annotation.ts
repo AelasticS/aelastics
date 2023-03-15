@@ -4,7 +4,7 @@
  */
 
 import * as types from '..'
-import { AnyObjectType, AnySimpleType } from '../index'
+import { Any, AnyObjectType, AnySimpleType } from '../index'
 
 // keywordsae
 export enum KeyWord {
@@ -59,10 +59,10 @@ export type anyPartSchema<S extends AnySchema> = S[keyof S]
 
 export type AnyAnnotation = Annotation<any, any>
 
-// export interface NamedAnnotation {
-//   name: string
-//   annotation: Annotation<any, any>
-// }
+export interface TypedAnnotation {
+  type:Any
+  value: Annotation<any, any>
+}
 
 export type Annotation<T, S extends AnySchema> =
   | AnnotateSimple<T, S>

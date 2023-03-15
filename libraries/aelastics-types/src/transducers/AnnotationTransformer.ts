@@ -8,7 +8,7 @@
 import { Node } from '../common/Node'
 import { ServiceError } from 'aelastics-result'
 import { ITransformer, WhatToDo } from './Transformer'
-import { AnyAnnotation } from '../annotations/Annotation'
+import { AnyAnnotation, TypedAnnotation } from '../annotations/Annotation'
 
 // export interface IAnnotationProcessor {
 //   init: (value: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
@@ -17,18 +17,20 @@ import { AnyAnnotation } from '../annotations/Annotation'
 // }
 
 export class AnnotationTransformer implements ITransformer {
-  private readonly annotation:  AnyAnnotation
+  private readonly typedAnnotation:  TypedAnnotation
   private readonly xf: ITransformer
   private _annotationStack: any[] = []
 
-  
-  constructor(xf: ITransformer, a: AnyAnnotation, ) {
+
+  get annotation() { return this.typedAnnotation.value }
+
+  constructor(xf: ITransformer, na: TypedAnnotation, ) {
     // ToDo: extend to support an array (a map) of annotations
-    this.annotation = a
+    this.typedAnnotation = na
     this.xf = xf
   }
   
-  get currentAnnotation(): any {
+  get currentAnnotationElement(): any {
     return this._annotationStack.length > 0
       ? this._annotationStack[this._annotationStack.length - 1]
       : undefined
@@ -37,9 +39,9 @@ export class AnnotationTransformer implements ITransformer {
 
   init(value: any, currNode: Node): [any, WhatToDo] {
     // set current node to point to this instance
-    if(!currNode.annotationTransformers?.get(this.annotation))
-      new Error(`No annotation - node type: ${currNode.type.name}, value:${currNode.instance}`)
-    currNode.annotationTransformers.set(this.annotation, this)
+    // if(!currNode.annotationTransformers?.get(this.namedAnnotation.annotation))
+    //   new Error(`No annotation - node type: ${currNode.type.name}, value:${currNode.instance}`)
+    currNode.annotationTransformers.set(this.typedAnnotation, this)
 
     switch (currNode.extra.role) {
       case 'asRoot':

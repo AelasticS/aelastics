@@ -1,1 +1,1 @@
-export {AnnotationSchema, Annotation} from './Annotation'
+export { AnnotationSchema, Annotation, AnyAnnotation, TypedAnnotation } from "./Annotation";
