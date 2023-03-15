@@ -84,7 +84,7 @@ export class TransformerBuilder {
   }
 
   public build(...args:any[]):TransformerClass {
-    return this.createTransformClass(this.runInits, this.runSteps, this.runResults, ...args);
+    return this.createTransformClass(this.runInits, this.runSteps, this.runResults);
   }
 }
 
