@@ -1,4 +1,4 @@
-import { IEmployee, IOrganization } from "../Organization/organization.model.type"
+import { IEmployee, IOrganization } from "./organization.model.type"
 
 let w0: IEmployee = { id: 0, name: "Zoran", age: 45, sex: "male", 
 children: [{ name: "Bata" }], birthPlace:{name:"NK",state:"Serbia"} }
