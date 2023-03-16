@@ -37,7 +37,7 @@ const transform2JSXAnnot = builder
         }
         return [result, "continue"];
       })
-      .onTypeCategory("Simple", (result, currItem, currNode) => {
+      .onTypeCategory("Simple", (result, currNode, currItem) => {
         if (
           result instanceof jsx.Complex_JSX_Element &&
           currNode instanceof t.Node &&
@@ -50,7 +50,7 @@ const transform2JSXAnnot = builder
         }
         return [result, "continue"];
       })
-      .onTypeCategory("Array", (result, currItem, currNode) => {
+      .onTypeCategory("Array", (result, currNode, currItem) => {
         return [result, "continue"];
       })
       .build()
