@@ -52,7 +52,7 @@ describe("test TransformerBuilder", () => {
     return [v, "continue"];
   };
 
-  let fStep: ITransformer["step"] = (v, i, c) => {
+  let fStep: ITransformer["step"] = (v, c, i) => {
     console.log(`STEP: node type:${c.type.name}, value:${v}, instance:${c.instance}`);
     return [v, "continue"];
   };
@@ -89,10 +89,12 @@ describe("test TransformerBuilder", () => {
           .onTypeCategory("Simple", fResult)
           .build()
       )
-
       .build();
-      let tr = t.transducer().recurse("makeItem").do(oi).doFinally(naturalReducer());
-      let r = Person.transduce(tr, Tom)
-      expect(1).toEqual(1);
+    let tr = t.transducer()
+      .recurse("makeItem")
+      .do(oi, "arg")
+      .doFinally(naturalReducer());
+    let r = Person.transduce(tr, Tom);
+    expect(1).toEqual(1);
   });
 });

@@ -72,8 +72,8 @@ export class NewInstance implements ITransformer {
     return this.xf.result(result, currNode);
   }
 
-  step(result: any, value: any, currNode: Node): [any, WhatToDo] {
+  step(result: any, currNode: Node, value: any): [any, WhatToDo] {
     if (value === undefined) value = currNode.type.init(currNode);
-    return this.xf.step(result, value, currNode);
+    return this.xf.step(result, currNode, value);
   }
 }

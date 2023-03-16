@@ -14,7 +14,7 @@
  *  3. transformation context - annotations in the form of a Map, which is suitable for model transformations
  */
 
-import {} from "aelastics-transducers"
+import {} from "aelastics-types"
 
 export function pure2Model() {
 

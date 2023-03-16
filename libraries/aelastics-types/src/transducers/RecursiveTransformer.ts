@@ -35,7 +35,7 @@ export class RecursiveTransformer implements ITransformer {
    * 4. reduce - accumulated mode is mandatory!
    *    key = [type, input], value = 0/init/neutral element // should not contribute two times
    */
-  step(acc: any, item: any, currNode: Node): [any, WhatToDo] {
+  step(acc: any, currNode: Node, item: any): [any, WhatToDo] {
     // ToDo should use defaultReducer for the childType? instead of wrapping
     if (!currNode.type.isSimple() && this.transducer.reducer) {
       let [res, whatToDo] = currNode.type.doTransformation(
@@ -48,11 +48,11 @@ export class RecursiveTransformer implements ITransformer {
       if (this.resetAcc) {
         // ToDo change currNode.instance to a new item or keep old original one ???
         // currNode.instance = res
-        return this.xf.step(acc, res, currNode) // makeItem mode => res is a new item, acc is a container
+        return this.xf.step(acc, currNode, res) // makeItem mode => res is a new item, acc is a container
       } else {
         currNode.acc = res
-        return this.xf.step(res, item, currNode) // accumulate mode => res is accumulated value
+        return this.xf.step(res, currNode, item) // accumulate mode => res is accumulated value
       }
-    } else return this.xf.step(acc, item, currNode)
+    } else return this.xf.step(acc, currNode, item)
   }
 }

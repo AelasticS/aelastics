@@ -20,8 +20,8 @@ export class StepperReducer implements ITransformer {
     return [ result, 'continue']
   }
 
-  step(result: any , item: any , currNode: Node): [any , WhatToDo] {
-    currNode.parent?.type.addChild(result , item , currNode)
+  step(result: any , currNode: Node, item: any): [any , WhatToDo] {
+    currNode.parent?.type.addChild(result , item, currNode)
     return [result , 'continue']
   }
 }

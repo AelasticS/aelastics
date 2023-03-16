@@ -7,14 +7,14 @@ import { Node } from '../common/Node'
 
 export class Wrap implements ITransformer {
   private readonly initValue: any
-  private readonly stepFn: (result: any, item: any, currNode: Node) => any
+  private readonly stepFn: ITransformer["step"]
 
-  constructor(stepFn: (result: any, item: any, currNode: Node) => any, initValue?: any) {
+  constructor(stepFn: (result: any, currNode: Node, item: any) => any, initValue?: any) {
     this.initValue = initValue
     this.stepFn = stepFn
   }
 
-  init(item: any, currNode: Node): [any, WhatToDo] {
+  init(currNode: Node, item: any): [any, WhatToDo] {
     if(this.initValue !== undefined)
       return [this.initValue, 'continue']
     else
@@ -25,7 +25,7 @@ export class Wrap implements ITransformer {
     return [result, 'continue']
   }
 
-  step(result: any, item: any, currNode: Node): [any, WhatToDo] {
-    return [this.stepFn(result, item, currNode), 'continue']
+  step(result: any, currNode: Node, item: any): [any, WhatToDo] {
+    return [this.stepFn(result, currNode, item), 'continue']
   }
 }

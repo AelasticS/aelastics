@@ -131,7 +131,7 @@ class ermProcessor implements ITransformer {
     return this.xf.result(result, currNode);
   }
 
-  step(result: any, item: any, currNode: Node): [any, WhatToDo] {
+  step(result: any, currNode: Node, item: any): [any, WhatToDo] {
     let annot: any = currNode.getCurrentAnnotationElement(ERM_Person);
     let instance: any;
     if (item) {
@@ -167,7 +167,7 @@ class ermProcessor implements ITransformer {
         break;
     }
     currNode.parent?.type.addChild(result, instance, currNode);
-    return this.xf.step(result, item, currNode);
+    return this.xf.step(result, currNode, item);
   }
 }
 

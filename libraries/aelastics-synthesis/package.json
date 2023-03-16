@@ -27,7 +27,6 @@
   "dependencies": {
     "aelastics-result": "workspace:*",
     "aelastics-types": "workspace:*",
-    "aelastics-transducers": "workspace:*",
     "generic-metamodel": "workspace:*",
     "aelastics-store": "workspace:*"
   }

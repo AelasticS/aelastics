@@ -29,8 +29,8 @@ const initCounter = (): TypeCounter => [0, 0, 0, 0]
 
 let countTypes: Reducer<TypeCounter> = (
   [simple, objects, arrays, optional]: TypeCounter,
-  item: any,
-  { type }: Node
+   { type }: Node,
+   item: any
 ) => {
   switch (type.typeCategory) {
     case 'Object':
@@ -49,7 +49,7 @@ let countTypes: Reducer<TypeCounter> = (
   return [simple, objects, arrays, optional]
 }
 
-let sumNumbers: Reducer<number> = (acc: number, item: any, { instance, type }: Node) => {
+let sumNumbers: Reducer<number> = (acc: number, { instance, type }: Node, item: any) => {
   switch (type.typeCategory) {
     case 'Number':
       return acc + instance

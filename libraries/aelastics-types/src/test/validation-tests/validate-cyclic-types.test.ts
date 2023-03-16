@@ -46,7 +46,7 @@ Person.addValidator({
 type IPerson = t.TypeOf<typeof Person>
 
 describe('test transduce on cyclic object with optional properties', () => {
-  const validateNode = (result: ServiceError[], item: any, currNode: Node) => {
+  const validateNode = (result: ServiceError[], currNode: Node, item: any) => {
     if (currNode.isRevisited) return result
     let res = currNode.type.checkValidators(item)
     if (isFailure(res)) {

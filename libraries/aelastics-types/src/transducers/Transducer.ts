@@ -116,7 +116,7 @@ export class Transducer {
   }
 }
 
-export const wrap = (f: (result: any, item: any, currNode: Node) => any) => {
+export const wrap = (f: (result: any, currNode: Node, item: any) => any) => {
   return new Wrap(f);
 };
 
@@ -146,7 +146,7 @@ export const map = (f: (currNode: Node) => any): ((xf: ITransformer) => ITransfo
  * @param f
  */
 export const filter = (
-  f: (item: any, currNode: Node) => boolean
+  f: (currNode: Node, item: any) => boolean
 ): ((xf: ITransformer) => ITransformer) => {
   return function (xf: ITransformer) {
     return new Filter(xf, f);

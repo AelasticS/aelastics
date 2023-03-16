@@ -50,7 +50,7 @@ export class ToDTOGraph implements ITransformer {
     return this.xf.init(value, currNode)
   }
 
-  step(result: any, item: any, currNode: Node): [any, WhatToDo] {
+  step(result: any, currNode: Node, item: any): [any, WhatToDo] {
     //  if (result['@hasErrors'] === undefined)
     if (currNode.isRevisited) {
       let ref = this.getReference(item)
@@ -71,7 +71,7 @@ export class ToDTOGraph implements ITransformer {
           break
       }
     }
-    return this.xf.step(result, item, currNode)
+    return this.xf.step(result, currNode, item)
   }
 
   result(result: any, currNode: Node): [any, WhatToDo] {

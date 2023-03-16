@@ -49,10 +49,10 @@ export class TransformerBuilder {
         return [value, what];
       };
     
-      private runSteps: ITransformer["step"] = (result, item, currNode) => {
+      private runSteps: ITransformer["step"] = (result, currNode, item) => {
         let what: WhatToDo = "continue";
         for (let i = 0; i < stepFs.length && what === "continue"; i++) {
-          [result, what] = stepFs[i](result, item, currNode, ...this.args);
+          [result, what] = stepFs[i](result, currNode, item, ...this.args);
         }
         return [result, what];
       };
@@ -77,9 +77,9 @@ export class TransformerBuilder {
         else return [output, w];
       }
 
-      public step(input: any, item: any, currNode: Node): [any, WhatToDo] {
-        let [output, w] = this.runSteps(input, item, currNode);
-        if (w === "continue") return this.xfNext.step(output, item, currNode);
+      public step(input: any, currNode: Node, item: any): [any, WhatToDo] {
+        let [output, w] = this.runSteps(input, currNode, item);
+        if (w === "continue") return this.xfNext.step(output, currNode, item);
         else return [output, w];
       }
     };
@@ -96,7 +96,7 @@ abstract class FunctionBuilder<F extends (...args: any[]) => [any, WhatToDo]> {
   private arrayOfFun: Array<F> = [];
   //private initFs: Array<FunctionType<Parameters<F>, ReturnType<F>>> = [];
   private getValue: (args: any[]) => any = (args) => args[0];
-  private getCurrentNode: (args: any[]) => Node = (args) => (args.length > 2 ? args[2] : args[1]);
+  private getCurrentNode: (args: any[]) => Node = (args) => args[1] // (args.length > 2 ? args[2] : args[1]);
 
   public onPredicate(predicate: <I extends Parameters<F>>(...a: I) => Boolean, fun: F): this {
     let resF = <F>((...args: Parameters<F>): [any, WhatToDo] => {

@@ -42,8 +42,8 @@ export class ObjectObservable implements ITransformer {
     return this.xf.result(result, currNode)
   }
 
-  step(result: any, item: any, currNode: Node): [any, WhatToDo] {
-    return this.xf.step(result, item, currNode)
+  step(result: any, currNode: Node, item: any): [any, WhatToDo] {
+    return this.xf.step(result, currNode, item)
   }
 }
 

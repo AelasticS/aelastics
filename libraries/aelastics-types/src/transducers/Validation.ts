@@ -41,9 +41,9 @@ export class Validation implements ITransformer {
     return this.xf.init(value , currNode)
   }
 
-  step(result: any , item: any , currNode: Node): [any , WhatToDo] {
+  step(result: any , currNode: Node, item: any): [any , WhatToDo] {
     let newItem = this.doValidation(result , item , currNode)
-    return this.xf.step(result , newItem , currNode)
+    return this.xf.step(result , currNode, newItem)
 /*
     if (result['@hasErrors'] === undefined) return this.xf.step(result , item , currNode)
     else {

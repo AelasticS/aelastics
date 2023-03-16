@@ -77,7 +77,7 @@ describe('test transduce on object without optional properties', () => {
     }
     let tr = transducer()
       .recurse('accumulate')
-      .reduce((result:number, item, currNode) => {
+      .reduce((result:number, currNode, item) => {
         if ( currNode.type.typeCategory === 'Boolean' && item === true)
           return result + 1
         else

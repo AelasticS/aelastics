@@ -32,7 +32,7 @@ export abstract class SimpleType<V, G, T> extends Type<V, G, T> {
     if (resetAcc || acc === undefined) {
       ;[acc, whatToDo] = t.init(initObj, n)
     }
-    ;[acc, whatToDo] = t.step(acc, n.instance, n)
+    ;[acc, whatToDo] = t.step(acc, n, n.instance)
     return whatToDo !== 'continue' ? [acc!, whatToDo] : (t.result(acc, n) as any)
   }
 }

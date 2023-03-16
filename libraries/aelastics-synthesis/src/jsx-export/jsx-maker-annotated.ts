@@ -1,17 +1,17 @@
 import * as jsx from "./jsx-elements";
 import * as t from "aelastics-types";
 import { Trans as tr } from "aelastics-types";
-import { AnnotationTypes  as a} from "aelastics-types";
+import { AnnotationTypes as a } from "aelastics-types";
 
 const builder = new tr.TransformerBuilder();
 
 const transform2JSXAnnot = builder
   .onInit(
     new tr.InitBuilder()
-      .onTypeCategory("Object", (result, currNode) => {
+      .onTypeCategory("Object", (result, currNode, annot) => {
         result = new jsx.Complex_JSX_Element(currNode.type.name);
         return [result, "continue"];
-      })   
+      })
       .onTypeCategory("Array", (result, currNode) => {
         // result = currNode.parent?.acc
         return [result, "continue"];
@@ -20,7 +20,7 @@ const transform2JSXAnnot = builder
   )
   .onStep(
     new tr.StepBuilder()
-      .onTypeCategory("Object", (result, currItem, currNode) => {
+      .onTypeCategory("Object", (result, currNode, currItem) => {
         if (result instanceof jsx.Complex_JSX_Element) {
           if (
             currNode.isRevisited &&
@@ -68,8 +68,8 @@ const transform2JSXAnnot = builder
   .build();
 
 export const make = (
-    obj: t.ObjectLiteral,
-    annotation:a.TypedAnnotation,
+  obj: t.ObjectLiteral,
+  annotation: a.TypedAnnotation
 ): jsx.JSX_Element => {
   // create transformer to JSX model
   let transduser = tr

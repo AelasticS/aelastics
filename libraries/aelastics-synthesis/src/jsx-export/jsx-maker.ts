@@ -19,7 +19,7 @@ const transform2JSX = builder
   )
   .onStep(
     new tr.StepBuilder()
-      .onTypeCategory("Object", (result, currItem, currNode) => {
+      .onTypeCategory("Object", (result, currNode, currItem) => {
         if (result instanceof jsx.Complex_JSX_Element) {
           if (
             currNode.isRevisited &&

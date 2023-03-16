@@ -36,7 +36,7 @@ export abstract class ComplexType<V, G, T> extends Type<V, G, T> {
     for (let [child, childType, childExtra] of n.type.children(n.instance, n)) {
       if (whatToDo !== 'continue') break
       let childNode: Node = Node.makeNode(child, childType, acc, childExtra, n)
-      let [a1, a2] = t.step(acc, child, childNode)
+      let [a1, a2] = t.step(acc, childNode, child)
       acc = a1
       whatToDo = a2
     }

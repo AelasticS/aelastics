@@ -32,7 +32,7 @@ export class ShallowCopier implements ITransformer {
     return this.xf.result(result, currNode)
   }
 
-  step(acc: any, item: any, currNode: Node): [any, WhatToDo] {
-    return this.xf.step(acc, item, currNode)
+  step(acc: any, currNode: Node, item: any): [any, WhatToDo] {
+    return this.xf.step(acc, currNode, item)
   }
 }

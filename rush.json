@@ -497,12 +497,6 @@
       "tags": ["libraries", "web"]
     },
     {
-      "packageName": "aelastics-transducers",
-      "projectFolder": "libraries/aelastics-transducers",
-      "reviewCategory": "production",
-      "tags": ["libraries", "web"]
-    },
-    {
       "packageName": "aelastics-store",
       "projectFolder": "libraries/aelastics-store",
       "reviewCategory": "production",

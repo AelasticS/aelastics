@@ -6,7 +6,7 @@
  */
 
 import * as t from "aelastics-types"
-import {transducer, Reducer}  from "aelastics-transducers"
+import {transducer,  Trans as tr}  from "aelastics-types"
 import { Node } from "aelastics-types"
 
 let testSchema = t.schema("testSchema")
@@ -94,7 +94,7 @@ const personAnnot: ERM_Annotation<typeof Person> = {
   
 
 describe("test anotation handler", ()=>{
-  let sumNumbers: Reducer<number> = (acc: number, item: any, { instance, type }: Node) => {
+  let sumNumbers: tr.Reducer<number> = (acc: number, { instance, type }: Node, item: any) => {
     switch (type.typeCategory) {
       case 'Number':
         return acc + instance

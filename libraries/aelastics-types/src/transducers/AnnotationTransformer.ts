@@ -13,7 +13,7 @@ import { AnyAnnotation, TypedAnnotation } from '../annotations/Annotation'
 // export interface IAnnotationProcessor {
 //   init: (value: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
 //   result: (result: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
-//   step: (result: any, item: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
+//   step: (result: any, currNode: Node, item: any, p: AnnotationTransformer) => [any, WhatToDo]
 // }
 
 export class AnnotationTransformer implements ITransformer {
@@ -89,7 +89,7 @@ export class AnnotationTransformer implements ITransformer {
     return r 
   }
 
-  step(result: any, value: any, currNode: Node): [any, WhatToDo] {
+  step(result: any, currNode: Node, value: any): [any, WhatToDo] {
     let instance: any
     if (this._annotationStack[this._annotationStack.length - 1] !== undefined) {
       switch (currNode.extra.role) {
@@ -110,7 +110,7 @@ export class AnnotationTransformer implements ITransformer {
       }
     } else this._annotationStack.push(undefined)
 
-    let r = this.xf.step(result, value, currNode)
+    let r = this.xf.step(result, currNode, value)
     this._annotationStack.pop()
     return r
   }

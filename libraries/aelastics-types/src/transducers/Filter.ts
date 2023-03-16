@@ -22,8 +22,8 @@ export class Filter implements ITransformer {
     return this.xf.result(result , currNode)
   }
 
-  step(result: any , item: any , currNode: Node): [any , WhatToDo] {
-    if (this.predicate(item , currNode)) return this.xf.step(result , item , currNode)
+  step(result: any , currNode: Node, item: any): [any , WhatToDo] {
+    if (this.predicate(item , currNode)) return this.xf.step(result , currNode, item)
     else return [result , 'continue']
   }
 }
