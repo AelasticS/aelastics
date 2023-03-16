@@ -1,5 +1,5 @@
 import * as t from "aelastics-types";
-import { Any } from "aelastics-types";
+import { Any, ObjectLiteral } from "aelastics-types";
 import * as g from "generic-metamodel";
 import { Context } from "./context";
 import { ModelStore } from '../index';
@@ -58,6 +58,10 @@ export type Template<P extends g.IModelElement> = (
 export type CpxTemplate<P extends {}, R extends g.IModelElement> = (
   props: P
 ) => Element<P, R>;
+
+export type ValueTemplate<P extends ObjectLiteral> = (
+  props: WithRefProps<P>
+) => Element<WithRefProps<P>, P>;
 
 export type Super<P extends {}, R extends g.IModelElement> =
   | Template<R>
