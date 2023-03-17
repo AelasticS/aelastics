@@ -2,6 +2,7 @@ import * as jsx from "./jsx-elements";
 import * as t from "aelastics-types";
 import { Trans as tr } from "aelastics-types";
 import { AnnotationTypes as a } from "aelastics-types";
+import { IcollectionJSXAnnotType, IobjectJSXAnnotType, IsimpleJSXAnnotType } from "./jsx-annotatation";
 
 const builder = new tr.TransformerBuilder();
 
@@ -9,7 +10,10 @@ const transform2JSXAnnot = builder
   .onInit(
     new tr.InitBuilder()
       .onTypeCategory("Object", (result, currNode, annot) => {
-        result = new jsx.Complex_JSX_Element(currNode.type.name);
+        let elAnot: IobjectJSXAnnotType = currNode.getCurrentAnnotationElement(annot);
+        if (elAnot.tagName)
+          result = new jsx.Complex_JSX_Element(elAnot.tagName);
+        else result = new jsx.Complex_JSX_Element(currNode.type.name);
         return [result, "continue"];
       })
       .onTypeCategory("Array", (result, currNode) => {
@@ -20,12 +24,16 @@ const transform2JSXAnnot = builder
   )
   .onStep(
     new tr.StepBuilder()
-      .onTypeCategory("Object", (result, currNode, currItem) => {
+      .onTypeCategory("Object", (result, currNode, currItem, annot) => {
+
         if (result instanceof jsx.Complex_JSX_Element) {
           if (
             currNode.isRevisited &&
             currItem instanceof jsx.Complex_JSX_Element
           ) {
+        
+            let elAnot: IobjectJSXAnnotType = currNode.getCurrentAnnotationElement(annot);
+
             result.addReference(
               new jsx.Reference_JSX_Element(
                 currItem.name,
@@ -33,16 +41,22 @@ const transform2JSXAnnot = builder
                 currItem.getProperty("name")?.reference.name!
               )
             );
-          } else result.addsubElement(currItem);
+          } else {
+            let elAnot: IobjectJSXAnnotType = currNode.getCurrentAnnotationElement(annot);
+            result.addsubElement(currItem);
+          }
         }
         return [result, "continue"];
       })
-      .onTypeCategory("Simple", (result, currNode, currItem) => {
+      .onTypeCategory("Simple", (result, currNode, currItem, annot) => {
         if (
           result instanceof jsx.Complex_JSX_Element &&
           currNode instanceof t.Node &&
           currNode.extra.propName
         ) {
+
+          let elAnot: IsimpleJSXAnnotType = currNode.getCurrentAnnotationElement(annot);
+
           result.addProperty(
             currNode.extra.propName,
             new jsx.Simple_JSX_Element(currItem)
@@ -50,7 +64,9 @@ const transform2JSXAnnot = builder
         }
         return [result, "continue"];
       })
-      .onTypeCategory("Array", (result, currNode, currItem) => {
+      .onTypeCategory("Array", (result, currNode, currItem, annot) => {
+        let elAnot: IcollectionJSXAnnotType = currNode.getCurrentAnnotationElement(annot);
+
         return [result, "continue"];
       })
       .build()
@@ -76,7 +92,7 @@ export const make = (
     .transducer()
     .recurse("makeItem")
     .processAnnotations(annotation)
-    .do(transform2JSXAnnot)
+    .doWithAnnotations(transform2JSXAnnot, annotation)
     .doFinally(tr.identityReducer());
   // execute transformer
   return annotation.type.transduce(transduser, obj);

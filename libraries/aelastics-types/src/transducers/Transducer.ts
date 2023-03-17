@@ -41,6 +41,7 @@ export class Transducer {
     return this;
   }
 
+
   // include transformer only if condition is satisfied
   doIf(condition: boolean, Ctor: TransformerClass, ...args: any[]): this {
     if (condition) {
@@ -91,6 +92,15 @@ export class Transducer {
   processAnnotations(annot: TypedAnnotation): this {
     return this.do(AnnotationTransformer, annot)
   }
+
+  doWithAnnotations(Ctor: TransformerClass, ...na:TypedAnnotation[]): this {
+    let tr = (xfNext: ITransformer) => {
+      return new Ctor(xfNext, ...na);
+    };
+    this.transformers.push(tr);
+    return this;
+  }
+
 
   toDtoGraph(): this {
     return this.do(ToDTOGraph);
