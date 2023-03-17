@@ -6,7 +6,7 @@ export const ID = t.number.derive('IDType').positive
 export const Name = t.string.derive('NameType').alphanumeric.maxLength(128)
 export const Age = t.number.derive('Human age').int8.positive.inRange(1, 120);
 
-export const Child = t.object({name: t.string}, "Child")
+export const Child = t.object({name: t.string}, "Child", OrgSchema)
 
 export const Employee = t.entity({
     id:ID,
