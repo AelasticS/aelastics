@@ -3,9 +3,10 @@ import { ModelElement, Model } from "generic-metamodel";
 
 export const FSC_Schema = t.schema("BPMN-Schema");
 
+export const FS_Model = t.subtype(Model, {
+}, "FS_Model", FSC_Schema);
+
 export const FS_Item = t.subtype(ModelElement, {
-
-
 }, "FS_Item", FSC_Schema);
 
 export const Directory = t.subtype(FS_Item, {
@@ -27,6 +28,7 @@ export const Section = t.subtype(FileElement, {
     content:t.arrayOf(FileElement, "content"),
 }, "Section", FSC_Schema);
 
+export type IFS_Model = t.TypeOf<typeof FS_Model>
 export type IDirectory = t.TypeOf<typeof Directory>
 export type IFile = t.TypeOf<typeof File>
 export type IParagraph = t.TypeOf<typeof Paragraph>
