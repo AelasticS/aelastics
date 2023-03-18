@@ -9,17 +9,17 @@ export const FileModel: CpxTemplate<IFS_ModelProps, f.IFS_Model> = (props) => {
 }
 
 export const Dir: Template<f.IDirectory> = (props) => {
-    return new Element(f.Directory, props, 'children')
+    return new Element(f.Directory, props, 'items')
 }
 
-export const File: Template<f.IFile> = (props) => {
-    return new Element(f.File, props, 'children')
+export const Doc: Template<f.IDocument> = (props) => {
+    return new Element(f.Document, props, 'items')
 }
 
 export const P: Template<f.IParagraph> = (props) => {
-    return new Element(f.Paragraph, props, 'children')
+    return new Element(f.Paragraph, props, 'elements')
 }
 
-export const S: Template<f.ISection> = (props) => {
-    return new Element(f.Section, props, 'children')
+export const Sec: Template<f.ISection> = (props) => {
+    return new Element(f.Section, props, 'elements')
 }

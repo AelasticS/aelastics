@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "libraries/examples"
+		},
+		{
+			"path": "libraries/aelastics-m2t"
 		}
 	],
 	"settings": {}
