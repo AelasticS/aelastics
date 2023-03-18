@@ -1,6 +1,6 @@
 import * as f from './fileSystemContent.meta.model'
-import { CpxTemplate, Element, Template, WithRefProps } from '../index'
-import { ModelStore } from '../index'
+import { CpxTemplate, Element, Template, WithRefProps } from 'aelastics-synthesis'
+import { ModelStore } from 'aelastics-synthesis'
 
 export type IFS_ModelProps = WithRefProps<f.IFS_Model> & { store?: ModelStore }
 
