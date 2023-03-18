@@ -3,7 +3,6 @@ import * as t from "aelastics-types";
 import { Trans as tr } from "aelastics-types";
 import { AnnotationTypes as a } from "aelastics-types";
 import { IPropertyJSXAnnotType, IObjectJSXAnnotType, ISimpleJSXAnnotType } from "./jsx-annotatation";
-import { Element } from "../jsx/element";
 
 
 const builder = new tr.TransformerBuilder();
@@ -50,7 +49,7 @@ const transform2JSXAnnot = builder
               result.addReference(new jsx.Reference_JSX_Element(currNode.type,tagName, refType, refValue, elAnot))
           } else {
             // node is visited for the first time
-            if (elAnot.isReference) {
+            if (elAnot?.isReference) {
               result.addReference(new jsx.Reference_JSX_Element(currNode.type, tagName, refType, refValue, elAnot));
             }
             else // no annotation, add subelement
@@ -90,7 +89,22 @@ const transform2JSXAnnot = builder
   )
   .build();
 
-export const make = (
+  export const make = (
+    obj: t.ObjectLiteral,
+    objType: t.ObjectType<any, any>
+  ): jsx.JSX_Element => {
+    // create transformer to JSX model
+    let transduser = tr
+      .transducer()
+      .recurse("makeItem")
+      .do(transform2JSXAnnot)
+      .doFinally(tr.identityReducer());
+    // execute transformer
+    return objType.transduce(transduser, obj);
+  };
+  
+
+export const makeWith = (
   obj: t.ObjectLiteral,
   annotation: a.TypedAnnotation
 ): jsx.JSX_Element => {
