@@ -1,5 +1,16 @@
+import { IPropertyJSXAnnotType, IObjectJSXAnnotType } from "./jsx-annotatation";
+import {Any} from "aelastics-types"
 export abstract class JSX_Element {
-  constructor(readonly name: string) {}
+  public typeName:string
+  public fullPathName:string
+  public tagName: string
+  public isSubElement:boolean = false
+
+  constructor(type:Any, tagName: string) {
+    this.typeName = type.name
+    this.fullPathName = type.fullPathName
+    this.tagName = tagName
+  }
 
   abstract pushJSX(stringArray: string[], level: number, indent: number): void;
 
@@ -11,18 +22,25 @@ export abstract class JSX_Element {
 }
 
 export class Complex_JSX_Element extends JSX_Element {
+  private readonly annotation?:IObjectJSXAnnotType
   private readonly properties: Property[] = [];
   private readonly subElements: Complex_JSX_Element[] = [];
   private readonly references: Reference_JSX_Element[] = [];
+ 
+  constructor(type:Any, tagName:string, annotation?:IObjectJSXAnnotType) {
+    super(type, tagName)
+    this.annotation = annotation
+  }
 
-  addProperty(name: string, value: JSX_Element) {
-    this.properties.push(new Property(name, value));
+  addProperty(type:Any, name: string, value: JSX_Element) {
+    this.properties.push(new Property(type, name, value));
   }
   getProperty(name: string) {
-    return this.properties.find((p) => p.name === name);
+    return this.properties.find((p) => p.tagName === name);
   }
 
   addsubElement(value: Complex_JSX_Element) {
+    value.isSubElement = true
     this.subElements.push(value);
   }
   addReference(value: Reference_JSX_Element) {
@@ -32,7 +50,7 @@ export class Complex_JSX_Element extends JSX_Element {
   getProperties(): string {
     let s = this.properties.reduce(
       (prev, current) =>
-        `${prev}${current.name}=${current.reference.getJSX(0)} `,
+        `${prev}${current.tagName}=${current.reference.getJSX(0)} `,
       ""
     );
     return s;
@@ -54,18 +72,18 @@ export class Complex_JSX_Element extends JSX_Element {
     // open tag with properties
     if (this.subElements.length === 0) {
       stringArray.push(
-        `${" ".repeat(level * indent)}<${this.name} ${this.getProperties()}/>\n`
+        `${" ".repeat(level * indent)}<${this.tagName} ${this.getProperties()}/>\n`
       );
     } else {
       stringArray.push(
-        `${" ".repeat(level * indent)}<${this.name} ${this.getProperties()}>\n`
+        `${" ".repeat(level * indent)}<${this.tagName} ${this.getProperties()}>\n`
       );
       // sub elemnts
       this.pushSubElements(stringArray, level + 1, indent);
       // references
       this.pushReferences(stringArray, level + 1, indent);
       // closed tag
-      stringArray.push(`${" ".repeat(level * indent)}</${this.name}>\n`);
+      stringArray.push(`${" ".repeat(level * indent)}</${this.tagName}>\n`);
     }
   }
 
@@ -75,11 +93,11 @@ export class Complex_JSX_Element extends JSX_Element {
 }
 
 export class Property extends JSX_Element {
-  constructor(readonly name: string, readonly reference: JSX_Element) {
-    super(name);
+  constructor(type:Any, readonly tagName: string, readonly reference: JSX_Element) {
+    super(type, tagName);
   }
   pushJSX(stringArray: string[]): void {
-    stringArray.push(`<${this.name} $refByName="${this.reference.name}"/>`);
+    stringArray.push(`<${this.tagName} $refByName="${this.reference.tagName}"/>`);
   }
 }
 
@@ -88,11 +106,13 @@ export class Property extends JSX_Element {
  */
 export class Reference_JSX_Element extends JSX_Element {
   constructor(
+    type:Any, 
     readonly tagName: string,
     readonly refByType: "refByID" | "refByName",
-    readonly refValue: string
+    readonly refValue: string,
+    readonly annotation?:IObjectJSXAnnotType
   ) {
-    super(tagName);
+    super(type, tagName);
   }
 
   pushJSX(stringArray: string[], level: number, indent: number): void {
@@ -108,8 +128,8 @@ export class Reference_JSX_Element extends JSX_Element {
  *
  */
 export class Simple_JSX_Element extends JSX_Element {
-  constructor(readonly value: any) {
-    super(value);
+  constructor(type:Any, readonly value: any) {
+    super(type, value);
   }
 
   pushJSX(stringArray: string[]): void {

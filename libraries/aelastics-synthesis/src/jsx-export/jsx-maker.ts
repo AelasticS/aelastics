@@ -1,6 +1,7 @@
 import * as jsx from "./jsx-elements";
 import * as t from "aelastics-types";
 import { Trans as tr } from "aelastics-types";
+import { Name } from "./examples-for-test";
 
 const builder = new tr.TransformerBuilder();
 
@@ -8,7 +9,7 @@ const transform2JSX = builder
   .onInit(
     new tr.InitBuilder()
       .onTypeCategory("Object", (result, currNode) => {
-        result = new jsx.Complex_JSX_Element(currNode.type.name);
+        result = new jsx.Complex_JSX_Element(currNode.type, currNode.type.name);
         return [result, "continue"];
       })
       .onTypeCategory("Array", (result, currNode) => {
@@ -27,9 +28,10 @@ const transform2JSX = builder
           ) {
             result.addReference(
               new jsx.Reference_JSX_Element(
-                currItem.name,
+                currNode.type,
+                currItem.tagName,
                 "refByName",
-                currItem.getProperty("name")?.reference.name!
+                currItem.getProperty("name")?.reference.tagName!
               )
             );
           } else result.addsubElement(currItem);
@@ -42,9 +44,9 @@ const transform2JSX = builder
           currNode instanceof t.Node &&
           currNode.extra.propName
         ) {
-          result.addProperty(
+          result.addProperty(Name,
             currNode.extra.propName,
-            new jsx.Simple_JSX_Element(currItem)
+            new jsx.Simple_JSX_Element(currNode.type, currItem)
           );
         }
         return [result, "continue"];
