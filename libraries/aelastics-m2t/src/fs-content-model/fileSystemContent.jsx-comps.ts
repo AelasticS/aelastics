@@ -1,5 +1,5 @@
 import * as f from './fileSystemContent.meta.model'
-import { CpxTemplate, Element, Template, WithRefProps } from 'aelastics-synthesis'
+import { ConnectionInfo, CpxTemplate, defaultConnectionInfo, Element, Template, WithRefProps } from 'aelastics-synthesis'
 import { ModelStore } from 'aelastics-synthesis'
 
 export type IFS_ModelProps = WithRefProps<f.IFS_Model> & { store?: ModelStore }
@@ -17,7 +17,11 @@ export const Doc: Template<f.IDocument> = (props) => {
 }
 
 export const P: Template<f.IParagraph> = (props) => {
-    return new Element(f.Paragraph, props, 'elements')
+    const connInfo:ConnectionInfo = defaultConnectionInfo("elements")
+    connInfo.textContentAllowed = true
+    connInfo.textPropName = "txtContent"
+    
+    return new Element(f.Paragraph, props, connInfo)
 }
 
 export const Sec: Template<f.ISection> = (props) => {
