@@ -13,23 +13,31 @@ export const Directory = t.subtype(FS_Item, {
     items:t.arrayOf(FS_Item, "items"),
 }, "Directory", FSC_Schema);
 
-export const File_Element = t.subtype(FS_Item, {
-}, "FileElement", FSC_Schema);
+export const DocElement = t.subtype(ModelElement, {
+}, "DocElement", FSC_Schema);
 
 export const Document = t.subtype(FS_Item, {
-    elements:t.arrayOf(File_Element, "elements"),
+    elements:t.arrayOf(DocElement, "elements"),
 }, "Document", FSC_Schema);
 
-export const Paragraph = t.subtype(File_Element, {
-    content:t.string,
+export const Paragraph = t.subtype(DocElement, {
+    txtContent:t.string,
 }, "Paragraph", FSC_Schema);
 
-export const Section = t.subtype(File_Element, {
-    elements:t.arrayOf(File_Element, "elements"),
+export const Section = t.subtype(DocElement, {
+    subElements:t.arrayOf(DocElement, "subElements"),
 }, "Section", FSC_Schema);
 
 export type IFS_Model = t.TypeOf<typeof FS_Model>
 export type IDirectory = t.TypeOf<typeof Directory>
 export type IDocument = t.TypeOf<typeof Document>
+export type IDocElement = t.TypeOf<typeof DocElement>
 export type IParagraph = t.TypeOf<typeof Paragraph>
 export type ISection = t.TypeOf<typeof Section>
+
+
+export const isDirectory = (input: IDocElement): input is IDirectory =>
+  "items" in input;
+
+export const isParagraph = (input: IDocElement): input is IParagraph =>
+  "txtContent" in input;
