@@ -1,7 +1,7 @@
 /** @jsx hm */
 import { hm, render } from './handle'
 
-import { WithRefProps, Template, ElementInstance, Element, CpxTemplate } from './element'
+import { WithRefProps, Template, ElementInstance, Element, CpxTemplate, ConnectionInfo, defaultConnectionInfo } from './element'
 import * as g from 'generic-metamodel'
 import * as t from 'aelastics-types'
 import { ModelStore } from '../index'
@@ -31,6 +31,13 @@ export type IElementProps = WithRefProps<g.IModelElement>
 
 export const Elem: Template<g.IModelElement> = (props) => {
     return new Element(g.ModelElement, props, undefined)
+}
+
+export const ElemWithText: Template<g.IModelElement> = (props) => {
+    const connInfo:ConnectionInfo = defaultConnectionInfo(undefined)
+    connInfo.textSubElementsAllowed=true
+    connInfo.textPropName = "description"
+    return new Element(g.ModelElement, props, connInfo)
 }
 
 export type IModelProps = WithRefProps<g.IModel> & { store: ModelStore }

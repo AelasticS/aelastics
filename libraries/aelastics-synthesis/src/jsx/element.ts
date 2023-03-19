@@ -68,15 +68,19 @@ export type Super<P extends {}, R extends g.IModelElement> =
   | CpxTemplate<P, R>;
 
 export type ConnectionInfo = {
-  propName: string;
-  isParentProp: boolean;
-  isReconnectAllowed: boolean;
+  propName?: string;  // the name property usied to connect with
+  isParentProp: boolean; // is it a parent property
+  isReconnectAllowed: boolean; // is connected allowed if obejcts are alraedy connected
+  textSubElementsAllowed:boolean // are textual subelements allowed
+  textPropName: string // the name of property assigned to the text, if textual subelements allowed
 };
-export function defaultConnectionInfo(propName: string): ConnectionInfo {
+export function defaultConnectionInfo(propName?: string): ConnectionInfo {
   return {
     propName: propName,
     isParentProp: true,
-    isReconnectAllowed: false,
+    isReconnectAllowed: true,
+    textSubElementsAllowed:false,
+    textPropName:""
   };
 }
 
@@ -90,17 +94,10 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   constructor(
     public readonly type: t. ObjectType<any,any>,
     props: P,
-    //TODO: introduce type (Child|Parent, propName) and utility function
-    // to forbid reconnections
-    // public readonly parentProp?: string
     public connInfo?: string | ConnectionInfo
   ) {
     if (typeof connInfo === "string")
-      this.connectionInfo = {
-        propName: connInfo,
-        isParentProp: true,
-        isReconnectAllowed: true, // TODO: change back to false after changing creation of objects in transducers
-      };
+      this.connectionInfo = defaultConnectionInfo(connInfo)
     else this.connectionInfo = connInfo;
 
     this.props = props ? props : ({} as P);
@@ -287,16 +284,21 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let objType = parent.type as t.ObjectType<any, any>;
     let mapPropTypes = objType.allProperties;
     this.children.forEach((childElement) => {
+      // TODO: check textual child
+       if(typeof childElement === "string") {
+          const txtProp = this.connectionInfo?.textPropName
+          //@ts-ignore
+          txtProp && txtProp in parent.instance ? parent.instance[txtProp] = childElement : undefined
+       }
       if (!childElement) {
         throw new Error(
           `childElement undefined for parent "${this.props.name}" of type "${this.type.fullPathName}"`
         );
       }
-
       const child = childElement.render(ctx, isImport);
       if (childElement.connectionInfo) {
         // connect parent and child
-        let propType = mapPropTypes.get(childElement.connectionInfo.propName);
+        let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
         if (!propType)
           throw new Error(
             `Undefined propType property for childElement "${childElement.props.name}"`

@@ -3,7 +3,7 @@ import * as g from "generic-metamodel";
 import { Element } from "./element";
 import { ModelStore } from '../index'
 
-describe("should correctly find fully qualified name of model elements form references", () => {
+describe("should correctly find fully qualified name of model elements from references", () => {
   const store = new ModelStore();
   const ctx = new Context();
 
