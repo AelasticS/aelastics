@@ -13,7 +13,7 @@ export type RefProps = {
 };
 
 export type ElementInstance<P extends g.IModelElement> = {
-  type: t. ObjectType<any,any>;
+  type: t.ObjectType<any, any>;
   instance: P;
 };
 
@@ -68,19 +68,19 @@ export type Super<P extends {}, R extends g.IModelElement> =
   | CpxTemplate<P, R>;
 
 export type ConnectionInfo = {
-  propName?: string;  // the name property usied to connect with
+  propName?: string;  // the name property used to connect with, if it exist
   isParentProp: boolean; // is it a parent property
-  isReconnectAllowed: boolean; // is connected allowed if obejcts are alraedy connected
-  textSubElementsAllowed:boolean // are textual subelements allowed
-  textPropName: string // the name of property assigned to the text, if textual subelements allowed
+  isReconnectAllowed: boolean; // is connection allowed if object is alraedy connected
+  textContentAllowed: boolean // are textual subelements allowed
+  textPropName: string // the name of property recieving text content, if the text content allowed
 };
 export function defaultConnectionInfo(propName?: string): ConnectionInfo {
   return {
     propName: propName,
     isParentProp: true,
     isReconnectAllowed: true,
-    textSubElementsAllowed:false,
-    textPropName:""
+    textContentAllowed: false,
+    textPropName: ""
   };
 }
 
@@ -92,15 +92,18 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public props: P;
 
   constructor(
-    public readonly type: t. ObjectType<any,any>,
+    public readonly type: t.ObjectType<any, any>,
     props: P,
-    public connInfo?: string | ConnectionInfo
+    public readonly connInfo?: string | ConnectionInfo,
+    public name?: string
   ) {
     if (typeof connInfo === "string")
       this.connectionInfo = defaultConnectionInfo(connInfo)
     else this.connectionInfo = connInfo;
 
     this.props = props ? props : ({} as P);
+    this.name = name ? name : type.name
+
   }
 
   private renderProps(props: P, ctx: Context, isImport: boolean): {} {
@@ -284,33 +287,35 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let objType = parent.type as t.ObjectType<any, any>;
     let mapPropTypes = objType.allProperties;
     this.children.forEach((childElement) => {
-      // TODO: check textual child
-       if(typeof childElement === "string") {
-          const txtProp = this.connectionInfo?.textPropName
-          //@ts-ignore
-          txtProp && txtProp in parent.instance ? parent.instance[txtProp] = childElement : undefined
-       }
       if (!childElement) {
         throw new Error(
           `childElement undefined for parent "${this.props.name}" of type "${this.type.fullPathName}"`
         );
       }
-      const child = childElement.render(ctx, isImport);
-      if (childElement.connectionInfo) {
-        // connect parent and child
-        let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
-        if (!propType)
-          throw new Error(
-            `Undefined propType property for childElement "${childElement.props.name}"`
-          );
-        cnParentChild(
-          childElement.connectionInfo.propName,
-          t.findTypeCategory(propType),
-          parent.instance,
-          child,
-          childElement.connectionInfo.isReconnectAllowed
-        );
-        // toDO: create trace!
+      // check textual child
+      if (typeof childElement === "string") {
+        const txtProp = this.connectionInfo?.textPropName
+        if (this.connectionInfo?.textContentAllowed && txtProp && txtProp && txtProp in parent.instance) {
+          //@ts-ignore
+          parent.instance[txtProp] = childElement
+        }
+        else
+          throw new Error(`Not allowed text "${childElement}" in content of element "${this.name}"`)
+      }
+      else { // process proper children element
+        const child = childElement.render(ctx, isImport);
+        if (childElement.connectionInfo) {
+          // connect parent and child if propName exit
+          let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
+          if (propType) 
+            cnParentChild(
+              childElement.connectionInfo.propName,
+              t.findTypeCategory(propType),
+              parent.instance,
+              child,
+              childElement.connectionInfo.isReconnectAllowed
+            );
+        }
       }
     });
     if (parent.type.isOfType(g.Model)) {

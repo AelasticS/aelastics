@@ -35,8 +35,8 @@ export const Elem: Template<g.IModelElement> = (props) => {
 
 export const ElemWithText: Template<g.IModelElement> = (props) => {
     const connInfo:ConnectionInfo = defaultConnectionInfo(undefined)
-    connInfo.textSubElementsAllowed=true
-    connInfo.textPropName = "description"
+    connInfo.textContentAllowed = true
+    connInfo.textPropName = "label"
     return new Element(g.ModelElement, props, connInfo)
 }
 
@@ -50,6 +50,46 @@ export const Model: CpxTemplate< IModelProps, g.IModel> = (props) => {
 describe("Test jsx", () => {
 
     it("should create a model with one element", () => {
+        let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
+            <Elem name='el1'>
+            </Elem>
+        </Model>
+        let m = e.render(new Context())
+        //let m = render(e) as IModelProps
+        expect(m).toEqual(expect.objectContaining({
+            name: 'model1',
+            elements: expect.arrayContaining(
+                [expect.objectContaining({ name: "el1" })]
+            )
+        }
+        ))
+    })
+    
+    it("should allow an element to have textual content if specifed so", () => {
+        let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
+            <ElemWithText name='el with text'>
+                some text
+            </ElemWithText>
+        </Model>
+        let m = e.render(new Context())
+        expect(m).toEqual(expect.objectContaining({
+            name: 'model1',
+            elements: expect.arrayContaining(
+                [expect.objectContaining({ name: "elwithtext", label:"some text"})]
+            )
+        }
+        ))
+    })
+
+    it("should NOT allow an element to have textual content if specifed so", () => {
+        let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
+            <Elem name='el1'>
+                some text
+            </Elem>
+        </Model>
+        expect(()=>e.render(new Context())).toThrow(Error)
+    })
+    it("should allow an element to have textual content if specifed so", () => {
         let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <Elem name='el1'>
             </Elem>
