@@ -104,7 +104,15 @@ describe("test text generation", () => {
                 expect.objectContaining({ name: "Subdir1" }),
                 expect.objectContaining({ name: "Subdir2" }),
                 expect.objectContaining({ name: "Doc1" }),
-
+                expect.objectContaining({ txtContent: "Title Doc1" }),
+                expect.objectContaining({ txtContent: "text of Subchapter 1.1" }),
+                expect.objectContaining({ txtContent: "text of at end of Chapter 1" }),
+                expect.objectContaining({ txtContent: "text of Subchapter 2.1" }),
+                expect.objectContaining({ txtContent: "Conclusions" }),
+                expect.objectContaining({ label: "Chapter 1" }),
+                expect.objectContaining({ label: "Subchapter 1.1" }),
+                expect.objectContaining({ label: "Chapter 2" }),
+                expect.objectContaining({ label: "Subchapter 2.1" }),
             ])
         )
  
