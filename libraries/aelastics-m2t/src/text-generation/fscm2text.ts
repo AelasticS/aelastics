@@ -39,6 +39,6 @@ const renderFileElement = (input: IDocElement): string =>
 
 const renderSection = (input: ISection): string => {
   let buffer: Array<string> = [];
-  input.subElements.forEach((s) => buffer.push(renderFileElement(s)));
+  input.elements.forEach((s) => buffer.push(renderFileElement(s)));
   return buffer.join("");
 };

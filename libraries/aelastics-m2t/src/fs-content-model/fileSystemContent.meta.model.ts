@@ -17,7 +17,7 @@ export const DocElement = t.subtype(ModelElement, {
 }, "DocElement", FSC_Schema);
 
 export const Document = t.subtype(FS_Item, {
-    elements:t.arrayOf(DocElement, "elements"),
+    elements:t.arrayOf(DocElement, "elementsOfDocument"),
 }, "Document", FSC_Schema);
 
 export const Paragraph = t.subtype(DocElement, {
@@ -25,7 +25,7 @@ export const Paragraph = t.subtype(DocElement, {
 }, "Paragraph", FSC_Schema);
 
 export const Section = t.subtype(DocElement, {
-    subElements:t.arrayOf(DocElement, "subElements"),
+    elements:t.arrayOf(DocElement, "elementsOfSection"),
 }, "Section", FSC_Schema);
 
 export type IFS_Model = t.TypeOf<typeof FS_Model>

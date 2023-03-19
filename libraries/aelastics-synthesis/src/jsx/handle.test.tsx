@@ -68,7 +68,7 @@ describe("Test jsx", () => {
     it("should allow an element to have textual content if specifed so", () => {
         let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <ElemWithText name='el with text'>
-                some text
+                {"some text"}
             </ElemWithText>
         </Model>
         let m = e.render(new Context())
