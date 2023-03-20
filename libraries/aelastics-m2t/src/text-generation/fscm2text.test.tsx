@@ -1,6 +1,6 @@
 /** @jsx hm */
 import { hm } from "aelastics-synthesis";
-import { FileModel, IFS_Model, IParagraph } from "../index";
+import { FileModel, IFS_Model, IParagraph, ISection } from "../index";
 import { Dir, Doc, P, Sec } from "../index";
 import { IDirectory, IDocument } from "../index";
 import { ModelStore, Context, Element } from "aelastics-synthesis";
@@ -115,7 +115,29 @@ describe("test text generation", () => {
                 expect.objectContaining({ label: "Subchapter 2.1" }),
             ])
         )
- 
+        let topDir = testDoc3.elements[0] as IDirectory
+        expect(topDir.items).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ name: "Subdir1" }),
+                expect.objectContaining({ name: "Subdir2" }),
+                expect.objectContaining({ name: "Doc1" }),
+            ])
+        )
+        let doc1 = topDir.items[0] as IDocument
+        expect(doc1.elements).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ txtContent: "Title Doc1" }),
+                expect.objectContaining({ label: "Chapter 1" }),
+                expect.objectContaining({ label: "Chapter 2" }),
+            ])
+        )
+        let sec1 = doc1.elements[1] as ISection
+        expect(sec1.elements).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ txtContent: "text of at end of Chapter 1" }),
+                expect.objectContaining({ label: "Subchapter 1.1" }),
+            ])
+        )
     });
 });
 
