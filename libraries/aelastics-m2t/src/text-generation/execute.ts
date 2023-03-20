@@ -9,10 +9,11 @@ import {
   isParagraph,
 } from "../index";
 import { RenderContext } from "./renderContext";
-import { ExecResult } from "./execResult";
+import { ExecResult, ItemResult } from "./execResult";
+import { success } from "aelastics-result";
 
 
-export const executeFS_Model = (m: IFS_Model, acting:boolean = false, rootDir?:string ): ExecResult => {
+export const executeFS_Model = (m: IFS_Model, acting:boolean = false, rootDir:string="output"): ExecResult => {
   const ctx = new RenderContext(acting, rootDir)
   m.elements.forEach((i) =>
     isDirectory(i) ? executeDirectory(i, ctx) : executeDocument(<IDocument>i, ctx)
@@ -29,7 +30,13 @@ const executeDocument = (d: IDocument, ctx: RenderContext) => {
     let buffer: Array<string> = [];
     d.elements.forEach((s) => buffer.push(executeFileElement(s)));
     const text = buffer.join("");
-    ctx;
+    const res:ItemResult = {
+      itemID: d.id,
+      itemPath:d.name,
+      itemType:"Doc",
+      outcome:success(text)
+    }
+    ctx.result.results.push(res)
     ctx.result.noSuccesses++;
   } catch (e) {}
 };

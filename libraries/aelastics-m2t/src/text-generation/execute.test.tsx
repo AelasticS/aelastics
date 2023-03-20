@@ -1,15 +1,17 @@
 /** @jsx hm */
 import { hm } from "aelastics-synthesis";
-import { FileModel, IFS_Model, IParagraph, ISection } from "../index";
+import { executeFS_Model, FileModel, IFS_Model, IParagraph, ISection } from "../index";
 import { Dir, Doc, P, Sec } from "../index";
 import { IDirectory, IDocument } from "../index";
 import { ModelStore, Context, Element } from "aelastics-synthesis";
+import { isSuccess } from "aelastics-result";
 
 const testStore = new ModelStore();
 
 let testDoc1Element: Element<IDocument> = (
     <Doc name="TestDoc1.txt">
-        <P>{"some text"}</P>
+        <P>{"paragraph 1"}</P>
+        <P>{"paragraph 2"}</P>
     </Doc>
 );
 
@@ -69,14 +71,12 @@ let testModel3_Element: Element<IFS_Model> = (
 describe("test text generation", () => {
     it("should generate correct document content for testModel1", () => {
         const testDoc1: IFS_Model = testModel1_Element.render(new Context());
-        
-        expect(testDoc1.elements).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ name: "TestDoc1.txt" }),
-                expect.objectContaining({ txtContent: "some text" })
-            ])
-
-        )
+        const res = executeFS_Model(testDoc1)
+        expect(res.noSuccesses).toEqual(1)
+        expect(res.noFailures).toEqual(0)
+        let s = res.results[0].outcome
+        //@ts-ignore
+        expect(s.value).toEqual("paragraph 1\nparagraph 2\n")
     });
 });
 
