@@ -1,10 +1,9 @@
 /** @jsx hm */
 import { hm } from "aelastics-synthesis";
-import { executeFS_Model, FileModel, IFS_Model, IParagraph, ISection } from "../index";
+import { executeFS_Model, FileModel, getResultByItemPath, IFS_Model, IParagraph, ISection } from "../index";
 import { Dir, Doc, P, Sec } from "../index";
 import { IDirectory, IDocument } from "../index";
 import { ModelStore, Context, Element } from "aelastics-synthesis";
-import { isSuccess } from "aelastics-result";
 
 const testStore = new ModelStore();
 
@@ -77,6 +76,9 @@ describe("test text generation", () => {
         let s = res.results[0].outcome
         //@ts-ignore
         expect(s.value).toEqual("paragraph 1\nparagraph 2\n")
+        //@ts-ignore
+        expect(getResultByItemPath(res,"TestDoc1.txt")?.value).toEqual("paragraph 1\nparagraph 2\n")
+        
     });
 });
 
