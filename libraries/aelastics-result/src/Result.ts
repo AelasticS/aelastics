@@ -51,10 +51,24 @@ export const isSuccess = <T>(arg: ServiceResult<T>): arg is Success<T> => arg.ty
 export const success = <T>(value: T): ServiceResult<T> => ({ type: 'success', value })
 
 /**
+ * 
+ * @param res 
+ * @returns value if it is success or undefiend otherwise 
+ */
+export const getValue = <T>(res:Result<T>) => isSuccess(res)?res.value:undefined
+
+/**
  *
  * @param err
  */
 export const failure = <T>(err: ServiceError | Error): ServiceResult<T> => ({ type: 'failure', errors: [ServiceError.toServiceError(err)] });
+
+/**
+ * 
+ * @param res 
+ * @returns  errors if it is success or undefiend otherwise 
+ */
+export const getErrors = <T>(res:Result<T>) => isFailure(res)?res.errors:undefined
 
 /**
  *  Create Failure result from an array of errors
