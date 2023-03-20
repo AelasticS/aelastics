@@ -29,6 +29,7 @@ export const Section = t.subtype(DocElement, {
 }, "Section", FSC_Schema);
 
 export type IFS_Model = t.TypeOf<typeof FS_Model>
+export type IFS_Item = t.TypeOf<typeof FS_Item>
 export type IDirectory = t.TypeOf<typeof Directory>
 export type IDocument = t.TypeOf<typeof Document>
 export type IDocElement = t.TypeOf<typeof DocElement>

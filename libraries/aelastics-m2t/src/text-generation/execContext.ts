@@ -1,11 +1,12 @@
+import { ModelStore } from "aelastics-synthesis";
 import { ExecResult } from "./execResult";
 
-export class RenderContext {
+export class ExecContext {
     rootDir?: string; // defualt is the current directory
     acting:boolean  // deafult is not to act (generate dirs and docs) 
     result: ExecResult;
 
-    constructor(acting:boolean = false, rootDir?:string) {
+    constructor(readonly store:ModelStore,acting:boolean = false, rootDir?:string) {
        this.acting = acting
        this.rootDir = rootDir 
        this.result = {
