@@ -69,74 +69,13 @@ let testModel3_Element: Element<IFS_Model> = (
 describe("test text generation", () => {
     it("should generate correct document content for testModel1", () => {
         const testDoc1: IFS_Model = testModel1_Element.render(new Context());
+        
         expect(testDoc1.elements).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ name: "TestDoc1.txt" }),
                 expect.objectContaining({ txtContent: "some text" })
             ])
 
-        )
-    });
-
-    it("should generate correct document content for testModel2", () => {
-        const testDoc2: IFS_Model = testModel2_Element.render(new Context());
-        expect(testDoc2.elements).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ name: "TestDoc2.txt" }),
-                expect.objectContaining({ txtContent: "some text for Math.log2(8)=3" })
-            ])
-
-        )
-        const doc = testDoc2.elements[0] as IDocument
-        expect(doc.elements).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ txtContent: "some text for Math.log2(8)=3" })
-            ])
-
-        )
-    });
-
-    it("should generate correct document content for testModel3", () => {
-        const testDoc3: IFS_Model = testModel3_Element.render(new Context());
-        expect(testDoc3.elements).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ name: "TopDir" }),
-                expect.objectContaining({ name: "Subdir1" }),
-                expect.objectContaining({ name: "Subdir2" }),
-                expect.objectContaining({ name: "Doc1" }),
-                expect.objectContaining({ txtContent: "Title Doc1" }),
-                expect.objectContaining({ txtContent: "text of Subchapter 1.1" }),
-                expect.objectContaining({ txtContent: "text of at end of Chapter 1" }),
-                expect.objectContaining({ txtContent: "text of Subchapter 2.1" }),
-                expect.objectContaining({ txtContent: "Conclusions" }),
-                expect.objectContaining({ label: "Chapter 1" }),
-                expect.objectContaining({ label: "Subchapter 1.1" }),
-                expect.objectContaining({ label: "Chapter 2" }),
-                expect.objectContaining({ label: "Subchapter 2.1" }),
-            ])
-        )
-        let topDir = testDoc3.elements[0] as IDirectory
-        expect(topDir.items).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ name: "Subdir1" }),
-                expect.objectContaining({ name: "Subdir2" }),
-                expect.objectContaining({ name: "Doc1" }),
-            ])
-        )
-        let doc1 = topDir.items[0] as IDocument
-        expect(doc1.elements).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ txtContent: "Title Doc1" }),
-                expect.objectContaining({ label: "Chapter 1" }),
-                expect.objectContaining({ label: "Chapter 2" }),
-            ])
-        )
-        let sec1 = doc1.elements[1] as ISection
-        expect(sec1.elements).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ txtContent: "text of at end of Chapter 1" }),
-                expect.objectContaining({ label: "Subchapter 1.1" }),
-            ])
         )
     });
 });

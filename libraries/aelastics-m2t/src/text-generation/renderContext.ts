@@ -1,9 +1,9 @@
-import { RenderResult } from "./resultHandler";
+import { ExecResult } from "./execResult";
 
 export class RenderContext {
     rootDir?: string; // defualt is the current directory
     acting:boolean  // deafult is not to act (generate dirs and docs) 
-    result: RenderResult;
+    result: ExecResult;
 
     constructor(acting:boolean = false, rootDir?:string) {
        this.acting = acting
