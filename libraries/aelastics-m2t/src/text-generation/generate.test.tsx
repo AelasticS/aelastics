@@ -1,6 +1,6 @@
 /** @jsx hm */
 import { hm } from "aelastics-synthesis";
-import { executeFS_Model, FileModel, getResultByItemPath, IFS_Model, IParagraph, ISection } from "../index";
+import { generate, FileModel, getResultByItemPath, IFS_Model, IParagraph, ISection } from "../index";
 import { Dir, Doc, P, Sec } from "../index";
 import { IDirectory, IDocument } from "../index";
 import { ModelStore, Context, Element } from "aelastics-synthesis";
@@ -9,8 +9,8 @@ const testStore = new ModelStore();
 
 let testDoc1Element: Element<IDocument> = (
     <Doc name="TestDoc1.txt">
-        <P>{"paragraph 1"}</P>
-        <P>{"paragraph 2"}</P>
+        <P>paragraph 1</P>
+        <P>paragraph 2</P>
     </Doc>
 );
 
@@ -70,7 +70,7 @@ let testModel3_Element: Element<IFS_Model> = (
 describe("test text generation", () => {
     it("should generate correct document content for testModel1", async () => {
         const testDoc1: IFS_Model = testModel1_Element.render(new Context());
-        const res = await executeFS_Model(testStore, testDoc1)
+        const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output", mode:"real"})
         expect(res.noSuccesses).toEqual(1)
         expect(res.noFailures).toEqual(0)
         let s = res.results[0].outcome

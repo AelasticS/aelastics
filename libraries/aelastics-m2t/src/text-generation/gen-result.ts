@@ -7,7 +7,7 @@ export type ItemResult = {
   outcome: Result<string>;
 };
 
-export type ExecResult = {
+export type GenResult = {
   noFailures: number;
   noSuccesses: number;
   results: ItemResult[];
@@ -15,7 +15,7 @@ export type ExecResult = {
 };
 
 export const addSuccess = (
-    r: ExecResult,
+    r: GenResult,
     ID: string,
     type: "Doc" | "Dir",
     path: string,
@@ -31,7 +31,7 @@ export const addSuccess = (
   };
   
   export const addFailure = (
-    r: ExecResult,
+    r: GenResult,
     ID: string,
     type: "Doc" | "Dir",
     path: string,

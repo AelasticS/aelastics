@@ -1,3 +1,3 @@
 export * from "./fs-content-model/fileSystemContent.meta.model"
 export * from "./fs-content-model/fileSystemContent.jsx-comps"
-export * from "./text-generation/execute"
+export * from "./text-generation/generate"
