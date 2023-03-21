@@ -4,7 +4,7 @@ import { JSX_Annotation } from "./jsx-annotation";
 import { snapshotWith } from "./snapshot-JSX-org-with-annot";
 import { snapshot } from "./snapshot-JSX-org";
 
-// annotataions for Child
+// annotations for Child
 const childAnnot: JSX_Annotation<typeof ChildType> = {
   idProp: "name",
   nameProp: "name",
@@ -21,7 +21,7 @@ const childAnnot: JSX_Annotation<typeof ChildType> = {
   },
 };
 
-// annotataions for Employee
+// annotations for Employee
 const empAnnot: JSX_Annotation<typeof Employee> = {
   idProp: "id",
   nameProp: "name",
@@ -61,7 +61,7 @@ const empAnnot: JSX_Annotation<typeof Employee> = {
   },
 };
 
-// annotataions for Organization
+// annotations for Organization
 const orgAnnot: JSX_Annotation<typeof Organization> = {
   idProp: "id",
   nameProp: "name",

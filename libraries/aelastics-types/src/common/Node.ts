@@ -52,6 +52,9 @@ export class Node {
   
   static makeNode(input: any | Node, type: Any, acc: any, e?: ExtraInfo, parent?: Node): Node {
     if (input instanceof Node) return input
+    //TODO: Owner scheme, uses (imports), usedBy(importedBy)
+    //if(input[@@aelastics/type]) 
+    //  type.ownerSchema.getType()
     return new Node(input, type, acc, e, parent)
   }
 

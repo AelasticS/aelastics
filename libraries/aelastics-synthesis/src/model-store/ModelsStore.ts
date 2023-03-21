@@ -14,8 +14,8 @@ import { ServerProxy } from "aelastics-store";
 import { Element,  } from '../index'
 import { doParseURL } from "./path";
 import { Context } from "../jsx/context";
-import { FILE } from "dns";
-import { IStoreObject } from 'aelastics-store/lib/store/CommonConstants';
+import {JSX_Export as je} from "../index"
+
 
 // "^[\\$a-zA-Z0-9_\\.\\-]+$"
 const reg = new RegExp("^[\\$a-zA-Z0-9_\\.\\-]+$"); // old "^[a-zA-Z0-9_\.\-/]+$"
@@ -23,9 +23,9 @@ const reg = new RegExp("^[\\$a-zA-Z0-9_\\.\\-]+$"); // old "^[a-zA-Z0-9_\.\-/]+$
 export enum AccessProtocol {
   "repo", // access model repository
   "jsx-file", // access typescript file with a model in jsx notation
-  "json-file", // access typescript file with a model serialized with aelastic-types in json notation
+  "json-file", // access typescript file with a model serialized with aelastics-types in json notation
   "types-file",
-} // access typescript file with a  meta-model expressd using aelastic-types definition functions
+} // access typescript file with a  meta-model expressed using aelastics-types definition functions
 
 export class ModelStore {
   private store: Store<string>;
@@ -144,11 +144,11 @@ export class ModelStore {
     return el;
   }
 
-  // it should be fully qualified name without whitespaces (i.e absoluth path)  
+  // it should be fully qualified name without whitespace (i.e absolute path)  
   private normalizeName(
     el: Partial<IModelElement>,
     typeName: string,
-    namesepace?: INamespace
+    namespace?: INamespace
   ) {
     if (!el.name) {
       el.name = `${typeName}_${ModelStore.getRandomInt()}`;
@@ -164,7 +164,7 @@ export class ModelStore {
       // set normalized name
       el.name = newName;
       // set path to its namespace
-      el.path = namesepace ? this.getNameWithPath(namesepace) : "";
+      el.path = namespace ? this.getNameWithPath(namespace) : "";
     }
   }
 
@@ -174,7 +174,7 @@ export class ModelStore {
     return el.path || el.path != "" ? `${el.path}/${el.name}` : `//${el.name}`;
   }
 
-  public getTypeOf(e: IModelElement): t.Any {
+  public getTypeOf(e: IModelElement): t.AnyObjectType {
     // @ts-ignore
     return this.store.getType(e);
   }
@@ -207,13 +207,14 @@ export class ModelStore {
       case AccessProtocol["types-file"]:
         throw new Error("AccessProtocol.types-file is not yet supported");
     }
+    throw new Error("protocol is not yet supported");
   }
 
-  importModel(modelPath: AccessProtocol, namesepace: INamespace) {
+  importModel(modelPath: AccessProtocol, namespace: INamespace) {
     throw new Error("Function not implemented.");
   }
 
-  importModelFromJSON(modelPath: string, namesepace: INamespace) {
+  importModelFromJSON(modelPath: string, namespace: INamespace) {
     const jsonString = fs.readFileSync(modelPath,'utf8');
 
   }
@@ -225,8 +226,11 @@ export class ModelStore {
   validateModel() {
     throw new Error("Function not implemented.");
   }
-}
-function exportToJSX(obj:ObjectLiteral) {
 
-  
+  exportToJSX(obj: IModelElement):string {
+    const objType = this.getTypeOf(obj)
+    const  el:je.Complex_JSX_Element = je.make(obj, objType) as je.Complex_JSX_Element
+    return el.toJSX()
+  }
 }
+

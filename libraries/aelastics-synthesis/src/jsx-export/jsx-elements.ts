@@ -78,7 +78,7 @@ export class Complex_JSX_Element extends JSX_Element {
       stringArray.push(
         `${" ".repeat(level * indent)}<${this.tagName} ${this.getProperties()}>\n`
       );
-      // sub elemnts
+      // sub elements
       this.pushSubElements(stringArray, level + 1, indent);
       // references
       this.pushReferences(stringArray, level + 1, indent);

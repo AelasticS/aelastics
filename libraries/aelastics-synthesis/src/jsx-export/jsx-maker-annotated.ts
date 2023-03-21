@@ -11,11 +11,15 @@ const transform2JSXAnnot = builder
   .onInit(
     new tr.InitBuilder()
       .onTypeCategory("Object", (result, currNode, annot) => {
-        let elAnot: IObjectJSXAnnotType = currNode.getCurrentAnnotationElement(annot);
-        if (elAnot?.tagName)
+        let elAnot: IObjectJSXAnnotType = currNode.getCurrentAnnotationElement(annot);  
+        if (elAnot?.tagName) 
           result = new jsx.Complex_JSX_Element(currNode.type, elAnot.tagName, elAnot);
-        else
-          result = new jsx.Complex_JSX_Element(currNode.type, currNode.type.name, elAnot);
+        else {
+          if(!currNode.instance.objectClassification) 
+                result = new jsx.Complex_JSX_Element(currNode.type, currNode.type.name, elAnot);
+            else
+              result = new jsx.Complex_JSX_Element(currNode.type, currNode.instance.objectClassification, elAnot);
+        }
         return [result, "continue"];
       })
       .onTypeCategory("Array", (result, currNode) => {
@@ -94,13 +98,13 @@ const transform2JSXAnnot = builder
     objType: t.ObjectType<any, any>
   ): jsx.JSX_Element => {
     // create transformer to JSX model
-    let transduser = tr
+    let transducers = tr
       .transducer()
       .recurse("makeItem")
       .do(transform2JSXAnnot)
       .doFinally(tr.identityReducer());
     // execute transformer
-    return objType.transduce(transduser, obj);
+    return objType.transduce(transducers, obj);
   };
   
 
