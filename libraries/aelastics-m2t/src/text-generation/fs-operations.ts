@@ -1,7 +1,8 @@
 import * as fs from "fs"
 
 export async function createDir(path:string):Promise<boolean> {
-    fs.mkdirSync(path)
+    if(!fs.existsSync(path))
+            fs.mkdirSync(path)
     return true
 }
 

@@ -70,7 +70,7 @@ let testModel3_Element: Element<IFS_Model> = (
 describe("test text generation", () => {
     it("should generate correct document content for testModel1", async () => {
         const testDoc1: IFS_Model = testModel1_Element.render(new Context());
-        const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output", mode:"real"})
+        const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output", mode:"mock"})
         expect(res.noSuccesses).toEqual(1)
         expect(res.noFailures).toEqual(0)
         let s = res.results[0].outcome
