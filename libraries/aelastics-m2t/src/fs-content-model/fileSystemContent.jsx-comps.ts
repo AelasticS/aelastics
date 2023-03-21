@@ -1,11 +1,11 @@
-import * as f from './fileSystemContent.meta.model'
+import * as f from './m2t.meta.model'
 import { ConnectionInfo, CpxTemplate, defaultConnectionInfo, Element, Template, WithRefProps } from 'aelastics-synthesis'
 import { ModelStore } from 'aelastics-synthesis'
 
-export type IFS_ModelProps = WithRefProps<f.IFS_Model> & { store?: ModelStore }
+export type IM2T_Props = WithRefProps<f.M2T_Model> & { store?: ModelStore }
 
-export const FileModel: CpxTemplate<IFS_ModelProps, f.IFS_Model> = (props) => {
-    return new Element(f.FS_Model, props, undefined)
+export const M2T: CpxTemplate<IM2T_Props, f.M2T_Model> = (props) => {
+    return new Element(f.M2T_Model, props, undefined)
 }
 
 export const Dir: Template<f.IDirectory> = (props) => {

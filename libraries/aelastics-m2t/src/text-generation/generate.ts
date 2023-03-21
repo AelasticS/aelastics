@@ -1,13 +1,13 @@
 import {
-  IFS_Model,
+  M2T_Model,
   IDocument,
   IDocElement,
   ISection,
   IDirectory,
   isDirectory,
   isParagraph,
-  IFS_Item,
-  FS_Item,
+  IM2T_Item,
+  M2T_Item,
 } from "../index";
 import { GenContext } from "./gen-context";
 import { GenResult, ItemResult } from "./gen-result";
@@ -32,7 +32,7 @@ export type Options = {
  * @param options - generation options
  * @returns 
  */
-export const generate = async (store: ModelStore, m: IFS_Model, options?: Options): Promise<GenResult> => {
+export const generate = async (store: ModelStore, m: M2T_Model, options?: Options): Promise<GenResult> => {
   const acting: boolean = false, rootDir: string = "output"
   const ctx = new GenContext(store, options)
   try {
@@ -53,7 +53,7 @@ export const generate = async (store: ModelStore, m: IFS_Model, options?: Option
 
   // generate model elements
   m.elements.forEach(async (item) => {
-    if (store.isTypeOf(item, FS_Item))
+    if (store.isTypeOf(item, M2T_Item))
       await generateItem(item, ctx.rootDir, ctx)
   });
   return ctx.result;
@@ -75,7 +75,7 @@ export const generate = async (store: ModelStore, m: IFS_Model, options?: Option
  * @param ctx 
  * @returns 
  */
-const generateItem = async (i: IFS_Item, path: string, ctx: GenContext) =>
+const generateItem = async (i: IM2T_Item, path: string, ctx: GenContext) =>
   isDirectory(i)
     ? generateDirectory(i, path, ctx)
     : generateDocument(<IDocument>i, path, ctx)

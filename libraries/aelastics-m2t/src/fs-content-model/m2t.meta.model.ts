@@ -1,35 +1,35 @@
 import * as t from "aelastics-types"
 import { ModelElement, Model } from "generic-metamodel";
 
-export const FSC_Schema = t.schema("BPMN-Schema");
+export const M2T_Schema = t.schema("BPMN-Schema");
 
-export const FS_Model = t.subtype(Model, {
-}, "FS_Model", FSC_Schema);
+export const M2T_Model = t.subtype(Model, {
+}, "FS_Model", M2T_Schema);
 
-export const FS_Item = t.subtype(ModelElement, {
-}, "FS_Item", FSC_Schema);
+export const M2T_Item = t.subtype(ModelElement, {
+}, "FS_Item", M2T_Schema);
 
-export const Directory = t.subtype(FS_Item, {
-    items:t.arrayOf(FS_Item, "items"),
-}, "Directory", FSC_Schema);
+export const Directory = t.subtype(M2T_Item, {
+    items:t.arrayOf(M2T_Item, "items"),
+}, "Directory", M2T_Schema);
 
 export const DocElement = t.subtype(ModelElement, {
-}, "DocElement", FSC_Schema);
+}, "DocElement", M2T_Schema);
 
-export const Document = t.subtype(FS_Item, {
+export const Document = t.subtype(M2T_Item, {
     elements:t.arrayOf(DocElement, "elementsOfDocument"),
-}, "Document", FSC_Schema);
+}, "Document", M2T_Schema);
 
 export const Paragraph = t.subtype(DocElement, {
     txtContent:t.string,
-}, "Paragraph", FSC_Schema);
+}, "Paragraph", M2T_Schema);
 
 export const Section = t.subtype(DocElement, {
     elements:t.arrayOf(DocElement, "elementsOfSection"),
-}, "Section", FSC_Schema);
+}, "Section", M2T_Schema);
 
-export type IFS_Model = t.TypeOf<typeof FS_Model>
-export type IFS_Item = t.TypeOf<typeof FS_Item>
+export type M2T_Model = t.TypeOf<typeof M2T_Model>
+export type IM2T_Item = t.TypeOf<typeof M2T_Item>
 export type IDirectory = t.TypeOf<typeof Directory>
 export type IDocument = t.TypeOf<typeof Document>
 export type IDocElement = t.TypeOf<typeof DocElement>

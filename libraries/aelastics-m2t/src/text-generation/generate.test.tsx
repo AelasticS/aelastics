@@ -1,6 +1,6 @@
 /** @jsx hm */
 import { hm } from "aelastics-synthesis";
-import { generate, FileModel, getResultByItemPath, IFS_Model, IParagraph, ISection } from "../index";
+import { generate, M2T, getResultByItemPath, M2T_Model, IParagraph, ISection } from "../index";
 import { Dir, Doc, P, Sec } from "../index";
 import { IDirectory, IDocument } from "../index";
 import { ModelStore, Context, Element } from "aelastics-synthesis";
@@ -29,16 +29,16 @@ let dir1Element: Element<IDirectory> = (
     </Dir>
 );
 
-let testModel1_Element: Element<IFS_Model> = (
-    <FileModel name="test model1" store={testStore}>
+let testModel1_Element: Element<M2T_Model> = (
+    <M2T name="test model1" store={testStore}>
         {testDoc1Element}
-    </FileModel>
+    </M2T>
 );
 
-let testModel2_Element: Element<IFS_Model> = (
-    <FileModel name="test model2" store={testStore}>
+let testModel2_Element: Element<M2T_Model> = (
+    <M2T name="test model2" store={testStore}>
         {testDoc2Element}
-    </FileModel>
+    </M2T>
 );
 
 
@@ -57,19 +57,19 @@ let Doc1TopDir = <Doc name="Doc1">
     <P>Conclusions</P>
 </Doc>
 
-let testModel3_Element: Element<IFS_Model> = (
-    <FileModel name="test model3" store={testStore}>
+let testModel3_Element: Element<M2T_Model> = (
+    <M2T name="test model3" store={testStore}>
         <Dir name="TopDir">
             {Doc1TopDir}
             <Dir name="Subdir1"></Dir>
             <Dir name="Subdir2"></Dir>
         </Dir>
-    </FileModel>
+    </M2T>
 );
 
 describe("test text generation", () => {
     it("should generate correct document content for testModel1", async () => {
-        const testDoc1: IFS_Model = testModel1_Element.render(new Context());
+        const testDoc1: M2T_Model = testModel1_Element.render(new Context());
         const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output", mode:"mock"})
         expect(res.noSuccesses).toEqual(1)
         expect(res.noFailures).toEqual(0)
