@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import {stepperReducer, transducer} from 'aelastics-types'
+import {ObjectLiteral, stepperReducer, transducer} from 'aelastics-types'
 import { Store, AddEventListeners, ObjectObservable } from "aelastics-store";
 import {
   IModel,
@@ -226,6 +226,7 @@ export class ModelStore {
     throw new Error("Function not implemented.");
   }
 }
-function swicth(protocol: AccessProtocol) {
-  throw new Error("Function not implemented.");
+function exportToJSX(obj:ObjectLiteral) {
+
+  
 }

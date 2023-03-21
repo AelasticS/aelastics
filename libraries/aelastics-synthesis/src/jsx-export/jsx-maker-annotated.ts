@@ -2,7 +2,7 @@ import * as jsx from "./jsx-elements";
 import * as t from "aelastics-types";
 import { Trans as tr } from "aelastics-types";
 import { AnnotationTypes as a } from "aelastics-types";
-import { IPropertyJSXAnnotType, IObjectJSXAnnotType, ISimpleJSXAnnotType } from "./jsx-annotatation";
+import { IPropertyJSXAnnotType, IObjectJSXAnnotType, ISimpleJSXAnnotType } from "./jsx-annotation";
 
 
 const builder = new tr.TransformerBuilder();

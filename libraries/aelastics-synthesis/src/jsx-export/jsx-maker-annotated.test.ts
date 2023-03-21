@@ -1,6 +1,6 @@
 import * as jm from "./jsx-maker-annotated";
 import { ChildType, dep1, Employee, Organization } from "./examples-for-test";
-import { JSX_Annotation } from "./jsx-annotatation";
+import { JSX_Annotation } from "./jsx-annotation";
 import { snapshotWith } from "./snapshot-JSX-org-with-annot";
 import { snapshot } from "./snapshot-JSX-org";
 
