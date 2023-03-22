@@ -69,7 +69,7 @@ const transform2JSXAnnot = builder
           currNode.extra.propName
         ) {
           let elAnot: ISimpleJSXAnnotType = currNode.getCurrentAnnotationElement(annot);
-          if (elAnot?.include)
+          if (!elAnot || elAnot.include)
             result.addProperty(currNode.type, currNode.extra.propName, new jsx.Simple_JSX_Element(currNode.type, currItem));
         }
         return [result, "continue"];
