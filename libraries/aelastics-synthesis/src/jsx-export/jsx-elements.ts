@@ -70,7 +70,7 @@ export class Complex_JSX_Element extends JSX_Element {
 
   pushJSX(stringArray: string[], level: number, indent: number = 1): void {
     // open tag with properties
-    if (this.subElements.length === 0) {
+    if (this.subElements.length === 0 && this.references.length === 0) {
       stringArray.push(
         `${" ".repeat(level * indent)}<${this.tagName} ${this.getProperties()}/>\n`
       );
