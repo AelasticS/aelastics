@@ -15,6 +15,7 @@ import { Element,  } from '../index'
 import { doParseURL } from "./path";
 import { Context } from "../jsx/context";
 import {JSX_Export as je} from "../index"
+import { debug } from 'console';
 
 
 // "^[\\$a-zA-Z0-9_\\.\\-]+$"
