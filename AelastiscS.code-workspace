@@ -13,9 +13,6 @@
 			"path": "libraries/aelastics-store"
 		},
 		{
-			"path": "libraries/aelastics-transducers"
-		},
-		{
 			"path": "libraries/examples"
 		},
 		{
