@@ -9,7 +9,6 @@ describe ("It should import namespaces and models", ()=> {
         ctx.pushStore(store)
         const res = await store.importNamespace(AccessProtocol["jsx-file"] ,"./model-for-import-1.tsx", ctx)
         expect (res).toBeDefined()
-        debugger;
         const resJSX = store.exportToJSX(res)
         expect (resJSX).toBeDefined()
     })

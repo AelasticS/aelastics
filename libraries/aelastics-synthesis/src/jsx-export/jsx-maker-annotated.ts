@@ -27,7 +27,7 @@ const transform2JSXAnnot = builder
         let [tagName, refType, refValue] = calculate(elAnot, currNode)
         result = new jsx.Complex_JSX_Element(currNode.type, tagName, elAnot);
         //debugger;
-        if(currNode.extra?.role=== "asRoot")
+        // if(currNode.extra?.role=== "asRoot")
             result.isSubElement=true
         //if (elAnot?.tagName && !elAnot.isReference) 
         // if (!elAnot?.isReference)
@@ -52,7 +52,6 @@ const transform2JSXAnnot = builder
       .onTypeCategory("Object", (result, currNode, currItem: jsx.Complex_JSX_Element, annot) => {
 
         if (result instanceof jsx.Complex_JSX_Element) {
-          debugger;
           let elAnot: IObjectJSXAnnotType = currNode.getCurrentAnnotationElement(annot);
           let [tagName, refType, refValue] = calculate(elAnot, currNode)
           if (elAnot?.isReference) {
@@ -103,6 +102,7 @@ const transform2JSXAnnot = builder
   .onResult(
     new tr.ResultBuilder()
       .onTypeCategory("Object", (result, currNode) => {
+        result.isSubElement=false
         return [result, "continue"];
       })
       .onTypeCategory("Array", (result, currNode) => {
