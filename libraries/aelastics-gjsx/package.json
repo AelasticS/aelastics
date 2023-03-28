@@ -29,6 +29,7 @@
     "aelastics-types": "workspace:*",
     "generic-metamodel": "workspace:*",
     "aelastics-store": "workspace:*",
-    "aelastics-synthesis": "workspace:*"
+    "aelastics-synthesis": "workspace:*",
+    "aelastics-m2t": "workspace:*"
   }
 }

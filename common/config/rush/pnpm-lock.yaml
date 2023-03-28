@@ -29,6 +29,7 @@ importers:
       '@rushstack/heft-jest-plugin': ~0.3.44
       '@types/heft-jest': 1.0.3
       '@types/node': 18.11.9
+      aelastics-m2t: workspace:*
       aelastics-result: workspace:*
       aelastics-store: workspace:*
       aelastics-synthesis: workspace:*
@@ -38,6 +39,7 @@ importers:
       tslib: ^1.10.0
       typescript: ^4.8.3
     dependencies:
+      aelastics-m2t: link:../aelastics-m2t
       aelastics-result: link:../aelastics-result
       aelastics-store: link:../aelastics-store
       aelastics-synthesis: link:../aelastics-synthesis
