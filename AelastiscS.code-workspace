@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "libraries/aelastics-m2t"
+		},
+		{
+			"path": "libraries/aelastics-gjsx"
 		}
 	],
 	"settings": {}

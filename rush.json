@@ -521,6 +521,12 @@
       "tags": ["libraries", "web"]
     },
     {
+      "packageName": "aelastics-gjsx",
+      "projectFolder": "libraries/aelastics-gjsx",
+      "reviewCategory": "production",
+      "tags": ["libraries", "web"]
+    },
+    {
       "packageName": "examples",
       "projectFolder": "libraries/examples",
       "reviewCategory": "prototypes",
