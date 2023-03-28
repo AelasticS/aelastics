@@ -1,6 +1,5 @@
-import * as fs from 'fs';
-import {ObjectLiteral, stepperReducer, transducer} from 'aelastics-types'
-import { Store, AddEventListeners, ObjectObservable } from "aelastics-store";
+import * as fs from "fs";
+import { Store } from "aelastics-store";
 import {
   IModel,
   IModelElement,
@@ -11,12 +10,12 @@ import {
 } from "generic-metamodel";
 import * as t from "aelastics-types";
 import { ServerProxy } from "aelastics-store";
-import { Element,  } from '../index'
+import { Element } from "../index";
 import { doParseURL } from "./path";
 import { Context } from "../jsx/context";
-import {JSX_Export as je} from "../index"
-import { debug } from 'console';
-
+import { JSX_Export as je } from "../index";
+import { AnnotationTypes as a } from "aelastics-types";
+import { Typed_JSX_Annotation } from "../jsx-export";
 
 // "^[\\$a-zA-Z0-9_\\.\\-]+$"
 const reg = new RegExp("^[\\$a-zA-Z0-9_\\.\\-]+$"); // old "^[a-zA-Z0-9_\.\-/]+$"
@@ -38,10 +37,15 @@ export class ModelStore {
     return Math.floor(Math.random() * 999999999999);
   }
 
-  public async fetchModel(type: t.Any, id: string): Promise<IModel|undefined> {
+  public async fetchModel(
+    type: t.Any,
+    id: string
+  ): Promise<IModel | undefined> {
     this.store.registerTypeSchema(type.ownerSchema);
-    const m = (await this.store.fetchObjectByID(type, id)) as IModel|undefined
-    
+    const m = (await this.store.fetchObjectByID(type, id)) as
+      | IModel
+      | undefined;
+
     m?.elements.forEach((e) => {
       //@ts-ignore
       this.store.add(e);
@@ -59,7 +63,7 @@ export class ModelStore {
   }
 
   public newModel(
-    type: t. ObjectType<any,any>,
+    type: t.ObjectType<any, any>,
     initValue: Partial<IModel>,
     ownerModel?: IModel,
     namespace?: INamespace
@@ -98,7 +102,7 @@ export class ModelStore {
 */
 
   public newNamespace(
-    type: t. ObjectType<any,any>,
+    type: t.ObjectType<any, any>,
     initValue: Partial<INamespace>,
     ownerModel?: IModel,
     namespace?: INamespace
@@ -123,7 +127,7 @@ export class ModelStore {
   public newModelElement(
     model: Partial<IModel>,
     namespace: INamespace,
-    type: t. ObjectType<any,any>,
+    type: t.ObjectType<any, any>,
     initValue: IModelElement
   ): IModelElement {
     if (!type.isOfType(ModelElement))
@@ -145,7 +149,7 @@ export class ModelStore {
     return el;
   }
 
-  // it should be fully qualified name without whitespace (i.e absolute path)  
+  // it should be fully qualified name without whitespace (i.e absolute path)
   private normalizeName(
     el: Partial<IModelElement>,
     typeName: string,
@@ -216,8 +220,7 @@ export class ModelStore {
   }
 
   importModelFromJSON(modelPath: string, namespace: INamespace) {
-    const jsonString = fs.readFileSync(modelPath,'utf8');
-
+    const jsonString = fs.readFileSync(modelPath, "utf8");
   }
 
   exportModelToJSonFile() {
@@ -228,10 +231,13 @@ export class ModelStore {
     throw new Error("Function not implemented.");
   }
 
-  exportToJSX(obj: IModelElement):string {
-    const objType = this.getTypeOf(obj)
-    const  el:je.Complex_JSX_Element = je.make(obj, objType) as je.Complex_JSX_Element
-    return el.toJSX()
+  exportToJSX(obj: IModelElement, annotation?: Typed_JSX_Annotation<any>): string {
+    let el: je.Complex_JSX_Element;
+    if (annotation) el = je.makeWith(obj, annotation) as je.Complex_JSX_Element;
+    else {
+      const objType = this.getTypeOf(obj);
+      el = je.make(obj, objType) as je.Complex_JSX_Element;
+    }
+    return el.toJSX();
   }
 }
-

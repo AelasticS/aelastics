@@ -1,7 +1,9 @@
 import * as t from "aelastics-types"
 import type { AnnotationTypes as a } from "aelastics-types"
+import { IObject } from "../feature-model/Types_MetaModel/types-meta.model"
 
 export const JSX_Types = t.schema("JSX_Types")
+
 export const SimpleJSXAnnotType = t.object({
   include: t.boolean
 }, 'simple JSX Annot Schema', JSX_Types)
@@ -30,7 +32,12 @@ export type JSX_AnnotationType = a.AnnotationSchema<
   typeof PropertyJSXAnnotType
 >
 
-export type JSX_Annotation<T> = a.Annotation<T, JSX_AnnotationType>
+export type JSX_Annotation<T extends t.ObjectType<any, any>> = a.Annotation<T, JSX_AnnotationType>
+
+export type Typed_JSX_Annotation<T extends t.ObjectType<any, any>> = {
+  type:T
+  value: a.Annotation<T, JSX_AnnotationType>
+}
 
 export type ISimpleJSXAnnotType = t.TypeOf<typeof SimpleJSXAnnotType>
 export type IPropertyJSXAnnotType = t.TypeOf<typeof PropertyJSXAnnotType>

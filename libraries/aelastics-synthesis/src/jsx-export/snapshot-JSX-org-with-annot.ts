@@ -1,5 +1,5 @@
 export const snapshotWith = {
-  isSubElement: true,
+  isSubElement: false,
   typeName: "Organization",
   fullPathName: "/DefaultSchema/OrgSchema/Organization",
   tagName: "Organization",

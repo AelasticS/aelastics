@@ -59,6 +59,8 @@ export type anyPartSchema<S extends AnySchema> = S[keyof S]
 
 export type AnyAnnotation = Annotation<any, any>
 
+
+// TODO: rename to AnyTypedAnnotation, and define TypedAnnotation<T>
 export interface TypedAnnotation {
   type:Any
   value: Annotation<any, any>

@@ -1,5 +1,3 @@
-import { emit } from "process";
-import { Element } from "../jsx/element";
 import { Name, Organization } from "./examples-for-test";
 import * as je from "./jsx-elements";
 

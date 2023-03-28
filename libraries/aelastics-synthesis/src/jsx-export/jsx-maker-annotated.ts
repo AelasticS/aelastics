@@ -2,7 +2,7 @@ import * as jsx from "./jsx-elements";
 import * as t from "aelastics-types";
 import { Trans as tr } from "aelastics-types";
 import { AnnotationTypes as a } from "aelastics-types";
-import { IPropertyJSXAnnotType, IObjectJSXAnnotType, ISimpleJSXAnnotType } from "./jsx-annotation";
+import { IPropertyJSXAnnotType, IObjectJSXAnnotType, ISimpleJSXAnnotType, Typed_JSX_Annotation } from "./jsx-annotation";
 
 
 const builder = new tr.TransformerBuilder();
@@ -129,15 +129,15 @@ export const make = (
 
 export const makeWith = (
   obj: t.ObjectLiteral,
-  annotation: a.TypedAnnotation
+  annotation: Typed_JSX_Annotation<any>
 ): jsx.JSX_Element => {
   // create transformer to JSX model
-  let transduser = tr
+  let transducer = tr
     .transducer()
     .recurse("makeItem")
     .processAnnotations(annotation)
     .doWithAnnotations(transform2JSXAnnot, annotation)
     .doFinally(tr.identityReducer());
   // execute transformer
-  return annotation.type.transduce(transduser, obj);
+  return annotation.type.transduce(transducer, obj);
 };
