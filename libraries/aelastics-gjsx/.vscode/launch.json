@@ -7,7 +7,7 @@
         {
           "type": "node",
           "request": "launch",
-          "name": "M2T tests",
+          "name": "GJSX tests",
           "program": "${workspaceFolder}/node_modules/@rushstack/heft/lib/start.js",
           "cwd": "${workspaceFolder}",
           "args": ["--debug", "test", "--clean"],

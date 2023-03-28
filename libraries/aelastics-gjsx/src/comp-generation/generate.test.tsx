@@ -1,11 +1,14 @@
-/** @jsx hm */
-import { hm } from "aelastics-synthesis";
+import { JSX_Export as jsx } from "aelastics-synthesis";
+import * as ex from "./examples-for-test";
+import * as g from "./generate";
 
 describe("test text generation", () => {
-    it("should generate correct document content for testModel1", async () => {
-        
-        expect(1).toEqual(1)
-        
-    });
+  it("should generate correct document content for testModel1", async () => {
+    let a: jsx.Typed_JSX_Annotation<typeof ex.Organization> = {
+      type: ex.Organization,
+      value: ex.orgAnnot,
+    };
+    let r = g.generateJSX(a);
+    expect(1).toEqual(1);
+  });
 });
-
