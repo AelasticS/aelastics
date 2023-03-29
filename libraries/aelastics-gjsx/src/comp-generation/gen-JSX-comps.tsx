@@ -4,7 +4,10 @@ import {
   defaultConnectionInfo,
   hm,
   Template,
-  ModelStore, Context, Element, JSX_Export as jsx  
+  ModelStore,
+  Context,
+  Element,
+  JSX_Export as jsx,
 } from "aelastics-synthesis";
 import {
   generate,
@@ -13,7 +16,9 @@ import {
   M2T_Model,
   IParagraph,
   ISection,
-  Doc, P, Sec
+  Doc,
+  P,
+  Sec,
 } from "aelastics-m2t";
 
 import { generate_JSX_Elements } from "../index";
@@ -74,7 +79,7 @@ function printJSX_Element(
 ): Template<ISection> {
   return (
     <Sec>
-      {printComp ? printJSXComp(el, ctx) : undefined}
+      {printComp ? printJSXComp(el, ctx) : null}
       {el instanceof jsx.Complex_JSX_Element ? (
         el.references
           .filter((r) => !ctx.printedComps.has(r.tagName))
@@ -152,9 +157,9 @@ function printTopJSX_Element(
   el: jsx.Complex_JSX_Element,
   ctx: PrintingContext
 ) {
-  return;
-  <P>
-    {`import * as ${ctx.varName} from "${ctx.path}"
+  return (
+    <P>
+      {`import * as ${ctx.varName} from "${ctx.path}"
 import { ConnectionInfo, CpxTemplate, defaultConnectionInfo, Element, Template, WithRefProps, ModelStore } from 'aelastics-synthesis'
 
 export type I${el.typeName}_Props = WithRefProps<${ctx.varName}.${el.typeName}> & { store?: ModelStore }
@@ -163,5 +168,6 @@ export const ${el.tagName}: CpxTemplate<I${el.typeName}_Props, ${ctx.varName}.${
      return new Element(${ctx.varName}.${el.typeName}, props, undefined)
 }
 `}
-  </P>;
+    </P>
+  );
 }

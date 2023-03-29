@@ -287,6 +287,8 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let objType = parent.type as t.ObjectType<any, any>;
     let mapPropTypes = objType.allProperties;
     this.children.forEach((childElement) => {
+      if (childElement === null)
+        return;   // null prevents rendering https://legacy.reactjs.org/docs/conditional-rendering.html#preventing-component-from-rendering
       if (!childElement) {
         throw new Error(
           `childElement undefined for parent "${this.props.name}" of type "${this.type.fullPathName}"`
@@ -307,7 +309,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         if (childElement.connectionInfo) {
           // connect parent and child if propName exit
           let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
-          if (propType) 
+          if (propType)
             cnParentChild(
               childElement.connectionInfo.propName,
               t.findTypeCategory(propType),
