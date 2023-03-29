@@ -1,6 +1,6 @@
 import { JSX_Export as jsx } from "aelastics-synthesis";
 import * as ex from "./examples-for-test";
-import * as g from "./generate";
+import * as g from "./generate-JSX-Elements";
 
 describe("test JSX generation", () => {
   it("should generate correct document content for testModel1", async () => {
@@ -8,7 +8,7 @@ describe("test JSX generation", () => {
       type: ex.Organization,
       value: ex.orgAnnot,
     };
-    let r = g.generateJSX(a);
+    let r = g.generate_JSX_Elements(a);
     expect(1).toEqual(1);
   });
 });

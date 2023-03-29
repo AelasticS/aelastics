@@ -118,7 +118,7 @@ const toJSX_Element = new tr.TransformerBuilder()
   )
   .build();
 
-export function generateJSX<T extends t.ObjectType<any, any>>(
+export function generate_JSX_Elements<T extends t.ObjectType<any, any>>(
   ta: Typed_JSX_Annotation<T>
 ) {
   // create transformer to JSX model

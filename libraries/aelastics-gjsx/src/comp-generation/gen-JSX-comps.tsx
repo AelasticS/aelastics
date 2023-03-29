@@ -13,12 +13,17 @@ import {
   IParagraph,
   ISection,
 } from "aelastics-m2t";
-import { Dir, Doc, P, Sec } from "aelastics-m2t";
-import { IDirectory, IDocument } from "../index";
+
+
+
+import { Doc, P, Sec } from "aelastics-m2t";
+import { generate_JSX_Elements } from "../index";
 import { ModelStore, Context, Element } from "aelastics-synthesis";
 import { JSX_Export as jsx } from "aelastics-synthesis";
+import { Typed_JSX_Annotation } from "aelastics-synthesis/lib/jsx-export";
+import { ObjectType } from "aelastics-types";
 
-interface PrintContext {
+interface PrintingContext {
   path: string;
   varName: string;
   printedComps: Map<string, jsx.JSX_Element>;
@@ -29,13 +34,28 @@ export type PrintOptions = {
   outPutFile: string;
 };
 
-export function jsxToTextModel (
+
+export async function genJSXComponents<T extends ObjectType<any, any>>(ta:Typed_JSX_Annotation<T>) {
+  const testStore = new ModelStore()
+  const opt:PrintOptions = {
+      outPutFile:"orgJSX.ts",
+      pathToTypesDefModule:"./org.model.ts",
+      typesDefVarName:"f"
+  }
+  const orgElem = generate_JSX_Elements(ta)
+  const j2t = jsx2TextModel(orgElem, opt, testStore)
+  const testDoc1: M2T_Model = j2t.render(new Context());
+  const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output", mode:"mock"})
+  return res
+}
+
+export function jsx2TextModel (
   topElement: jsx.Complex_JSX_Element,
   options: PrintOptions,
   store: ModelStore
 ): Element<M2T_Model> {
   // create context
-  const ctx: PrintContext = {
+  const ctx: PrintingContext = {
     path: options.pathToTypesDefModule,
     varName: options.typesDefVarName,
     printedComps: new Map(),
@@ -44,16 +64,16 @@ export function jsxToTextModel (
   return (
     <M2T name="test model3" store={store}>
       <Doc name={options.outPutFile}>
-        {printTopJSXComp(topElement, ctx)}
-        {jsxElementToText(topElement, ctx, false)}
+        {printTopJSX_Element(topElement, ctx)}
+        {printJSX_Element(topElement, ctx, false)}
       </Doc>
     </M2T>
   );
 }
 
-function jsxElementToText(
+function printJSX_Element(
   el: jsx.Complex_JSX_Element | jsx.Reference_JSX_Element,
-  ctx: PrintContext,
+  ctx: PrintingContext,
   printComp:boolean = true
 ): Template<ISection> {
   return (
@@ -69,7 +89,7 @@ function jsxElementToText(
       {el instanceof jsx.Complex_JSX_Element ? (
         el.subElements
           .filter((r) => !ctx.printedComps.has(r.tagName))
-          .map((r) => jsxElementToText(r, ctx, true))
+          .map((r) => printJSX_Element(r, ctx, true))
       ) : (
         <P />
       )}
@@ -79,7 +99,7 @@ function jsxElementToText(
 
 function printJSXComp(
   el: jsx.Complex_JSX_Element | jsx.Reference_JSX_Element,
-  ctx: PrintContext
+  ctx: PrintingContext
 ): Template<IParagraph> {
   // prepare props for printing
   let ci = {} as ConnectionInfo;
@@ -132,7 +152,7 @@ export const ${el.tagName}: Template<${ctx.varName}.I${el.typeName}> = (props) =
   );
 }
 
-function printTopJSXComp(el: jsx.Complex_JSX_Element, ctx: PrintContext) {
+function printTopJSX_Element(el: jsx.Complex_JSX_Element, ctx: PrintingContext) {
   return;
   <P>
     {`import * as ${ctx.varName} from "${ctx.path}"
