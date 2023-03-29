@@ -12,6 +12,7 @@ export class Node {
   instance: any;
   type: Any;
   acc?: any;
+  typeLevel: boolean;
   extra: ExtraInfo;
   parent?: Node;
   visited: VisitedNodes;
@@ -23,7 +24,8 @@ export class Node {
     t: Any,
     acc?: any,
     e: ExtraInfo = { role: "asRoot", optional: false },
-    parent?: Node
+    parent?: Node,
+    typeLevel: boolean = false
   ) {
     this.instance = i;
     this.type = t;
@@ -32,6 +34,7 @@ export class Node {
     this.annotationTransformers = parent ? parent.annotationTransformers : new Map();
     this.parent = parent;
     this.visited = this.parent !== undefined ? this.parent.visited : new VisitedNodes();
+    this.typeLevel = this.parent !== undefined ? this.parent.typeLevel : typeLevel;
   }
 
   get isRevisited(): boolean {
@@ -50,7 +53,14 @@ export class Node {
     return this.annotationTransformers.get(a);
   }
 
-  static makeNode(input: any | Node, type: Any, acc: any, e?: ExtraInfo, parent?: Node): Node {
+  static makeNode(
+    input: any | Node,
+    type: Any,
+    acc: any,
+    e?: ExtraInfo,
+    parent?: Node,
+    typeLevel: boolean = false
+  ): Node {
     if (input instanceof Node) return input;
     // check for subtypes
     let implTypeName = type.name;
@@ -58,9 +68,9 @@ export class Node {
       let implTypeName = input["@@aelastics/type"];
       if (implTypeName !== "") {
         const subType = type.ownerSchema.getType(implTypeName);
-        if (subType) return new Node(input, subType, acc, e, parent);
+        if (subType) return new Node(input, subType, acc, e, parent, typeLevel);
       }
     }
-    return new Node(input, type, acc, e, parent);
+    return new Node(input, type, acc, e, parent, typeLevel);
   }
 }

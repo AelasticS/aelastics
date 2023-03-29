@@ -64,11 +64,12 @@ export class LinkType extends Type<any, any, any> {
     t: ITransformer,
     input: Node | any,
     initObj: A | undefined,
-    resetAcc: boolean | undefined
+    resetAcc: boolean | undefined,
+    typeLevel:boolean = false
   ): [A, WhatToDo] {
     const type = this.getResolvedTypeOrThrowError()
-    const n = Node.makeNode(input, this, initObj)
+    const n = Node.makeNode(input, this, initObj, undefined, undefined, typeLevel)
     n.type = type // bypass link
-    return type.doTransformation(t, n, initObj, resetAcc)
+    return type.doTransformation(t, n, initObj, resetAcc, typeLevel)
   }
 }

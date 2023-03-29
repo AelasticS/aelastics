@@ -28,10 +28,14 @@ export class ArrayType<E extends Any> extends ComplexType<
   }
 
   *children(inputArray: Array<TypeOf<E>>, n: Node): Generator<[Array<TypeOf<E>>, Any, ExtraInfo]> {
-    if (inputArray === undefined || inputArray.length === 0) {
-     // yield [undefined as any, this.element, { role: 'asArrayElement', index: -1 }]
-    } else
-      for (let i = 0; i < inputArray.length; i++)
+    if(n.typeLevel)
+      // return type of elements 
+       yield [undefined as any, this.element, { role: 'asArrayElement', index: -1 }]
+
+    else if (inputArray === undefined || inputArray.length === 0) {
+        //  no instance elements
+    } else 
+      for (let i = 0; i < inputArray.length; i++)  // iterate over instance elements of the array
         yield [inputArray[i], this.element, { role: 'asArrayElement', index: i }]
   }
 }

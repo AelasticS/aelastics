@@ -12,10 +12,11 @@ export abstract class ComplexType<V, G, T> extends Type<V, G, T> {
     input: V | Node,
     initObj?: A,
     resetAcc: boolean = false,
+    typeLevel:boolean = false
   ): [A, WhatToDo] {
     let whatToDo: WhatToDo = 'continue'
     let acc: A = initObj as any
-    let n = Node.makeNode(input, this, initObj)
+    let n = Node.makeNode(input, this, initObj, undefined, undefined, typeLevel)
     if (n.visited.has([n.type, n.instance])) {
       n.isRevisited = true // already visited
       if (resetAcc) {
@@ -28,15 +29,11 @@ export abstract class ComplexType<V, G, T> extends Type<V, G, T> {
     }
     n.visited.set([n.type, n.instance], acc) // remember for the next visit
     if (whatToDo === 'terminate') return [acc!, 'terminate']
-    // maybe for loop could be replaced by reduce on Iterable ?
-
-    /*    if (n.instance === undefined && whatToDo === 'continue') {  // make one step for undefined instance
-    } else*/
-    // ToDo check n.type.children!!!
+    // iterate over children
     for (let [child, childType, childExtra] of n.type.children(n.instance, n)) {
       if (whatToDo !== 'continue') break
-      let childNode: Node = Node.makeNode(child, childType, acc, childExtra, n)
-      let [a1, a2] = t.step(acc, childNode, child)
+      let childNode: Node = Node.makeNode(child, childType, acc, childExtra, n, typeLevel)
+      let [a1, a2] = t.step(acc, childNode, child)  // process child
       acc = a1
       whatToDo = a2
     }
