@@ -65,10 +65,10 @@ const childAnnot: JSX_Export.JSX_Annotation<typeof ChildType> = {
   isReference: undefined,
   refType: undefined,
   ifProperty: {
-    isParentProp: undefined,
-    propName: undefined,
-    isReconnectAllowed: undefined,
-    textContentAllowed:undefined,
+    isParentProp: true,
+    propName: "children",
+    isReconnectAllowed: true,
+    textContentAllowed:false,
     textPropName:undefined
   },
   $props: {
@@ -84,20 +84,20 @@ const empAnnot: JSX_Export.JSX_Annotation<typeof Employee> = {
   isReference: false,
   refType: undefined,
   ifProperty: {
-    isParentProp: undefined,
-    propName: undefined,
-    isReconnectAllowed: undefined,
-    textContentAllowed:undefined,
+    isParentProp: true,
+    propName: "employees",
+    isReconnectAllowed: true,
+    textContentAllowed:false,
     textPropName:undefined
   },
   $props: {
     id: { include: true },
     name: { include: true },
     children: {
-      propName: undefined,
-      isParentProp: undefined,
+      propName: "children",
+      isParentProp: true,
       isReconnectAllowed: undefined,
-      textContentAllowed:undefined,
+      textContentAllowed:false,
       textPropName:undefined,
       $elem: childAnnot,
     },
@@ -108,10 +108,10 @@ const empAnnot: JSX_Export.JSX_Annotation<typeof Employee> = {
       isReference: false,
       refType: undefined,
       ifProperty: {
-        isParentProp: undefined,
-        propName: undefined,
+        isParentProp: true,
+        propName: "birthPlace",
         isReconnectAllowed: undefined,
-        textContentAllowed:undefined,
+        textContentAllowed:false,
         textPropName:undefined
       },
       $props: {
@@ -133,17 +133,17 @@ export const orgAnnot: JSX_Export.JSX_Annotation<typeof Organization> = {
     isParentProp: undefined,
     propName: undefined,
     isReconnectAllowed: undefined,
-    textContentAllowed:undefined,
+    textContentAllowed:false,
     textPropName:undefined
   },
   $props: {
     id: { include: true },
     name: { include: true },
     employees: {
-      propName: undefined,
-      isParentProp: undefined,
+      propName: "employees",
+      isParentProp: true,
       isReconnectAllowed: undefined,
-      textContentAllowed:undefined,
+      textContentAllowed:false,
       textPropName:undefined,
       $elem: empAnnot,
     },
@@ -155,10 +155,10 @@ export const orgAnnot: JSX_Export.JSX_Annotation<typeof Organization> = {
       isReference: true,
       refType: "refByName",
       ifProperty: {
-        isParentProp: undefined,
-        propName: undefined,
+        isParentProp: true,
+        propName: "manager",
         isReconnectAllowed: undefined,
-        textContentAllowed:undefined,
+        textContentAllowed:false,
         textPropName:undefined
       },
       $props: empAnnot.$props,

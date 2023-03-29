@@ -33,6 +33,8 @@ export type Options = {
   pathToTypesDefModule: string;
   typesDefVarName: string;
   outPutFile: string;
+  rootDir: string,
+  mode: "real" | "mock"
 };
 
 export async function genJSXComponents<T extends ObjectType<any, any>>(
@@ -44,8 +46,8 @@ export async function genJSXComponents<T extends ObjectType<any, any>>(
   const j2t = jsx2TextModel(orgElem, opt, testStore);
   const testDoc1: M2T_Model = j2t.render(new Context());
   const res = await generate(testStore, testDoc1, {
-    rootDir: "TXT_Output",
-    mode: "mock",
+    rootDir: opt.rootDir,
+    mode: opt.mode,
   });
   return res;
 }
@@ -107,23 +109,26 @@ function printJSXComp(
   let an = el.annotation;
   if (an?.ifProperty) {
     let prop = an.ifProperty;
+    if (prop.propName !== undefined)
+      Object.defineProperty(ci, "propName", { value: prop.propName, enumerable:true });
     if (prop.isParentProp)
-      Object.defineProperty(ci, "isParentProp", { value: prop.isParentProp });
+      Object.defineProperty(ci, "isParentProp", { value: prop.isParentProp, enumerable:true});
     if (prop.isReconnectAllowed !== undefined)
       Object.defineProperty(ci, "isReconnectAllowed", {
         value: prop.isReconnectAllowed,
-      });
-    if (prop.propName !== undefined)
-      Object.defineProperty(ci, "isReconnectAllowed", {
-        value: prop.isReconnectAllowed,
+        enumerable:true
       });
     if (prop.textContentAllowed !== undefined) {
       Object.defineProperty(ci, "textContentAllowed", {
         value: prop.textContentAllowed,
+        enumerable:true
       });
-      if (prop.textPropName !== undefined)
-        Object.defineProperty(ci, "textPropName", { value: prop.textPropName });
-      else
+      if (prop.textPropName !== undefined && prop.textContentAllowed)
+        Object.defineProperty(ci, "textPropName", { 
+          value: prop.textPropName,
+          enumerable:true
+        });
+      else if(!prop.textPropName && prop.textContentAllowed)
         throw new Error(
           `Missing "textPropName" annotation for  for element "${el.tagName}"`
         );
@@ -131,7 +136,8 @@ function printJSXComp(
   }
 
   // make final printing props
-  let ciFinal: ConnectionInfo = { ...defaultConnectionInfo(), ...ci };
+  let defProps = defaultConnectionInfo()
+  let ciFinal: ConnectionInfo = { ...defProps, ...ci };
 
   // add JSX comp to printed ones
   ctx.printedComps.set(el.tagName, el);
@@ -141,13 +147,12 @@ function printJSXComp(
     <P>
       {`
 export const ${el.tagName}: Template<${ctx.varName}.I${el.typeName}> = (props) => {
-  const connInfo: ConnectionInfo = {
-          propName:${ciFinal.propName},
-          isParentProp: ${ciFinal.isParentProp},
-          isReconnectAllowed:${ciFinal.isReconnectAllowed},
-          textContentAllowed:${ciFinal.textContentAllowed},
-          textPropName:${ciFinal.textPropName}
-  return new Element(${ctx.varName}.I${el.typeName}, props, connInfo)
+  return new Element(${ctx.varName}.I${el.typeName}, props, {
+    propName:"${ciFinal.propName}",
+    isParentProp: ${ciFinal.isParentProp},
+    isReconnectAllowed:${ciFinal.isReconnectAllowed},
+    textContentAllowed:${ciFinal.textContentAllowed},
+    textPropName:"${ciFinal.textPropName}" })
 }`}
     </P>
   );
@@ -160,7 +165,7 @@ function printTopJSX_Element(
   return (
     <P>
       {`import * as ${ctx.varName} from "${ctx.path}"
-import { ConnectionInfo, CpxTemplate, defaultConnectionInfo, Element, Template, WithRefProps, ModelStore } from 'aelastics-synthesis'
+import { ConnectionInfo, CpxTemplate, Element, Template, WithRefProps, ModelStore } from 'aelastics-synthesis'
 
 export type I${el.typeName}_Props = WithRefProps<${ctx.varName}.${el.typeName}> & { store?: ModelStore }
 

@@ -70,9 +70,9 @@ export type Super<P extends {}, R extends g.IModelElement> =
 export type ConnectionInfo = {
   propName?: string;  // the name property used to connect with, if it exist
   isParentProp: boolean; // is it a parent property
-  isReconnectAllowed: boolean; // is connection allowed if object is alraedy connected
-  textContentAllowed: boolean // are textual subelements allowed
-  textPropName: string // the name of property recieving text content, if the text content allowed
+  isReconnectAllowed: boolean; // is connection allowed if object is already connected
+  textContentAllowed: boolean // are textual sub-elements allowed
+  textPropName: string // the name of property receiving text content, if the text content allowed
 };
 export function defaultConnectionInfo(propName?: string): ConnectionInfo {
   return {
@@ -80,7 +80,7 @@ export function defaultConnectionInfo(propName?: string): ConnectionInfo {
     isParentProp: true,
     isReconnectAllowed: true,
     textContentAllowed: false,
-    textPropName: ""
+    textPropName: "undefined"
   };
 }
 
