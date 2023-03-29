@@ -20,7 +20,7 @@ function calculate(
     !elAnot || elAnot?.refType === "refByName"
       ? ["refByName", elAnot?.nameProp]
       : ["refByID", elAnot?.idProp];
-  let refValue = currNode.instance? currNode.instance[prop]: undefined;
+  let refValue = currNode.instance ? currNode.instance[prop] : undefined;
   return [tagName, refType, refValue];
 }
 
@@ -128,8 +128,8 @@ export function generateJSX<T extends t.ObjectType<any, any>>(
     .processAnnotations(ta)
     .doWithAnnotations(toJSX_Element, ta)
     .doFinally(tr.identityReducer());
-  // execute transformer
-  let res = ta.type.transduce(transducer, ta.type);
+  // execute transformer on the type level
+  let res = ta.type.transduce(transducer, ta.type, undefined, undefined, true);
 
   return res;
 }
