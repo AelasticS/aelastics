@@ -129,7 +129,6 @@ export function generateJSX<T extends t.ObjectType<any, any>>(
     .doWithAnnotations(toJSX_Element, ta)
     .doFinally(tr.identityReducer());
   // execute transformer on the type level
-  let res = ta.type.transduce(transducer, ta.type, undefined, undefined, true);
-
-  return res;
+  let res = ta.type.transduce<jsx.Complex_JSX_Element>(transducer, ta.type, undefined, undefined, true);
+  return res
 }
