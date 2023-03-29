@@ -12,7 +12,6 @@ import {
 import {
   generate,
   M2T,
-  getResultByItemPath,
   M2T_Model,
   IParagraph,
   ISection,
@@ -110,25 +109,25 @@ function printJSXComp(
   if (an?.ifProperty) {
     let prop = an.ifProperty;
     if (prop.propName !== undefined)
-      Object.defineProperty(ci, "propName", { value: prop.propName, enumerable:true });
+      Object.defineProperty(ci, "propName", { value: prop.propName, enumerable: true });
     if (prop.isParentProp)
-      Object.defineProperty(ci, "isParentProp", { value: prop.isParentProp, enumerable:true});
+      Object.defineProperty(ci, "isParentProp", { value: prop.isParentProp, enumerable: true });
     if (prop.isReconnectAllowed !== undefined)
       Object.defineProperty(ci, "isReconnectAllowed", {
         value: prop.isReconnectAllowed,
-        enumerable:true
+        enumerable: true
       });
     if (prop.textContentAllowed !== undefined) {
       Object.defineProperty(ci, "textContentAllowed", {
         value: prop.textContentAllowed,
-        enumerable:true
+        enumerable: true
       });
       if (prop.textPropName !== undefined && prop.textContentAllowed)
-        Object.defineProperty(ci, "textPropName", { 
+        Object.defineProperty(ci, "textPropName", {
           value: prop.textPropName,
-          enumerable:true
+          enumerable: true
         });
-      else if(!prop.textPropName && prop.textContentAllowed)
+      else if (!prop.textPropName && prop.textContentAllowed)
         throw new Error(
           `Missing "textPropName" annotation for  for element "${el.tagName}"`
         );
