@@ -1,8 +1,6 @@
-import { Element } from "aelastics-synthesis";
 import { JSX_Export as jsx } from "aelastics-synthesis";
 import { Trans as tr } from "aelastics-types";
 import * as t from "aelastics-types";
-import { Typed_JSX_Annotation } from "aelastics-synthesis/lib/jsx-export";
 
 type calcType = [
   tagName: string,
@@ -119,7 +117,7 @@ const toJSX_Element = new tr.TransformerBuilder()
   .build();
 
 export function generate_JSX_Elements<T extends t.ObjectType<any, any>>(
-  ta: Typed_JSX_Annotation<T>
+  ta: jsx.Typed_JSX_Annotation<T>
 ) {
   // create transformer to JSX model
   let transducer = tr

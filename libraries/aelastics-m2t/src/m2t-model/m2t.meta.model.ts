@@ -1,7 +1,7 @@
 import * as t from "aelastics-types"
 import { ModelElement, Model } from "generic-metamodel";
 
-export const M2T_Schema = t.schema("BPMN-Schema");
+export const M2T_Schema = t.schema("M2T_Schema");
 
 export const M2T_Model = t.subtype(Model, {
 }, "FS_Model", M2T_Schema);

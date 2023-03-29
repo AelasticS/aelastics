@@ -4,6 +4,7 @@ import {
   defaultConnectionInfo,
   hm,
   Template,
+  ModelStore, Context, Element, JSX_Export as jsx  
 } from "aelastics-synthesis";
 import {
   generate,
@@ -12,15 +13,10 @@ import {
   M2T_Model,
   IParagraph,
   ISection,
+  Doc, P, Sec
 } from "aelastics-m2t";
 
-
-
-import { Doc, P, Sec } from "aelastics-m2t";
 import { generate_JSX_Elements } from "../index";
-import { ModelStore, Context, Element } from "aelastics-synthesis";
-import { JSX_Export as jsx } from "aelastics-synthesis";
-import { Typed_JSX_Annotation } from "aelastics-synthesis/lib/jsx-export";
 import { ObjectType } from "aelastics-types";
 
 interface PrintingContext {
@@ -28,30 +24,30 @@ interface PrintingContext {
   varName: string;
   printedComps: Map<string, jsx.JSX_Element>;
 }
-export type PrintOptions = {
+export type Options = {
   pathToTypesDefModule: string;
   typesDefVarName: string;
   outPutFile: string;
 };
 
-
-export async function genJSXComponents<T extends ObjectType<any, any>>(ta:Typed_JSX_Annotation<T>) {
-  const testStore = new ModelStore()
-  const opt:PrintOptions = {
-      outPutFile:"orgJSX.ts",
-      pathToTypesDefModule:"./org.model.ts",
-      typesDefVarName:"f"
-  }
-  const orgElem = generate_JSX_Elements(ta)
-  const j2t = jsx2TextModel(orgElem, opt, testStore)
+export async function genJSXComponents<T extends ObjectType<any, any>>(
+  ta: jsx.Typed_JSX_Annotation<T>,
+  opt: Options
+) {
+  const testStore = new ModelStore();
+  const orgElem = generate_JSX_Elements(ta);
+  const j2t = jsx2TextModel(orgElem, opt, testStore);
   const testDoc1: M2T_Model = j2t.render(new Context());
-  const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output", mode:"mock"})
-  return res
+  const res = await generate(testStore, testDoc1, {
+    rootDir: "TXT_Output",
+    mode: "mock",
+  });
+  return res;
 }
 
-export function jsx2TextModel (
+export function jsx2TextModel(
   topElement: jsx.Complex_JSX_Element,
-  options: PrintOptions,
+  options: Options,
   store: ModelStore
 ): Element<M2T_Model> {
   // create context
@@ -74,11 +70,11 @@ export function jsx2TextModel (
 function printJSX_Element(
   el: jsx.Complex_JSX_Element | jsx.Reference_JSX_Element,
   ctx: PrintingContext,
-  printComp:boolean = true
+  printComp: boolean = true
 ): Template<ISection> {
   return (
     <Sec>
-      { printComp ? printJSXComp(el, ctx):undefined}
+      {printComp ? printJSXComp(el, ctx) : undefined}
       {el instanceof jsx.Complex_JSX_Element ? (
         el.references
           .filter((r) => !ctx.printedComps.has(r.tagName))
@@ -152,7 +148,10 @@ export const ${el.tagName}: Template<${ctx.varName}.I${el.typeName}> = (props) =
   );
 }
 
-function printTopJSX_Element(el: jsx.Complex_JSX_Element, ctx: PrintingContext) {
+function printTopJSX_Element(
+  el: jsx.Complex_JSX_Element,
+  ctx: PrintingContext
+) {
   return;
   <P>
     {`import * as ${ctx.varName} from "${ctx.path}"

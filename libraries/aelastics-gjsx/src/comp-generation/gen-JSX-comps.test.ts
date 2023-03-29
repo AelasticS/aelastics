@@ -1,9 +1,14 @@
 import * as o from "./examples-for-test"
-import { genJSXComponents } from "./gen-JSX-comps";
+import { genJSXComponents, Options } from "./gen-JSX-comps";
 
-describe("test text generation", async () => {
+describe("test text generation", () => {
     it("should generate correct document content for testModel1", async () => {
-        const res = await genJSXComponents({type: o.Organization, value:o.orgAnnot})
+        const opt:Options = {
+            outPutFile:"orgJSX.ts",
+            pathToTypesDefModule:"./org.model.ts",
+            typesDefVarName:"f"
+        }
+        const res = await genJSXComponents({type: o.Organization, value:o.orgAnnot}, opt)
         expect(res.noSuccesses).toEqual(1)
         expect(res.noFailures).toEqual(0)
         let s = res.results[0].outcome
