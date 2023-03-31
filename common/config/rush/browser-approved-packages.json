@@ -47,6 +47,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "aelastics-m2t",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "aelastics-monorepo-tools",
       "allowedCategories": [ "production" ]
     },

@@ -14,7 +14,7 @@ function calculate(elAnot: IObjectJSXAnnotType, currNode: t.Node): calcType {
   let tagName = elAnot?.tagName ? elAnot.tagName : currNode.type.name
   let [refType, prop]: ["refByName" | "refByID", string] = !elAnot || elAnot?.refType === "refByName"
     ? ["refByName", elAnot?.nameProp] : ["refByID", elAnot?.idProp]
-  let refValue = currNode.instance[prop]
+  let refValue = currNode.instance? currNode.instance[prop]: undefined;
   return [tagName, refType, refValue]
 }
 

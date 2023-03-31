@@ -141,8 +141,8 @@ export abstract class Type<V, G, T> {
     return hasError;
   }
 
-  transduce<A>(t: ITransformer, input: any | Node, initObj?: A, resetAcc?: boolean): A {
-    let [res, _] = this.doTransformation(t, input, initObj, resetAcc);
+  transduce<A>(t: ITransformer, input: any | Node, initObj?: A, resetAcc?: boolean, typeLevel:boolean=false): A {
+    let [res, _] = this.doTransformation(t, input, initObj, resetAcc, typeLevel);
     return res;
   }
 
@@ -150,7 +150,8 @@ export abstract class Type<V, G, T> {
     t: ITransformer,
     input: any | Node,
     initObj?: A,
-    resetAcc?: boolean
+    resetAcc?: boolean,
+    typeLevel?:boolean
   ): [A, WhatToDo];
 
   // children iterator

@@ -22,10 +22,10 @@ export abstract class JSX_Element {
 }
 
 export class Complex_JSX_Element extends JSX_Element {
-  private readonly annotation?:IObjectJSXAnnotType
-  private readonly properties: Property[] = [];
-  private readonly subElements: Complex_JSX_Element[] = [];
-  private readonly references: Reference_JSX_Element[] = [];
+  readonly annotation?:IObjectJSXAnnotType
+  readonly properties: Property[] = [];
+  readonly subElements: Complex_JSX_Element[] = [];
+  readonly references: Reference_JSX_Element[] = [];
  
   constructor(type:Any, tagName:string, annotation?:IObjectJSXAnnotType) {
     super(type, tagName)
@@ -35,6 +35,7 @@ export class Complex_JSX_Element extends JSX_Element {
   addProperty(type:Any, name: string, value: JSX_Element) {
     this.properties.push(new Property(type, name, value));
   }
+  
   getProperty(name: string) {
     return this.properties.find((p) => p.tagName === name);
   }

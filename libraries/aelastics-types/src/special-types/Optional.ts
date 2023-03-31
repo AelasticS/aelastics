@@ -53,13 +53,14 @@ export class OptionalType<T extends Any> extends Type<
     t: ITransformer,
     input: Node | TypeOf<T> | undefined,
     initObj: A | undefined,
-    resetAcc: boolean | undefined
+    resetAcc: boolean | undefined,
+    typeLevel:boolean = false
   ): [A, WhatToDo] {
     let n = Node.makeNode(input, this, initObj)
     if (n.instance !== undefined) {
       n.type = this.base // bypass optional
       n.extra.optional = true
-      return this.base.doTransformation(t, input, initObj, resetAcc)
+      return this.base.doTransformation(t, input, initObj, resetAcc, typeLevel)
     }
     if (resetAcc) return [undefined as any, "continue"]
     else return [initObj as any, 'continue']

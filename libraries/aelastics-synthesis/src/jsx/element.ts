@@ -70,9 +70,9 @@ export type Super<P extends {}, R extends g.IModelElement> =
 export type ConnectionInfo = {
   propName?: string;  // the name property used to connect with, if it exist
   isParentProp: boolean; // is it a parent property
-  isReconnectAllowed: boolean; // is connection allowed if object is alraedy connected
-  textContentAllowed: boolean // are textual subelements allowed
-  textPropName: string // the name of property recieving text content, if the text content allowed
+  isReconnectAllowed: boolean; // is connection allowed if object is already connected
+  textContentAllowed: boolean // are textual sub-elements allowed
+  textPropName: string // the name of property receiving text content, if the text content allowed
 };
 export function defaultConnectionInfo(propName?: string): ConnectionInfo {
   return {
@@ -80,7 +80,7 @@ export function defaultConnectionInfo(propName?: string): ConnectionInfo {
     isParentProp: true,
     isReconnectAllowed: true,
     textContentAllowed: false,
-    textPropName: ""
+    textPropName: "undefined"
   };
 }
 
@@ -287,6 +287,8 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let objType = parent.type as t.ObjectType<any, any>;
     let mapPropTypes = objType.allProperties;
     this.children.forEach((childElement) => {
+      if (childElement === null)
+        return;   // null prevents rendering https://legacy.reactjs.org/docs/conditional-rendering.html#preventing-component-from-rendering
       if (!childElement) {
         throw new Error(
           `childElement undefined for parent "${this.props.name}" of type "${this.type.fullPathName}"`
@@ -307,7 +309,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         if (childElement.connectionInfo) {
           // connect parent and child if propName exit
           let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
-          if (propType) 
+          if (propType)
             cnParentChild(
               childElement.connectionInfo.propName,
               t.findTypeCategory(propType),

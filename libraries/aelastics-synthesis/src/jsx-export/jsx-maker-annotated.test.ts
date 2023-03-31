@@ -15,6 +15,8 @@ const childAnnot: JSX_Annotation<typeof ChildType> = {
     isParentProp: undefined,
     propName: undefined,
     isReconnectAllowed: undefined,
+    textContentAllowed:undefined,
+    textPropName:undefined
   },
   $props: {
     name: { include: true },
@@ -32,6 +34,8 @@ const empAnnot: JSX_Annotation<typeof Employee> = {
     isParentProp: undefined,
     propName: undefined,
     isReconnectAllowed: undefined,
+    textContentAllowed:undefined,
+    textPropName:undefined
   },
   $props: {
     id: { include: true },
@@ -40,6 +44,8 @@ const empAnnot: JSX_Annotation<typeof Employee> = {
       propName: undefined,
       isParentProp: undefined,
       isReconnectAllowed: undefined,
+      textContentAllowed:undefined,
+      textPropName:undefined,
       $elem: childAnnot,
     },
     birthPlace: {
@@ -52,6 +58,8 @@ const empAnnot: JSX_Annotation<typeof Employee> = {
         isParentProp: undefined,
         propName: undefined,
         isReconnectAllowed: undefined,
+        textContentAllowed:undefined,
+        textPropName:undefined
       },
       $props: {
         name: { include: true },
@@ -72,6 +80,8 @@ const orgAnnot: JSX_Annotation<typeof Organization> = {
     isParentProp: undefined,
     propName: undefined,
     isReconnectAllowed: undefined,
+    textContentAllowed:undefined,
+    textPropName:undefined
   },
   $props: {
     id: { include: true },
@@ -80,6 +90,8 @@ const orgAnnot: JSX_Annotation<typeof Organization> = {
       propName: undefined,
       isParentProp: undefined,
       isReconnectAllowed: undefined,
+      textContentAllowed:undefined,
+      textPropName:undefined,
       $elem: empAnnot,
     },
     manager: {
@@ -93,6 +105,8 @@ const orgAnnot: JSX_Annotation<typeof Organization> = {
         isParentProp: undefined,
         propName: undefined,
         isReconnectAllowed: undefined,
+        textContentAllowed:undefined,
+        textPropName:undefined
       },
       $props: empAnnot.$props,
     },

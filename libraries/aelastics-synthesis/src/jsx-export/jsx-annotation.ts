@@ -13,6 +13,8 @@ export const PropertyJSXAnnotType = t.object({
   propName: t.optionalString,  // if undefined, name of the property is used
   isParentProp: t.optionalBoolean, // if undefined, the property is in the parent
   isReconnectAllowed: t.optionalBoolean, //if undefined, reconnection is allowed
+  textContentAllowed:t.optionalBoolean, 
+  textPropName: t.optionalString       //assign text content to this property, if text allowed
 }, 'array JSX Annot Schema', JSX_Types)
 
 export const ObjectJSXAnnotType = t.object({
