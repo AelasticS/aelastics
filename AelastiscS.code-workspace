@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "libraries/aelastics-m2t"
+		},
+		{
+			"path": "apps/moma"
 		}
 	],
 	"settings": {}

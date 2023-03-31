@@ -3,6 +3,22 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@oclif/core",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@oclif/plugin-help",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@oclif/plugin-plugins",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@oclif/test",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@rushstack/eslint-config",
       "allowedCategories": [ "production", "prototypes" ]
     },
@@ -15,8 +31,16 @@
       "allowedCategories": [ "production", "prototypes" ]
     },
     {
+      "name": "@types/chai",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@types/heft-jest",
       "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "@types/mocha",
+      "allowedCategories": [ "production" ]
     },
     {
       "name": "@types/uuid",
@@ -47,8 +71,20 @@
       "allowedCategories": [ "production", "prototypes" ]
     },
     {
+      "name": "chai",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "eslint",
       "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "eslint-config-oclif",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-config-oclif-typescript",
+      "allowedCategories": [ "production" ]
     },
     {
       "name": "generic-metamodel",
@@ -63,11 +99,27 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "mocha",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "my-controls",
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "oclif",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "shx",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "ts-jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "ts-node",
       "allowedCategories": [ "production" ]
     },
     {

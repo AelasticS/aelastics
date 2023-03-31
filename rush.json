@@ -531,6 +531,12 @@
       "projectFolder": "tools/my-toolchain",
       "reviewCategory": "tools",
       "tags": ["tools"]
+    },
+    {
+      "packageName": "moma",
+      "projectFolder": "apps/moma",
+      "reviewCategory": "production",
+      "tags": ["apps", "cli"]
     }
   ]
 }
