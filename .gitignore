@@ -70,4 +70,5 @@ common/autoinstallers/*/.npmrc
 # Common toolchain intermediate files
 lib
 temp
+dist
 libraries/aelastics-gjsx/OUTPUT/orgJSX.ts
