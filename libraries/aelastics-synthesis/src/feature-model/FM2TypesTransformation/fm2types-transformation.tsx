@@ -83,7 +83,9 @@ export class FM2TypesTransformations extends abstractM2M<
 
   Attribute2Property(a: fm.IAttribute): Element<tmm.IProperty> {
     // TODO map IAttribute type to domain
-    return <Property name={a.name}></Property>;
+
+    // TODO How to check if type already exists?
+    return <Property name={a.name + "_attr"}></Property>;
   }
 
   Feature2Array(f: fm.IFeature): Element<tmm.IType> {

@@ -27,7 +27,7 @@ export class NewInstance implements ITransformer {
     if (this._currentTemplate.length > RECURSE_LEVEL) {
       throw new ServiceError(
         'RangeError',
-        `Stack too deep.Possible infinitive recursive definition via ${currNode.type.name}.${currNode.extra.propName} .`
+        `Stack too deep (${RECURSE_LEVEL}). Possible infinitive recursive definition via ${currNode.type.name}.${currNode.extra.propName} .`
       );
     }
     this._currentTemplate.push(currNode);
