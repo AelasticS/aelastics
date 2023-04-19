@@ -2,7 +2,7 @@ import * as t from "aelastics-types";
 import { Any, ObjectLiteral } from "aelastics-types";
 import * as g from "generic-metamodel";
 import { Context } from "./context";
-import { ModelStore } from '../index';
+import { ModelStore } from "../index";
 import { doParseURL, PathType } from "../model-store/path";
 
 // export type RefProps = { $ref?:g.IModelElement} | {$refByID?:string} | {$refByName?:string}
@@ -68,11 +68,11 @@ export type Super<P extends {}, R extends g.IModelElement> =
   | CpxTemplate<P, R>;
 
 export type ConnectionInfo = {
-  propName?: string;  // the name property used to connect with, if it exist
+  propName?: string; // the name property used to connect with, if it exist
   isParentProp: boolean; // is it a parent property
   isReconnectAllowed: boolean; // is connection allowed if object is already connected
-  textContentAllowed: boolean // are textual sub-elements allowed
-  textPropName: string // the name of property receiving text content, if the text content allowed
+  textContentAllowed: boolean; // are textual sub-elements allowed
+  textPropName: string; // the name of property receiving text content, if the text content allowed
 };
 export function defaultConnectionInfo(propName?: string): ConnectionInfo {
   return {
@@ -80,7 +80,7 @@ export function defaultConnectionInfo(propName?: string): ConnectionInfo {
     isParentProp: true,
     isReconnectAllowed: true,
     textContentAllowed: false,
-    textPropName: "undefined"
+    textPropName: "undefined",
   };
 }
 
@@ -98,12 +98,11 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     public name?: string
   ) {
     if (typeof connInfo === "string")
-      this.connectionInfo = defaultConnectionInfo(connInfo)
+      this.connectionInfo = defaultConnectionInfo(connInfo);
     else this.connectionInfo = connInfo;
 
     this.props = props ? props : ({} as P);
-    this.name = name ? name : type.name
-
+    this.name = name ? name : type.name;
   }
 
   private renderProps(props: P, ctx: Context, isImport: boolean): {} {
@@ -115,6 +114,8 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       Object.defineProperty(renderedProps, key, {
         value: tmp,
         enumerable: true,
+        configurable: true,
+        writable: true,
       });
     }
 
@@ -183,7 +184,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     }
 
     if (forImport && this.props.id) {
-      // handle import of the element
+      // TODO: handle import of the element
     }
     // handle normal element
     if (this.props.$ref) {
@@ -234,14 +235,16 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       if (this.type.isOfType(g.Model))
         el = store.newModel(
           this.type,
-          renderedProps as unknown as g.IModel,
+          // renderedProps as unknown as g.IModel,
+          { name: this.props.name } as unknown as g.IModel,
           model,
           namespace
         );
       else if (this.type.isOfType(g.Namespace))
         el = store.newNamespace(
           this.type,
-          renderedProps as unknown as g.INamespace,
+          // renderedProps as unknown as g.INamespace,
+          { name: this.props.name } as unknown as g.INamespace,
           model,
           namespace
         );
@@ -255,8 +258,15 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
           model,
           namespace,
           this.type,
-          renderedProps as g.IModelElement
+          { name: this.props.name } as g.IModelElement // renderedProps as g.IModelElement
         );
+      }
+
+      for (const [key, value] of Object.entries(renderedProps)) {
+        if (key !== "name") {
+          //@ts-ignore
+          el[key] = value;
+        }
       }
 
       return { type: this.type, instance: el };
@@ -287,8 +297,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let objType = parent.type as t.ObjectType<any, any>;
     let mapPropTypes = objType.allProperties;
     this.children.forEach((childElement) => {
-      if (childElement === null)
-        return;   // null prevents rendering https://legacy.reactjs.org/docs/conditional-rendering.html#preventing-component-from-rendering
+      if (childElement === null) return; // null prevents rendering https://legacy.reactjs.org/docs/conditional-rendering.html#preventing-component-from-rendering
       if (!childElement) {
         throw new Error(
           `childElement undefined for parent "${this.props.name}" of type "${this.type.fullPathName}"`
@@ -296,19 +305,27 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       }
       // check textual child
       if (typeof childElement === "string") {
-        const txtProp = this.connectionInfo?.textPropName
-        if (this.connectionInfo?.textContentAllowed && txtProp && txtProp && txtProp in parent.instance) {
+        const txtProp = this.connectionInfo?.textPropName;
+        if (
+          this.connectionInfo?.textContentAllowed &&
+          txtProp &&
+          txtProp &&
+          txtProp in parent.instance
+        ) {
           //@ts-ignore
-          parent.instance[txtProp] = childElement
-        }
-        else
-          throw new Error(`Not allowed text "${childElement}" in content of element "${this.name}"`)
-      }
-      else { // process proper children element
+          parent.instance[txtProp] = childElement;
+        } else
+          throw new Error(
+            `Not allowed text "${childElement}" in content of element "${this.name}"`
+          );
+      } else {
+        // process proper children element
         const child = childElement.render(ctx, isImport);
         if (childElement.connectionInfo) {
           // connect parent and child if propName exit
-          let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
+          let propType = mapPropTypes.get(
+            childElement.connectionInfo.propName!
+          );
           if (propType)
             cnParentChild(
               childElement.connectionInfo.propName,

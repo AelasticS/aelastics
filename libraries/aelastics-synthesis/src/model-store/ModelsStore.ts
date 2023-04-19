@@ -231,7 +231,10 @@ export class ModelStore {
     throw new Error("Function not implemented.");
   }
 
-  exportToJSX(obj: IModelElement, annotation?: Typed_JSX_Annotation<any>): string {
+  exportToJSX(
+    obj: IModelElement,
+    annotation?: Typed_JSX_Annotation<any>
+  ): string {
     let el: je.Complex_JSX_Element;
     if (annotation) el = je.makeWith(obj, annotation) as je.Complex_JSX_Element;
     else {
