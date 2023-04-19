@@ -7,6 +7,8 @@ import { INamespace } from "generic-metamodel";
 
 let maxlocalID: number = 0;
 
+// TODO: add resolve function (similar to resolve/resolveOne in QVT)
+
 export class Context {
   // TODO: remove multiple stores, add store in constructor
   public readonly storeStack: IStack<ModelStore> = new ArrayStack();
