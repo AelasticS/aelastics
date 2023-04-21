@@ -1,9 +1,9 @@
-oclif-hello-world
+MOMA-Model Manager
 =================
 
-oclif example Hello World CLI
+handling models and meta models 
 
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
+[![moma](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/oclif-hello-world.svg)](https://npmjs.org/package/oclif-hello-world)
 [![CircleCI](https://circleci.com/gh/oclif/hello-world/tree/main.svg?style=shield)](https://circleci.com/gh/oclif/hello-world/tree/main)
 [![Downloads/week](https://img.shields.io/npm/dw/oclif-hello-world.svg)](https://npmjs.org/package/oclif-hello-world)
@@ -31,7 +31,7 @@ USAGE
 ```
 <!-- usagestop -->
 ```sh-session
-$ npm install -g oclif-hello-world
+$ npm install -g aelastics@moma
 $ oex COMMAND
 running command...
 $ oex (--version)
