@@ -30,10 +30,6 @@ const store = new ModelStore();
 const ctx: Context = new Context();
 ctx.pushStore(store);
 
-const store2 = new ModelStore();
-const ctx2: Context = new Context();
-ctx2.pushStore(store2);
-
 const featureModel: Element<fm.IFeatureDiagram> = (
   <FeatureDiagram name="Body Electronics System Feature Model" store={store}>
     <RootFeature
@@ -88,7 +84,11 @@ const featureModel: Element<fm.IFeatureDiagram> = (
   </FeatureDiagram>
 );
 
-const resultTypeModel: Element<t.ITypeModel> = (
+const typeModel = new FM2TypesTransformations(store).transform(
+  featureModel.render(ctx)
+);
+
+const outputTypeModelExample1: Element<t.ITypeModel> = (
   <TypeModel name="FirstFMDiagram_type_model">
     <TypeObject name="BodyElectronicsSystem_type">
       <Property
@@ -99,13 +99,17 @@ const resultTypeModel: Element<t.ITypeModel> = (
   </TypeModel>
 );
 
-const resultTypeModel2: Element<t.ITypeModel> = (
-  <TypeModel name="FirstFMDiagram_type_model" store={store2}>
+const outputTypeModelExample2: Element<t.ITypeModel> = (
+  <TypeModel name="FirstFMDiagram_type_model" store={store}>
     <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
     <TypeOptional>
       <TypeOfOptional $refByName="BodyElectronicsSystem_type" />
     </TypeOptional>
   </TypeModel>
+);
+
+const outputTypeModelExample3: Element<t.ITypeModel> = (
+  <TypeModel name="FirstFMDiagram_type_model" store={store}></TypeModel>
 );
 
 // const model: fm.IFeatureDiagram = featureModel.render(ctx);
@@ -370,9 +374,16 @@ describe("Test FM2Type transformations", () => {
     expect((attr as t.IProperty).domain).toBe(type);
   });
 
+  it("tests export output model to JSX", async () => {    
+
+    const resJSX = store.exportToJSX(typeModel);
+    console.log(resJSX);
+    expect(resJSX).toBeDefined();
+  });
+
   // // TODO Example 1 of result type model
   // const resultTypeModel: Element<t.ITypeModel> = (
-  // <TypeModel name="FirstFMDiagram_type_model" store={store2}>
+  // <TypeModel name="FirstFMDiagram_type_model" store={store}>
   //   <TypeOptional
   //     optionalType={
   //       <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
