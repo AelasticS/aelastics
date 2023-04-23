@@ -515,12 +515,6 @@
       "tags": ["libraries", "web"]
     },
     {
-      "packageName": "aelastics-m2t",
-      "projectFolder": "libraries/aelastics-m2t",
-      "reviewCategory": "production",
-      "tags": ["libraries", "web"]
-    },
-    {
       "packageName": "aelastics-gjsx",
       "projectFolder": "libraries/aelastics-gjsx",
       "reviewCategory": "production",

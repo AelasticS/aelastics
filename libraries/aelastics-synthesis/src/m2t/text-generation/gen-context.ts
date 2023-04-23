@@ -1,4 +1,4 @@
-import { ModelStore } from "aelastics-synthesis";
+import { ModelStore } from './../../index';
 import { GenResult } from "./gen-result";
 import { Options } from "./generate";
 

@@ -1,9 +1,9 @@
 /** @jsx hm */
-import { hm } from "aelastics-synthesis";
+import { hm } from './../../index';
 import { M2T, M2T_Model, IParagraph, ISection } from "../index";
 import { Dir, Doc, P, Sec } from "../index";
 import { IDirectory, IDocument } from "../index";
-import { ModelStore, Context, Element } from "aelastics-synthesis";
+import { ModelStore, Context, Element } from './../../index';
 
 const testStore = new ModelStore();
 

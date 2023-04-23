@@ -13,7 +13,7 @@ import { GenContext } from "./gen-context";
 import { GenResult, ItemResult } from "./gen-result";
 import { failure, success } from "aelastics-result";
 import { createDir, createFile } from "./fs-operations"
-import { ModelStore } from "aelastics-synthesis";
+import { ModelStore } from './../../index';
 
 
 /**

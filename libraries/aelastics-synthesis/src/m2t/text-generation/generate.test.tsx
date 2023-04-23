@@ -1,9 +1,9 @@
 /** @jsx hm */
-import { hm } from "aelastics-synthesis";
+import { hm } from './../../index';
 import { generate, M2T, getResultByItemPath, M2T_Model, IParagraph, ISection } from "../index";
 import { Dir, Doc, P, Sec } from "../index";
 import { IDirectory, IDocument } from "../index";
-import { ModelStore, Context, Element } from "aelastics-synthesis";
+import { ModelStore, Context, Element } from './../../index';
 
 const testStore = new ModelStore();
 
@@ -70,7 +70,7 @@ let testModel3_Element: Element<M2T_Model> = (
 describe("test text generation", () => {
     it("should generate correct document content for testModel1", async () => {
         const testDoc1: M2T_Model = testModel1_Element.render(new Context());
-        const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output", mode:"mock"})
+        const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output", mode:"real"})
         expect(res.noSuccesses).toEqual(1)
         expect(res.noFailures).toEqual(0)
         let s = res.results[0].outcome

@@ -1,4 +1,4 @@
-import * as f from 'aelastics-m2t'
+import * as f from 'aelastics-synthesis'
 import { ConnectionInfo, CpxTemplate, defaultConnectionInfo, Element, Template, WithRefProps } from 'aelastics-synthesis'
 import { ModelStore } from 'aelastics-synthesis'
 

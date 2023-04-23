@@ -1,6 +1,6 @@
 import * as f from './m2t.meta.model'
-import { ConnectionInfo, CpxTemplate, defaultConnectionInfo, Element, Template, WithRefProps } from 'aelastics-synthesis'
-import { ModelStore } from 'aelastics-synthesis'
+import { ConnectionInfo, CpxTemplate, defaultConnectionInfo, Element, Template, WithRefProps } from './../../index'
+import { ModelStore } from './../../index'
 
 export type IM2T_Props = WithRefProps<f.M2T_Model> & { store?: ModelStore }
 

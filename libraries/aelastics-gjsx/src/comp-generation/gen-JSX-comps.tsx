@@ -18,7 +18,7 @@ import {
   Doc,
   P,
   Sec,
-} from "aelastics-m2t";
+} from "aelastics-synthesis";
 
 import { generate_JSX_Elements } from "../index";
 import { ObjectType } from "aelastics-types";
