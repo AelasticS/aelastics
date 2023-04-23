@@ -179,14 +179,6 @@ describe("Test FM2Type transformations", () => {
       })
     );
 
-    // expect(model).toEqual(
-    //   expect.objectContaining({
-    //     name: "BodyElectronicsSystemFeatureModel3_type_model",
-    //     elements: expect.arrayContaining([
-    //     ]),
-    //   })
-    // );
-
     let optional = model.elements.find(
       (e) => e.name == "BodyElectronicsSystem3_optional"
     );
@@ -234,14 +226,6 @@ describe("Test FM2Type transformations", () => {
         ]),
       })
     );
-
-    // expect(model).toEqual(
-    //   expect.objectContaining({
-    //     name: "BodyElectronicsSystemFeatureModel4_type_model",
-    //     elements: expect.arrayContaining([
-    //     ]),
-    //   })
-    // );
 
     let type = model.elements.find((e) => e.name == "Wiper4_type");
     let prop = model.elements.find((e) => e.name == "Wiper4_prop");
@@ -339,6 +323,53 @@ describe("Test FM2Type transformations", () => {
     expect((array as t.IArray).elementType).toBe(type);
   });
 
+  it("test attribute to object property", () => {
+    const m1: Element<fm.IFeatureDiagram> = (
+      <FeatureDiagram
+        name="Body Electronics System Feature Model7"
+        store={store}
+      >
+        <RootFeature
+          name="BodyElectronicsSystem7"
+          minCardinality={1}
+          maxCardinality={1}
+        >
+          <SolitaryFeature name="Wiper7" minCardinality={1} maxCardinality={4}>
+            <Attribute name="numberOfLevels7" type="number"></Attribute>
+          </SolitaryFeature>
+        </RootFeature>
+      </FeatureDiagram>
+    );
+
+    const model = new FM2TypesTransformations(store).transform(m1.render(ctx));
+
+    expect(model).toEqual(
+      expect.objectContaining({
+        name: "BodyElectronicsSystemFeatureModel7_type_model",
+        elements: expect.arrayContaining([
+          expect.objectContaining({
+            label: "BodyElectronicsSystem7_type",
+            properties: expect.arrayContaining([
+              expect.objectContaining({ name: "Wiper7_prop" }),
+            ]),
+          }),
+          expect.objectContaining({
+            label: "Wiper7_type",
+            properties: expect.arrayContaining([
+              expect.objectContaining({ name: "numberOfLevels7_attr" }),
+            ]),
+          }),
+          expect.objectContaining({ label: "Wiper7_array" }),
+        ]),
+      })
+    );
+
+    let type = model.elements.find((e) => e.name == "number");
+    let attr = model.elements.find((e) => e.name == "numberOfLevels7_attr");
+
+    expect((attr as t.IProperty).domain).toBe(type);
+  });
+
   // // TODO Example 1 of result type model
   // const resultTypeModel: Element<t.ITypeModel> = (
   // <TypeModel name="FirstFMDiagram_type_model" store={store2}>
@@ -350,13 +381,6 @@ describe("Test FM2Type transformations", () => {
   // </TypeModel>
   // );
 
-  // // TODO Example 2 of result type model
-  // const resultTypeModel3: Element<t.ITypeModel> = (
-
-  // );
-  // const model: fm.IFeatureDiagram = featureModel.render(ctx);
-  // let trans = new FM2TypesTransformations(store);
-  // let result = trans.transform(model);
   // expect(result).toEqual(resultTypeModel.render(ctx));
   // });
 });
