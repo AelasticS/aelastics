@@ -207,8 +207,8 @@ export class ModelStore {
         break;
       case AccessProtocol.repo:
         throw new Error("AccessProtocol.repo is not yet supported");
-      case AccessProtocol["jsx-file"]:
-        throw new Error("AccessProtocol.jsx-file is not yet supported");
+      case AccessProtocol["json-file"]:
+        throw new Error("AccessProtocol.json-file is not yet supported");
       case AccessProtocol["types-file"]:
         throw new Error("AccessProtocol.types-file is not yet supported");
     }
