@@ -11,7 +11,7 @@ export const FMModel_TypeSchema = t.schema("FMModelSchema");
 export const Attribute = t.subtype(
   ModelElement,
   {
-    type: t.string.derive("DataType").oneOf(["int", "string"]),
+    type: t.string.derive("DataType").oneOf(["number", "string"]),
   },
   "Attribute",
   FMModel_TypeSchema
