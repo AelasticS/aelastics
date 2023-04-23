@@ -8,12 +8,15 @@ import * as fm from "../FM_MetaModel/fm-meta.model.type";
 import { SpecPoint, SpecOption } from "../../transformations/spec-decorators";
 import {
   Property,
+  PropertyDomain,
   TypeArray,
   TypeModel,
   TypeObject,
   TypeOptional,
 } from "../Types_MetaModel/types-components";
 import * as tmm from "../Types_MetaModel/types-meta.model";
+
+import { importPredefinedTypes } from "../Types_MetaModel/predefined-model";
 
 export class FM2TypesTransformations extends abstractM2M<
   fm.IFeatureDiagram,
@@ -26,6 +29,7 @@ export class FM2TypesTransformations extends abstractM2M<
   template(fd: fm.IFeatureDiagram) {
     return (
       <TypeModel name={fd.name + "_type_model"} MDA_level="M2">
+        {importPredefinedTypes(`../${fd.name}_type_model`)}
         {fd.rootFeatures.map((e) => this.Feature2Type(e as fm.IFeature))}
       </TypeModel>
     );
@@ -43,8 +47,13 @@ export class FM2TypesTransformations extends abstractM2M<
     }
 
     if (f.minCardinality === 0) {
-      // @ts-ignore
-      type = <TypeOptional optionalType={type}></TypeOptional>;
+      type = (
+        <TypeOptional
+          name={f.name + "_optional"}
+          // @ts-ignore
+          optionalType={type}
+        ></TypeOptional>
+      );
     }
 
     return type;
@@ -82,16 +91,20 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   Attribute2Property(a: fm.IAttribute): Element<tmm.IProperty> {
-    // TODO map IAttribute type to domain
-
-    // TODO How to check if type already exists?
-    return <Property name={a.name + "_attr"}></Property>;
+    return (
+      <Property name={a.name + "_attr"}>
+        <PropertyDomain $refByName={a.type}></PropertyDomain>
+      </Property>
+    );
   }
 
   Feature2Array(f: fm.IFeature): Element<tmm.IType> {
     return (
-      // @ts-ignore
-      <TypeArray elementType={this.Feature2Object(f)}></TypeArray>
+      <TypeArray
+        name={f.name + "_array"}
+        // @ts-ignore
+        elementType={this.Feature2Object(f)}
+      ></TypeArray>
     );
 
     // TODO method 2 - working

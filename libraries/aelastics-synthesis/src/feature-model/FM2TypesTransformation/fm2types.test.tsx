@@ -99,28 +99,245 @@ const resultTypeModel: Element<t.ITypeModel> = (
   </TypeModel>
 );
 
-const model: fm.IFeatureDiagram = featureModel.render(ctx);
+const resultTypeModel2: Element<t.ITypeModel> = (
+  <TypeModel name="FirstFMDiagram_type_model" store={store2}>
+    <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
+    <TypeOptional>
+      <TypeOfOptional $refByName="BodyElectronicsSystem_type" />
+    </TypeOptional>
+  </TypeModel>
+);
+
+// const model: fm.IFeatureDiagram = featureModel.render(ctx);
 
 describe("Test FM2Type transformations", () => {
-  it("tests root feature to type model", () => {
-    let trans = new FM2TypesTransformations(store);
-    let result = trans.transform(model);
+  it("Create type model", () => {
+    const m1: Element<fm.IFeatureDiagram> = (
+      <FeatureDiagram
+        name="Body Electronics System Feature Model1"
+        store={store}
+      ></FeatureDiagram>
+    );
 
-    // let resultModel = resultTypeModel.render(ctx2);
-    // expect(result).toEqual(resultModel);
-    expect(true).toBeTruthy();
+    const model = new FM2TypesTransformations(store).transform(m1.render(ctx));
+
+    expect(model).toHaveProperty(
+      "name",
+      "BodyElectronicsSystemFeatureModel1_type_model"
+    );
   });
 
-  // it("tests root optional to type model", () => {
-  // const featureModel: Element<fm.IFeatureDiagram> = (
-  //   <FeatureDiagram name="FirstFMDiagram" store={store}>
-  //     <RootFeature
-  //       name="BodyElectronicsSystem"
-  //       minCardinality={0}
-  //       maxCardinality={1}
-  //     ></RootFeature>
-  //   </FeatureDiagram>
-  // );
+  it("tests root to type model", () => {
+    const m1: Element<fm.IFeatureDiagram> = (
+      <FeatureDiagram
+        name="Body Electronics System Feature Model2"
+        store={store}
+      >
+        <RootFeature
+          name="BodyElectronicsSystem2"
+          minCardinality={1}
+          maxCardinality={1}
+        ></RootFeature>
+      </FeatureDiagram>
+    );
+
+    const model = new FM2TypesTransformations(store).transform(m1.render(ctx));
+
+    expect(model).toEqual(
+      expect.objectContaining({
+        name: "BodyElectronicsSystemFeatureModel2_type_model",
+        elements: expect.arrayContaining([
+          expect.objectContaining({ label: "BodyElectronicsSystem2_type" }),
+        ]),
+      })
+    );
+  });
+
+  it("tests root to optional in type model", () => {
+    const m1: Element<fm.IFeatureDiagram> = (
+      <FeatureDiagram
+        name="Body Electronics System Feature Model3"
+        store={store}
+      >
+        <RootFeature
+          name="BodyElectronicsSystem3"
+          minCardinality={0}
+          maxCardinality={1}
+        ></RootFeature>
+      </FeatureDiagram>
+    );
+
+    const model = new FM2TypesTransformations(store).transform(m1.render(ctx));
+
+    expect(model).toEqual(
+      expect.objectContaining({
+        name: "BodyElectronicsSystemFeatureModel3_type_model",
+        elements: expect.arrayContaining([
+          expect.objectContaining({ label: "BodyElectronicsSystem3_optional" }),
+          expect.objectContaining({ label: "BodyElectronicsSystem3_type" }),
+        ]),
+      })
+    );
+
+    // expect(model).toEqual(
+    //   expect.objectContaining({
+    //     name: "BodyElectronicsSystemFeatureModel3_type_model",
+    //     elements: expect.arrayContaining([
+    //     ]),
+    //   })
+    // );
+
+    let optional = model.elements.find(
+      (e) => e.name == "BodyElectronicsSystem3_optional"
+    );
+
+    let type = model.elements.find(
+      (e) => e.name == "BodyElectronicsSystem3_type"
+    );
+
+    expect((optional as t.IOptional).optionalType).toBe(type);
+  });
+
+  it("tests soliratry to object property in type model", () => {
+    const m1: Element<fm.IFeatureDiagram> = (
+      <FeatureDiagram
+        name="Body Electronics System Feature Model4"
+        store={store}
+      >
+        <RootFeature
+          name="BodyElectronicsSystem4"
+          minCardinality={1}
+          maxCardinality={1}
+        >
+          <SolitaryFeature
+            name="Wiper4"
+            minCardinality={1}
+            maxCardinality={1}
+          ></SolitaryFeature>
+        </RootFeature>
+      </FeatureDiagram>
+    );
+
+    const model = new FM2TypesTransformations(store).transform(m1.render(ctx));
+
+    expect(model).toEqual(
+      expect.objectContaining({
+        name: "BodyElectronicsSystemFeatureModel4_type_model",
+        elements: expect.arrayContaining([
+          expect.objectContaining({
+            label: "BodyElectronicsSystem4_type",
+            properties: expect.arrayContaining([
+              expect.objectContaining({ name: "Wiper4_prop" }),
+            ]),
+          }),
+          expect.objectContaining({ label: "Wiper4_type" }),
+        ]),
+      })
+    );
+
+    // expect(model).toEqual(
+    //   expect.objectContaining({
+    //     name: "BodyElectronicsSystemFeatureModel4_type_model",
+    //     elements: expect.arrayContaining([
+    //     ]),
+    //   })
+    // );
+
+    let type = model.elements.find((e) => e.name == "Wiper4_type");
+    let prop = model.elements.find((e) => e.name == "Wiper4_prop");
+
+    expect((prop as t.IProperty).domain).toBe(type);
+  });
+
+  it("tests soliraty to optional object property in type model", () => {
+    const m1: Element<fm.IFeatureDiagram> = (
+      <FeatureDiagram
+        name="Body Electronics System Feature Model5"
+        store={store}
+      >
+        <RootFeature
+          name="BodyElectronicsSystem5"
+          minCardinality={1}
+          maxCardinality={1}
+        >
+          <SolitaryFeature
+            name="Wiper5"
+            minCardinality={0}
+            maxCardinality={1}
+          ></SolitaryFeature>
+        </RootFeature>
+      </FeatureDiagram>
+    );
+
+    const model = new FM2TypesTransformations(store).transform(m1.render(ctx));
+
+    expect(model).toEqual(
+      expect.objectContaining({
+        name: "BodyElectronicsSystemFeatureModel5_type_model",
+        elements: expect.arrayContaining([
+          expect.objectContaining({
+            label: "BodyElectronicsSystem5_type",
+            properties: expect.arrayContaining([
+              expect.objectContaining({ name: "Wiper5_prop" }),
+            ]),
+          }),
+          expect.objectContaining({ label: "Wiper5_type" }),
+          expect.objectContaining({ label: "Wiper5_optional" }),
+        ]),
+      })
+    );
+
+    let type = model.elements.find((e) => e.name == "Wiper5_optional");
+    let prop = model.elements.find((e) => e.name == "Wiper5_prop");
+
+    expect((prop as t.IProperty).domain).toBe(type);
+  });
+
+  it("tests solitary to array object property in type model", () => {
+    const m1: Element<fm.IFeatureDiagram> = (
+      <FeatureDiagram
+        name="Body Electronics System Feature Model6"
+        store={store}
+      >
+        <RootFeature
+          name="BodyElectronicsSystem6"
+          minCardinality={1}
+          maxCardinality={1}
+        >
+          <SolitaryFeature
+            name="Wiper6"
+            minCardinality={1}
+            maxCardinality={4}
+          ></SolitaryFeature>
+        </RootFeature>
+      </FeatureDiagram>
+    );
+
+    const model = new FM2TypesTransformations(store).transform(m1.render(ctx));
+
+    expect(model).toEqual(
+      expect.objectContaining({
+        name: "BodyElectronicsSystemFeatureModel6_type_model",
+        elements: expect.arrayContaining([
+          expect.objectContaining({
+            label: "BodyElectronicsSystem6_type",
+            properties: expect.arrayContaining([
+              expect.objectContaining({ name: "Wiper6_prop" }),
+            ]),
+          }),
+          expect.objectContaining({ label: "Wiper6_type" }),
+          expect.objectContaining({ label: "Wiper6_array" }),
+        ]),
+      })
+    );
+
+    let array = model.elements.find((e) => e.name == "Wiper6_array");
+    let type = model.elements.find((e) => e.name == "Wiper6_type");
+    let prop = model.elements.find((e) => e.name == "Wiper6_prop");
+
+    expect((prop as t.IProperty).domain).toBe(array);
+    expect((array as t.IArray).elementType).toBe(type);
+  });
 
   // // TODO Example 1 of result type model
   // const resultTypeModel: Element<t.ITypeModel> = (
@@ -135,12 +352,7 @@ describe("Test FM2Type transformations", () => {
 
   // // TODO Example 2 of result type model
   // const resultTypeModel3: Element<t.ITypeModel> = (
-  <TypeModel name="FirstFMDiagram_type_model" store={store2}>
-    <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
-    <TypeOptional>
-      <TypeOfOptional $refByName="BodyElectronicsSystem_type" />
-    </TypeOptional>
-  </TypeModel>;
+
   // );
   // const model: fm.IFeatureDiagram = featureModel.render(ctx);
   // let trans = new FM2TypesTransformations(store);
