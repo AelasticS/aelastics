@@ -8,7 +8,7 @@ import {
   FeatureDiagram as FM_FeatureDiagram,
   Feature as FM_Feature,
   Attribute as FM_Attribute,
-} from "../FM_MetaModel/fm-meta.model.type";
+} from "../fm-metamodel/fm-meta.model.type";
 import { ModelElement, Model } from "generic-metamodel";
 
 export const FMConfigModel_TypeSchema = t.schema("FMConfigModel_TypeSchema");
