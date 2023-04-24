@@ -80,5 +80,11 @@ describe("test text generation", () => {
         expect(getResultByItemPath(res,"TestDoc1.txt")?.value).toEqual("paragraph 1\nparagraph 2\n")
         
     });
+
+    // it("should generate correct document content for testModel1", async () => {
+    //     const testDoc1: M2T_Model = testModel3_Element.render(new Context());
+    //     const res = await generate(testStore, testDoc1, {rootDir:"TXT_Output2", mode:"real"});
+    //     expect(true).toBeTruthy();
+    // });
 });
 
