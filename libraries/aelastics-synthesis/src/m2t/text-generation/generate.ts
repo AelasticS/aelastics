@@ -88,7 +88,7 @@ const generateDirectory = async (
 ) => {
 
   const currPath = `${path}/${dir.name}`;
-  
+
   try {
     if (ctx.realMode) await createDir(currPath);
     const res: ItemResult = {
@@ -110,7 +110,7 @@ const generateDirectory = async (
     ctx.result.noFailures++;
     return; // stop generation further for this dir
   }
-  
+
   // execute files in the directory
   dir.items.forEach(async (item) => await generateItem(item, currPath, ctx));
 };
