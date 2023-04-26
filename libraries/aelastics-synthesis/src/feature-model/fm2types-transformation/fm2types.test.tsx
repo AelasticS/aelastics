@@ -377,7 +377,6 @@ describe("Test FM2Type transformations", () => {
   it("tests export output model to JSX", async () => {    
 
     const resJSX = store.exportToJSX(typeModel);
-    console.log(resJSX);
     expect(resJSX).toBeDefined();
   });
 
