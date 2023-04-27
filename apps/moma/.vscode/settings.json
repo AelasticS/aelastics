@@ -1,3 +1,6 @@
 {
-    "jestRunIt.jestPath": ""
+    "jestRunIt.jestPath": "",
+    "cSpell.words": [
+        "oclif"
+    ]
 }
