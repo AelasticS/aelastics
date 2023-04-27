@@ -1,13 +1,17 @@
 import * as t from "aelastics-types"
 import { ModelElement, Model } from "generic-metamodel";
 
-export const M2T_Schema = t.schema("M2T_Schema");
+//TODO: insted of model element name define another property for names of M2T_Item, DocElement
+//TODO: real solution is to designate folder and other containers as namespaces
 
-export const M2T_Model = t.subtype(Model, {
-}, "FS_Model", M2T_Schema);
+export const M2T_Schema = t.schema("M2T_Schema");
 
 export const M2T_Item = t.subtype(ModelElement, {
 }, "FS_Item", M2T_Schema);
+
+export const M2T_Model = t.subtype(Model, {
+    items: t.arrayOf(M2T_Item)
+}, "FS_Model", M2T_Schema);
 
 export const Directory = t.subtype(M2T_Item, {
     items:t.arrayOf(M2T_Item, "items"),

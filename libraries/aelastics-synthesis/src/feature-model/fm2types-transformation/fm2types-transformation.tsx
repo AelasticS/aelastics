@@ -4,7 +4,7 @@ import { Element } from "../../jsx/element";
 import { hm } from "../../jsx/handle";
 import { ModelStore } from "../../model-store/ModelsStore";
 import { abstractM2M } from "../../transformations/abstractM2M";
-import * as fm from "../FM_MetaModel/fm-meta.model.type";
+import * as fm from "../fm-metamodel/fm-meta.model.type";
 import { SpecPoint, SpecOption } from "../../transformations/spec-decorators";
 import {
   Property,
@@ -13,10 +13,10 @@ import {
   TypeModel,
   TypeObject,
   TypeOptional,
-} from "../Types_MetaModel/types-components";
-import * as tmm from "../Types_MetaModel/types-meta.model";
+} from "../../types-metamodel/types-components";
+import * as tmm from "../../types-metamodel/types-meta.model";
 
-import { importPredefinedTypes } from "../Types_MetaModel/predefined-model";
+import { importPredefinedTypes } from "../../types-metamodel/predefined-model";
 
 export class FM2TypesTransformations extends abstractM2M<
   fm.IFeatureDiagram,

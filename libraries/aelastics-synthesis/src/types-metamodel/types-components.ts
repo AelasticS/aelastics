@@ -1,11 +1,11 @@
 import * as t from "./types-meta.model";
-import { ModelStore } from '../../index'
+import { ModelStore } from '../index'
 import {
   CpxTemplate,
   Element,
   Template,
   WithRefProps,
-} from "../../jsx/element";
+} from "../jsx/element";
 
 export type IModelProps = WithRefProps<t.ITypeModel> & {
   store?: ModelStore;

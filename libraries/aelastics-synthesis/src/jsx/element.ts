@@ -369,7 +369,9 @@ let cnParentChild = (
         break;
       case "Array":
         if (obj1[prop] === undefined) obj1[prop] = new Array();
-        (obj1[prop] as Array<any>).push(obj2);
+
+        if ((obj1[prop] as Array<any>).findIndex((e) => e === obj2) === -1)
+          (obj1[prop] as Array<any>).push(obj2);
         break;
     }
   }
