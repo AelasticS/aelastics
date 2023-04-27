@@ -49,6 +49,27 @@ describe("test types2text transormations", () => {
     await generateText(store, textModel, 1);
   });
 
+  it("should throw error", async () => {
+    const store = new ModelStore();
+    const ctx = new Context();
+    ctx.pushStore(store);
+
+    const typeModel: Element<t.ITypeModel> = (
+      <TypeModel name="FirstTypeModel" store={store}>
+        <TypeSubtype name="Worker">
+          <TypeSupertype $refByName="Worker"></TypeSupertype>
+        </TypeSubtype>
+      </TypeModel>
+    );
+
+    const textModel = () =>
+      new Types2TextModelTransformations(store).transform(
+        typeModel.render(ctx)
+      );
+
+    expect(textModel).toThrow();
+  });
+
   it("should create objects", async () => {
     const store = new ModelStore();
     const ctx = new Context();
