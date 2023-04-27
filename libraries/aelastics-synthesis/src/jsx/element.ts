@@ -358,6 +358,12 @@ let cnParentChild = (
   isReconnectAllowed: boolean
 ) => {
   if (prop) {
+    if (obj1 === obj2) {
+      throw new Error(
+        `cnParentChild: connection not allowed between the same objects "${obj1.name}" via property "${prop}"`
+      );
+    }
+
     switch (propType) {
       case "Object":
         if (!isReconnectAllowed && obj1[prop])
