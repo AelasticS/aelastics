@@ -8,7 +8,14 @@ export const TypesMM_TypeSchema = t.schema("TypesMM_TypeSchema");
 
 export const Type = t.subtype(ModelElement, {}, "Type", TypesMM_TypeSchema);
 
-export const TypeModel = t.subtype(Model, {}, "TypeModel", TypesMM_TypeSchema);
+export const TypeModel = t.subtype(
+  Model,
+  {
+    types: t.arrayOf(Type),
+  },
+  "TypeModel",
+  TypesMM_TypeSchema
+);
 
 export const Optional = t.subtype(
   Type,
@@ -56,7 +63,7 @@ export const Subtype = t.subtype(
 // );
 
 export const Array = t.subtype(
-  Object,
+  Type,
   {
     elementType: Type,
   },
@@ -65,7 +72,7 @@ export const Array = t.subtype(
 );
 
 export const Union = t.subtype(
-  Object,
+  Type,
   {
     elements: t.arrayOf(Property),
     descriminator: t.string,
