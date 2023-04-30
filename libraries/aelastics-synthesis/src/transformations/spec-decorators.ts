@@ -37,7 +37,7 @@ export const SpecPoint = () => {
               // get result form original method
               let orgResult = original.apply(this, args)
               // get result from specialized method
-              let specResult:Element<IModelElement> = (target as any)[option.specMethod](...args);
+              let specResult:Element<IModelElement> = (this as any)[option.specMethod](...args);
               // connect corresponding results(elemnets)
               orgResult.subElement = specResult
               orgResult.isAbstract = true
