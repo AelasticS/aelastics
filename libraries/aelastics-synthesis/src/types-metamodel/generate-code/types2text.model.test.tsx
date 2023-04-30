@@ -98,9 +98,10 @@ describe("test types2text transormations", () => {
 
     const typeModel: Element<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel3" store={store}>
+        <TypeSubtype name="Worker3"></TypeSubtype>
         <TypeObject name="Person3"></TypeObject>
         <TypeObject name="Company3"></TypeObject>
-        <TypeSubtype name="Worker3">
+        <TypeSubtype $refByName="Worker3">
           <TypeSupertype $refByName="Person3"></TypeSupertype>
         </TypeSubtype>
       </TypeModel>
@@ -113,5 +114,40 @@ describe("test types2text transormations", () => {
     expect(textModel).toBeDefined();
 
     await generateText(store, textModel, 3);
+  });
+
+  it("should create object properties", async () => {
+    const store = new ModelStore();
+    const ctx = new Context();
+    ctx.pushStore(store);
+
+    const typeModel: Element<t.ITypeModel> = (
+      <TypeModel name="FirstTypeModel" store={store}>
+        <TypeSubtype name="Worker3">
+          <Property name="fullName" />
+          <Property name="workInCompany" />
+        </TypeSubtype>
+        <TypeObject name="Person">
+          <Property name="firstName" />
+          <Property name="address" />
+          <Property name="age" />
+        </TypeObject>
+        <TypeSubtype $refByName="Worker3">
+          <TypeSupertype $refByName="Person3"></TypeSupertype>
+        </TypeSubtype>
+        <TypeObject name="Company3"></TypeObject>
+        <Property $refByName="workInCompany">
+          <PropertyDomain $refByName="Company3"></PropertyDomain>
+        </Property>
+      </TypeModel>
+    );
+
+    const textModel = new Types2TextModelTransformations(store).transform(
+      typeModel.render(ctx)
+    );
+
+    expect(textModel).toBeDefined();
+
+    await generateText(store, textModel, 4);
   });
 });
