@@ -82,7 +82,7 @@ export const Union = t.subtype(
 );
 
 // type ISimpleType = t.TypeOf<typeof SimpleType>;
-const SimpleType = t.subtype(Type, {}, "SimpleType", TypesMM_TypeSchema);
+export const SimpleType = t.subtype(Type, {}, "SimpleType", TypesMM_TypeSchema);
 
 export const Number = t.subtype(SimpleType, {}, "Number", TypesMM_TypeSchema);
 export const String = t.subtype(SimpleType, {}, "String", TypesMM_TypeSchema);
@@ -97,6 +97,7 @@ export type ITypeModel = t.TypeOf<typeof TypeModel>;
 export type IType = t.TypeOf<typeof Type>;
 export type IOptional = t.TypeOf<typeof Optional>;
 
+export type ISimpleType = t.TypeOf<typeof SimpleType>;
 export type INumber = t.TypeOf<typeof Number>;
 export type IString = t.TypeOf<typeof String>;
 export type IBoolean = t.TypeOf<typeof Boolean>;

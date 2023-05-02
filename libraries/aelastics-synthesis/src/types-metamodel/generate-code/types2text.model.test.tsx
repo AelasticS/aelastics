@@ -18,6 +18,7 @@ import { ModelStore } from "../../index";
 import { generate } from "./../../m2t/text-generation/generate";
 import * as m2tmm from "./../../m2t/m2t-model/m2t.meta.model";
 import { Types2TextModelTransformations } from "./types2text.model-transformation";
+import { importPredefinedTypes } from "./../predefined-model";
 
 const generateText = async (
   store: ModelStore,
@@ -123,14 +124,23 @@ describe("test types2text transormations", () => {
 
     const typeModel: Element<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel" store={store}>
+        {importPredefinedTypes("../FirstTypeModel")}
         <TypeSubtype name="Worker3">
-          <Property name="fullName" />
+          <Property name="fullName">
+            <PropertyDomain $refByName="string" />
+          </Property>
           <Property name="workInCompany" />
         </TypeSubtype>
-        <TypeObject name="Person">
-          <Property name="firstName" />
-          <Property name="address" />
-          <Property name="age" />
+        <TypeObject name="Person3">
+          <Property name="firstName">
+            <PropertyDomain $refByName="string" />
+          </Property>
+          <Property name="address">
+            <PropertyDomain $refByName="string" />
+          </Property>
+          <Property name="age">
+            <PropertyDomain $refByName="number" />
+          </Property>
         </TypeObject>
         <TypeSubtype $refByName="Worker3">
           <TypeSupertype $refByName="Person3"></TypeSupertype>
@@ -139,6 +149,11 @@ describe("test types2text transormations", () => {
         <Property $refByName="workInCompany">
           <PropertyDomain $refByName="Company3"></PropertyDomain>
         </Property>
+        <TypeSubtype $refByName="Worker3">
+          <Property name="placeOfBirth">
+            <PropertyDomain $refByName="string" />
+          </Property>
+        </TypeSubtype>
       </TypeModel>
     );
 

@@ -1,12 +1,23 @@
 /** @jsx hm */
 import { hm } from "./../../jsx/handle";
-import { M2T, Dir, Doc, P, Sec } from "./../../m2t/m2t-model/m2t.jsx";
+import {
+  M2T,
+  Dir,
+  Doc,
+  P,
+  Sec,
+  SecParent,
+} from "./../../m2t/m2t-model/m2t.jsx";
 import * as m2tmm from "./../../m2t/m2t-model/m2t.meta.model";
 import * as tmm from "./../types-meta.model";
-import { ModelStore, Context, Element } from "./../../index";
+import { ModelStore, Context, Element, E2E, M2M } from "./../../index";
 import { abstractM2M } from "./../../transformations/abstractM2M";
 import { SpecPoint, SpecOption } from "./../../transformations/spec-decorators";
 
+@M2M({
+  input: tmm.TypeModel,
+  output: m2tmm.M2T_Model,
+})
 export class Types2TextModelTransformations extends abstractM2M<
   tmm.ITypeModel,
   m2tmm.M2T_Model
@@ -53,8 +64,18 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
-  transformType(t: tmm.IType): Element<m2tmm.IM2T_Item> {
+  @E2E({
+    input: tmm.Type,
+    output: m2tmm.M2T_Item,
+  })
+  transformType(
+    t: tmm.IType
+  ): [Element<m2tmm.IParagraph>, Element<m2tmm.ISection>] {
     if (this.mappedTypes.has(t.id)) {
+      return <Sec></Sec>;
+    }
+
+    if (this.context.store.isTypeOf(t, tmm.SimpleType)) {
       return <Sec></Sec>;
     }
 
@@ -62,30 +83,53 @@ export class Types2TextModelTransformations extends abstractM2M<
 
     const typeOfElement = this.context.store.getTypeOf(t);
 
-    let typeDefinitionSection = null;
+    let typeDefinitionSection: Element<m2tmm.ISection> =
+      {} as Element<m2tmm.ISection>;
     switch (typeOfElement.name) {
       case tmm.Object.name:
       case tmm.Subtype.name:
         typeDefinitionSection = this.transformObject(t as tmm.IObject);
-      // TODO add other types
+        break;
+      case tmm.Array.name:
+        // TODO add transformArray
+        break;
+      case tmm.Optional.name:
+        // TODO add transformOptional
+        break;
+      case tmm.Union.name:
+        // TODO Add transformUnion
+        break;
     }
 
+    // typeDefinitionSection.props.parentSection = (
+    //   <Sec $refByName="typeDefinition">
+    //   </Sec>
+    // );
+
+    // let a = this.context.resolve(t.name);
+
     return (
-      <Doc $refByName={t.parentModel.name + "_textModel.ts"}>
-        {/* <Sec> */}
-        <Sec $refByName="typeExports">
-          <P>{`export type I${t.name} = t.TypeOf<typeof ${t.name}>;`}</P>
-        </Sec>
-        <Sec $refByName="typeDefinition">{typeDefinitionSection}</Sec>
-        {/* </Sec> */}
-      </Doc>
+      // <Doc $refByName={t.parentModel.name + "_textModel.ts"}>
+      [
+        <P parentSection={<Sec $refByName="typeExports"></Sec>}>
+          {`export type I${t.name} = t.TypeOf<typeof ${t.name}>;`}
+        </P>,
+
+        typeDefinitionSection,
+      ]
+      // </Doc>
     );
   }
 
   @SpecPoint()
-  transformObject(t: tmm.IObject): Element<m2tmm.IM2T_Item> {
+  @E2E({
+    input: tmm.Object,
+    output: m2tmm.M2T_Item,
+  })
+  transformObject(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
       <Sec name={t.name + "_type_sec"}>
+        <SecParent $refByName="typeDefinition"></SecParent>
         <Sec name={t.name + "_type_export_sec"}></Sec>
         <Sec name={t.name + "_attr_sec"}>
           <P>{`{`}</P>
@@ -144,6 +188,16 @@ export class Types2TextModelTransformations extends abstractM2M<
   // }
 
   transformProperty(t: tmm.IProperty): Element<m2tmm.IParagraph> {
-    return <P>{t.name + "_prop"}</P>;
+    // let domainType = null;
+    // if (!this.mappedTypes.has(t.domain.id)) {
+    //   domainType = this.transformType(t.domain);
+    // }
+
+    return (
+      <Sec>
+        {/* {domainType} */}
+        <P>{`${t.name}_prop: ${t.domain?.name},`}</P>
+      </Sec>
+    );
   }
 }
