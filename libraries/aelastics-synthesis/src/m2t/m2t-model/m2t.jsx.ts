@@ -48,13 +48,5 @@ export const Sec: Template<f.ISection> = (props) => {
 };
 
 export const SecParent: Template<f.ISection> = (props) => {
-  const connInfo: ConnectionInfo = {
-    isParentProp: false,
-    textContentAllowed: false,
-    isReconnectAllowed: false,
-    propName: "elements",
-    textPropName: "elements",
-  };
-
-  return new Element(f.Section, props, "elements");
+  return new Element(f.Section, props, "parentSection");
 };
