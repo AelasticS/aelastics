@@ -15,7 +15,7 @@ import { Element } from 'aelastics-synthesis'
 export const Approval_X_times_Par = (x: number) => () => {
     let f: () => Element<IProcess> = () => {
         // create approval tasks names 
-        let tasks = Array.from({length: 10}, (_, i) => i + 1)
+        let tasks = Array.from({length: x}, (_, i) => i + 1)
         return (
             <Process name='Approval' store={new ModelStore()}>
                 <Sequence>
@@ -30,8 +30,23 @@ export const Approval_X_times_Par = (x: number) => () => {
     }
     return f;
 }
+export const Approval_X_times_Par2 = (x: number):Element<IProcess> => {
+        // create approval tasks names 
+        let tasks = Array.from({length: x}, (_, i) => i + 1)
+        return (
+            <Process name='Approval' store={new ModelStore()}>
+                <Sequence>
+                    <Task name='write' />
+                    <Parallel>
+                        {
+                            tasks.map(t => <Task name={`approval ${t}`} />)
+                        }
+                    </Parallel>
+                </Sequence>
+            </Process>)
+}
 
-export const Approval_X_Par = (x: number, isParallel: boolean) => () => {
+export const Approval_X_Par = (x: number, isParallel: boolean) => {
     let f: () => Element<IProcess> = () => {
         // create approval tasks names 
         let tasks = Array.from({length: 10}, (_, i) => i + 1)
@@ -56,10 +71,10 @@ export const Approval_X_Par = (x: number, isParallel: boolean) => () => {
 
 
 
-export const GenericApprovalHOC = (x: number, isParallel: boolean, WorkerTask: Template<ITask>) => () => {
+export const GenericApprovalHOC = (x: number, isParallel: boolean, WorkerTask: Template<ITask>) => {
     let f: (props: ITask) => Element<IProcess> = (props) => {
         // create approval tasks names 
-        let tasks = Array.from({length: 10}, (_, i) => i + 1)
+        let tasks = Array.from({length: x}, (_, i) => i + 1)
         return (
             <Sequence>
                 <WorkerTask {...props} />
