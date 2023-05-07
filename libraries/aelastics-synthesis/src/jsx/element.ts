@@ -86,7 +86,7 @@ export function defaultConnectionInfo(propName?: string): ConnectionInfo {
 
 export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public children: Element<any>[] = [];
-  public isAbstract: boolean = false;
+  public isAbstract: boolean = false; // used to resolve SpecOption decorator
   public subElement?: Element<any>;
   public readonly connectionInfo?: ConnectionInfo;
   public props: P;
