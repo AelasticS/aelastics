@@ -1,10 +1,10 @@
 
 import * as t from "./types-meta.model";
-import { ModelStore } from '../../index';
+import { ModelStore } from '../index';
 import {
   Element,
   Template,
-} from "../../jsx/element";
+} from "../jsx/element";
 
 export const TypeNumber: Template<t.INumber> = (props) => {
   return new Element(t.Number, props, undefined);

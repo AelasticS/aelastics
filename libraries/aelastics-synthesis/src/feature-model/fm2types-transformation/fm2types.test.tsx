@@ -2,7 +2,7 @@
 
 import { Element, ElementInstance } from "../../jsx/element";
 import { hm } from "../../jsx/handle";
-import * as fm from "../FM_MetaModel/fm-meta.model.type";
+import * as fm from "../fm-metamodel/fm-meta.model.type";
 
 import { FM2TypesTransformations } from "./fm2types-transformation";
 import { ModelStore } from "../../index";
@@ -12,9 +12,9 @@ import {
   RootFeature,
   SolitaryFeature,
   GroupFeature,
-} from "../FM_MetaModel/fm-components";
+} from "../fm-metamodel/fm-components";
 
-import * as t from "../Types_MetaModel/types-meta.model";
+import * as t from "../../types-metamodel/types-meta.model";
 import {
   TypeModel,
   TypeObject,
@@ -22,7 +22,7 @@ import {
   TypeOfOptional,
   Property,
   PropertyDomain,
-} from "../Types_MetaModel/types-components";
+} from "../../types-metamodel/types-components";
 
 import { Context } from "../../jsx/context";
 
@@ -377,7 +377,6 @@ describe("Test FM2Type transformations", () => {
   it("tests export output model to JSX", async () => {    
 
     const resJSX = store.exportToJSX(typeModel);
-    console.log(resJSX);
     expect(resJSX).toBeDefined();
   });
 

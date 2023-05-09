@@ -1,6 +1,6 @@
 /** @jsx hm */
 
-import { hm } from "../../jsx/handle";
+import { hm } from "../jsx/handle";
 
 import { TypeModel } from "./types-components";
 import { TypeBoolean, TypeNumber, TypeString } from "./predefined-types";

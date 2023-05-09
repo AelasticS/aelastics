@@ -86,7 +86,7 @@ export function defaultConnectionInfo(propName?: string): ConnectionInfo {
 
 export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public children: Element<any>[] = [];
-  public isAbstract: boolean = false;
+  public isAbstract: boolean = false; // used to resolve SpecOption decorator
   public subElement?: Element<any>;
   public readonly connectionInfo?: ConnectionInfo;
   public props: P;
@@ -318,23 +318,11 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
           throw new Error(
             `Not allowed text "${childElement}" in content of element "${this.name}"`
           );
+      } else if (Array.isArray(childElement)) {
+        childElement.forEach((el) => renderChild(el));
       } else {
         // process proper children element
-        const child = childElement.render(ctx, isImport);
-        if (childElement.connectionInfo) {
-          // connect parent and child if propName exit
-          let propType = mapPropTypes.get(
-            childElement.connectionInfo.propName!
-          );
-          if (propType)
-            cnParentChild(
-              childElement.connectionInfo.propName,
-              t.findTypeCategory(propType),
-              parent.instance,
-              child,
-              childElement.connectionInfo.isReconnectAllowed
-            );
-        }
+        renderChild(childElement);
       }
     });
     if (parent.type.isOfType(g.Model)) {
@@ -345,6 +333,22 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       ctx.popStore();
     }
     return parent.instance as P;
+
+    function renderChild(childElement: Element<any, any>) {
+      const child = childElement.render(ctx, isImport);
+      if (childElement.connectionInfo) {
+        // connect parent and child if propName exit
+        let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
+        if (propType)
+          cnParentChild(
+            childElement.connectionInfo.propName,
+            t.findTypeCategory(propType),
+            parent.instance,
+            child,
+            childElement.connectionInfo.isReconnectAllowed
+          );
+      }
+    }
   }
 }
 
@@ -358,6 +362,12 @@ let cnParentChild = (
   isReconnectAllowed: boolean
 ) => {
   if (prop) {
+    if (obj1 === obj2) {
+      throw new Error(
+        `cnParentChild: connection not allowed between the same objects "${obj1.name}" via property "${prop}"`
+      );
+    }
+
     switch (propType) {
       case "Object":
         if (!isReconnectAllowed && obj1[prop])
@@ -369,7 +379,9 @@ let cnParentChild = (
         break;
       case "Array":
         if (obj1[prop] === undefined) obj1[prop] = new Array();
-        (obj1[prop] as Array<any>).push(obj2);
+
+        if ((obj1[prop] as Array<any>).findIndex((e) => e === obj2) === -1)
+          (obj1[prop] as Array<any>).push(obj2);
         break;
     }
   }

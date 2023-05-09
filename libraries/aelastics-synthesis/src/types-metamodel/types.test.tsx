@@ -1,7 +1,7 @@
 /** @jsx hm */
 
-import { hm } from "../../jsx/handle";
-import { Element } from "../../jsx/element";
+import { hm } from "../jsx/handle";
+import { Element } from "../jsx/element";
 import * as t from "./types-meta.model";
 import {
   TypeObject,
@@ -13,8 +13,8 @@ import {
   TypeOfOptional,
   PropertyDomain,
 } from "./types-components";
-import { Context } from "../../jsx/context";
-import { ModelStore } from '../../index';
+import { Context } from "../jsx/context";
+import { ModelStore } from '../index';
 
 // let a = <Object name="name"></Object>;
 // let b = <Object $ref={a}></Object>; // same as b = a
