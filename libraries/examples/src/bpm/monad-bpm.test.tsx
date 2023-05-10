@@ -20,8 +20,7 @@ export interface IApproval {
 }
 
 export const Approval_X_Par = (props:IApproval) => {
-    let f: () => Element<IProcess> = () => {
-        // create approval tasks names 
+          // create approval tasks names 
         let tasks = Array.from({length: props.x}, (_, i) => i + 1)
         return (
             <Process name='Approval'>
@@ -38,8 +37,6 @@ export const Approval_X_Par = (props:IApproval) => {
                     }
                 </Sequence>
             </Process>)
-    }
-    return f
 }
 
 const m1 = ModelM.of<string>()
