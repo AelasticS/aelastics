@@ -18,7 +18,7 @@ export class Go4Monad {
         this.genericMonad.apply(makeMonadic(initialCD))
     }
     get():IClassDiagram {
-        return this.genericMonad.get()
+        return this.genericMonad.get() as IClassDiagram
     }
 
     singleton(params:p.ISingletonParams) {
