@@ -4,13 +4,9 @@
  */
 /** @jsx hm */
 import {  hm } from '../jsx/handle'
-import { IModel } from "generic-metamodel"
-import { ModelStore } from "../model-store/ModelsStore"
 import { EERSchema, IEERSchema, Kernel } from "../test/eer-model/EER.meta.model.type"
 import { ModelMonad, MonadicFunction, ModelM, makeMonadic } from "./model-monad"
 import * as e from '../test/eer-model/EER-components'
-import { Element } from '../jsx/element'
-import { IAttribute } from '../feature-model/fm-metamodel/fm-meta.model.type'
 
 describe("Test model monad", () => { 
     let model:ModelM<IEERSchema>
