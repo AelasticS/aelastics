@@ -8,7 +8,7 @@ export const ClassDiagram = t.subtype(Model, {
 
 export const Classifier = t.subtype(ModelElement, {
 
-}, "ClassDiagram", UMLSchema);
+}, "Classifier", UMLSchema);
 
 export const Property = t.subtype(ModelElement, {
     type: Classifier,
