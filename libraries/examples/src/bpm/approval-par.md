@@ -2,7 +2,7 @@
 
 ```mermaid
 stateDiagram-v2
-direction TB
+direction LR
     state "Write" as WRITE
     state "Approve 1" as APPROVE1
     state "Approve 2" as APPROVE2
