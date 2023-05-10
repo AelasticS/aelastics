@@ -42,6 +42,10 @@ export class ModelMonad<T extends IModel> {
   apply(f: MonadicFunction<T>): ModelMonad<T> {
     return f(this.model);
   }
+  
+  get() {
+    return this.model.context.currentModel
+  }
 }
 
 /*
