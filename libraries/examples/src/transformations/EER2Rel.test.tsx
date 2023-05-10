@@ -3,10 +3,6 @@
  * Copyright (c) AelasticS 2022.
  */
 
-// const EER = getEER({} as IModel, null)
-
-
-
 import {  hm } from 'aelastics-synthesis'
 import { SpecPoint, SpecOption} from "aelastics-synthesis"
 import * as et from '../eer-model/EER.meta.model.type'
@@ -41,7 +37,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
     @SpecPoint()
     @E2E({
-        input: et.Entity,
+        input: et.Entity, 
         output: rt.Table
     })
     Entity2Table(e: et.IEntity): Element<rt.ITable> {
