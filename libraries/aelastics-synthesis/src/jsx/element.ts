@@ -178,6 +178,11 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       this.subElement.props = { ...this.props, ...this.subElement.props };
       // create subelement
       const sub = this.subElement.create(ctx, forImport);
+
+      // TODO:Enable to specify whether children from specOption are added to the end or begining of specPoint children
+
+      // TODO: Consider overring of specPoint
+
       // take children from spec
       this.children.push(...this.subElement.children);
       return sub;
