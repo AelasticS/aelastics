@@ -22,14 +22,54 @@ export class Types2TextModelTransformations extends abstractM2M<
   tmm.ITypeModel,
   m2tmm.M2T_Model
 > {
-  private mappedTypes: Set<string>;
-
   constructor(store: ModelStore) {
     super(store);
-    this.mappedTypes = new Set<string>();
+  }
+
+  sortTypes(m: tmm.ITypeModel): Array<tmm.IType> {
+    let sortedTypes: Array<tmm.IType> = [] as Array<tmm.IType>;
+
+    // create array with type dependencies
+    let types = m.types.map((e) => {
+      if (this.context.store.isTypeOf(e, tmm.Subtype)) {
+        return { type: e, dependecy: (e as tmm.ISubtype).superType };
+      }
+
+      return { type: e, dependecy: null };
+    });
+
+    let typeTransformed = true;
+
+    while (types.length > 0 && typeTransformed) {
+      typeTransformed = false;
+
+      types.forEach((e, i) => {
+        if (
+          e.dependecy &&
+          types.find((element) => {
+            let a = element.type.name == e.dependecy?.name;
+            return a;
+          })
+        ) {
+          return;
+        }
+
+        types.splice(i, 1);
+        sortedTypes.push(e.type);
+        typeTransformed = true;
+      });
+    }
+
+    if (types.length > 0) {
+      throw new Error("There are a circular dependencies!");
+    }
+
+    return sortedTypes;
   }
 
   template(m: tmm.ITypeModel) {
+    let types = this.sortTypes(m);
+
     return (
       <M2T name={m.name + "_textModel"}>
         <Doc name={m.name + "_textModel.ts"}>
@@ -40,28 +80,32 @@ export class Types2TextModelTransformations extends abstractM2M<
         </Doc>
         {this.initialImpors(m)}
         {this.transformToModel(m)}
-        {m.types.map((e) => this.transformType(e as tmm.IType))}
+        {types.map((e) => this.transformType(e as tmm.IType))}
       </M2T>
     );
   }
 
-  initialImpors(m: tmm.ITypeModel) {
-    return (
-      <Sec $refByName="imports">
-        <P>import * as t from "aelastics-types";</P>
-        <P>{`import { Model, ModelElement } from "generic-metamodel";`}</P>
-      </Sec>
-    );
+  initialImpors(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> {
+    return [
+      <P parentSection={<Sec $refByName="imports"></Sec>}>
+        import * as t from "aelastics-types";
+      </P>,
+      <P parentSection={<Sec $refByName="imports"></Sec>}>
+        {`import { Model, ModelElement } from "generic-metamodel";`}
+      </P>,
+    ];
   }
 
-  transformToModel(m: tmm.ITypeModel) {
-    return (
-      <Sec $refByName="typeDefinition">
-        <P>{`export const ${m.name}_Schema = t.schema("${m.name}_Schema");`}</P>
-        <P>{`export const ${m.name}_Model = t.subtype(Model, {}, "${m.name}_Model", ${m.name}_Schema);`}</P>
-        <P></P>
-      </Sec>
-    );
+  transformToModel(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> | null {
+    return [
+      <P parentSection={<Sec $refByName="typeDefinition"></Sec>}>
+        {`export const ${m.name}_Schema = t.schema("${m.name}_Schema");`}
+      </P>,
+      <P parentSection={<Sec $refByName="typeDefinition"></Sec>}>
+        {`export const ${m.name}_Model = t.subtype(Model, {}, "${m.name}_Model", ${m.name}_Schema);`}
+      </P>,
+      <P parentSection={<Sec $refByName="typeDefinition"></Sec>}></P>,
+    ];
   }
 
   @E2E({
@@ -70,20 +114,21 @@ export class Types2TextModelTransformations extends abstractM2M<
   })
   transformType(
     t: tmm.IType
-  ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] {
-    if (this.mappedTypes.has(t.id)) {
-      return <Sec></Sec>;
+  ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
+    if (this.context.resolve(t)) {
+      return null;
     }
 
     if (this.context.store.isTypeOf(t, tmm.SimpleType)) {
-      return <Sec></Sec>;
-    }
+      // TODO How to map simple types
+      this.context.makeTrace(t, null);
 
-    this.mappedTypes.add(t.id);
+      return null;
+    }
 
     const typeOfElement = this.context.store.getTypeOf(t);
 
-    let typeDefinitionSection: Element<m2tmm.ISection> =
+    let typeDefinitionSection: Element<m2tmm.ISection> | null =
       {} as Element<m2tmm.ISection>;
     switch (typeOfElement.name) {
       case tmm.Object.name:
@@ -101,22 +146,18 @@ export class Types2TextModelTransformations extends abstractM2M<
         break;
     }
 
-    return (
-      // <Doc $refByName={t.parentModel.name + "_textModel.ts"}>
-      [
-        typeDefinitionSection,
-        <P parentSection={<Sec $refByName="typeExports"></Sec>}>
-          {`export type I${t.name} = t.TypeOf<typeof ${t.name}>;`}
-        </P>,
-      ]
-      // </Doc>
-    );
+    return [
+      typeDefinitionSection,
+      <P parentSection={<Sec $refByName="typeExports"></Sec>}>
+        {`export type I${t.name} = t.TypeOf<typeof ${t.name}>;`}
+      </P>,
+    ];
   }
 
   @SpecPoint()
   @E2E({
     input: tmm.Object,
-    output: m2tmm.M2T_Item,
+    output: m2tmm.Section,
   })
   transformObject(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
@@ -137,11 +178,7 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @SpecOption("transformObject", tmm.Object)
-  @E2E({
-    input: tmm.Object,
-    output: m2tmm.M2T_Item,
-  })
-  public transformObj(t: tmm.IObject): Element<m2tmm.IM2T_Item> {
+  public transformObj(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
       <Sec>
         <Sec $refByName={t.name + "_type_export_sec"}>
@@ -152,19 +189,9 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @SpecOption("transformObject", tmm.Subtype)
-  @E2E({
-    input: tmm.Object,
-    output: m2tmm.M2T_Item,
-  })
-  transformSubtype(t: tmm.ISubtype): Element<m2tmm.IM2T_Item> {
-    let superType = null;
-    if (!this.mappedTypes.has(t.superType.id)) {
-      superType = this.transformType(t.superType);
-    }
-
+  transformSubtype(t: tmm.ISubtype): Element<m2tmm.ISection> {
     return (
-      <Sec>
-        {superType}
+      <Sec name={t.name + "_type_sec"}>
         <Sec $refByName={t.name + "_type_export_sec"}>
           <P>{`export const ${t.name} = t.subtype(${t.superType.name},`}</P>
         </Sec>
@@ -192,16 +219,12 @@ export class Types2TextModelTransformations extends abstractM2M<
     output: m2tmm.M2T_Item,
   })
   transformProperty(t: tmm.IProperty): Element<m2tmm.IParagraph> {
-    // let domainType = null;
-    // if (!this.mappedTypes.has(t.domain.id)) {
-    //   domainType = this.transformType(t.domain);
-    // }
+    const domain = this.context.store.isTypeOf(t.domain, tmm.SimpleType)
+      ? `t.${t.domain?.name}`
+      : this.context.resolve(t.domain)
+      ? t.domain?.name
+      : `t.link(${t.parentModel.name}_Schema, '${t.domain?.name}')`;
 
-    return (
-      <Sec>
-        {/* {domainType} */}
-        <P>{`${t.name}_prop: ${t.domain?.name},`}</P>
-      </Sec>
-    );
+    return <P>{`${t.name}_prop: ${domain},`}</P>;
   }
 }

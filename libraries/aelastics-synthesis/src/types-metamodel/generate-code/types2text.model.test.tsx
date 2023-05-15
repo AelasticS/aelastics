@@ -78,8 +78,17 @@ describe("test types2text transormations", () => {
 
     const typeModel: Element<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel2" store={store}>
-        <TypeObject name="Person2"></TypeObject>
-        <TypeObject name="Company2"></TypeObject>
+        <TypeObject name="StringObject"></TypeObject>
+        <TypeObject name="Person2">
+          <Property name="firstName">
+            <PropertyDomain $refByName="StringObject" />
+          </Property>
+        </TypeObject>
+        <TypeObject name="Company2">
+          <Property name="name">
+            <PropertyDomain $refByName="StringObject" />
+          </Property>
+        </TypeObject>
       </TypeModel>
     );
 
@@ -98,12 +107,16 @@ describe("test types2text transormations", () => {
     ctx.pushStore(store);
 
     const typeModel: Element<t.ITypeModel> = (
-      <TypeModel name="FirstTypeModel3" store={store}>
-        <TypeSubtype name="Worker3"></TypeSubtype>
-        <TypeObject name="Person3"></TypeObject>
-        <TypeObject name="Company3"></TypeObject>
-        <TypeSubtype $refByName="Worker3">
-          <TypeSupertype $refByName="Person3"></TypeSupertype>
+      <TypeModel name="FirstTypeModel" store={store}>
+        <TypeSubtype name="Worker"></TypeSubtype>
+        <TypeObject name="Person">
+          <Property name="name">
+            <PropertyDomain $refByName="Worker"></PropertyDomain>
+          </Property>
+        </TypeObject>
+        <TypeObject name="Company"></TypeObject>
+        <TypeSubtype $refByName="Worker">
+          <TypeSupertype $refByName="Person"></TypeSupertype>
         </TypeSubtype>
       </TypeModel>
     );
@@ -164,5 +177,61 @@ describe("test types2text transormations", () => {
     expect(textModel).toBeDefined();
 
     await generateText(store, textModel, 4);
+  });
+
+  it("detect circular dependencies", async () => {
+    const store = new ModelStore();
+    const ctx = new Context();
+    ctx.pushStore(store);
+
+    const typeModel: Element<t.ITypeModel> = (
+      <TypeModel name="FirstTypeModel" store={store}>
+        {importPredefinedTypes("../FirstTypeModel")}
+        <TypeSubtype name="Worker">
+          <Property name="fullName2">
+            <PropertyDomain $refByName="string" />
+          </Property>
+          <Property name="workInCompany" />
+        </TypeSubtype>
+        <TypeSubtype name="Driver">
+          <Property name="fullName">
+            <PropertyDomain $refByName="string" />
+          </Property>
+        </TypeSubtype>
+        <TypeObject name="Person">
+          <Property name="firstName">
+            <PropertyDomain $refByName="string" />
+          </Property>
+          <Property name="address">
+            <PropertyDomain $refByName="string" />
+          </Property>
+          <Property name="age">
+            <PropertyDomain $refByName="number" />
+          </Property>
+        </TypeObject>
+        <TypeSubtype $refByName="Driver">
+          <TypeSupertype $refByName="Worker"></TypeSupertype>
+        </TypeSubtype>
+        <TypeSubtype $refByName="Worker">
+          <TypeSupertype $refByName="Driver"></TypeSupertype>
+        </TypeSubtype>
+        <TypeObject name="Company"></TypeObject>
+        <Property $refByName="workInCompany">
+          <PropertyDomain $refByName="Company"></PropertyDomain>
+        </Property>
+        <TypeSubtype $refByName="Worker">
+          <Property name="placeOfBirth">
+            <PropertyDomain $refByName="string" />
+          </Property>
+        </TypeSubtype>
+      </TypeModel>
+    );
+
+    const textModel = () =>
+      new Types2TextModelTransformations(store).transform(
+        typeModel.render(ctx)
+      );
+
+    expect(textModel).toThrow();
   });
 });
