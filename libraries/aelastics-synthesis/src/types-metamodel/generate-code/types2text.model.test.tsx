@@ -12,6 +12,8 @@ import {
   TypeOptional,
   TypeOfOptional,
   PropertyDomain,
+  TypeArray,
+  ArrayElementType,
 } from "./../types-components";
 import { Context } from "../../jsx/context";
 import { ModelStore } from "../../index";
@@ -233,5 +235,87 @@ describe("test types2text transormations", () => {
       );
 
     expect(textModel).toThrow();
+  });
+
+  it("should create optional", async () => {
+    const store = new ModelStore();
+    const ctx = new Context();
+    ctx.pushStore(store);
+
+    const typeModel: Element<t.ITypeModel> = (
+      <TypeModel name="FirstTypeModel" store={store}>
+        <TypeSubtype name="Worker"></TypeSubtype>
+        <TypeObject name="Person">
+          <Property name="name">
+            <PropertyDomain $refByName="Worker"></PropertyDomain>
+          </Property>
+        </TypeObject>
+        <TypeObject name="Company"></TypeObject>
+        <TypeOptional name="OptionalCompany">
+          <TypeOfOptional $refByName="Company" />
+        </TypeOptional>
+        <TypeOptional name="OptionalOptionalCompany">
+          <TypeOfOptional $refByName="OptionalCompany" />
+        </TypeOptional>
+        <TypeSubtype $refByName="Worker">
+          <Property name="employeedIn">
+            <PropertyDomain $refByName="OptionalOptionalCompany"></PropertyDomain>
+          </Property>
+          <TypeSupertype $refByName="Person"></TypeSupertype>
+        </TypeSubtype>
+      </TypeModel>
+    );
+
+    const textModel = new Types2TextModelTransformations(store).transform(
+      typeModel.render(ctx)
+    );
+
+    expect(textModel).toBeDefined();
+
+    await generateText(store, textModel, 5);
+  });
+
+  it("should create array", async () => {
+    const store = new ModelStore();
+    const ctx = new Context();
+    ctx.pushStore(store);
+
+    const typeModel: Element<t.ITypeModel> = (
+      <TypeModel name="FirstTypeModel" store={store}>
+        <TypeObject name="Company"></TypeObject>
+        <TypeSubtype name="Worker"></TypeSubtype>
+        <TypeObject name="Person">
+          <Property name="name">
+            <PropertyDomain $refByName="Worker"></PropertyDomain>
+          </Property>
+        </TypeObject>
+        <TypeOptional name="OptionalCompany">
+          <TypeOfOptional $refByName="Company" />
+        </TypeOptional>
+
+        <TypeArray name="ArrayOfOptionalCompanies">
+          <ArrayElementType $refByName="OptionalCompany"></ArrayElementType>
+        </TypeArray>
+
+        <TypeOptional name="OptionalArrayOfOptionalCompanies">
+          <TypeOfOptional $refByName="ArrayOfOptionalCompanies"></TypeOfOptional>
+        </TypeOptional>
+
+        <TypeSubtype $refByName="Worker">
+          <Property name="employeedIn">
+            <PropertyDomain $refByName="OptionalArrayOfOptionalCompanies"></PropertyDomain>
+          </Property>
+          <TypeSupertype $refByName="Person"></TypeSupertype>
+        </TypeSubtype>
+      </TypeModel>
+    );
+
+    const textModel = new Types2TextModelTransformations(store).transform(
+      typeModel.render(ctx)
+    );
+
+    expect(textModel).toBeDefined();
+
+    await generateText(store, textModel, 6);
   });
 });

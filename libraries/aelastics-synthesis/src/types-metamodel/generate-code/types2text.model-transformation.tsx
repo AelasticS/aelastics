@@ -135,15 +135,9 @@ export class Types2TextModelTransformations extends abstractM2M<
       case tmm.Subtype.name:
         typeDefinitionSection = this.transformObject(t as tmm.IObject);
         break;
-      case tmm.Array.name:
-        // TODO add transformArray
-        break;
-      case tmm.Optional.name:
-        // TODO add transformOptional
-        break;
-      case tmm.Union.name:
-        // TODO Add transformUnion
-        break;
+      default:
+        // other types are not entites
+        return null;
     }
 
     return [
@@ -199,32 +193,55 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
-  // @SpecOption("transformType", tmm.Array)
-  // transformArray(t: tmm.IArray): Element<m2tmm.IM2T_Item> {
-  //   return <Sec $refByName="typeDefinition"></Sec>;
-  // }
+  @E2E({
+    input: tmm.Object,
+    output: m2tmm.M2T_Item,
+  })
+  transformProperty(p: tmm.IProperty): Element<m2tmm.IParagraph> {
+    const domainText: string = this.context.store.isTypeOf(
+      p.domain,
+      tmm.SimpleType
+    )
+      ? `t.${p.domain?.name}`
+      : this.handleComplexType(p.domain);
 
-  // @SpecOption("transformType", tmm.Optional)
-  // transformOptional(t: tmm.IOptional): Element<m2tmm.IM2T_Item> {
-  //   return <Sec $refByName="typeDefinition"></Sec>;
-  // }
+    return <P>{`${p.name}_prop: ${domainText},`}</P>;
+  }
+
+  handleComplexType(t: tmm.IType): string {
+    const typeOfElement = this.context.store.getTypeOf(t);
+
+    switch (typeOfElement.name) {
+      case tmm.Optional.name:
+        return this.returnTypeForOptionalType(t as tmm.IOptional);
+      case tmm.Array.name:
+        return this.returnTypeForArrayType(t as tmm.IArray);
+      case tmm.Union.name:
+        // TODO Add transformUnion
+        return ``;
+      default:
+        if (!this.context.resolve(t)) {
+          return `t.link(${t.parentModel.name}_Schema, '${t.name}')`;
+        }
+
+        return `${t.name}`;
+    }
+  }
+
+  returnTypeForOptionalType(t: tmm.IOptional): string {
+    let type = this.handleComplexType(t.optionalType);
+
+    return `t.optional(${type})`;
+  }
+
+  returnTypeForArrayType(t: tmm.IArray): string {
+    let type = this.handleComplexType(t.elementType);
+
+    return `t.arrayOf(${type})`;
+  }
 
   // @SpecOption("transformType", tmm.Union)
   // transformUnion(t: tmm.IUnion): Element<m2tmm.IM2T_Item> {
   //   return <Sec $refByName="typeDefinition"></Sec>;
   // }
-
-  @E2E({
-    input: tmm.Object,
-    output: m2tmm.M2T_Item,
-  })
-  transformProperty(t: tmm.IProperty): Element<m2tmm.IParagraph> {
-    const domain = this.context.store.isTypeOf(t.domain, tmm.SimpleType)
-      ? `t.${t.domain?.name}`
-      : this.context.resolve(t.domain)
-      ? t.domain?.name
-      : `t.link(${t.parentModel.name}_Schema, '${t.domain?.name}')`;
-
-    return <P>{`${t.name}_prop: ${domain},`}</P>;
-  }
 }
