@@ -20,10 +20,6 @@ import { ModelStore } from 'aelastics-synthesis'
 })
 class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
-    constructor(store:ModelStore) {
-        super(store)
-    }
-
     template(source:et.IEERSchema){
             return (
                 <r.RelSchema name={`${source.name} Relational Schema`} content="" MDA_level="M1">
@@ -36,10 +32,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
         }
 
     @SpecPoint()
-    @E2E({
-        input: et.Entity, 
-        output: rt.Table
-    })
+    @E2E({input: et.Entity,  output: rt.Table})
     Entity2Table(e: et.IEntity): Element<rt.ITable> {
         return (
             <r.Table name={e.name}>
@@ -65,7 +58,6 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
             </r.Table>
         );
     }
-
 
     @E2E({
         input: et.Attribute,

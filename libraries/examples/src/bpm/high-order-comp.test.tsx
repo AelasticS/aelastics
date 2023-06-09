@@ -42,9 +42,11 @@ export const DynamicApproval = ({processName, howManyApprovers } :IApprovalConfi
     <Process name={processName}>
       <Sequence>
         <Task name="write proposal" />
-        { // create approval tasks
+        <Parallel>
+        { // create parallel approval tasks
           new Array(howManyApprovers).map((_, i) => <Task name={`approval ${i}`} />)
         }
+        </Parallel>
       </Sequence>
     </Process>
   );
@@ -53,11 +55,11 @@ export const DynamicApproval = ({processName, howManyApprovers } :IApprovalConfi
 const myDynamicApproval:IProcess = <DynamicApproval processName="My Approval" howManyApprovers={3}/>
 
 
-export const MoreDynamicApproval = ({isParallel, howManyApprovers } :IApprovalConfiguration) => {
+export const MoreDynamicApproval = ({processName, isParallel, howManyApprovers } :IApprovalConfiguration) => {
   // create approval tasks
   const tasks = new Array(howManyApprovers).map((_, i) => <Task name={`approval ${i}`}/>);
   return (
-    <Process name="Approval">
+    <Process name={processName}>
       <Sequence>
         <Task name="write" />
         {isParallel ? <Parallel> {tasks} </Parallel>
@@ -68,8 +70,7 @@ export const MoreDynamicApproval = ({isParallel, howManyApprovers } :IApprovalCo
   );
 };
 
-const myMoreDynamicApproval:IProcess = 
-    <MoreDynamicApproval processName="My Approval" howManyApprovers={3}/>
+const myModel:IProcess = <MoreDynamicApproval processName="Approval" isParallel={false} howManyApprovers={3}/>
 
 
 
@@ -97,8 +98,7 @@ const GroupWork = () =>
 
 const GenericGroupWorkApproval = GenericApproval(GroupWork)
 
-const myGroupWorkApproval =  
-    <GenericGroupWorkApproval 
+const myGroupWorkApproval = <GenericGroupWorkApproval 
             processName="myGroupWorkApproval"
             howManyApprovers={2}
             isParallel={true}
@@ -110,7 +110,6 @@ type IOrgUnit = {
     boss:string
     parent?:IOrgUnit
 }
-
 
 const MyOrgApproval = (org: IOrgUnit) => {
   return <DynamicApproval processName={org.name} howManyApprovers={countLevels(org)}/>

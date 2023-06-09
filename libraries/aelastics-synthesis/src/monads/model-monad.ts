@@ -30,21 +30,22 @@ export const makeMonadic = <M extends IModel, E extends IModelElement>(
 };
 
 export class ModelMonad<T extends IModel> {
-  private constructor(readonly model: ModelM<T>) {}
+  private constructor(readonly model: ModelM<T>) { }
 
   static of<T extends IModel>(mm: ModelM<T>): ModelMonad<T> {
     return new ModelMonad<T>(mm);
   }
 
-  equal(mm: ModelMonad<T>) {
-    return this.model === mm.model;
-  }
   apply(f: MonadicFunction<T>): ModelMonad<T> {
     return f(this.model);
   }
-  
+
   get() {
     return this.model.context.currentModel
+  }
+
+  equal(mm: ModelMonad<T>) {
+    return this.model === mm.model;
   }
 }
 

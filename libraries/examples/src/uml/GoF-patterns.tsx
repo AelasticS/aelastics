@@ -14,12 +14,19 @@ export interface IObserverParams {
 }
 
 export const Observer = (p:IObserverParams) =>  (
-
-  <uml.Class $refByName={p.observer}>
-    <uml.Property
-      type={<uml.Class $refByName={p.subject} />}
+  <uml.Class $refByName={p.subject}>
+    <uml.Property name= {p.observer}
+      type={<uml.Class $refByName={p.observer} />}
       multiplicity="0..*"
     />
+    {
+      p.concreteSubjects.map((s) =>
+        <uml.Class name={s}>
+            <uml.SuperClass $refByName={p.subject} />
+        </uml.Class>)
+    }
+    // ...
+
   </uml.Class> as Element<umlT.IClass>
 );
 
@@ -58,17 +65,14 @@ export const AbstractFactory = (p:IAbstractFactoryParams) =>  (
 );
 
 export interface ISingletonParams {
-  observer: string,
-  subject: string,
-  concreteObservers: string[],
-  concreteSubjects: string[]
+  name: string,
 }
 
 export const Singleton = (p:ISingletonParams) =>  (
 
-  <uml.Class $refByName={p.observer}>
+  <uml.Class $refByName={p.name}>
     <uml.Property
-      type={<uml.Class $refByName={p.subject} />}
+      type={<uml.Class $refByName={p.name} />}
       multiplicity="0..*"
     />
   </uml.Class> as Element<umlT.IClass>

@@ -17,12 +17,17 @@ describe("Test model monad", () => {
         f = makeMonadic(<e.Attribute name="PersonName"/>)
     })
     test ("left identity law", ()=>{ 
+                                    
         let leftIdentity = () => ModelMonad.of(model).apply(f) === f(model)
+        
         expect(leftIdentity).toThrowError("Duplicate name")
     })
     test ("right identity law", ()=>{
         let m = ModelMonad.of(model)
-        expect(m.apply((m) => ModelMonad.of(m)).equal(m))
+
+        let rightIdentity = m.apply((m) => ModelMonad.of(m)).equal(m)
+
+        expect(rightIdentity)
     })
     test ("associative law", ()=>{  // it shouldn’t matter how f and g are nested
         let f = makeMonadic(<e.Attribute name="Name"/>)

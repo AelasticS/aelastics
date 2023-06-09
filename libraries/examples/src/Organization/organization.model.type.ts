@@ -12,7 +12,7 @@ export const Employee = t.entity({
     id:ID,
     name: Name,
     age: t.optional(Age),
-    sex: t.string, // t.unionOf([t.literal('male'), t.literal("female")],"sexType"),
+    sex: t.string, 
     birthPlace:  t.object({name: t.string, state: t.string}),
     children: t.arrayOf(Child)
 }, ["id"], 'Employee', OrgSchema);

@@ -17,6 +17,14 @@ export class Go4Monad {
         this.genericMonad = ModelMonad.of(m)
         this.genericMonad.apply(makeMonadic(initialCD))
     }
+
+    observer(params:p.IObserverParams) {
+        let f = makeMonadic(p.Observer(params))
+        this.genericMonad.apply(f)
+        return this
+    }
+    // ...
+    
     get():IClassDiagram {
         return this.genericMonad.get() as IClassDiagram
     }
@@ -27,11 +35,7 @@ export class Go4Monad {
         return this
     }
 
-    observer(params:p.IObserverParams) {
-        let f = makeMonadic(p.Observer(params))
-        this.genericMonad.apply(f)
-        return this
-    }
+
 
     abstractFactory (params:p.IAbstractFactoryParams) {
         let f = makeMonadic(p.AbstractFactory(params))
