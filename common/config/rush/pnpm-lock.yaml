@@ -123,6 +123,7 @@ importers:
       aelastics-result: workspace:*
       aelastics-types: workspace:*
       eslint: ~7.15.0
+      immer: ~10.0.2
       mobx: ^5.15.6
       tslib: ^1.10.0
       typescript: ^4.8.3
@@ -130,6 +131,7 @@ importers:
     dependencies:
       aelastics-result: link:../aelastics-result
       aelastics-types: link:../aelastics-types
+      immer: 10.0.2
       mobx: 5.15.7
       uuid: 9.0.0
     devDependencies:
@@ -206,7 +208,6 @@ importers:
       '@types/node': 18.11.9
       aelastics-result: workspace:*
       aelastics-store: workspace:*
-      aelastics-synthesis: workspace:*
       aelastics-types: workspace:*
       eslint: ~7.15.0
       generic-metamodel: workspace:*
@@ -215,7 +216,6 @@ importers:
     dependencies:
       aelastics-result: link:../aelastics-result
       aelastics-store: link:../aelastics-store
-      aelastics-synthesis: link:../aelastics-synthesis
       aelastics-types: link:../aelastics-types
       generic-metamodel: link:../generic-metamodel
     devDependencies:
@@ -4328,6 +4328,10 @@ packages:
   /ignore/5.2.0:
     resolution: {integrity: sha512-CmxgYGiEPCLhfLnpPp1MoRmifwEIOgjcHXxOBjv7mY96c+eWScsOP9c112ZyLdWHi0FxHjI+4uVhKYp/gcdRmQ==}
     engines: {node: '>= 4'}
+
+  /immer/10.0.2:
+    resolution: {integrity: sha512-Rx3CqeqQ19sxUtYV9CU911Vhy8/721wRFnJv3REVGWUmoAcIwzifTsdmJte/MV+0/XpM35LZdQMBGkRIoLPwQA==}
+    dev: false
 
   /import-fresh/3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
