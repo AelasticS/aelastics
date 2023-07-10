@@ -1,12 +1,12 @@
 import {ObjectLiteral} from "aelastics-types"
-import {immerable} from "immer"
+// import {immerable} from "immer"
 
 export function createClass(): { new (): ObjectLiteral } {
     const keys = ["name", "age"];
   
     function ConstrFun(this: ObjectLiteral) {
       // make it compatible with immer
-      Object.assign(this, { [immerable]: true });
+   //   Object.assign(this, { [immerable]: true });
   
       // init props
       for (const key of keys) {

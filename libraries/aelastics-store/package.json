@@ -30,7 +30,6 @@
     "aelastics-result": "workspace:*",
     "aelastics-types":"workspace:*",
     "mobx": "^5.15.6",
-    "uuid": "~9.0.0",
-    "immer": "~10.0.2"
+    "uuid": "~9.0.0"
   }
 }
