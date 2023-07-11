@@ -5,7 +5,7 @@
  */
 
 import { EventLog } from "./EventLog";
-import { prefixValue } from "../store/CommonConstants";
+import { prefixValue } from "../common/CommonConstants";
 
 import {
   IArrayChange,
@@ -14,7 +14,7 @@ import {
   IObjectDidChange,
 } from "mobx";
 import { Any } from "aelastics-types";
-import { objectSync } from "../store/CommonConstants";
+import { objectSync } from "../common/CommonConstants";
 
 export const getObjectListener = (
   eventLog: EventLog,

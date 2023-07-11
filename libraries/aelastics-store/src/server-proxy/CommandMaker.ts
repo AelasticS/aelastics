@@ -3,7 +3,7 @@ import * as EventLog from "../eventLog/EventLog";
 import {
   objectType as OBJECT_TYPE_PROPERTY,
   objectUUID,
-} from "../store/CommonConstants";
+} from "../common/CommonConstants";
 import { findTypeCategory } from "aelastics-types";
 
 /*

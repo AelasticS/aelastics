@@ -9,7 +9,7 @@ import { computed, extendObservable, IObservableArray, observe } from 'mobx';
 import * as types from 'aelastics-types';
 import { StatusValue } from './Status';
 import { ITransformer, Node, WhatToDo } from 'aelastics-types';
-import { prefixValue, objectStatus, objectSync } from './CommonConstants';
+import { prefixValue, objectStatus, objectSync, getUnderlyingType } from '../common/CommonConstants';
 
 export class HandleProps implements ITransformer {
   private xf: ITransformer;
@@ -36,19 +36,7 @@ export class HandleProps implements ITransformer {
   }
 }
 
-export function getUnderlyingType(type: t.Any | undefined): t.Any {
-  if (type === undefined) {
-    return undefined as any;
-  }
-  if (type.typeCategory === 'Link') {
-    return getUnderlyingType((type as types.LinkType).resolveType()!);
-  }
-  // handle optional types
-  if (type.typeCategory === 'Optional') {
-    return getUnderlyingType((type as types.OptionalType<any>).base);
-  }
-  return type;
-}
+
 
 function handleProps(input: types.ObjectLiteral, type: t.Any): types.ObjectLiteral {
   let objectType: types.ObjectType<any, any> = type as any; //ObjectTypeC<{}, any> = type as any

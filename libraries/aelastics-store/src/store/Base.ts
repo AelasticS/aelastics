@@ -2,7 +2,7 @@ import { Repository, ServerProxy } from "..";
 import { EventLog } from "../eventLog/EventLog";
 import * as t from "aelastics-types";
 import { ObjectLiteral, TypeSchema } from "aelastics-types";
-import { IStoreObject, objectType } from "./CommonConstants";
+import { IStoreObject, objectType } from "../common/CommonConstants";
 
 export abstract class Base<ID> {
   protected server?: ServerProxy;

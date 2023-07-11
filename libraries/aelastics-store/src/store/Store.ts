@@ -8,7 +8,7 @@ import { Repository } from "./Repository";
 import { EventLog } from "../eventLog/EventLog";
 import { ServerProxy } from "../server-proxy/ServerProxy";
 import { InstanceReference, ObjectLiteral } from "aelastics-types";
-import { IStoreObject, objectType, objectUUID } from "./CommonConstants";
+import { IStoreObject, objectType, objectUUID } from "../common/CommonConstants";
 
 /**
  * Store - application state consisting of several instances (IStoreObject)

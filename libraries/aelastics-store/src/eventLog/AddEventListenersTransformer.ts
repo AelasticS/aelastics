@@ -4,7 +4,7 @@
 
 import { ITransformer, WhatToDo, Node, ObjectType } from 'aelastics-types';
 import { Lambda, observable, observe } from 'mobx';
-import { prefixValue } from "../store/CommonConstants";
+import { prefixValue } from "../common/CommonConstants";
 import { EventLog } from './EventLog';
 import { getArrayListener, getMapListener, getObjectListener } from './Listeners';
 
