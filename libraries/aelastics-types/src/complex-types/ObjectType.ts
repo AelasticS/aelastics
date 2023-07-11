@@ -87,6 +87,11 @@ export class ObjectType<P extends InterfaceDecl, I extends readonly string[]> ex
     return this._identifier;
   }
 
+  // if has identifiers then it is an entity
+  get isEntity():boolean {
+    return this.identifier.length > 0
+  }
+  
   // get all properties from class hierarchy - overridden properties are not included!
   get allProperties(): Map<string, Any> {
     let mp = new Map<string, Any>();

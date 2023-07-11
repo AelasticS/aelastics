@@ -14,7 +14,8 @@ import {
 import { AddEventListeners } from "../eventLog/AddEventListenersTransformer";
 import { ObjectObservable } from "../eventLog/ObservableTransformer";
 import { v4 as uuidv4 } from "uuid";
-// import { IStoreObject, getUnderlyingType } from "./CommonConstants";
+import { IStoreObject, getUnderlyingType } from "../common/CommonConstants";
+import { ServiceError } from "aelastics-result";
 
 let counter: number = 100;
 
@@ -22,12 +23,28 @@ export let uuidv4Generator = () => {
   return uuidv4();
 };
 
-/*
-export class Repository<T extends t.Any, ID = string> {
+export class ImmutableRepository<T extends t.Any, ID = string> {
+  readonly props; 
+  readonly allInverse;
+  constructor (readonly baseType: t.AnyObjectType) {
+    this.props = this.baseType.allProperties
+    this.allInverse = baseType.allInverse;
+
+  }
 
   // static create(baseType: t.Any, init?: Partial<t.TypeOf<typeof baseType>>): { [key: string]: any };
-  deepCreate<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>):IStoreObject<ID, P> {
+  deepCreate<P extends ObjectLiteral>(init?: Partial<P>):IStoreObject<ID, P> {
     // // t.TypeOf<typeof baseType> {
+for(let [propName, prop] of this.props) {
+    // todo: find base type, skip optional and link types
+    let currentPropType: t.Any = getUnderlyingType(prop);
+    if (currentPropType === undefined)
+      throw new ServiceError(
+        'ReferenceError',
+        `Error in function handleInverseProps: Property ${propName} in object type ${prop.name} has no correctly defined type`
+      );
+    let inverse = this.allInverse.get(propName);
+}
 
     // let tr = transducer()
     //   .recurse("makeItem")
@@ -48,6 +65,7 @@ export class Repository<T extends t.Any, ID = string> {
     let obj = {}
     return obj as IStoreObject<ID, P>;
   }
+/*
 
   create<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>): IStoreObject<ID, P> {
     let tr = transducer()
@@ -116,5 +134,6 @@ export class Repository<T extends t.Any, ID = string> {
     });
     this.eventLog?.lastAction.objectDeleted(obj);
   }
-}
 */
+
+}
