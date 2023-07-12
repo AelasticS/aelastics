@@ -83,7 +83,7 @@ export class ObjectType<P extends InterfaceDecl, I extends readonly string[]> ex
       }
     });
   }
-  get identifier(): I {
+  get identifier(): readonly string[] {
     return this._identifier;
   }
 
