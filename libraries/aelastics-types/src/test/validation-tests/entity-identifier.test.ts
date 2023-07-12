@@ -53,6 +53,28 @@ describe('Test cases for object identifier', () => {
       )
     }).toBeDefined()
   })
+  test('if property isEntity return true for an entity', () => {
+    const ent:t.AnyObjectType = t.entity(
+      {
+        name: t.string,
+        age: t.number
+      },
+
+      ['name'] as const,
+    )
+    expect( ent.isEntity).toBeTruthy()
+  }
+)
+test('if property isEntity return false for an object', () => {
+  const ent:t.AnyObjectType = t.object(
+    {
+      name: t.string,
+      age: t.number
+    }
+  )
+  expect( ent.isEntity).toBeFalsy()
+}
+)
 
   it('should be valid reference', () => {
     const refPerson = t.entityRef(person, 'personRef')
