@@ -19,6 +19,7 @@ describe('createObservableMap', () => {
         map.delete('one');
 
         expect(map.get('one')).toBeUndefined();
+        expect(map.size).toBe(0);
         expect(mockDeleteHandler).toHaveBeenCalledWith(expect.any(Map), 'one');
     });
 
