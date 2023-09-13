@@ -41,6 +41,23 @@ describe('Testing One-to-One relationship', () => {
       expect(boss.company).toBeUndefined();
       expect(company.boss).toBeUndefined();
     });
+    test('complex reconnecting', ()=> {
+        const boss2 = {} as any;
+        const company2 = {} as any;
+    
+        defineOneToOne(boss2, 'company', 'boss');
+        defineOneToOne(company2, 'boss', 'company');
+        boss.company = company
+        boss2.company = company2
+
+        boss.company = company2
+
+        expect(company.boss).toBeUndefined();
+        expect(company2.boss).toBe(boss);
+        expect(boss2.company).toBeUndefined;
+        
+    }
+    )
   });
   
   // Jest test cases for One-to-Many and Many-to-One relationships
