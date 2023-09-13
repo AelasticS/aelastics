@@ -227,8 +227,10 @@ export function defineManyToMany(target: any, propName: string, inversePropName:
       target: this,
       propName: propName,
       inversePropName: inversePropName,
-      newValue: item,  // Include the item being removed as newValue
-      oldValue: this,
+      // newValue: item,  // Include the item being removed as newValue
+      // oldValue: this,
+      oldValue: item,
+      newValue: undefined,
       oldInverseValue: this
     });
 

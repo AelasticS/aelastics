@@ -1,4 +1,4 @@
-import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
+import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany, defineManyToMany } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
 
 class Boss {
   name: string;
@@ -137,3 +137,70 @@ describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
     expect(worker1._company).toBeUndefined();
   });
 });
+
+
+
+describe('ManyToMany Relationship: Student and Course', () => {
+  let student1: any;
+  let student2: any;
+  let course1: any;
+  let course2: any;
+
+  beforeEach(() => {
+    student1 = { name: 'Alice' };
+    student2 = { name: 'Bob' };
+    course1 = { name: 'Math' };
+    course2 = { name: 'Science' };
+
+    defineManyToMany(student1, 'courses', 'students');
+    defineManyToMany(student2, 'courses', 'students');
+    defineManyToMany(course1, 'students', 'courses');
+    defineManyToMany(course2, 'students', 'courses');
+  });
+
+  test('Adding a course to a student', () => {
+    student1.addCourses(course1);
+    expect(student1._courses).toContain(course1);
+    expect(course1._students).toContain(student1);
+  });
+
+  test('Removing a course from a student', () => {
+    student1.addCourses(course1);
+    student1.removeCourses(course1);
+    expect(student1._courses).not.toContain(course1);
+    expect(course1._students).not.toContain(student1);
+  });
+
+  test('Undoing add operation', () => {
+    student1.addCourses(course1);
+    undo();
+    expect(student1._courses).not.toContain(course1);
+    expect(course1._students).not.toContain(student1);
+  });
+
+  test('Undoing remove operation', () => {
+    student1.addCourses(course1);
+    student1.removeCourses(course1);
+    undo();
+    expect(student1._courses).toContain(course1);
+    expect(course1._students).toContain(student1);
+  });
+
+  test('Redoing add operation', () => {
+    student1.addCourses(course1);
+    undo();
+    redo();
+    expect(student1._courses).toContain(course1);
+    expect(course1._students).toContain(student1);
+  });
+
+  test('Redoing remove operation', () => {
+    student1.addCourses(course1);
+    student1.removeCourses(course1);
+    undo();
+    redo();
+    expect(student1._courses).not.toContain(course1);
+    expect(course1._students).not.toContain(student1);
+  });
+});
+
