@@ -1,4 +1,4 @@
-import { defineOneToOne, undo, redo } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
+import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
 
 class Boss {
   name: string;
@@ -72,5 +72,68 @@ describe('Undo and Redo functionality', () => {
     redo();
     expect(boss2.company).toBe(company2);
     expect(company2.boss).toBe(boss2);
+  });
+});
+
+
+
+describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
+  let company: any;
+  let worker1: any;
+  let worker2: any;
+
+  beforeEach(() => {
+    company = {};
+    worker1 = {};
+    worker2 = {};
+
+    defineOneToMany(company, 'workers', 'company');
+    defineManyToOne(worker1, 'company', 'workers');
+    defineManyToOne(worker2, 'company', 'workers');
+  });
+
+  test('Adding a worker to a company', () => {
+    company.addWorkers(worker1);
+    expect(company._workers).toContain(worker1);
+    expect(worker1._company).toBe(company);
+  });
+
+  test('Removing a worker from a company', () => {
+    company.addWorkers(worker1);
+    company.removeWorkers(worker1);
+    expect(company._workers).not.toContain(worker1);
+    expect(worker1._company).toBeUndefined();
+  });
+
+  test('Undoing add operation', () => {
+    company.addWorkers(worker1);
+    undo();
+    expect(company._workers).not.toContain(worker1);
+    expect(worker1._company).toBeUndefined();
+  });
+
+  test('Undoing remove operation', () => {
+    company.addWorkers(worker1);
+    company.removeWorkers(worker1);
+    undo();
+    expect(company._workers).toContain(worker1);
+    expect(worker1._company).toBe(company);
+  });
+
+  test('Redoing add operation', () => {
+    company.addWorkers(worker1);
+    undo();
+    redo();
+    expect(company._workers).toContain(worker1);
+    expect(worker1._company).toBe(company);
+  });
+
+  test('Redoing remove operation', () => {
+    company.addWorkers(worker1);
+    company.removeWorkers(worker1);
+    undo();
+    redo();
+    expect(company._workers).not.toContain(worker1);
+    expect(worker1._company).toBeUndefined();
   });
 });
