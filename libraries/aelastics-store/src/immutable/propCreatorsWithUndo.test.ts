@@ -241,6 +241,8 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
     defineOneToMany(company, 'workers', 'company', targetObjType, inverseObjType,context);
     defineSimpleValue(worker1, 'name', targetObjType, context);
     defineSimpleValue(worker2, 'name', targetObjType, context);
+    defineOneToMany(worker1, 'company', 'workers', targetObjType, inverseObjType,context);
+    defineOneToMany(worker2, 'company', 'workers', targetObjType, inverseObjType,context);
     
     company.name = 'TechCorp';
     company.addWorkers(worker1);
