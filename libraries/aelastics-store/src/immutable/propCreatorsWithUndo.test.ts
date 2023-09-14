@@ -1,4 +1,4 @@
-import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany, defineManyToMany } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
+import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany, defineManyToMany, defineSimpleValue } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
 
 class Boss {
   name: string;
@@ -204,3 +204,133 @@ describe('ManyToMany Relationship: Student and Course', () => {
   });
 });
 
+
+describe('Simple value changes combined with Undo and Redo Operations', () => {
+  test('Simple value changes combined with one-to-one relationship', () => {
+    const person = {}  as any;
+    const car = {}  as any;
+    defineSimpleValue(person, 'name');
+    defineOneToOne(person, 'car', 'owner');
+    defineOneToOne(car, 'owner', 'car');
+
+    person.name = 'John';
+    person.car = car;
+    car.owner = person;
+
+    undo();
+    expect(person.car).toBeUndefined();
+    expect(car.owner).toBeUndefined();
+
+    undo();
+    expect(person.name).toBeUndefined();
+
+    redo();
+    expect(person.name).toBe('John');
+
+    redo();
+    expect(person.car).toBe(car);
+    expect(car.owner).toBe(person);
+  });
+  test('Simple value changes combined with one-to-many relationship', () => {
+    const company = {} as any;
+    const worker1 = {} as any;
+    const worker2 = {} as any;
+    defineSimpleValue(company, 'name');
+    defineOneToMany(company, 'workers', 'company');
+    defineSimpleValue(worker1, 'name');
+    defineSimpleValue(worker2, 'name');
+    
+    company.name = 'TechCorp';
+    company.addWorkers(worker1);
+    company.addWorkers(worker2);
+    worker1.name = 'Alice';
+    worker2.name = 'Bob';
+    
+    undo();
+    expect(worker2.name).toBeUndefined();
+    
+    undo();
+    expect(worker1.name).toBeUndefined();
+    
+    undo();
+    expect(company.workers.length).toEqual(1);
+    
+    undo();
+    expect(company.workers.length).toEqual(0);
+
+    undo();
+    expect(company.name).toBeUndefined();
+    
+    redo();
+    expect(company.name).toBe('TechCorp');
+    
+    redo();
+    expect(company.workers).toEqual([worker1]);
+    
+    redo();
+    expect(company.workers.length).toEqual(2);
+
+    redo();
+    expect(worker1.name).toBe('Alice');
+    
+    redo();
+    expect(worker2.name).toBe('Bob');
+  });
+  
+  
+  test('Simple value changes combined with many-to-many relationship', () => {
+    const student1 = {} as any;
+    const student2 = {} as any;
+    const course1 = {} as any;
+    const course2 = {} as any;
+    defineSimpleValue(student1, 'name');
+    defineSimpleValue(student2, 'name');
+    defineManyToMany(student1, 'courses', 'students');
+    defineManyToMany(student2, 'courses', 'students');
+    defineManyToMany(course1, 'students', 'courses');
+    defineManyToMany(course2, 'students', 'courses');
+
+    course1.name ='Math'
+    course2.name = 'Science'
+    student1.name = 'Emily';
+    student2.name = 'David';
+    student1.addCourses(course1);
+    student2.addCourses(course2);
+    course1.addStudents(student1); // should be ignored as student1 is already connected
+    course1.addStudents(student2);
+    course2.addStudents(student2); // should be ignored as student2 is already connected
+
+    undo(); // connecting c1 and s2 
+    expect(course2.students.length).toEqual(1);
+    expect(student2.courses).toEqual([course2]);
+
+    undo(); // connecting s2 and c2
+    expect(course2.students.length).toEqual(0);
+    expect(student2.courses.length).toEqual(0);
+    expect(course1.students.length).toEqual(1);
+
+    undo();// connecting s1 and c1
+    expect(student1.courses.length).toEqual(0);
+    expect(course1.students.length).toEqual(0);
+
+
+    undo()
+    expect(student2.name).toBeUndefined();
+
+    undo();
+    expect(student1.name).toBeUndefined();
+
+    redo();
+    expect(student1.name).toBe('Emily');
+
+    redo();
+    expect(student2.name).toBe('David');
+
+    redo();
+    expect(student1.courses).toEqual([course1]);
+
+    redo();
+    expect(course2.students).toEqual([student2]);
+  });
+  
+});

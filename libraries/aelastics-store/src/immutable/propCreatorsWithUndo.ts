@@ -2,10 +2,10 @@ type Operation = {
   operationType: 'add' | 'remove' | 'set',
   target: any,
   propName: string,
-  inversePropName: string,
+  inversePropName?: string,
   oldValue: any,
   newValue: any,
-  oldInverseValue: any
+  oldInverseValue?: any
 };
 
 
@@ -29,7 +29,7 @@ export function undo() {
   } else {
     lastOperation.target[lastOperation.propName] = lastOperation.oldValue;
     // Restore the oldInverseValue on the newValue object
-    if (lastOperation.newValue) {
+    if (lastOperation.inversePropName && lastOperation.newValue) {
       lastOperation.newValue[`_${lastOperation.inversePropName}`] = lastOperation.oldInverseValue;
     }
   }
@@ -47,6 +47,9 @@ export function redo() {
   const lastOperation = redoStack.pop()!;
   operationStack.push(lastOperation);
 
+  // Capture the current length of the operationStack
+  const initialStackLength = operationStack.length;
+
   if (lastOperation.operationType === 'add') {
     lastOperation.target[`add${lastOperation.propName.charAt(0).toUpperCase() + lastOperation.propName.slice(1)}`](lastOperation.newValue);
   } else if (lastOperation.operationType === 'remove') {
@@ -54,8 +57,41 @@ export function redo() {
   } else {
     lastOperation.target[lastOperation.propName] = lastOperation.newValue;
   }
+
+  // Remove any additional operations that were pushed onto the stack due to synchronization
+  while (operationStack.length > initialStackLength) {
+    operationStack.pop();
+  }
+
 }
 
+// Define simple value property
+export function defineSimpleValue(target: any, propName: string) {
+  const privatePropName = `_${propName}`;
+  target[privatePropName] = undefined;
+
+  Object.defineProperty(target, propName, {
+    get() {
+      return this[privatePropName];
+    },
+    set(value: any) {
+      if (this[privatePropName] === value) return;
+
+      const operation: Operation = {
+        operationType: 'set',
+        target: this,
+        propName: propName,
+        oldValue: this[privatePropName],
+        newValue: value,
+      };
+
+      operationStack.push(operation);
+      // redoStack.length = 0;
+
+      this[privatePropName] = value;
+    },
+  });
+}
 export function defineOneToOne(target: any, propName: string, inversePropName: string) {
   const privatePropName = `_${propName}`;
 
@@ -183,7 +219,7 @@ export function defineManyToOne(target: any, propName: string, inversePropName: 
 }
 
 
- 
+
 export function defineManyToMany(target: any, propName: string, inversePropName: string) {
   const privatePropName = `_${propName}`;
   target[privatePropName] = [];
@@ -194,7 +230,7 @@ export function defineManyToMany(target: any, propName: string, inversePropName:
     }
   });
 
-  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function(item: any) {
+  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
     if (this[privatePropName].includes(item)) return;
 
     // Push the operation to the operationStack
@@ -217,7 +253,7 @@ export function defineManyToMany(target: any, propName: string, inversePropName:
     }
   };
 
-  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function(item: any) {
+  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
     const index = this[privatePropName].indexOf(item);
     if (index === -1) return;
 
