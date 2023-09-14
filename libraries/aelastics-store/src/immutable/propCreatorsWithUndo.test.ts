@@ -1,4 +1,8 @@
 import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany, defineManyToMany, defineSimpleValue, OperationContext } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
+import { AnyObjectType } from 'aelastics-types';
+
+const targetObjType = {} as AnyObjectType
+const inverseObjType = {} as AnyObjectType
 
 describe('Undo and Redo functionality', () => {
 
@@ -15,11 +19,11 @@ describe('Undo and Redo functionality', () => {
     company2=  {}  as any;
     context = new OperationContext()
   
-    defineOneToOne(boss1, 'company', 'boss', context);
-    defineOneToOne(boss2, 'company', 'boss', context);
+    defineOneToOne(boss1, 'company', 'boss', targetObjType, inverseObjType, context);
+    defineOneToOne(boss2, 'company', 'boss', targetObjType, inverseObjType,context);
   
-    defineOneToOne(company1, 'boss', 'company', context);
-    defineOneToOne(company2, 'boss', 'company', context);
+    defineOneToOne(company1, 'boss', 'company', targetObjType, inverseObjType,context);
+    defineOneToOne(company2, 'boss', 'company', targetObjType, inverseObjType,context);
 
   });
 
@@ -81,9 +85,9 @@ describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
     worker2 = {};
     context = new OperationContext()
 
-    defineOneToMany(company, 'workers', 'company', context);
-    defineManyToOne(worker1, 'company', 'workers', context);
-    defineManyToOne(worker2, 'company', 'workers', context);
+    defineOneToMany(company, 'workers', 'company', targetObjType, inverseObjType,context);
+    defineManyToOne(worker1, 'company', 'workers', targetObjType, inverseObjType,context);
+    defineManyToOne(worker2, 'company', 'workers', targetObjType, inverseObjType,context);
 
 
   });
@@ -147,10 +151,10 @@ describe('ManyToMany Relationship: Student and Course', () => {
     student2 = { name: 'Bob' };
     course1 = { name: 'Math' };
     course2 = { name: 'Science' };
-    defineManyToMany(student1, 'courses', 'students', context);
-    defineManyToMany(student2, 'courses', 'students', context);
-    defineManyToMany(course1, 'students', 'courses', context);
-    defineManyToMany(course2, 'students', 'courses', context);
+    defineManyToMany(student1, 'courses', 'students', targetObjType, inverseObjType,context);
+    defineManyToMany(student2, 'courses', 'students', targetObjType, inverseObjType,context);
+    defineManyToMany(course1, 'students', 'courses', targetObjType, inverseObjType,context);
+    defineManyToMany(course2, 'students', 'courses', targetObjType, inverseObjType,context);
 
   });
 
@@ -207,9 +211,9 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
   test('Simple value changes combined with one-to-one relationship', () => {
     const person = {}  as any;
     const car = {}  as any;
-    defineSimpleValue(person, 'name', context);
-    defineOneToOne(person, 'car', 'owner', context);
-    defineOneToOne(car, 'owner', 'car', context);
+    defineSimpleValue(person, 'name', targetObjType, context);
+    defineOneToOne(person, 'car', 'owner', targetObjType, inverseObjType,context);
+    defineOneToOne(car, 'owner', 'car', targetObjType, inverseObjType,context);
 
     person.name = 'John';
     person.car = car;
@@ -233,10 +237,10 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
     const company = {} as any;
     const worker1 = {} as any;
     const worker2 = {} as any;
-    defineSimpleValue(company, 'name', context);
-    defineOneToMany(company, 'workers', 'company', context);
-    defineSimpleValue(worker1, 'name', context);
-    defineSimpleValue(worker2, 'name', context);
+    defineSimpleValue(company, 'name', targetObjType, context);
+    defineOneToMany(company, 'workers', 'company', targetObjType, inverseObjType,context);
+    defineSimpleValue(worker1, 'name', targetObjType, context);
+    defineSimpleValue(worker2, 'name', targetObjType, context);
     
     company.name = 'TechCorp';
     company.addWorkers(worker1);
@@ -281,12 +285,12 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
     const student2 = {} as any;
     const course1 = {} as any;
     const course2 = {} as any;
-    defineSimpleValue(student1, 'name', context);
-    defineSimpleValue(student2, 'name', context);
-    defineManyToMany(student1, 'courses', 'students', context);
-    defineManyToMany(student2, 'courses', 'students', context);
-    defineManyToMany(course1, 'students', 'courses', context);
-    defineManyToMany(course2, 'students', 'courses', context);
+    defineSimpleValue(student1, 'name', targetObjType, context);
+    defineSimpleValue(student2, 'name', targetObjType, context);
+    defineManyToMany(student1, 'courses', 'students', targetObjType, inverseObjType,context);
+    defineManyToMany(student2, 'courses', 'students', targetObjType, inverseObjType,context);
+    defineManyToMany(course1, 'students', 'courses', targetObjType, inverseObjType,context);
+    defineManyToMany(course2, 'students', 'courses', targetObjType, inverseObjType,context);
 
     course1.name ='Math'
     course2.name = 'Science'

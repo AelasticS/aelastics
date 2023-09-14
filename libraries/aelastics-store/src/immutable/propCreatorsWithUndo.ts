@@ -1,3 +1,5 @@
+import { AnyObjectType } from "aelastics-types";
+
 type Operation = {
   operationType: "add" | "remove" | "set";
   target: any;
@@ -6,11 +8,21 @@ type Operation = {
   oldValue: any;
   newValue: any;
   oldInverseValue?: any;
+  targetType: AnyObjectType;
+  inverseType?: AnyObjectType;
 };
+
+export class ObjectNotFoundError extends Error {
+  constructor(public id: string, public targetType: AnyObjectType, message: string) {
+    super(message);
+    this.name = 'ObjectNotFoundError';
+  }
+}
 
 export class OperationContext {
   operationStack: Operation[] = [];
   redoStack: Operation[] = [];
+  idMap: Map<string, any> = new Map()
 };
 
 // const operationStack: Operation[] = [];
@@ -29,16 +41,14 @@ export function undo(context: OperationContext) {
   // Perform the undo operation based on the operation type
   if (lastOperation.operationType === "add") {
     lastOperation.target[
-      `remove${
-        lastOperation.propName.charAt(0).toUpperCase() +
-        lastOperation.propName.slice(1)
+      `remove${lastOperation.propName.charAt(0).toUpperCase() +
+      lastOperation.propName.slice(1)
       }`
     ](lastOperation.newValue);
   } else if (lastOperation.operationType === "remove") {
     lastOperation.target[
-      `add${
-        lastOperation.propName.charAt(0).toUpperCase() +
-        lastOperation.propName.slice(1)
+      `add${lastOperation.propName.charAt(0).toUpperCase() +
+      lastOperation.propName.slice(1)
       }`
     ](lastOperation.oldValue);
   } else {
@@ -68,16 +78,14 @@ export function redo(context: OperationContext) {
 
   if (lastOperation.operationType === "add") {
     lastOperation.target[
-      `add${
-        lastOperation.propName.charAt(0).toUpperCase() +
-        lastOperation.propName.slice(1)
+      `add${lastOperation.propName.charAt(0).toUpperCase() +
+      lastOperation.propName.slice(1)
       }`
     ](lastOperation.newValue);
   } else if (lastOperation.operationType === "remove") {
     lastOperation.target[
-      `remove${
-        lastOperation.propName.charAt(0).toUpperCase() +
-        lastOperation.propName.slice(1)
+      `remove${lastOperation.propName.charAt(0).toUpperCase() +
+      lastOperation.propName.slice(1)
       }`
     ](lastOperation.oldValue);
   } else {
@@ -94,6 +102,7 @@ export function redo(context: OperationContext) {
 export function defineSimpleValue(
   target: any,
   propName: string,
+  targetType: AnyObjectType,
   context: OperationContext
 ) {
   const { operationStack, redoStack } = context;
@@ -113,6 +122,7 @@ export function defineSimpleValue(
         propName: propName,
         oldValue: this[privatePropName],
         newValue: value,
+        targetType: targetType
       };
 
       operationStack.push(operation);
@@ -122,33 +132,50 @@ export function defineSimpleValue(
     },
   });
 }
+
+
 export function defineOneToOne(
   target: any,
   propName: string,
   inversePropName: string,
-  context: OperationContext
+  targetType: AnyObjectType,
+  inverseType: AnyObjectType,
+  context: OperationContext,
+  isPropID: boolean = false,
+  isInversePropID: boolean = false
 ) {
   const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
 
   Object.defineProperty(target, propName, {
     get() {
-      return this[privatePropName];
+      if (isPropID) {
+        const id = this[privatePropName];
+        const obj = context.idMap.get(id);
+        if (!obj) {
+          throw new ObjectNotFoundError(id, targetType, `Object with ID ${id} not found in idMap for target type ${targetType}.`);
+        }
+        return obj;
+      } else {
+        return this[privatePropName];
+      }
     },
     set(newValue: any) {
-      const oldValue = this[privatePropName];
+      const oldValue = this[propName]; // Always an object reference due to the getter
       if (oldValue === newValue) return;
 
-      // Push the operation to the operationStack
-      operationStack.push({
-        operationType: "set",
+      // Update the operation stack
+      const operation: Operation = {
+        operationType: 'set',
         target: this,
         propName: propName,
-        inversePropName: inversePropName,
         oldValue: oldValue,
         newValue: newValue,
-        oldInverseValue: newValue ? newValue[`_${inversePropName}`] : undefined,
-      });
+        inversePropName: inversePropName,
+        targetType: targetType,
+        inverseType: inverseType,
+      };
+      context.operationStack.push(operation);
 
       // Disconnect the old value if it exists
       if (oldValue) {
@@ -157,10 +184,11 @@ export function defineOneToOne(
 
       // Connect the new value if it exists
       if (newValue) {
-        newValue[`_${inversePropName}`] = this;
+        newValue[`_${inversePropName}`] = isInversePropID ? this.id : this;
       }
 
-      this[privatePropName] = newValue;
+      // Update the property
+      this[privatePropName] = isPropID ? newValue.id : newValue;
     },
   });
 }
@@ -169,7 +197,11 @@ export function defineOneToMany(
   target: any,
   propName: string,
   inversePropName: string,
-  context: OperationContext
+  targetType: AnyObjectType,
+  inverseType: AnyObjectType,
+  context: OperationContext,
+  isPropID: boolean = false,
+  isInversePropID: boolean = false
 ) {
   const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
@@ -183,41 +215,57 @@ export function defineOneToMany(
 
   target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
     function (item: any) {
-      if (!this[privatePropName].includes(item)) {
-        this[privatePropName].push(item);
 
-        operationStack.push({
-          operationType: "add",
-          target: this,
-          propName: propName,
-          inversePropName: inversePropName,
-          oldValue: undefined,
-          newValue: item,
-          oldInverseValue: item[`_${inversePropName}`],
-        });
+      const id = isPropID ? item.id : item;
+      if (this[privatePropName].includes(id)) return;
 
+      this[privatePropName].push(id);
+
+      // Update the operation stack
+      const operation: Operation = {
+        operationType: 'add',
+        target: this,
+        propName: propName,
+        oldValue: null,
+        newValue: item,
+        inversePropName: inversePropName,
+        targetType: targetType,
+        inverseType: inverseType,
+      };
+      context.operationStack.push(operation);
+
+      // Add this object to the new item's property
+      if (isInversePropID) {
+        item[`_${inversePropName}`] = this.id;
+      } else {
         item[`_${inversePropName}`] = this;
       }
+
     };
 
   target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
     function (item: any) {
-      const index = this[privatePropName].indexOf(item);
-      if (index > -1) {
-        this[privatePropName].splice(index, 1);
 
-        operationStack.push({
-          operationType: "remove",
-          target: this,
-          propName: propName,
-          inversePropName: inversePropName,
-          oldValue: item,
-          newValue: undefined,
-          oldInverseValue: item[`_${inversePropName}`],
-        });
+      const id = isPropID ? item.id : item;
+      const index = this[privatePropName].indexOf(id);
+      if (index === -1) return; // already connected
 
-        item[`_${inversePropName}`] = undefined;
-      }
+      // Update the operation stack
+      const operation: Operation = {
+        operationType: 'remove',
+        target: this,
+        propName: propName,
+        oldValue: item,
+        newValue: null,
+        inversePropName: inversePropName,
+        targetType: targetType,
+        inverseType: inverseType,
+      };
+      context.operationStack.push(operation);
+
+      this[privatePropName].splice(index, 1);
+      item[`_${inversePropName}`] = undefined;
+
     };
 }
 
@@ -225,44 +273,65 @@ export function defineManyToOne(
   target: any,
   propName: string,
   inversePropName: string,
-  context: OperationContext
+  targetType: AnyObjectType,
+  inverseType: AnyObjectType,
+  context: OperationContext,
+  isPropID: boolean = false,
+  isInversePropID: boolean = false
 ) {
   const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
 
   Object.defineProperty(target, propName, {
     get() {
-      return this[privatePropName];
+      if (isPropID) {
+        const obj = context.idMap.get(this[privatePropName]);
+        if (!obj) {
+          throw new ObjectNotFoundError(this[privatePropName], targetType, `Object with ID ${this[privatePropName]} not found in idMap for target type ${targetType}.`);
+        }
+        return obj;
+      } else {
+        return this[privatePropName];
+      }
     },
-    set(newValue: any) {
+    set(value: any) {
+      const newValue = isPropID ? value.id : value;
       const oldValue = this[privatePropName];
-      if (oldValue === newValue) return;
+      if (newValue === oldValue) return;
 
-      // Push the operation to the operationStack
-      operationStack.push({
-        operationType: "set",
+      // Update the operation stack
+      const operation: Operation = {
+        operationType: 'set',
         target: this,
         propName: propName,
-        inversePropName: inversePropName,
         oldValue: oldValue,
         newValue: newValue,
-        oldInverseValue: newValue ? newValue[`_${inversePropName}`] : undefined,
-      });
+        targetType: targetType,
+        inverseType: inverseType,
+      };
+      context.operationStack.push(operation);
 
-      // Disconnect the old value if it exists
+      // Disconnect the old parent
       if (oldValue) {
-        const index = oldValue[`_${inversePropName}`].indexOf(this);
-        if (index > -1) {
-          oldValue[`_${inversePropName}`].splice(index, 1);
+        const oldParent = isInversePropID ? context.idMap.get(oldValue) : oldValue;
+        if (oldParent) {
+          const index = oldParent[`_${inversePropName}`].indexOf(isInversePropID ? this.id : this);
+          if (index !== -1) {
+            oldParent[`_${inversePropName}`].splice(index, 1);
+          }
         }
       }
 
-      // Connect the new value if it exists
+      // Connect the new parent
+      this[privatePropName] = newValue;
       if (newValue) {
-        newValue[`_${inversePropName}`].push(this);
+        const newParent = isInversePropID ? context.idMap.get(newValue) : newValue;
+        if (!newParent) {
+          throw new ObjectNotFoundError(newValue, inverseType, `Object with ID ${newValue} not found in idMap for inverse type ${inverseType}.`);
+        }
+        newParent[`_${inversePropName}`].push(isInversePropID ? this.id : this);
       }
 
-      this[privatePropName] = newValue;
     },
   });
 }
@@ -271,7 +340,11 @@ export function defineManyToMany(
   target: any,
   propName: string,
   inversePropName: string,
-  context: OperationContext
+  targetType: AnyObjectType,
+  inverseType: AnyObjectType,
+  context: OperationContext,
+  isPropID: boolean = false,
+  isInversePropID: boolean = false
 ) {
   const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
@@ -285,53 +358,76 @@ export function defineManyToMany(
 
   target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
     function (item: any) {
-      if (this[privatePropName].includes(item)) return;
+      const itemId = isPropID ? item.id : item;
+      if (this[privatePropName].includes(itemId)) return;
 
-      // Push the operation to the operationStack
-      operationStack.push({
-        operationType: "add",
+      // Update the operation stack
+      const operation: Operation = {
+        operationType: 'add',
         target: this,
         propName: propName,
         inversePropName: inversePropName,
-        newValue: item,
-        oldValue: this,
-        oldInverseValue: this,
-      });
+        newValue: itemId,
+        targetType: targetType,
+        inverseType: inverseType,
+        oldValue: undefined,
+        oldInverseValue: undefined,
+      };
+      context.operationStack.push(operation);
 
       // Add the item to the new parent's array
-      this[privatePropName].push(item);
+      this[privatePropName].push(itemId);
 
       // Add this object to the new item's array
       if (!item[`_${inversePropName}`].includes(this)) {
-        item[`_${inversePropName}`].push(this);
+        item[`_${inversePropName}`].push(isInversePropID ? this.id : this);
       }
     };
 
   target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
     function (item: any) {
-      const index = this[privatePropName].indexOf(item);
+      const itemId = isPropID ? item.id : item;
+      const index = this[privatePropName].indexOf(itemId);
       if (index === -1) return;
 
-      // Push the operation to the operationStack
-      operationStack.push({
-        operationType: "remove",
+      // Update the operation stack
+      const operation: Operation = {
+        operationType: 'remove',
         target: this,
         propName: propName,
         inversePropName: inversePropName,
-        // newValue: item,  // Include the item being removed as newValue
-        // oldValue: this,
-        oldValue: item,
+        oldValue: itemId,
+        targetType: targetType,
+        inverseType: inverseType,
         newValue: undefined,
-        oldInverseValue: this,
-      });
+      };
+      context.operationStack.push(operation);
 
       // Remove the item from the current parent's array
       this[privatePropName].splice(index, 1);
 
       // Remove this object from the item's array
-      const inverseIndex = item[`_${inversePropName}`].indexOf(this);
+      const inverseIndex = item[`_${inversePropName}`].indexOf(isInversePropID ? this.id : this);
       if (inverseIndex !== -1) {
         item[`_${inversePropName}`].splice(inverseIndex, 1);
       }
     };
 }
+
+
+/* code for getting array of objects from array of IDs
+get() {
+      if (isPropID) {
+        return this[privatePropName].map((id: string) => {
+          const obj = context.idMap.get(id);
+          if (!obj) {
+            throw new ObjectNotFoundError(id, targetType, `Object with ID ${id} not found in idMap for target type ${targetType}.`);
+          }
+          return obj;
+        });
+      } else {
+        return this[privatePropName];
+      }
+    },
+  });
+*/
