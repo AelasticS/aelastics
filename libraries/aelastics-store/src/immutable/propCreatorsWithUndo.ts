@@ -1,18 +1,23 @@
 type Operation = {
-  operationType: 'add' | 'remove' | 'set',
-  target: any,
-  propName: string,
-  inversePropName?: string,
-  oldValue: any,
-  newValue: any,
-  oldInverseValue?: any
+  operationType: "add" | "remove" | "set";
+  target: any;
+  propName: string;
+  inversePropName?: string;
+  oldValue: any;
+  newValue: any;
+  oldInverseValue?: any;
 };
 
+export class OperationContext {
+  operationStack: Operation[] = [];
+  redoStack: Operation[] = [];
+};
 
-const operationStack: Operation[] = [];
-const redoStack: Operation[] = [];
+// const operationStack: Operation[] = [];
+// const redoStack: Operation[] = [];
 
-export function undo() {
+export function undo(context: OperationContext) {
+  const { operationStack, redoStack } = context;
   if (operationStack.length === 0) return;
 
   const lastOperation = operationStack.pop()!;
@@ -22,15 +27,26 @@ export function undo() {
   const initialStackLength = operationStack.length;
 
   // Perform the undo operation based on the operation type
-  if (lastOperation.operationType === 'add') {
-    lastOperation.target[`remove${lastOperation.propName.charAt(0).toUpperCase() + lastOperation.propName.slice(1)}`](lastOperation.newValue);
-  } else if (lastOperation.operationType === 'remove') {
-    lastOperation.target[`add${lastOperation.propName.charAt(0).toUpperCase() + lastOperation.propName.slice(1)}`](lastOperation.oldValue);
+  if (lastOperation.operationType === "add") {
+    lastOperation.target[
+      `remove${
+        lastOperation.propName.charAt(0).toUpperCase() +
+        lastOperation.propName.slice(1)
+      }`
+    ](lastOperation.newValue);
+  } else if (lastOperation.operationType === "remove") {
+    lastOperation.target[
+      `add${
+        lastOperation.propName.charAt(0).toUpperCase() +
+        lastOperation.propName.slice(1)
+      }`
+    ](lastOperation.oldValue);
   } else {
     lastOperation.target[lastOperation.propName] = lastOperation.oldValue;
     // Restore the oldInverseValue on the newValue object
     if (lastOperation.inversePropName && lastOperation.newValue) {
-      lastOperation.newValue[`_${lastOperation.inversePropName}`] = lastOperation.oldInverseValue;
+      lastOperation.newValue[`_${lastOperation.inversePropName}`] =
+        lastOperation.oldInverseValue;
     }
   }
 
@@ -40,8 +56,8 @@ export function undo() {
   }
 }
 
-
-export function redo() {
+export function redo(context: OperationContext) {
+  const { operationStack, redoStack } = context;
   if (redoStack.length === 0) return;
 
   const lastOperation = redoStack.pop()!;
@@ -50,10 +66,20 @@ export function redo() {
   // Capture the current length of the operationStack
   const initialStackLength = operationStack.length;
 
-  if (lastOperation.operationType === 'add') {
-    lastOperation.target[`add${lastOperation.propName.charAt(0).toUpperCase() + lastOperation.propName.slice(1)}`](lastOperation.newValue);
-  } else if (lastOperation.operationType === 'remove') {
-    lastOperation.target[`remove${lastOperation.propName.charAt(0).toUpperCase() + lastOperation.propName.slice(1)}`](lastOperation.oldValue);
+  if (lastOperation.operationType === "add") {
+    lastOperation.target[
+      `add${
+        lastOperation.propName.charAt(0).toUpperCase() +
+        lastOperation.propName.slice(1)
+      }`
+    ](lastOperation.newValue);
+  } else if (lastOperation.operationType === "remove") {
+    lastOperation.target[
+      `remove${
+        lastOperation.propName.charAt(0).toUpperCase() +
+        lastOperation.propName.slice(1)
+      }`
+    ](lastOperation.oldValue);
   } else {
     lastOperation.target[lastOperation.propName] = lastOperation.newValue;
   }
@@ -62,11 +88,15 @@ export function redo() {
   while (operationStack.length > initialStackLength) {
     operationStack.pop();
   }
-
 }
 
 // Define simple value property
-export function defineSimpleValue(target: any, propName: string) {
+export function defineSimpleValue(
+  target: any,
+  propName: string,
+  context: OperationContext
+) {
+  const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
   target[privatePropName] = undefined;
 
@@ -78,7 +108,7 @@ export function defineSimpleValue(target: any, propName: string) {
       if (this[privatePropName] === value) return;
 
       const operation: Operation = {
-        operationType: 'set',
+        operationType: "set",
         target: this,
         propName: propName,
         oldValue: this[privatePropName],
@@ -92,7 +122,13 @@ export function defineSimpleValue(target: any, propName: string) {
     },
   });
 }
-export function defineOneToOne(target: any, propName: string, inversePropName: string) {
+export function defineOneToOne(
+  target: any,
+  propName: string,
+  inversePropName: string,
+  context: OperationContext
+) {
+  const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
 
   Object.defineProperty(target, propName, {
@@ -105,13 +141,13 @@ export function defineOneToOne(target: any, propName: string, inversePropName: s
 
       // Push the operation to the operationStack
       operationStack.push({
-        operationType: 'set',
+        operationType: "set",
         target: this,
         propName: propName,
         inversePropName: inversePropName,
         oldValue: oldValue,
         newValue: newValue,
-        oldInverseValue: newValue ? newValue[`_${inversePropName}`] : undefined
+        oldInverseValue: newValue ? newValue[`_${inversePropName}`] : undefined,
       });
 
       // Disconnect the old value if it exists
@@ -125,60 +161,73 @@ export function defineOneToOne(target: any, propName: string, inversePropName: s
       }
 
       this[privatePropName] = newValue;
-    }
+    },
   });
 }
 
-
-export function defineOneToMany(target: any, propName: string, inversePropName: string) {
+export function defineOneToMany(
+  target: any,
+  propName: string,
+  inversePropName: string,
+  context: OperationContext
+) {
+  const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
   target[privatePropName] = [];
 
   Object.defineProperty(target, propName, {
     get() {
       return this[privatePropName];
-    }
+    },
   });
 
-  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
-    if (!this[privatePropName].includes(item)) {
-      this[privatePropName].push(item);
+  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
+    function (item: any) {
+      if (!this[privatePropName].includes(item)) {
+        this[privatePropName].push(item);
 
-      operationStack.push({
-        operationType: 'add',
-        target: this,
-        propName: propName,
-        inversePropName: inversePropName,
-        oldValue: undefined,
-        newValue: item,
-        oldInverseValue: item[`_${inversePropName}`]
-      });
+        operationStack.push({
+          operationType: "add",
+          target: this,
+          propName: propName,
+          inversePropName: inversePropName,
+          oldValue: undefined,
+          newValue: item,
+          oldInverseValue: item[`_${inversePropName}`],
+        });
 
-      item[`_${inversePropName}`] = this;
-    }
-  };
+        item[`_${inversePropName}`] = this;
+      }
+    };
 
-  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
-    const index = this[privatePropName].indexOf(item);
-    if (index > -1) {
-      this[privatePropName].splice(index, 1);
+  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
+    function (item: any) {
+      const index = this[privatePropName].indexOf(item);
+      if (index > -1) {
+        this[privatePropName].splice(index, 1);
 
-      operationStack.push({
-        operationType: 'remove',
-        target: this,
-        propName: propName,
-        inversePropName: inversePropName,
-        oldValue: item,
-        newValue: undefined,
-        oldInverseValue: item[`_${inversePropName}`]
-      });
+        operationStack.push({
+          operationType: "remove",
+          target: this,
+          propName: propName,
+          inversePropName: inversePropName,
+          oldValue: item,
+          newValue: undefined,
+          oldInverseValue: item[`_${inversePropName}`],
+        });
 
-      item[`_${inversePropName}`] = undefined;
-    }
-  };
+        item[`_${inversePropName}`] = undefined;
+      }
+    };
 }
 
-export function defineManyToOne(target: any, propName: string, inversePropName: string) {
+export function defineManyToOne(
+  target: any,
+  propName: string,
+  inversePropName: string,
+  context: OperationContext
+) {
+  const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
 
   Object.defineProperty(target, propName, {
@@ -191,13 +240,13 @@ export function defineManyToOne(target: any, propName: string, inversePropName: 
 
       // Push the operation to the operationStack
       operationStack.push({
-        operationType: 'set',
+        operationType: "set",
         target: this,
         propName: propName,
         inversePropName: inversePropName,
         oldValue: oldValue,
         newValue: newValue,
-        oldInverseValue: newValue ? newValue[`_${inversePropName}`] : undefined
+        oldInverseValue: newValue ? newValue[`_${inversePropName}`] : undefined,
       });
 
       // Disconnect the old value if it exists
@@ -214,70 +263,75 @@ export function defineManyToOne(target: any, propName: string, inversePropName: 
       }
 
       this[privatePropName] = newValue;
-    }
+    },
   });
 }
 
-
-
-export function defineManyToMany(target: any, propName: string, inversePropName: string) {
+export function defineManyToMany(
+  target: any,
+  propName: string,
+  inversePropName: string,
+  context: OperationContext
+) {
+  const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
   target[privatePropName] = [];
 
   Object.defineProperty(target, propName, {
     get() {
       return this[privatePropName];
-    }
+    },
   });
 
-  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
-    if (this[privatePropName].includes(item)) return;
+  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
+    function (item: any) {
+      if (this[privatePropName].includes(item)) return;
 
-    // Push the operation to the operationStack
-    operationStack.push({
-      operationType: 'add',
-      target: this,
-      propName: propName,
-      inversePropName: inversePropName,
-      newValue: item,
-      oldValue: this,
-      oldInverseValue: this
-    });
+      // Push the operation to the operationStack
+      operationStack.push({
+        operationType: "add",
+        target: this,
+        propName: propName,
+        inversePropName: inversePropName,
+        newValue: item,
+        oldValue: this,
+        oldInverseValue: this,
+      });
 
-    // Add the item to the new parent's array
-    this[privatePropName].push(item);
+      // Add the item to the new parent's array
+      this[privatePropName].push(item);
 
-    // Add this object to the new item's array
-    if (!item[`_${inversePropName}`].includes(this)) {
-      item[`_${inversePropName}`].push(this);
-    }
-  };
+      // Add this object to the new item's array
+      if (!item[`_${inversePropName}`].includes(this)) {
+        item[`_${inversePropName}`].push(this);
+      }
+    };
 
-  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
-    const index = this[privatePropName].indexOf(item);
-    if (index === -1) return;
+  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
+    function (item: any) {
+      const index = this[privatePropName].indexOf(item);
+      if (index === -1) return;
 
-    // Push the operation to the operationStack
-    operationStack.push({
-      operationType: 'remove',
-      target: this,
-      propName: propName,
-      inversePropName: inversePropName,
-      // newValue: item,  // Include the item being removed as newValue
-      // oldValue: this,
-      oldValue: item,
-      newValue: undefined,
-      oldInverseValue: this
-    });
+      // Push the operation to the operationStack
+      operationStack.push({
+        operationType: "remove",
+        target: this,
+        propName: propName,
+        inversePropName: inversePropName,
+        // newValue: item,  // Include the item being removed as newValue
+        // oldValue: this,
+        oldValue: item,
+        newValue: undefined,
+        oldInverseValue: this,
+      });
 
-    // Remove the item from the current parent's array
-    this[privatePropName].splice(index, 1);
+      // Remove the item from the current parent's array
+      this[privatePropName].splice(index, 1);
 
-    // Remove this object from the item's array
-    const inverseIndex = item[`_${inversePropName}`].indexOf(this);
-    if (inverseIndex !== -1) {
-      item[`_${inversePropName}`].splice(inverseIndex, 1);
-    }
-  };
+      // Remove this object from the item's array
+      const inverseIndex = item[`_${inversePropName}`].indexOf(this);
+      if (inverseIndex !== -1) {
+        item[`_${inversePropName}`].splice(inverseIndex, 1);
+      }
+    };
 }
-

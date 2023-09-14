@@ -1,36 +1,26 @@
-import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany, defineManyToMany, defineSimpleValue } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
-
-class Boss {
-  name: string;
-  company?: Company;
-
-  constructor(name: string) {
-    this.name = name;
-    defineOneToOne(this, 'company', 'boss');
-  }
-}
-
-class Company {
-  name: string;
-  boss?: Boss;
-
-  constructor(name: string) {
-    this.name = name;
-    defineOneToOne(this, 'boss', 'company');
-  }
-}
+import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany, defineManyToMany, defineSimpleValue, OperationContext } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
 
 describe('Undo and Redo functionality', () => {
-  let boss1: Boss;
-  let boss2: Boss;
-  let company1: Company;
-  let company2: Company;
+
+  let boss1 = {} as any;
+  let boss2 = {} as any;
+  let company1 = {}  as any;
+  let company2=  {}  as any;
+  let context = new OperationContext()
 
   beforeEach(() => {
-    boss1 = new Boss('Alice');
-    boss2 = new Boss('Bob');
-    company1 = new Company('TechCorp');
-    company2 = new Company('BizCorp');
+    boss1 = {} as any;
+    boss2 = {} as any;
+    company1 = {}  as any;
+    company2=  {}  as any;
+    context = new OperationContext()
+  
+    defineOneToOne(boss1, 'company', 'boss', context);
+    defineOneToOne(boss2, 'company', 'boss', context);
+  
+    defineOneToOne(company1, 'boss', 'company', context);
+    defineOneToOne(company2, 'boss', 'company', context);
+
   });
 
   test('Undo should revert the last operation', () => {
@@ -38,7 +28,7 @@ describe('Undo and Redo functionality', () => {
     expect(boss1.company).toBe(company1);
     expect(company1.boss).toBe(boss1);
 
-    undo();
+    undo(context);
 
     expect(boss1.company).toBeUndefined();
     expect(company1.boss).toBeUndefined();
@@ -46,8 +36,8 @@ describe('Undo and Redo functionality', () => {
 
   test('Redo should reapply the last undone operation', () => {
     boss1.company = company1;
-    undo();
-    redo();
+    undo(context);
+    redo(context);
 
     expect(boss1.company).toBe(company1);
     expect(company1.boss).toBe(boss1);
@@ -57,19 +47,19 @@ describe('Undo and Redo functionality', () => {
     boss1.company = company1;
     boss2.company = company2;
 
-    undo();
+    undo(context);
     expect(boss2.company).toBeUndefined();
     expect(company2.boss).toBeUndefined();
 
-    undo();
+    undo(context);
     expect(boss1.company).toBeUndefined();
     expect(company1.boss).toBeUndefined();
 
-    redo();
+    redo(context);
     expect(boss1.company).toBe(company1);
     expect(company1.boss).toBe(boss1);
 
-    redo();
+    redo(context);
     expect(boss2.company).toBe(company2);
     expect(company2.boss).toBe(boss2);
   });
@@ -81,15 +71,21 @@ describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
   let company: any;
   let worker1: any;
   let worker2: any;
+  let context:any
+  
+
 
   beforeEach(() => {
     company = {};
     worker1 = {};
     worker2 = {};
+    context = new OperationContext()
 
-    defineOneToMany(company, 'workers', 'company');
-    defineManyToOne(worker1, 'company', 'workers');
-    defineManyToOne(worker2, 'company', 'workers');
+    defineOneToMany(company, 'workers', 'company', context);
+    defineManyToOne(worker1, 'company', 'workers', context);
+    defineManyToOne(worker2, 'company', 'workers', context);
+
+
   });
 
   test('Adding a worker to a company', () => {
@@ -107,7 +103,7 @@ describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
 
   test('Undoing add operation', () => {
     company.addWorkers(worker1);
-    undo();
+    undo(context);
     expect(company._workers).not.toContain(worker1);
     expect(worker1._company).toBeUndefined();
   });
@@ -115,15 +111,15 @@ describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
   test('Undoing remove operation', () => {
     company.addWorkers(worker1);
     company.removeWorkers(worker1);
-    undo();
+    undo(context);
     expect(company._workers).toContain(worker1);
     expect(worker1._company).toBe(company);
   });
 
   test('Redoing add operation', () => {
     company.addWorkers(worker1);
-    undo();
-    redo();
+    undo(context);
+    redo(context);
     expect(company._workers).toContain(worker1);
     expect(worker1._company).toBe(company);
   });
@@ -131,31 +127,31 @@ describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
   test('Redoing remove operation', () => {
     company.addWorkers(worker1);
     company.removeWorkers(worker1);
-    undo();
-    redo();
+    undo(context);
+    redo(context);
     expect(company._workers).not.toContain(worker1);
     expect(worker1._company).toBeUndefined();
   });
 });
-
-
 
 describe('ManyToMany Relationship: Student and Course', () => {
   let student1: any;
   let student2: any;
   let course1: any;
   let course2: any;
-
+  let context = new OperationContext()
+  
   beforeEach(() => {
+    context = new OperationContext()
     student1 = { name: 'Alice' };
     student2 = { name: 'Bob' };
     course1 = { name: 'Math' };
     course2 = { name: 'Science' };
+    defineManyToMany(student1, 'courses', 'students', context);
+    defineManyToMany(student2, 'courses', 'students', context);
+    defineManyToMany(course1, 'students', 'courses', context);
+    defineManyToMany(course2, 'students', 'courses', context);
 
-    defineManyToMany(student1, 'courses', 'students');
-    defineManyToMany(student2, 'courses', 'students');
-    defineManyToMany(course1, 'students', 'courses');
-    defineManyToMany(course2, 'students', 'courses');
   });
 
   test('Adding a course to a student', () => {
@@ -173,7 +169,7 @@ describe('ManyToMany Relationship: Student and Course', () => {
 
   test('Undoing add operation', () => {
     student1.addCourses(course1);
-    undo();
+    undo(context);
     expect(student1._courses).not.toContain(course1);
     expect(course1._students).not.toContain(student1);
   });
@@ -181,15 +177,15 @@ describe('ManyToMany Relationship: Student and Course', () => {
   test('Undoing remove operation', () => {
     student1.addCourses(course1);
     student1.removeCourses(course1);
-    undo();
+    undo(context);
     expect(student1._courses).toContain(course1);
     expect(course1._students).toContain(student1);
   });
 
   test('Redoing add operation', () => {
     student1.addCourses(course1);
-    undo();
-    redo();
+    undo(context);
+    redo(context);
     expect(student1._courses).toContain(course1);
     expect(course1._students).toContain(student1);
   });
@@ -197,8 +193,8 @@ describe('ManyToMany Relationship: Student and Course', () => {
   test('Redoing remove operation', () => {
     student1.addCourses(course1);
     student1.removeCourses(course1);
-    undo();
-    redo();
+    undo(context);
+    redo(context);
     expect(student1._courses).not.toContain(course1);
     expect(course1._students).not.toContain(student1);
   });
@@ -206,28 +202,30 @@ describe('ManyToMany Relationship: Student and Course', () => {
 
 
 describe('Simple value changes combined with Undo and Redo Operations', () => {
+  let context = new OperationContext()
+
   test('Simple value changes combined with one-to-one relationship', () => {
     const person = {}  as any;
     const car = {}  as any;
-    defineSimpleValue(person, 'name');
-    defineOneToOne(person, 'car', 'owner');
-    defineOneToOne(car, 'owner', 'car');
+    defineSimpleValue(person, 'name', context);
+    defineOneToOne(person, 'car', 'owner', context);
+    defineOneToOne(car, 'owner', 'car', context);
 
     person.name = 'John';
     person.car = car;
     car.owner = person;
 
-    undo();
+    undo(context);
     expect(person.car).toBeUndefined();
     expect(car.owner).toBeUndefined();
 
-    undo();
+    undo(context);
     expect(person.name).toBeUndefined();
 
-    redo();
+    redo(context);
     expect(person.name).toBe('John');
 
-    redo();
+    redo(context);
     expect(person.car).toBe(car);
     expect(car.owner).toBe(person);
   });
@@ -235,10 +233,10 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
     const company = {} as any;
     const worker1 = {} as any;
     const worker2 = {} as any;
-    defineSimpleValue(company, 'name');
-    defineOneToMany(company, 'workers', 'company');
-    defineSimpleValue(worker1, 'name');
-    defineSimpleValue(worker2, 'name');
+    defineSimpleValue(company, 'name', context);
+    defineOneToMany(company, 'workers', 'company', context);
+    defineSimpleValue(worker1, 'name', context);
+    defineSimpleValue(worker2, 'name', context);
     
     company.name = 'TechCorp';
     company.addWorkers(worker1);
@@ -246,34 +244,34 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
     worker1.name = 'Alice';
     worker2.name = 'Bob';
     
-    undo();
+    undo(context);
     expect(worker2.name).toBeUndefined();
     
-    undo();
+    undo(context);
     expect(worker1.name).toBeUndefined();
     
-    undo();
+    undo(context);
     expect(company.workers.length).toEqual(1);
     
-    undo();
+    undo(context);
     expect(company.workers.length).toEqual(0);
 
-    undo();
+    undo(context);
     expect(company.name).toBeUndefined();
     
-    redo();
+    redo(context);
     expect(company.name).toBe('TechCorp');
     
-    redo();
+    redo(context);
     expect(company.workers).toEqual([worker1]);
     
-    redo();
+    redo(context);
     expect(company.workers.length).toEqual(2);
 
-    redo();
+    redo(context);
     expect(worker1.name).toBe('Alice');
     
-    redo();
+    redo(context);
     expect(worker2.name).toBe('Bob');
   });
   
@@ -283,12 +281,12 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
     const student2 = {} as any;
     const course1 = {} as any;
     const course2 = {} as any;
-    defineSimpleValue(student1, 'name');
-    defineSimpleValue(student2, 'name');
-    defineManyToMany(student1, 'courses', 'students');
-    defineManyToMany(student2, 'courses', 'students');
-    defineManyToMany(course1, 'students', 'courses');
-    defineManyToMany(course2, 'students', 'courses');
+    defineSimpleValue(student1, 'name', context);
+    defineSimpleValue(student2, 'name', context);
+    defineManyToMany(student1, 'courses', 'students', context);
+    defineManyToMany(student2, 'courses', 'students', context);
+    defineManyToMany(course1, 'students', 'courses', context);
+    defineManyToMany(course2, 'students', 'courses', context);
 
     course1.name ='Math'
     course2.name = 'Science'
@@ -300,36 +298,36 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
     course1.addStudents(student2);
     course2.addStudents(student2); // should be ignored as student2 is already connected
 
-    undo(); // connecting c1 and s2 
+    undo(context); // connecting c1 and s2 
     expect(course2.students.length).toEqual(1);
     expect(student2.courses).toEqual([course2]);
 
-    undo(); // connecting s2 and c2
+    undo(context); // connecting s2 and c2
     expect(course2.students.length).toEqual(0);
     expect(student2.courses.length).toEqual(0);
     expect(course1.students.length).toEqual(1);
 
-    undo();// connecting s1 and c1
+    undo(context);// connecting s1 and c1
     expect(student1.courses.length).toEqual(0);
     expect(course1.students.length).toEqual(0);
 
 
-    undo()
+    undo(context)
     expect(student2.name).toBeUndefined();
 
-    undo();
+    undo(context);
     expect(student1.name).toBeUndefined();
 
-    redo();
+    redo(context);
     expect(student1.name).toBe('Emily');
 
-    redo();
+    redo(context);
     expect(student2.name).toBe('David');
 
-    redo();
+    redo(context);
     expect(student1.courses).toEqual([course1]);
 
-    redo();
+    redo(context);
     expect(course2.students).toEqual([student2]);
   });
   
