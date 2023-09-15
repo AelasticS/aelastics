@@ -1,5 +1,5 @@
 import { AnyObjectType } from 'aelastics-types';
-import { defineManyToOne, defineOneToMany, defineOneToOne, OperationContext } from './propCreatorsWithUndo' // Replace with the actual import
+import { defineManyToMany, defineManyToOne, defineOneToMany, defineOneToOne, OperationContext } from './propCreatorsWithUndo' // Replace with the actual import
 
 class DynamicProperties {
   [key: string]: any;
@@ -132,3 +132,63 @@ describe('One-to-Many Relationship with ID', () => {
   });
 });
 
+
+class Student extends DynamicProperties {
+  id: string;
+  constructor(id: string) {
+    super();
+    this.id = id;
+  }
+}
+
+class Course extends DynamicProperties {
+  id: string;
+  constructor(id: string) {
+    super();
+    this.id = id;
+  }
+}
+
+describe('Many-to-Many Relationship with ID', () => {
+  let context: OperationContext;
+
+  beforeEach(() => {
+    context = new OperationContext();
+    context.idMap = new Map();
+  });
+
+  test('should set and get many-to-many relationship with ID', () => {
+    const student1 = new Student('s1');
+    const student2 = new Student('s2');
+    const course1 = new Course('c1');
+    const course2 = new Course('c2');
+
+    context.idMap.set('s1', student1);
+    context.idMap.set('s2', student2);
+    context.idMap.set('c1', course1);
+    context.idMap.set('c2', course2);
+
+    const studentType: AnyObjectType = {} as any;
+    const courseType: AnyObjectType = {}as any;
+
+    defineManyToMany(Student.prototype, 'courses', 'students', studentType, courseType, context, false, true);
+    defineManyToMany(Course.prototype, 'students', 'courses', courseType, studentType, context, true, false);
+
+    // Add courses to students
+    student1.addCourses(course1);
+    student1.addCourses(course2);
+
+    // Test relationships
+    expect(student1.courses).toEqual([course1, course2]);
+    expect(course1.students).toEqual([student1]);
+    expect(course2.students).toEqual([student1]);
+
+    // Remove a course from the student
+    student1.removeCourses(course1);
+
+    // Test changed relationships
+    expect(student1.courses).toEqual([course2]);
+    expect(course1.students).toEqual([]);
+    expect(course2.students).toEqual([student1]);
+  });
+});
