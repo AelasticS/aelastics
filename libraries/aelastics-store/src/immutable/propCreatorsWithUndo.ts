@@ -133,6 +133,74 @@ export function defineSimpleValue(
   });
 }
 
+export function defineComplexObjectProp(
+  target: any,
+  propName: string,
+  isPropID: boolean,
+  context: OperationContext,
+  targetType: AnyObjectType,
+) {
+  const privatePropName = `_${propName}`;
+  Object.defineProperty(target, propName, {
+    get() {
+      return isPropID ? context.idMap.get(this[privatePropName]) : this[privatePropName];
+    },
+    set(value: any) {
+      const oldValue = this[privatePropName];
+      this[privatePropName] = isPropID ? value.id : value;
+
+      context.operationStack.push({
+        operationType: 'set',
+        target: this,
+        propName,
+        oldValue,
+        newValue: value,
+        targetType,
+      });
+      context.redoStack.length = 0;
+    },
+  });
+}
+
+export function defineComplexArrayProp(
+  target: any,
+  propName: string,
+  isPropID: boolean,
+  context: OperationContext,
+  targetType: AnyObjectType,
+) {
+  const privatePropName = `_${propName}`;
+  
+  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
+    this[privatePropName].push(isPropID ? item.id : item);
+    context.operationStack.push({
+      operationType: 'add',
+      target: this,
+      propName,
+      oldValue: undefined,
+      newValue: item,
+      targetType,
+    });
+    context.redoStack.length = 0;
+  };
+
+  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
+    const index = this[privatePropName].indexOf(isPropID ? item.id : item);
+    if (index === -1) return;
+
+    this[privatePropName].splice(index, 1);
+    context.operationStack.push({
+      operationType: 'remove',
+      target: this,
+      propName,
+      oldValue: item,
+      newValue: undefined,
+      targetType,
+    });
+    context.redoStack.length = 0;
+  };
+}
+
 
 export function defineOneToOne(
   target: any,
@@ -194,13 +262,6 @@ export function defineOneToOne(
   });
 }
 
-// Helper function to initialize the private property
-function initializePrivateArrayProperty(obj: any, privatePropName: string) {
-  if (!obj.hasOwnProperty(privatePropName)) {
-    obj[privatePropName] = [];
-  }
-}
-
 export function defineOneToMany(
   target: any,
   propName: string,
@@ -254,7 +315,7 @@ export function defineOneToMany(
 
   target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
     function (item: any) {
-      // initializePrivateArrayProperty(this, privatePropName);
+      //initializePrivateArrayProperty(this, privatePropName);
       const id = isPropID ? item.id : item;
       const index = this[privatePropName].indexOf(id);
       if (index === -1) return; // already connected
