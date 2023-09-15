@@ -1,6 +1,8 @@
 import { AnyObjectType } from 'aelastics-types';
 import { defineManyToMany, defineManyToOne, defineOneToMany, defineOneToOne, OperationContext } from './propCreatorsWithUndo' // Replace with the actual import
 
+
+
 class DynamicProperties {
   [key: string]: any;
 }
@@ -79,6 +81,8 @@ class Company extends DynamicProperties {
   constructor(id: string) {
     super();
     this.id = id;
+    this._workers = []
+
   }
 }
 
@@ -138,6 +142,8 @@ class Student extends DynamicProperties {
   constructor(id: string) {
     super();
     this.id = id;
+    this._courses = []
+
   }
 }
 
@@ -146,6 +152,8 @@ class Course extends DynamicProperties {
   constructor(id: string) {
     super();
     this.id = id;
+    this._students = []
+
   }
 }
 
@@ -180,8 +188,8 @@ describe('Many-to-Many Relationship with ID', () => {
 
     // Test relationships
     expect(student1.courses).toEqual([course1, course2]);
-    expect(course1.students).toEqual([student1]);
-    expect(course2.students).toEqual([student1]);
+    expect(course1.students).toEqual([student1.id]);
+    expect(course2.students).toEqual([student1.id]);
 
     // Remove a course from the student
     student1.removeCourses(course1);
@@ -189,6 +197,6 @@ describe('Many-to-Many Relationship with ID', () => {
     // Test changed relationships
     expect(student1.courses).toEqual([course2]);
     expect(course1.students).toEqual([]);
-    expect(course2.students).toEqual([student1]);
+    expect(course2.students).toEqual([student1.id]);
   });
 });

@@ -4,6 +4,36 @@ import { AnyObjectType } from 'aelastics-types';
 const targetObjType = {} as AnyObjectType
 const inverseObjType = {} as AnyObjectType
 
+class DynamicProperties {
+  [key: string]: any;
+}
+class Company extends DynamicProperties {
+  id: string;
+  constructor(id: string) {
+    super();
+    this.id = id;
+    this._workers = []
+
+  }
+}
+
+class Boss {
+  id: string;
+  _company: string | null = null;
+
+  constructor(id: string) {
+    this.id = id;
+  }
+}
+
+class Worker extends DynamicProperties {
+  id: string;
+  constructor(id: string) {
+    super();
+    this.id = id;
+  }
+}
+
 describe('Undo and Redo functionality', () => {
 
   let boss1 = {} as any;
@@ -72,17 +102,17 @@ describe('Undo and Redo functionality', () => {
 
 
 describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
-  let company: any;
-  let worker1: any;
-  let worker2: any;
+  let company: Company;
+  let worker1: Worker;
+  let worker2: Worker;
   let context:any
   
 
 
   beforeEach(() => {
-    company = {};
-    worker1 = {};
-    worker2 = {};
+    company = new Company("c1");
+    worker1 = new Worker("w1");
+    worker2 = new Worker("w2");
     context = new OperationContext()
 
     defineOneToMany(company, 'workers', 'company', targetObjType, inverseObjType,context);
@@ -138,19 +168,38 @@ describe('OneToMany and ManyToOne Relationship: Company and Worker', () => {
   });
 });
 
+class Course extends DynamicProperties{
+  id: string;
+  _students: string[] = [];
+
+  constructor(id: string) {
+    super()
+    this.id = id;
+  }
+}
+
+class Student extends DynamicProperties{
+  id: string;
+  _courses: string[] = [];
+
+  constructor(id: string) {
+    super()
+    this.id = id;
+  }
+}
 describe('ManyToMany Relationship: Student and Course', () => {
-  let student1: any;
-  let student2: any;
-  let course1: any;
-  let course2: any;
+  let student1: Student;
+  let student2: Student;
+  let course1: Course;
+  let course2: Course;
   let context = new OperationContext()
   
   beforeEach(() => {
     context = new OperationContext()
-    student1 = { name: 'Alice' };
-    student2 = { name: 'Bob' };
-    course1 = { name: 'Math' };
-    course2 = { name: 'Science' };
+    student1 = new Student('Alice');
+    student2 = new Student('Bob');
+    course1 =   new Course('Math')
+    course2 = new Course('Science')
     defineManyToMany(student1, 'courses', 'students', targetObjType, inverseObjType,context);
     defineManyToMany(student2, 'courses', 'students', targetObjType, inverseObjType,context);
     defineManyToMany(course1, 'students', 'courses', targetObjType, inverseObjType,context);
@@ -233,10 +282,12 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
     expect(person.car).toBe(car);
     expect(car.owner).toBe(person);
   });
+
   test('Simple value changes combined with one-to-many relationship', () => {
-    const company = {} as any;
-    const worker1 = {} as any;
-    const worker2 = {} as any;
+    const company = new Company("c1");
+    const worker1 = new Worker("w1");
+    const worker2 = new Worker("w1");
+    
     defineSimpleValue(company, 'name', targetObjType, context);
     defineOneToMany(company, 'workers', 'company', targetObjType, inverseObjType,context);
     defineSimpleValue(worker1, 'name', targetObjType, context);
@@ -283,10 +334,11 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
   
   
   test('Simple value changes combined with many-to-many relationship', () => {
-    const student1 = {} as any;
-    const student2 = {} as any;
-    const course1 = {} as any;
-    const course2 = {} as any;
+    const student1 = new Student("s1");
+    const student2 = new Student("s2");
+    const course1 = new Course("c1");
+    const course2 = new Course("c2");
+    
     defineSimpleValue(student1, 'name', targetObjType, context);
     defineSimpleValue(student2, 'name', targetObjType, context);
     defineManyToMany(student1, 'courses', 'students', targetObjType, inverseObjType,context);
