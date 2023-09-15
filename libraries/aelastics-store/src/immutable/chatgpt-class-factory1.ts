@@ -15,7 +15,6 @@ import {
   defineManyToOne,
   defineOneToMany,
   defineOneToOne,
-  OperationContext,
 } from "./propCreatorsWithUndo"; 
 
 export type Class<P> = { new (init: Partial<P>): P };

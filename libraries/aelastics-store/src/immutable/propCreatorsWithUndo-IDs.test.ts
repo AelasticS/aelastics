@@ -6,8 +6,8 @@ import {
   defineManyToOne,
   defineOneToMany,
   defineOneToOne,
-  OperationContext,
 } from "./propCreatorsWithUndo"; // Replace with the actual import
+import { OperationContext } from "./operation-context";
 
 class DynamicProperties {
   [key: string]: any;

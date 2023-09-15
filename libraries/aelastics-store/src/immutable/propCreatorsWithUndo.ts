@@ -1,102 +1,5 @@
 import { AnyObjectType } from "aelastics-types";
-
-type Operation = {
-  operationType: "add" | "remove" | "set";
-  target: any;
-  propName: string;
-  inversePropName?: string;
-  oldValue: any;
-  newValue: any;
-  oldInverseValue?: any;
-  targetType: AnyObjectType;
-  inverseType?: AnyObjectType;
-};
-
-export class ObjectNotFoundError extends Error {
-  constructor(public id: string, public targetType: AnyObjectType, message: string) {
-    super(message);
-    this.name = 'ObjectNotFoundError';
-  }
-}
-
-export class OperationContext {
-  operationStack: Operation[] = [];
-  redoStack: Operation[] = [];
-  idMap: Map<string, any> = new Map()
-};
-
-// const operationStack: Operation[] = [];
-// const redoStack: Operation[] = [];
-
-export function undo(context: OperationContext) {
-  const { operationStack, redoStack } = context;
-  if (operationStack.length === 0) return;
-
-  const lastOperation = operationStack.pop()!;
-  redoStack.push(lastOperation);
-
-  // Capture the current length of the operationStack
-  const initialStackLength = operationStack.length;
-
-  // Perform the undo operation based on the operation type
-  if (lastOperation.operationType === "add") {
-    lastOperation.target[
-      `remove${lastOperation.propName.charAt(0).toUpperCase() +
-      lastOperation.propName.slice(1)
-      }`
-    ](lastOperation.newValue);
-  } else if (lastOperation.operationType === "remove") {
-    lastOperation.target[
-      `add${lastOperation.propName.charAt(0).toUpperCase() +
-      lastOperation.propName.slice(1)
-      }`
-    ](lastOperation.oldValue);
-  } else {
-    lastOperation.target[lastOperation.propName] = lastOperation.oldValue;
-    // Restore the oldInverseValue on the newValue object
-    if (lastOperation.inversePropName && lastOperation.newValue) {
-      lastOperation.newValue[`_${lastOperation.inversePropName}`] =
-        lastOperation.oldInverseValue;
-    }
-  }
-
-  // Remove any additional operations that were pushed onto the stack due to synchronization
-  while (operationStack.length > initialStackLength) {
-    operationStack.pop();
-  }
-}
-
-export function redo(context: OperationContext) {
-  const { operationStack, redoStack } = context;
-  if (redoStack.length === 0) return;
-
-  const lastOperation = redoStack.pop()!;
-  operationStack.push(lastOperation);
-
-  // Capture the current length of the operationStack
-  const initialStackLength = operationStack.length;
-
-  if (lastOperation.operationType === "add") {
-    lastOperation.target[
-      `add${lastOperation.propName.charAt(0).toUpperCase() +
-      lastOperation.propName.slice(1)
-      }`
-    ](lastOperation.newValue);
-  } else if (lastOperation.operationType === "remove") {
-    lastOperation.target[
-      `remove${lastOperation.propName.charAt(0).toUpperCase() +
-      lastOperation.propName.slice(1)
-      }`
-    ](lastOperation.oldValue);
-  } else {
-    lastOperation.target[lastOperation.propName] = lastOperation.newValue;
-  }
-
-  // Remove any additional operations that were pushed onto the stack due to synchronization
-  while (operationStack.length > initialStackLength) {
-    operationStack.pop();
-  }
-}
+import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context";
 
 // Define simple value property
 export function defineSimpleValue(
@@ -105,7 +8,6 @@ export function defineSimpleValue(
   targetType: AnyObjectType,
   context: OperationContext
 ) {
-  const { operationStack, redoStack } = context;
   const privatePropName = `_${propName}`;
   target[privatePropName] = undefined;
 
@@ -125,8 +27,7 @@ export function defineSimpleValue(
         targetType: targetType
       };
 
-      operationStack.push(operation);
-      // redoStack.length = 0;
+      context.pushOperation(operation);
 
       this[privatePropName] = value;
     },
@@ -149,7 +50,7 @@ export function defineComplexObjectProp(
       const oldValue = this[privatePropName];
       this[privatePropName] = isPropID ? value.id : value;
 
-      context.operationStack.push({
+      context.pushOperation({
         operationType: 'set',
         target: this,
         propName,
@@ -157,7 +58,6 @@ export function defineComplexObjectProp(
         newValue: value,
         targetType,
       });
-      context.redoStack.length = 0;
     },
   });
 }
@@ -173,7 +73,7 @@ export function defineComplexArrayProp(
   
   target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
     this[privatePropName].push(isPropID ? item.id : item);
-    context.operationStack.push({
+    context.pushOperation({
       operationType: 'add',
       target: this,
       propName,
@@ -181,7 +81,6 @@ export function defineComplexArrayProp(
       newValue: item,
       targetType,
     });
-    context.redoStack.length = 0;
   };
 
   target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
@@ -189,7 +88,7 @@ export function defineComplexArrayProp(
     if (index === -1) return;
 
     this[privatePropName].splice(index, 1);
-    context.operationStack.push({
+    context.pushOperation({
       operationType: 'remove',
       target: this,
       propName,
@@ -197,7 +96,6 @@ export function defineComplexArrayProp(
       newValue: undefined,
       targetType,
     });
-    context.redoStack.length = 0;
   };
 }
 
@@ -244,7 +142,7 @@ export function defineOneToOne(
         targetType: targetType,
         inverseType: inverseType,
       };
-      context.operationStack.push(operation);
+      context.pushOperation(operation);
 
       // Disconnect the old value if it exists
       if (oldValue) {
@@ -302,7 +200,7 @@ export function defineOneToMany(
         targetType: targetType,
         inverseType: inverseType,
       };
-      context.operationStack.push(operation);
+      context.pushOperation(operation);
 
       // Add this object to the new item's property
       if (isInversePropID) {
@@ -331,7 +229,7 @@ export function defineOneToMany(
         targetType: targetType,
         inverseType: inverseType,
       };
-      context.operationStack.push(operation);
+      context.pushOperation(operation);
 
       this[privatePropName].splice(index, 1);
       item[`_${inversePropName}`] = undefined;
@@ -380,7 +278,7 @@ export function defineManyToOne(
         targetType: targetType,
         inverseType: inverseType,
       };
-      context.operationStack.push(operation);
+      context.pushOperation(operation);
 
       // Disconnect the old parent
       if (oldValue) {
@@ -446,7 +344,7 @@ export function defineManyToMany(
         oldValue: undefined,
         oldInverseValue: undefined,
       };
-      context.operationStack.push(operation);
+      context.pushOperation(operation);
 
       // Add the item to the new parent's array
       this[privatePropName].push(itemId);
@@ -475,7 +373,7 @@ export function defineManyToMany(
         inverseType: inverseType,
         newValue: undefined,
       };
-      context.operationStack.push(operation);
+      context.pushOperation(operation);
 
       // Remove the item from the current parent's array
       this[privatePropName].splice(index, 1);
