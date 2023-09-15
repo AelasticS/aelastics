@@ -151,6 +151,7 @@ export function defineOneToOne(
     get() {
       if (isPropID) {
         const id = this[privatePropName];
+        if(!id) return undefined 
         const obj = context.idMap.get(id);
         if (!obj) {
           throw new ObjectNotFoundError(id, targetType, `Object with ID ${id} not found in idMap for target type ${targetType}.`);
@@ -285,6 +286,7 @@ export function defineManyToOne(
   Object.defineProperty(target, propName, {
     get() {
       if (isPropID) {
+        if(!this[privatePropName]) return undefined 
         const obj = context.idMap.get(this[privatePropName]);
         if (!obj) {
           throw new ObjectNotFoundError(this[privatePropName], targetType, `Object with ID ${this[privatePropName]} not found in idMap for target type ${targetType}.`);
@@ -389,28 +391,28 @@ export function defineManyToMany(
       const itemId = isPropID ? item.id : item;
       const index = this[privatePropName].indexOf(itemId);
       if (index === -1) return;
-
-      // Update the operation stack
-      const operation: Operation = {
-        operationType: 'remove',
-        target: this,
-        propName: propName,
-        inversePropName: inversePropName,
-        oldValue: itemId,
-        targetType: targetType,
-        inverseType: inverseType,
-        newValue: undefined,
-      };
-      context.operationStack.push(operation);
+  
+          // Update the operation stack
+    const operation: Operation = {
+      operationType: 'remove',
+      target: this,
+      propName: propName,
+      inversePropName: inversePropName,
+      oldValue: itemId,
+      targetType: targetType,
+      inverseType: inverseType,
+      newValue:undefined,
+    };
+    context.operationStack.push(operation);
 
       // Remove the item from the current parent's array
       this[privatePropName].splice(index, 1);
 
-      // Remove this object from the item's array
-      const inverseIndex = item[`_${inversePropName}`].indexOf(isInversePropID ? this.id : this);
-      if (inverseIndex !== -1) {
-        item[`_${inversePropName}`].splice(inverseIndex, 1);
-      }
+  // Remove this object from the item's array
+  const inverseIndex = item[`_${inversePropName}`].indexOf(isInversePropID ? this.id : this);
+  if (inverseIndex !== -1) {
+    item[`_${inversePropName}`].splice(inverseIndex, 1);
+  }
     };
 }
 

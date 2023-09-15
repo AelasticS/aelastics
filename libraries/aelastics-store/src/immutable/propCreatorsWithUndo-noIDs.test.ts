@@ -1,4 +1,4 @@
-import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany, defineManyToMany, defineSimpleValue, OperationContext } from '././propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
+import { defineOneToOne, undo, redo, defineManyToOne, defineOneToMany, defineManyToMany, defineSimpleValue, OperationContext } from './propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
 import { AnyObjectType } from 'aelastics-types';
 
 const targetObjType = {} as AnyObjectType
