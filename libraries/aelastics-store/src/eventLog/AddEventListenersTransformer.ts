@@ -1,4 +1,14 @@
 /*
+ * Project: aelastics-store
+ * Created Date: Thursday November 3rd 2022
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
+ */
+/*
  * Copyright (c) AelasticS 2020.
  */
 

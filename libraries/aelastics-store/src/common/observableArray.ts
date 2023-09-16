@@ -1,3 +1,13 @@
+/*
+ * Project: aelastics-store
+ * Created Date: Tuesday September 12th 2023
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
+ */
 
 interface IArrayHandlers<T> {
     set?: (target: T[], index: number, value: T) => boolean;

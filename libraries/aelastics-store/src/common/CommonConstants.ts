@@ -1,3 +1,14 @@
+/*
+ * Project: aelastics-store
+ * Created Date: Thursday November 3rd 2022
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
+ */
+
 import * as t from "aelastics-types";
 
 export const prefixValue = "@@_";
@@ -6,9 +17,9 @@ export const objectSync = "@@aelastics/sync";
 export const objectUUID = "@@aelastics/ID";
 export const objectType = "@@aelastics/type";
 
-export type IStoreObject<ID, P extends t.ObjectLiteral> = P & {
+export type IStoreObject<P extends t.ObjectLiteral> = P & {
   readonly [objectType]: string;
-  readonly [objectUUID]: ID;
+  readonly [objectUUID]: string;
 };
 
 export function getUnderlyingType(type: t.Any | undefined): t.Any {

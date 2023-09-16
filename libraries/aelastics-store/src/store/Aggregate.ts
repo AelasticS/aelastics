@@ -1,6 +1,12 @@
 /*
- * Copyright (c) 2020 AelasticS
- * Author: Sinisa Neskovic
+ * Project: aelastics-store
+ * Created Date: Friday April 21st 2023
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
 import * as t from "aelastics-types";
@@ -46,11 +52,11 @@ export class Aggregate<R extends ObjectLiteral, ID = string> extends Base<ID> {
   public readonly rootType: t. ObjectType<any,any>;
 
   //  @observable
-  public root: IStoreObject<ID, R> | undefined; // = undefined as any
+  public root: IStoreObject<R> | undefined; // = undefined as any
 
   constructor(
     rootType: t. ObjectType<any,any>,
-    root?: IStoreObject<ID, R>,
+    root?: IStoreObject<R>,
     server?: ServerProxy
   ) {
     super(server);
@@ -59,12 +65,12 @@ export class Aggregate<R extends ObjectLiteral, ID = string> extends Base<ID> {
   }
 
   //  @action
-  public createRoot(initValue?: Partial<R>): IStoreObject<ID, R> {
+  public createRoot(initValue?: Partial<R>): IStoreObject<R> {
     this["root"] = this.deepCreate(this.rootType, initValue);
     return this["root"];
   }
   public  getTypeSchemaOfObject<
-    T extends IStoreObject<ID, ObjectLiteral>
+    T extends IStoreObject<ObjectLiteral>
   >(obj: T): t.TypeSchema {
     return this.rootType.ownerSchema;
   }
@@ -75,7 +81,7 @@ export class Aggregate<R extends ObjectLiteral, ID = string> extends Base<ID> {
     return undefined
   }
 
-  public getTypeOfObject<T extends IStoreObject<ID, ObjectLiteral>>(obj: T): t.Any {
+  public getTypeOfObject<T extends IStoreObject<ObjectLiteral>>(obj: T): t.Any {
     const schema = this.getTypeSchemaOfObject(obj);
     const path = obj[objectType];
     const type = schema.getType(path);

@@ -33,7 +33,7 @@ export class ImmutableRepository<T extends t.Any, ID = string> {
   }
 
   // static create(baseType: t.Any, init?: Partial<t.TypeOf<typeof baseType>>): { [key: string]: any };
-  deepCreate<P extends ObjectLiteral>(init?: Partial<P>):IStoreObject<ID, P> {
+  deepCreate<P extends ObjectLiteral>(init?: Partial<P>):IStoreObject<P> {
     // // t.TypeOf<typeof baseType> {
 for(let [propName, prop] of this.props) {
     // todo: find base type, skip optional and link types
@@ -63,11 +63,11 @@ for(let [propName, prop] of this.props) {
     //   //  console.log(this.eventLog.getAllActions())
     // }
     let obj = {}
-    return obj as IStoreObject<ID, P>;
+    return obj as IStoreObject<P>;
   }
 /*
 
-  create<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>): IStoreObject<ID, P> {
+  create<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>): IStoreObject<P> {
     let tr = transducer()
       // .recurse('makeItem')
       .newInstance(init, uuidv4Generator)
@@ -83,7 +83,7 @@ for(let [propName, prop] of this.props) {
       );
       //  console.log(this.eventLog.getAllActions())
     }
-    return obj as IStoreObject<ID, P>;
+    return obj as IStoreObject<P>;
   }
 
   exportToDTO(objType: t.ObjectType<any,any>, obj: ObjectLiteral): ObjectLiteral {
@@ -95,12 +95,12 @@ for(let [propName, prop] of this.props) {
     return res;
   }
 
-  importFromDTO<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, inputDTO: ObjectLiteral): IStoreObject<ID, P> {
+  importFromDTO<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, inputDTO: ObjectLiteral): IStoreObject<P> {
     let tr = transducer()
       .recurse("makeItem")
       .fromDtoGraph()
       .doFinally(identityReducer());
-    let res = baseType.transduce<IStoreObject<ID, P>>(tr,inputDTO);
+    let res = baseType.transduce<IStoreObject<P>>(tr,inputDTO);
     return res;
   }
 

@@ -1,6 +1,12 @@
 /*
- * Copyright (c) 2020 AelasticS
- * Author: Sinisa Neskovic
+ * Project: aelastics-store
+ * Created Date: Saturday November 12th 2022
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
 import * as t from "aelastics-types";
@@ -9,6 +15,7 @@ import { EventLog } from "../eventLog/EventLog";
 import { ServerProxy } from "../server-proxy/ServerProxy";
 import { InstanceReference, ObjectLiteral } from "aelastics-types";
 import { IStoreObject, objectType, objectUUID } from "../common/CommonConstants";
+import { AbstractStore } from "../common/abstract-store";
 
 /**
  * Store - application state consisting of several instances (IStoreObject)
@@ -17,54 +24,38 @@ import { IStoreObject, objectType, objectUUID } from "../common/CommonConstants"
 /**
  *
  */
-export class Store<ID> {
+
+export class Store extends AbstractStore {
   public readonly schemas: Map<string, t.TypeSchema> = new Map();
   public eventLog = new EventLog();
-  protected repo: Repository<any, ID> = new Repository(this.eventLog);
+  protected repo: Repository<any> = new Repository(this.eventLog);
   protected server?: ServerProxy;
-  protected readonly instances: Map<ID, IStoreObject<ID, ObjectLiteral>> =
+  protected readonly instances: Map<string, IStoreObject<ObjectLiteral>> =
     new Map();
 
   constructor(server?: ServerProxy) {
+    super()
     this.server = server;
-  }
-
-  registerTypeSchema(schema: t.TypeSchema) {
-    if (!this.schemas.has(schema.absolutePathName))
-      this.schemas.set(schema.absolutePathName, schema);
-  }
-
-  protected getTypeSchemaName<T extends IStoreObject<ID, ObjectLiteral>>(
-    obj: T
-  ): string {
-    return obj[objectType].substring(0, obj[objectType].lastIndexOf("/"));
-  }
-
-  protected getTypeSchemaOfObject<T extends IStoreObject<ID, ObjectLiteral>>(
-    obj: T
-  ): t.TypeSchema {
-    const schemaName = this.getTypeSchemaName(obj);
-    const schema = this.schemas.get(schemaName);
-    if (!schema) throw new Error(`Type schema '${schemaName}' does not exist`);
-    return schema;
   }
 
   /**
    *  clear all instances and event log
    */
-  public clear() {
+  public clear(clearSchema:boolean = false) {
     this.instances.clear();
     this.eventLog = new EventLog();
     this.repo = new Repository();
+    if(clearSchema) 
+      this.schemas.clear
   }
 
-  public getObjectByID<T extends IStoreObject<ID, ObjectLiteral>>(id: ID): T | undefined {
+  public getObjectByID<T extends IStoreObject<ObjectLiteral>>(id: string): T | undefined {
     return this.instances.get(id) as T | undefined;
   }
 
   public async fetchObjectByID(
     type: t.Any,
-    id: ID
+    id: string
   )  {
     // read from server
     // deseralize
@@ -77,7 +68,7 @@ export class Store<ID> {
   public create<P extends ObjectLiteral>(
     type: t. ObjectType<any,any>,
     initValue?: Partial<P>
-  ): IStoreObject<ID, P> {
+  ): IStoreObject<P> {
     const obj = this.repo.create<P>(type, initValue);
     return obj;
   }
@@ -85,14 +76,14 @@ export class Store<ID> {
   public deepCreate<T extends t.ObjectLiteral>(
     type: t. ObjectType<any,any>,
     initValue: Partial<T>
-  ): IStoreObject<ID, T> {
+  ): IStoreObject<T> {
     this.registerTypeSchema(type.ownerSchema);
     const obj = this.repo.deepCreate<T>(type, initValue);
     this.add(obj);
     return obj;
   }
 
-  public add<T extends IStoreObject<ID, ObjectLiteral>>(obj: T) {
+  public add<T extends IStoreObject<ObjectLiteral>>(obj: T) {
     if ("id" in obj) {
       (obj as any)["id"] = obj[objectUUID];
       if (this.instances.has(obj.id))
@@ -108,23 +99,12 @@ export class Store<ID> {
     this.instances.delete(obj[objectUUID]);
   }
 
-  public delete<T extends IStoreObject<ID, ObjectLiteral>>(object: T): void {
+  public delete<T extends IStoreObject<ObjectLiteral>>(object: T): void {
     let type = this.getType(object);
     if (type.typeCategory !== "Object")
       throw new Error(`You cannot delete typeCategory ${type.typeCategory}`);
     const obj = this.repo.delete(type as t.ObjectType<any, any>, object as any);
   }
 
-  public getType<T extends IStoreObject<ID, ObjectLiteral>>(obj: T): t.ObjectType<any,any> {
-    const typeName = obj[objectType].substring(
-      obj[objectType].lastIndexOf("/") + 1
-    );
-    const schema = this.getTypeSchemaOfObject(obj);
-    const type = schema._types.get(typeName);
-    if (!type)
-      throw new Error(
-        `Object type '${typeName}' does not exist in schema '${schema.name}'`
-      );
-    return type as  t.ObjectType<any,any>;
-  }
+
 }
