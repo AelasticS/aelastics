@@ -1,11 +1,11 @@
-import { AnyObjectType } from "aelastics-types";
+import { Any, AnyObjectType } from "aelastics-types";
 import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context";
 
 // Define simple value property
 export function defineSimpleValue(
   target: any,
   propName: string,
-  targetType: AnyObjectType,
+  targetType: Any,
   context: OperationContext
 ) {
   const privatePropName = `_${propName}`;
@@ -37,7 +37,7 @@ export function defineSimpleValue(
 export function defineComplexObjectProp(
   target: any,
   propName: string,
-  isPropID: boolean,
+  isPropID:boolean,
   context: OperationContext,
   targetType: AnyObjectType,
 ) {

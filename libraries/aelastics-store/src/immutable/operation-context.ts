@@ -1,4 +1,4 @@
-import { AnyObjectType } from "aelastics-types";
+import { Any, AnyObjectType } from "aelastics-types";
 
 export type Operation = {
     operationType: "add" | "remove" | "set";
@@ -8,12 +8,12 @@ export type Operation = {
     oldValue: any;
     newValue: any;
     oldInverseValue?: any;
-    targetType: AnyObjectType;
+    targetType: Any;
     inverseType?: AnyObjectType;
 };
 
 export class ObjectNotFoundError extends Error {
-    constructor(public id: string, public targetType: AnyObjectType, message: string) {
+    constructor(public id: string, public targetType: Any, message: string) {
         super(message);
         this.name = 'ObjectNotFoundError';
     }
