@@ -9,8 +9,9 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import { Any, AnyObjectType } from "aelastics-types";
+import { Any, AnyObjectType, ObjectLiteral } from "aelastics-types";
 import { capitalizeFirstLetter } from "../common/CommonConstants";
+import { Class } from "./createClass";
 
 // export type Operation = {
 //     operationType: "add" | "remove" | "set";
@@ -98,6 +99,23 @@ export class OperationContext {
     }
   }
 
+  createObject<P extends ObjectLiteral>(dynamicClass: Class<P>, initialProps: Partial<P>, targetType: AnyObjectType): any {
+    // Create a new instance of the dynamic class
+    const instance = new dynamicClass(initialProps);
+
+    // Add the object to the idMap
+    this.idMap.set(instance.id, instance);
+
+    // Push the create operation onto the operation stack
+    this.pushOperation({
+      operationType: "create",
+      target: instance,
+      targetType: targetType,  // Use the passed-in AnyObjectType
+      initialProps: initialProps,
+      dynamicClass:dynamicClass
+    });
+    return instance;
+  }
 
   deleteObject(obj: any) {
     this.pushOperation({
