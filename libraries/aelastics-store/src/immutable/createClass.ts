@@ -49,6 +49,7 @@ export function createClass<P extends ObjectLiteral>(
   class DynamicClass {
     [key: string]: any;
     constructor(init: Partial<P>) {
+      this.isDeleted = false;
       // Initialize private properties
       props.forEach((type, propName) => {
         const privatePropName = `_${propName}`;

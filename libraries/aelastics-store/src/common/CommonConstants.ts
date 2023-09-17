@@ -35,3 +35,7 @@ export function getUnderlyingType(type: t.Any | undefined): t.Any {
   }
   return type;
 }
+
+export function capitalizeFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}

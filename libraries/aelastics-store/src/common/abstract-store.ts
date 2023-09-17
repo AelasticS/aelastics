@@ -59,4 +59,8 @@ export abstract class AbstractStore {
    *  clear store - reset store to be empty
    */
     public abstract clear(clearSchema?:boolean):void;
+
+    public abstract getObjectByID<T extends IStoreObject<t.ObjectLiteral>>(id: string): T | undefined;
+
+    
 }
