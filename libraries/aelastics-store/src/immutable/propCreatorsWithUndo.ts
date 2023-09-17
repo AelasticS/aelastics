@@ -206,6 +206,9 @@ export function defineOneToOne(
       }
       if (isPropID) {
         const id = this[privatePropName];
+        if (id === undefined) {
+          return undefined;
+        }
         const obj = context.idMap.get(id);
         if (!obj) {
           throw new ObjectNotFoundError(
