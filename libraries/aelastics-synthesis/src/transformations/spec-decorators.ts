@@ -27,11 +27,12 @@ export const SpecPoint = () => {
       const a: IModelElement = args[0];
       const aType = this.context.store.getTypeOf(a);
       const options: ISpecOption[] = descriptor.value[__SpecPoint];
-      const option = options.find((option) => {
+      const option = options?.find((option) => {
         return option.inputType.isOfType(aType);
       });
       if (!option) {
-        throw new Error(`No specilized method found`);
+        return null;
+        // throw new Error(`No specilized method found`);
       }
 
       // TODO handle if orgResult and specResult are arrays
@@ -49,8 +50,14 @@ export const SpecPoint = () => {
       // return result fofromrm original method
       return orgResult;
     };
+
     //descriptor.value[__SpecPoint] = name
+
+    // added because in composition of decorator, descriptor will be another decorator, not a function
+    target[propertyKey][__SpecPoint] = [];
+
     descriptor.value[__SpecPoint] = [];
+
     return descriptor;
   };
 };
