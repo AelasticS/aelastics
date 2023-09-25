@@ -23,10 +23,12 @@ export const SpecPoint = () => {
   ) {
     // save original method
     const original: (...a: any[]) => Element<any> = target[propertyKey];
+    const originalPropertyKey = propertyKey;
     descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
       const a: IModelElement = args[0];
       const aType = this.context.store.getTypeOf(a);
-      const options: ISpecOption[] = descriptor.value[__SpecPoint];
+      // const options: ISpecOption[] = descriptor.value[__SpecPoint];
+      const options: ISpecOption[] = (this as any)[__SpecPoint][originalPropertyKey];
       const option = options?.find((option) => {
         return option.inputType.isOfType(aType);
       });
@@ -47,14 +49,14 @@ export const SpecPoint = () => {
       // connect corresponding results(elemnets)
       orgResult.subElement = specResult;
       orgResult.isAbstract = true;
-      // return result fofromrm original method
+      // return result from original method
       return orgResult;
     };
 
     //descriptor.value[__SpecPoint] = name
 
     // added because in composition of decorator, descriptor will be another decorator, not a function
-    target[propertyKey][__SpecPoint] = [];
+    target[__SpecPoint] = {...target[__SpecPoint], [propertyKey]: []};
 
     descriptor.value[__SpecPoint] = [];
 
@@ -69,15 +71,15 @@ export const SpecOption = (methodName: string, type: Any) => {
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    const method: Function = target[methodName];
+    const method: Function = target[__SpecPoint][methodName];
     // @ts-ignore
-    if (method[__SpecPoint]) {
+    if (method) {
       let o: ISpecOption = {
         specMethod: propertyKey,
         inputType: type,
       };
       // @ts-ignore
-      method[__SpecPoint].push(o);
+      method.push(o);
     }
     return descriptor;
   };
