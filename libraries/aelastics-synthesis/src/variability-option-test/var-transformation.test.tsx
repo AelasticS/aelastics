@@ -81,7 +81,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @E2E({ input: et.Entity, output: rt.Table })
+  // @E2E({ input: et.Entity, output: rt.Table })
   @SpecPoint()  
   Entity2Table(e: et.IEntity): Element<rt.ITable> {
     return (
@@ -108,6 +108,8 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
   @SpecOption("Entity2Table", et.Weak)
   Week2Table(w: et.IWeak): Element<rt.ITable> {
     // override table name from super rule
+    // TODO Formiraj slozeni kljuc od kljuca jakog objekta i svog kljuca. Ovo vazi pod uslov da se prvo obidju svi kerneli, pa onda slabi.
+    // Ovo sve vazi pod ogranicenjem da weak moze zavisiti samo od kernela, a nema podtipova i agregacija u modelu
     return <r.Table name={`Weak_${w.name}`}></r.Table>;
   }
 

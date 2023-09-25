@@ -23,12 +23,12 @@ export const SpecPoint = () => {
   ) {
     // save original method
     const original: (...a: any[]) => Element<any> = target[propertyKey];
-    const originalPropertyKey = propertyKey;
     descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
       const a: IModelElement = args[0];
       const aType = this.context.store.getTypeOf(a);
-      // const options: ISpecOption[] = descriptor.value[__SpecPoint];
-      const options: ISpecOption[] = (this as any)[__SpecPoint][originalPropertyKey];
+
+      // TODO handle subtyping of specPoints(VarPoints). It is needed to combine options from subtype and supertype
+      const options: ISpecOption[] = (this as any)[__SpecPoint][propertyKey];
       const option = options?.find((option) => {
         return option.inputType.isOfType(aType);
       });
@@ -56,7 +56,7 @@ export const SpecPoint = () => {
     //descriptor.value[__SpecPoint] = name
 
     // added because in composition of decorator, descriptor will be another decorator, not a function
-    target[__SpecPoint] = {...target[__SpecPoint], [propertyKey]: []};
+    target[__SpecPoint] = { ...target[__SpecPoint], [propertyKey]: [] };
 
     descriptor.value[__SpecPoint] = [];
 
