@@ -42,6 +42,11 @@ export const Domain: Template<e.IDomain> = (props) => {
 export const Relationship: Template<e.IRelationship> = (props) => {
   return new Element(e.Relationship, props, undefined);
 };
+
 export const OrdinaryMapping: Template<e.IOrdinaryMapping> = (props) => {
   return new Element(e.OrdinaryMapping, props, "relationship");
+};
+
+export const WeakMapping: Template<e.IWeakMapping> = (props) => {
+  return new Element(e.WeakMapping, props, undefined);
 };

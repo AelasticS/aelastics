@@ -21,12 +21,18 @@ const testStore = new ModelStore();
 const eerSchema1: Element<et.IEERSchema> = (
   <e.EERSchema name="Persons" MDA_level="M1" store={testStore}>
     <e.Kernel name="Person">
-      <e.Attribute name="PersonName">
+      <e.Attribute name="personId" isKey={true}>
+        <e.Domain name="number" />
+      </e.Attribute>
+      <e.Attribute name="personName" isKey={false}>
         <e.Domain name="string" />
       </e.Attribute>
     </e.Kernel>
     <e.Kernel name="Organization">
-      <e.Attribute name="OrganizationName">
+      <e.Attribute name="organizationId" isKey={true}>
+        <e.Domain $refByName="number" />
+      </e.Attribute>
+      <e.Attribute name="organizationName" isKey={false}>
         <e.Domain $refByName="string" />
       </e.Attribute>
     </e.Kernel>
@@ -45,13 +51,18 @@ const eerSchema1: Element<et.IEERSchema> = (
       ></e.OrdinaryMapping>
     </e.Relationship>
     <e.Weak name="Child">
-      <e.Attribute name="ChildID">
-        <e.Domain name="number" />
+      <e.Attribute name="ChildID" isKey={true}>
+        <e.Domain $refByName="number" />
       </e.Attribute>
-      <e.Attribute name="ChildName">
+      <e.Attribute name="ChildName" isKey={false}>
         <e.Domain $refByName="string" />
       </e.Attribute>
     </e.Weak>
+    <e.WeakMapping
+      name="PersonToChild"
+      domain={<e.Kernel $refByName="Person"></e.Kernel>}
+      codomain={<e.Weak $refByName="Child"></e.Weak>}
+    ></e.WeakMapping>
   </e.EERSchema>
 );
 
@@ -81,8 +92,8 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  // @E2E({ input: et.Entity, output: rt.Table })
-  @SpecPoint()  
+  @E2E({ input: et.Entity, output: rt.Table })
+  @SpecPoint()
   Entity2Table(e: et.IEntity): Element<rt.ITable> {
     return (
       <r.Table name={e.name}>
@@ -91,30 +102,48 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @E2E({ input: et.Kernel, output: rt.Table })
+  // @E2E({ input: et.Kernel, output: rt.Table })
   @SpecOption("Entity2Table", et.Kernel)
   Kernel2Table(k: et.IKernel): Element<rt.ITable> {
     // inherit table name and column from super rule
     return (
-      <r.Table>
-        <r.Column name={`${k.name}ID`}>
-          {/* <r.Domain name="number" /> */}
-        </r.Column>
+      <r.Table name={`k_${k.name}`}>
+        {/* <r.Column name={`${k.name}ID`}>
+          <r.Domain name="number" />
+        </r.Column> */}
       </r.Table>
     );
   }
 
-  @E2E({ input: et.Weak, output: rt.Table })
+  // @E2E({ input: et.Weak, output: rt.Table })
   @SpecOption("Entity2Table", et.Weak)
   Week2Table(w: et.IWeak): Element<rt.ITable> {
     // override table name from super rule
+
+    const parentKeyAttributes: Array<et.IAttribute> =
+      w.weakMap?.domain?.attributes?.filter(
+        (attr: et.IAttribute) => attr.isKey == true
+      );
+
+    // TODO result of resolve method is type of Element, not ModelElement
+    const parentTable: Element<rt.ITable> = this.context.resolve(
+      w.weakMap?.domain
+    );
+
     // TODO Formiraj slozeni kljuc od kljuca jakog objekta i svog kljuca. Ovo vazi pod uslov da se prvo obidju svi kerneli, pa onda slabi.
     // Ovo sve vazi pod ogranicenjem da weak moze zavisiti samo od kernela, a nema podtipova i agregacija u modelu
-    return <r.Table name={`Weak_${w.name}`}></r.Table>;
+    return (
+      <r.Table name={`Weak_${w.name}`}>
+        {parentKeyAttributes.map((a) => (
+          <r.Column name={a.name} isKey={a.isKey}></r.Column>
+        ))}
+      </r.Table>
+    );
   }
 
+  @E2E({ input: et.Attribute, output: rt.Column })
   Attribute2Column(a: et.IAttribute): Element<rt.IColumn> {
-    return <r.Column name={a.name}></r.Column>;
+    return <r.Column name={a.name} isKey={a.isKey}></r.Column>;
   }
 
   @VarPoint("FKorTable")
