@@ -4,7 +4,7 @@
  */
 
 import * as t from "aelastics-types";
-import { IModel } from "generic-metamodel";
+import { IModel, IModelElement } from "generic-metamodel";
 import { hm } from "../jsx/handle";
 import { Context } from "../jsx/context";
 import {
@@ -22,16 +22,37 @@ type IODescr = { type?: t.Any; instance?: IModel };
 class M2MContext extends Context {
   public input: IODescr = {};
   public output: IODescr = {};
-  public readonly traceMap: Map<any, any> = new Map();
+
+  public readonly traceMap: Map<IModelElement, Element<IModelElement> | null> =
+    new Map();
+  public readonly resolveMap: Map<
+    Element<IModelElement>,
+    IModelElement | undefined
+  > = new Map();
 
   constructor() {
     super();
   }
 
-  public makeTrace(input: any, output: any) {
-    this.traceMap.set(input, output);
+  public makeTrace(
+    sourceModelElement: IModelElement,
+    targetJSXElement: Element<IModelElement> | null
+  ) {
+    this.traceMap.set(sourceModelElement, targetJSXElement);
+
+    // TODO update this map during render of element
+    if (targetJSXElement) {
+      this.resolveMap.set(targetJSXElement, undefined);
+    }
   }
 
+  /**
+   *
+   * @param input
+   * @returns
+   *
+   * @deprecated Use resolveRender function
+   */
   public resolve(input: any): any {
     return this.traceMap.get(input);
   }

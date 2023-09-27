@@ -110,7 +110,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
     for (const [key, value] of Object.entries(props)) {
       let tmp =
-        value instanceof Element<P> ? value.render(ctx, isImport) : value;
+        value instanceof Element ? value.render(ctx, isImport) : value;
       Object.defineProperty(renderedProps, key, {
         value: tmp,
         enumerable: true,
@@ -340,7 +340,20 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     return parent.instance as P;
 
     function renderChild(childElement: Element<any, any>) {
+      /* TODO check if childElement is type of ResolveElement, call template
+       1 - find target ModelElement from resolveMap
+          if target ME doesn't exitst, throw Error
+        2 - call prop template function
+        3 -  call render element (recursive) for result of 2 
+            pay attention to array
+        4 - connect result of 3 to parent target model element
+            
+
+
+      */
+
       const child = childElement.render(ctx, isImport);
+      //TODO update resolveMap
       if (childElement.connectionInfo) {
         // connect parent and child if propName exit
         let propType = mapPropTypes.get(childElement.connectionInfo.propName!);

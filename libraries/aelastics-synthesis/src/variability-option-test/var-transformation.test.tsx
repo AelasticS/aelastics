@@ -130,13 +130,30 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
       w.weakMap?.domain
     );
 
+    const template = (result: rt.ITable) => (
+      <r.ForeignKey>
+        {result.columns
+          .filter((c) => c.isKey === true)
+          .map((c) => (
+            <r.Column></r.Column>
+          ))}
+      </r.ForeignKey>
+    );
+
     // TODO Formiraj slozeni kljuc od kljuca jakog objekta i svog kljuca. Ovo vazi pod uslov da se prvo obidju svi kerneli, pa onda slabi.
     // Ovo sve vazi pod ogranicenjem da weak moze zavisiti samo od kernela, a nema podtipova i agregacija u modelu
     return (
       <r.Table name={`Weak_${w.name}`}>
         {parentKeyAttributes.map((a) => (
-          <r.Column name={a.name} isKey={a.isKey}></r.Column>
+          <r.Column name={`p_${a.name}`} isKey={a.isKey}></r.Column>
         ))}
+        {/* {resolveRender(w.weakMap?.domain, template)}
+        
+        <ResolveElement
+          input={w.weakMap?.domain}
+          template={template}
+        >
+        </ResolveElement> */}
       </r.Table>
     );
   }
