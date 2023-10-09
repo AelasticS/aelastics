@@ -325,12 +325,13 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
           );
       } else if (Array.isArray(childElement)) {
         childElement.forEach((el) => renderChild(el));
-        // TODO check if child is a function
+        // TODO check if child is a function - what to do with a function? What is the parameters for a function?
       } else {
         // process proper children element
         renderChild(childElement);
       }
     });
+
     if (parent.type.isOfType(g.Model)) {
       // return old model
       ctx.popModel();
@@ -354,32 +355,46 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
                   */
 
       if (childElement instanceof ResolveElement) {
-        let a  = 5;
-        // const targetJSXElement: Element<g.IModelElement> | undefined = (
-        //   ctx as M2MContext
-        // ).traceMap.get(
-        //   // (childElement as ResolveElement).children.input
-        // );
+        const tempE: ResolveElement = childElement;
 
-        // if (targetJSXElement) {
-        //   const targetModelElement = (ctx as M2MContext).resolveMap.get(
-        //     targetJSXElement
-        //   );
+        if (childElement.children.length !== 1) {
+          throw new Error(
+            `Resolve element for "${
+              tempE.props.name ? tempE.props.name : tempE.props.input?.name
+            }" can have only one child element!`
+          );
+        }
 
-        //   if (!targetModelElement) {
-        //     throw new Error(
-        //       `Target model element for ${childElement.inputElement.name} source model element does not exists!`
-        //     );
-        //   }
+        if (typeof childElement.children[0] !== "function") {
+          throw new Error(
+            `Resolve element for "${
+              tempE.props.name ? tempE.props.name : tempE.props.input?.name
+            }" must have function as a child element!`
+          );
+        }
 
-        //   const subElements = childElement.templateFunction(targetModelElement);
-        // }
+        const m2mctx: M2MContext = ctx as M2MContext;
+
+        const targetJSXElement: Element<g.IModelElement> | undefined =
+          m2mctx.traceMap.get(tempE.props.input as g.IModelElement);
+
+        if (targetJSXElement) {
+          const targetModelElement = m2mctx.resolveMap.get(targetJSXElement);
+
+          if (!targetModelElement) {
+            throw new Error(
+              `Target model element for ${tempE.props.input?.name} source model element does not exists!`
+            );
+          }
+
+          let func: Function = childElement.children[0];
+          childElement = func(targetModelElement);
+        }
       }
 
       const child = childElement.render(ctx, isImport);
 
       if (ctx instanceof M2MContext) {
-        //TODO Is ctx shoul be type of Context or M2MContext?
         (ctx as M2MContext).resolveMap.set(childElement, child);
       }
 
@@ -401,16 +416,16 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
 interface IResolveElementProps {
   input: g.IModelElement;
+  name?: string;
 }
 
 export const ResolveElementTag = (props: IResolveElementProps) => {
-  return new Element(g.ModelElement, props as any, undefined);
+  return new ResolveElement(g.ModelElement, props as any, undefined);
 };
 
 export class ResolveElement extends Element<
   WithRefProps<IResolveElementProps>
 > {
-
   constructor(
     public readonly type: t.ObjectType<any, any>,
     props: IResolveElementProps,
@@ -455,18 +470,6 @@ let cnParentChild = (
     }
   }
 };
-
-// export const resolveRender = (
-//   input: g.IModelElement,
-//   template: (resElement: g.IModelElement) => Element<g.IModelElement>
-// ): ResolveElement => {
-//   let a = 3;
-//   return new ResolveElement(
-//     g.ModelElement,
-//     { input: input},
-//     undefined
-//   );
-// };
 
 // const cnParentChild = (parent: g.IModelElement, child: g.IModelElement, propName:string) => {
 //     if (!child)

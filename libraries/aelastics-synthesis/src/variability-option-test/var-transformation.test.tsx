@@ -12,7 +12,7 @@ import * as rt from "../test/relational-model/REL.meta.model.type";
 import * as e from "../test/eer-model/EER-components";
 import * as r from "../test/relational-model/REL-components";
 import { abstractM2M } from "./../transformations/abstractM2M";
-import { Element, ResolveElement, resolveRender } from "../jsx/element";
+import { Element, ResolveElementTag } from "../jsx/element";
 import { Context } from "../jsx/context";
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../index";
 // import { ResolveElement } from "./za-brisanje";
@@ -148,24 +148,21 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
         {parentKeyAttributes.map((a) => (
           <r.Column name={`p_${a.name}`} isKey={a.isKey}></r.Column>
         ))}
-        {/* {resolveRender(w.weakMap?.domain, templateF)} */}
 
-        <ResolveElement input={w.weakMap?.domain}>
+        <ResolveElementTag
+          input={w.weakMap?.domain}
+          name="resolve for fk columns"
+        >
           {(result: rt.ITable) => (
             <r.ForeignKey>
               {result.columns
                 .filter((c) => c.isKey === true)
                 .map((c) => (
-                  <r.Column></r.Column>
+                  <r.Column name={`fk_column_${c.name}`}></r.Column>
                 ))}
             </r.ForeignKey>
           )}
-        </ResolveElement>
-
-        {/* <ResolveElement
-          input={w.weakMap?.domain}
-          template={template}
-        ></ResolveElement> */}
+        </ResolveElementTag>
       </r.Table>
     );
   }
