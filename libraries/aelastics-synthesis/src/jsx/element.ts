@@ -1,8 +1,7 @@
 import * as t from "aelastics-types";
-import { Any, ObjectLiteral } from "aelastics-types";
 import * as g from "generic-metamodel";
 import { Context } from "./context";
-import { ModelStore } from "../index";
+import { M2MContext, ModelStore } from "../index";
 import { doParseURL, PathType } from "../model-store/path";
 
 // export type RefProps = { $ref?:g.IModelElement} | {$refByID?:string} | {$refByName?:string}
@@ -59,7 +58,7 @@ export type CpxTemplate<P extends {}, R extends g.IModelElement> = (
   props: P
 ) => Element<P, R>;
 
-export type ValueTemplate<P extends ObjectLiteral> = (
+export type ValueTemplate<P extends t.ObjectLiteral> = (
   props: WithRefProps<P>
 ) => Element<WithRefProps<P>, P>;
 
@@ -74,6 +73,7 @@ export type ConnectionInfo = {
   textContentAllowed: boolean; // are textual sub-elements allowed
   textPropName: string; // the name of property receiving text content, if the text content allowed
 };
+
 export function defaultConnectionInfo(propName?: string): ConnectionInfo {
   return {
     propName: propName,
@@ -109,8 +109,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let renderedProps = {};
 
     for (const [key, value] of Object.entries(props)) {
-      let tmp =
-        value instanceof Element ? value.render(ctx, isImport) : value;
+      let tmp = value instanceof Element ? value.render(ctx, isImport) : value;
       Object.defineProperty(renderedProps, key, {
         value: tmp,
         enumerable: true,
@@ -285,6 +284,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   // example PesonNAme and string in ModelStore.test.ts
 
   public render<P extends g.IModelElement>(
+    // TODO: Context shoul be instance of M2MContext
     ctx: Context,
     isImport: boolean = false
   ): P {
@@ -325,6 +325,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
           );
       } else if (Array.isArray(childElement)) {
         childElement.forEach((el) => renderChild(el));
+        // TODO check if child is a function
       } else {
         // process proper children element
         renderChild(childElement);
@@ -341,19 +342,47 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
     function renderChild(childElement: Element<any, any>) {
       /* TODO check if childElement is type of ResolveElement, call template
-       1 - find target ModelElement from resolveMap
-          if target ME doesn't exitst, throw Error
-        2 - call prop template function
-        3 -  call render element (recursive) for result of 2 
-            pay attention to array
-        4 - connect result of 3 to parent target model element
-            
+                   1 - find target ModelElement from resolveMap
+                      if target ME doesn't exitst, throw Error
+                    2 - call prop template function
+                    3 -  call render element (recursive) for result of 2
+                        pay attention to array
+                    4 - connect result of 3 to parent target model element
 
 
-      */
+
+                  */
+
+      if (childElement instanceof ResolveElement) {
+        let a  = 5;
+        // const targetJSXElement: Element<g.IModelElement> | undefined = (
+        //   ctx as M2MContext
+        // ).traceMap.get(
+        //   // (childElement as ResolveElement).children.input
+        // );
+
+        // if (targetJSXElement) {
+        //   const targetModelElement = (ctx as M2MContext).resolveMap.get(
+        //     targetJSXElement
+        //   );
+
+        //   if (!targetModelElement) {
+        //     throw new Error(
+        //       `Target model element for ${childElement.inputElement.name} source model element does not exists!`
+        //     );
+        //   }
+
+        //   const subElements = childElement.templateFunction(targetModelElement);
+        // }
+      }
 
       const child = childElement.render(ctx, isImport);
-      //TODO update resolveMap
+
+      if (ctx instanceof M2MContext) {
+        //TODO Is ctx shoul be type of Context or M2MContext?
+        (ctx as M2MContext).resolveMap.set(childElement, child);
+      }
+
       if (childElement.connectionInfo) {
         // connect parent and child if propName exit
         let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
@@ -367,6 +396,28 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
           );
       }
     }
+  }
+}
+
+interface IResolveElementProps {
+  input: g.IModelElement;
+}
+
+export const ResolveElementTag = (props: IResolveElementProps) => {
+  return new Element(g.ModelElement, props as any, undefined);
+};
+
+export class ResolveElement extends Element<
+  WithRefProps<IResolveElementProps>
+> {
+
+  constructor(
+    public readonly type: t.ObjectType<any, any>,
+    props: IResolveElementProps,
+    public readonly connInfo?: string | ConnectionInfo,
+    public name?: string
+  ) {
+    super(type, props, connInfo, name);
   }
 }
 
@@ -404,6 +455,18 @@ let cnParentChild = (
     }
   }
 };
+
+// export const resolveRender = (
+//   input: g.IModelElement,
+//   template: (resElement: g.IModelElement) => Element<g.IModelElement>
+// ): ResolveElement => {
+//   let a = 3;
+//   return new ResolveElement(
+//     g.ModelElement,
+//     { input: input},
+//     undefined
+//   );
+// };
 
 // const cnParentChild = (parent: g.IModelElement, child: g.IModelElement, propName:string) => {
 //     if (!child)

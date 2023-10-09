@@ -19,12 +19,14 @@ import { ModelStore } from "./../index";
 
 type IODescr = { type?: t.Any; instance?: IModel };
 
-class M2MContext extends Context {
+export class M2MContext extends Context {
   public input: IODescr = {};
   public output: IODescr = {};
 
-  public readonly traceMap: Map<IModelElement, Element<IModelElement> | null> =
-    new Map();
+  public readonly traceMap: Map<
+    IModelElement,
+    Element<IModelElement> | undefined
+  > = new Map();
   public readonly resolveMap: Map<
     Element<IModelElement>,
     IModelElement | undefined
@@ -36,7 +38,7 @@ class M2MContext extends Context {
 
   public makeTrace(
     sourceModelElement: IModelElement,
-    targetJSXElement: Element<IModelElement> | null
+    targetJSXElement: Element<IModelElement> | undefined // can be undefined, when it only need to be logged method call, not and result
   ) {
     this.traceMap.set(sourceModelElement, targetJSXElement);
 

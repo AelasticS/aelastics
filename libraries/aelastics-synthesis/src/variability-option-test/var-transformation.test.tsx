@@ -12,9 +12,10 @@ import * as rt from "../test/relational-model/REL.meta.model.type";
 import * as e from "../test/eer-model/EER-components";
 import * as r from "../test/relational-model/REL-components";
 import { abstractM2M } from "./../transformations/abstractM2M";
-import { Element } from "../jsx/element";
+import { Element, ResolveElement, resolveRender } from "../jsx/element";
 import { Context } from "../jsx/context";
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../index";
+// import { ResolveElement } from "./za-brisanje";
 
 const testStore = new ModelStore();
 
@@ -130,15 +131,15 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
       w.weakMap?.domain
     );
 
-    const template = (result: rt.ITable) => (
-      <r.ForeignKey>
-        {result.columns
-          .filter((c) => c.isKey === true)
-          .map((c) => (
-            <r.Column></r.Column>
-          ))}
-      </r.ForeignKey>
-    );
+    // const templateF = (result: rt.ITable) => (
+    //   <r.ForeignKey>
+    //     {result.columns
+    //       .filter((c) => c.isKey === true)
+    //       .map((c) => (
+    //         <r.Column></r.Column>
+    //       ))}
+    //   </r.ForeignKey>
+    // );
 
     // TODO Formiraj slozeni kljuc od kljuca jakog objekta i svog kljuca. Ovo vazi pod uslov da se prvo obidju svi kerneli, pa onda slabi.
     // Ovo sve vazi pod ogranicenjem da weak moze zavisiti samo od kernela, a nema podtipova i agregacija u modelu
@@ -147,13 +148,24 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
         {parentKeyAttributes.map((a) => (
           <r.Column name={`p_${a.name}`} isKey={a.isKey}></r.Column>
         ))}
-        {/* {resolveRender(w.weakMap?.domain, template)}
-        
-        <ResolveElement
+        {/* {resolveRender(w.weakMap?.domain, templateF)} */}
+
+        <ResolveElement input={w.weakMap?.domain}>
+          {(result: rt.ITable) => (
+            <r.ForeignKey>
+              {result.columns
+                .filter((c) => c.isKey === true)
+                .map((c) => (
+                  <r.Column></r.Column>
+                ))}
+            </r.ForeignKey>
+          )}
+        </ResolveElement>
+
+        {/* <ResolveElement
           input={w.weakMap?.domain}
           template={template}
-        >
-        </ResolveElement> */}
+        ></ResolveElement> */}
       </r.Table>
     );
   }
@@ -171,7 +183,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     // return null as unknown as Element<rt.IForeignKey> | Element<rt.ITable>;
   }
 
-  @VarOption("RelationshipToElement", () => true)
+  @VarOption("RelationshipToElement", () => false)
   RelatioshipToFK(rel: et.IRelationship): Element<rt.IForeignKey> {
     const aaa = this.context.resolve(rel.ordinaryMapping[0]);
 
