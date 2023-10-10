@@ -12,7 +12,7 @@ import * as rt from "../test/relational-model/REL.meta.model.type";
 import * as e from "../test/eer-model/EER-components";
 import * as r from "../test/relational-model/REL-components";
 import { abstractM2M } from "./../transformations/abstractM2M";
-import { Element, ResolveElementTag } from "../jsx/element";
+import { Element, Resolve } from "../jsx/element";
 import { Context } from "../jsx/context";
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../index";
 // import { ResolveElement } from "./za-brisanje";
@@ -67,7 +67,8 @@ const eerSchema1: Element<et.IEERSchema> = (
   </e.EERSchema>
 );
 
-const s1: et.IEERSchema = eerSchema1.render(new Context());
+const ctx = new Context();
+const s1: et.IEERSchema = eerSchema1.render(ctx);
 
 @M2M({ input: et.EERSchema, output: rt.RelSchema })
 class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
@@ -149,10 +150,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
           <r.Column name={`p_${a.name}`} isKey={a.isKey}></r.Column>
         ))}
 
-        <ResolveElementTag
-          input={w.weakMap?.domain}
-          name="resolve for fk columns"
-        >
+        <Resolve input={w.weakMap?.domain} name="resolve for fk columns">
           {(result: rt.ITable) => (
             <r.ForeignKey>
               {result.columns
@@ -162,7 +160,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
                 ))}
             </r.ForeignKey>
           )}
-        </ResolveElementTag>
+        </Resolve>
       </r.Table>
     );
   }

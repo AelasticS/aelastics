@@ -42,6 +42,7 @@ export class EntityReference<T extends ObjectType<any, readonly string[]>> exten
   }
 
   *children(value: TypeOfKey<T> , n: Node): Generator<[TypeOfKey<T> , Any , ExtraInfo]> {
+    // TODO: Fix EntityReference identifier
     const identifier = this.referencedType.identifier
     for (let i = 0; i < identifier.length; i++) {
       const k = identifier[i]

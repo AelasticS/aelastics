@@ -90,6 +90,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public subElement?: Element<any>;
   public readonly connectionInfo?: ConnectionInfo;
   public props: P;
+  public rule?: string;
 
   constructor(
     public readonly type: t.ObjectType<any, any>,
@@ -314,7 +315,6 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         if (
           this.connectionInfo?.textContentAllowed &&
           txtProp &&
-          txtProp &&
           txtProp in parent.instance
         ) {
           //@ts-ignore
@@ -419,7 +419,7 @@ interface IResolveElementProps {
   name?: string;
 }
 
-export const ResolveElementTag = (props: IResolveElementProps) => {
+export const Resolve = (props: IResolveElementProps) => {
   return new ResolveElement(g.ModelElement, props as any, undefined);
 };
 
