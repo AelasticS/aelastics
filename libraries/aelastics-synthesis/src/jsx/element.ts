@@ -342,73 +342,85 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     return parent.instance as P;
 
     function renderChild(childElement: Element<any, any>) {
-      /* TODO check if childElement is type of ResolveElement, call template
-                   1 - find target ModelElement from resolveMap
-                      if target ME doesn't exitst, throw Error
-                    2 - call prop template function
-                    3 -  call render element (recursive) for result of 2
-                        pay attention to array
-                    4 - connect result of 3 to parent target model element
 
-
-
-                  */
-
+      // check if childElement is type of ResolveElement
       if (childElement instanceof ResolveElement) {
         const tempE: ResolveElement = childElement;
 
+        // Resolve element can have only one child and it has to be a function
         if (childElement.children.length !== 1) {
           throw new Error(
-            `Resolve element for "${
-              tempE.props.name ? tempE.props.name : tempE.props.input?.name
+            `Resolve element for "${tempE.props.name ? tempE.props.name : ''
             }" can have only one child element!`
           );
         }
 
         if (typeof childElement.children[0] !== "function") {
           throw new Error(
-            `Resolve element for "${
-              tempE.props.name ? tempE.props.name : tempE.props.input?.name
+            `Resolve element for "${tempE.props.name ? tempE.props.name : ''
             }" must have function as a child element!`
           );
         }
 
         const m2mctx: M2MContext = ctx as M2MContext;
 
-        const targetJSXElement: Element<g.IModelElement> | undefined =
-          m2mctx.traceMap.get(tempE.props.input as g.IModelElement);
+        // find JSXElement from source ModelElemet
+        const traceRecords = m2mctx.traceMap.get(tempE.props.input as g.IModelElement);
 
-        if (targetJSXElement) {
-          const targetModelElement = m2mctx.resolveMap.get(targetJSXElement);
+        let targetJSXElement = undefined;
 
-          if (!targetModelElement) {
-            throw new Error(
-              `Target model element for ${tempE.props.input?.name} source model element does not exists!`
-            );
+        if (traceRecords) {
+          if (tempE.props.ruleName) {
+            targetJSXElement = traceRecords.find(e => e.ruleName == tempE.props.ruleName)?.target
+          } else {
+            targetJSXElement = traceRecords[0].target;
           }
-
-          let func: Function = childElement.children[0];
-          childElement = func(targetModelElement);
         }
-      }
 
-      const child = childElement.render(ctx, isImport);
-
-      if (ctx instanceof M2MContext) {
-        (ctx as M2MContext).resolveMap.set(childElement, child);
-      }
-
-      if (childElement.connectionInfo) {
-        // connect parent and child if propName exit
-        let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
-        if (propType)
-          cnParentChild(
-            childElement.connectionInfo.propName,
-            t.findTypeCategory(propType),
-            parent.instance,
-            child,
-            childElement.connectionInfo.isReconnectAllowed
+        // TODO Should this be an Error or Null? The target JSXElement does not exist because of an error during the transformation or because the transformation rule is N/A
+        if (!targetJSXElement) {
+          throw new Error(
+            `Target JSXElement for ${tempE.props.input} source model element does not exists!`
           );
+        }
+
+        // find target ModelElement from resolveMap
+        const targetModelElement = m2mctx.resolveMap.get(targetJSXElement);
+
+        // TODO Should this be an Error or Null? The target JSXElement does not exist because of an error during the transformation or because the transformation rule is N/A
+        if (!targetModelElement) {
+          throw new Error(
+            `Target model element for ${tempE.props.input} source model element does not exists!`
+          );
+        }
+
+        // call template function and replace original childElement
+        let func: Function = childElement.children[0];
+        childElement = func(targetModelElement);
+      }
+
+      connectToParent(childElement, ctx, isImport);
+
+
+      function connectToParent(childElement: Element<g.IModelElement>, ctx: Context, isImport: boolean | undefined) {
+
+        const child = childElement.render(ctx, isImport);
+        if (ctx instanceof M2MContext) {
+          (ctx as M2MContext).resolveMap.set(childElement, child);
+        }
+
+        if (childElement.connectionInfo) {
+          // connect parent and child if propName exit
+          let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
+          if (propType)
+            cnParentChild(
+              childElement.connectionInfo.propName,
+              t.findTypeCategory(propType),
+              parent.instance,
+              child,
+              childElement.connectionInfo.isReconnectAllowed
+            );
+        }
       }
     }
   }
@@ -417,6 +429,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 interface IResolveElementProps {
   input: g.IModelElement;
   name?: string;
+  ruleName?: string;
 }
 
 export const Resolve = (props: IResolveElementProps) => {

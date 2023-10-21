@@ -16,6 +16,11 @@ export const Column: Template<r.IColumn> = (props) => {
   return new Element(r.Column, props, 'columns')
 }
 
+export const ForeignKeyColumn: Template<r.IForeignKeyColumn> = (props) => {
+  return new Element(r.ForeignKeyColumn, props, 'columns')
+}
+
+
 export const Index: Template<r.IIndex> = (props) => {
   return new Element(r.Index, props, 'indexes')
 }

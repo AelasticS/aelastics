@@ -32,9 +32,15 @@ export const Index = t.subtype(ModelElement, {
   isUnique: t.boolean
 }, "Index", RelModel_TypeSchema);
 
+export const ForeignKeyColumn = t.subtype(ModelElement, {
+  fkColumn: Column,
+  refColumn: Column
+}, 'ForeignKeyColumn', RelModel_TypeSchema);
+
 export const ForeignKey = t.subtype(ModelElement, {
   ownerTable: t.link(RelModel_TypeSchema, 'Table'),
-  columns: t.arrayOf(Column),
+  // columns: t.arrayOf(Column),
+  columns: t.arrayOf(ForeignKeyColumn),
   isUnique: t.boolean,
   referencedTable: t.link(RelModel_TypeSchema, 'Table')
 }, "ForeignKey", RelModel_TypeSchema);
@@ -52,4 +58,5 @@ export type IDomain = t.TypeOf<typeof Domain>
 export type IColumn = t.TypeOf<typeof Column>
 export type IIndex = t.TypeOf<typeof Index>
 export type IForeignKey = t.TypeOf<typeof ForeignKey>
+export type IForeignKeyColumn = t.TypeOf<typeof ForeignKeyColumn>
 

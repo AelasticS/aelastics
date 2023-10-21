@@ -23,16 +23,16 @@ import { Sec } from "../m2t";
 export interface IM2MDecorator {
   input: t.Any;
   output: t.Any;
-  name?: string;
+  transformationName?: string;
 }
 export interface IE2EDecorator {
   input: t.Any;
   output: t.Any;
-  name?: string;
+  ruleName?: string;
 }
 
 type M2M_Ctor = {
-  new (s: string): abstractM2M<any, any>;
+  new(s: string): abstractM2M<any, any>;
 };
 
 // type Class<T = any> =  abstract new (...args: any[]) => T;
@@ -54,9 +54,9 @@ type M2M_Ctor = {
 
 type Class<T = any> = new (...args: any[]) => T;
 
-export const M2M = ({ input, output, name }: IM2MDecorator) => {
+export const M2M = ({ input, output, transformationName }: IM2MDecorator) => {
   return function <T extends Class<IM2M<any, any>>>(target: T) {
-    if (!name) name = target.name;
+    if (!transformationName) transformationName = target.name;
 
     //return function _M2M<T extends new (...args:any[]) => abstractM2M<any, any>>(target: T){
     return class extends target {
@@ -69,7 +69,7 @@ export const M2M = ({ input, output, name }: IM2MDecorator) => {
         // set transformation type
         this.context.transformation.type =
           this.context.store.newModel<IM2M_Transformation>(M2M_Transformation, {
-            name: name,
+            name: transformationName,
           });
       }
     };
@@ -151,13 +151,13 @@ export const M2M_v0 = ({ input, output }: IM2MDecorator) => {
 // }
 
 // method descriptor
-export const E2E = function ({ input, output, name }: IE2EDecorator) {
+export const E2E = function ({ input, output, ruleName }: IE2EDecorator) {
   return function (
     target: abstractM2M<IModel, IModel>,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    if (!name) name = propertyKey;
+    if (!ruleName) ruleName = propertyKey;
 
     // save a reference to the original function
     const original = descriptor.value;
@@ -165,7 +165,7 @@ export const E2E = function ({ input, output, name }: IE2EDecorator) {
     descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
       // find or create E2E_Transformation
       const ruleType = this.context.transformation.type?.elements.find(
-        (e) => e.name == name
+        (e) => e.name == ruleName
       ) as IE2E_Transformation;
 
       if (!ruleType) {
@@ -175,25 +175,25 @@ export const E2E = function ({ input, output, name }: IE2EDecorator) {
           this.context.transformation.type!,
           E2E_Transformation,
           {
-            name: name,
+            name: ruleName,
             fromType: input.name,
             toType: output.name,
           }
         );
       }
 
-      let a = args[0];
-      let r = original.apply(this, args) as Element<any>;
-      r.rule = name;
+      let sourceModelElement = args[0];
+      let targetJSXElement = original.apply(this, args) as Element<any>;
+      targetJSXElement.rule = ruleName;
 
       // this.context.makeTrace(a, {
       //   type: Array.isArray(r) ? Array : r?.type,
       //   element: r,
       // });
 
-      this.context.makeTrace(a, r);
+      this.context.makeTrace(sourceModelElement, { target: targetJSXElement, ruleName: ruleName as string });
 
-      return r;
+      return targetJSXElement;
     };
     return descriptor;
   };

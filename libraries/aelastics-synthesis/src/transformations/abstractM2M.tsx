@@ -24,20 +24,19 @@ type TransformationDescr = {
   instance?: tm.IM2M_Trace;
 };
 
+interface ITraceRecord {
+  target: Element<IModelElement> | undefined;
+  ruleName: string;
+}
+
 export class M2MContext extends Context {
   public input: IODescr = {};
   public output: IODescr = {};
   public transformation: TransformationDescr = {};
 
-  public readonly traceMap: Map<
-    IModelElement,
-    Element<IModelElement> | undefined
-  > = new Map();
+  public readonly traceMap: Map<IModelElement, Array<ITraceRecord>> = new Map();
 
-  public readonly resolveMap: Map<
-    Element<IModelElement>,
-    IModelElement | undefined
-  > = new Map();
+  public readonly resolveMap: Map<Element<IModelElement>, IModelElement | undefined> = new Map();
 
   constructor() {
     super();
@@ -45,13 +44,20 @@ export class M2MContext extends Context {
 
   public makeTrace(
     sourceModelElement: IModelElement,
-    targetJSXElement: Element<IModelElement> | undefined // can be undefined, when it only need to be logged method call, not and result
+    targetJSXElement: ITraceRecord // can be undefined, when it only need to be logged method call, not and result
   ) {
-    this.traceMap.set(sourceModelElement, targetJSXElement);
 
-    // TODO update this map during render of element
-    if (targetJSXElement) {
-      this.resolveMap.set(targetJSXElement, undefined);
+    if (!this.traceMap.has(sourceModelElement)) {
+      this.traceMap.set(sourceModelElement, [targetJSXElement]);
+    } else {
+      const tmpArray = this.traceMap.get(sourceModelElement) as Array<ITraceRecord>;
+      tmpArray.push(targetJSXElement);
+      this.traceMap.set(sourceModelElement, tmpArray);
+    }
+
+    // this map will be updated during rendering of element
+    if (targetJSXElement.target) {
+      this.resolveMap.set(targetJSXElement.target, undefined);
     }
   }
 
@@ -118,26 +124,29 @@ export abstract class abstractM2M<S extends IModel, D extends IModel>
     // create instances of E2E trace
     Array.from(this.context.traceMap.entries()).forEach(([k, v]) => {
       if (v) {
-        const targetModelElement = this.context.resolveMap.get(v);
 
-        const ruleType = this.context.transformation.type?.elements.find(
-          (e) => e.name == v.rule
-        ) as tm.IE2E_Transformation;
+        v.forEach(jsxElement => {
+          const targetModelElement = this.context.resolveMap.get(jsxElement.target as Element<IModelElement>);
 
-        if (targetModelElement) {
-          store.newModelElement<tm.IE2E_Trace>(
-            this.context.transformation.instance!,
-            this.context.transformation.instance!,
-            tm.E2E_Trace,
-            {
-              name: `${k.name} to ${targetModelElement?.name}`,
-              parentModel: this.context.transformation.instance,
-              from: [k.name],
-              to: [targetModelElement.name],
-              instanceOf: ruleType,
-            }
-          );
-        }
+          const ruleType = this.context.transformation.type?.elements.find(
+            (e) => e.name == jsxElement.ruleName
+          ) as tm.IE2E_Transformation;
+
+          if (targetModelElement) {
+            store.newModelElement<tm.IE2E_Trace>(
+              this.context.transformation.instance!,
+              this.context.transformation.instance!,
+              tm.E2E_Trace,
+              {
+                name: `${k.name} to ${targetModelElement?.name}`,
+                parentModel: this.context.transformation.instance,
+                from: [k.name],
+                to: [targetModelElement.name],
+                instanceOf: ruleType,
+              }
+            );
+          }
+        });
       }
     });
 

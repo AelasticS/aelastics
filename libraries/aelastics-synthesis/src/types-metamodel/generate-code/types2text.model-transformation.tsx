@@ -121,7 +121,7 @@ export class Types2TextModelTransformations extends abstractM2M<
 
     if (this.context.store.isTypeOf(t, tmm.SimpleType)) {
       // TODO How to map simple types
-      this.context.makeTrace(t, undefined);
+      this.context.makeTrace(t, { target: undefined, ruleName: 'transformType' });
 
       return null;
     }
