@@ -52,4 +52,3 @@ export type IDomain = t.TypeOf<typeof Domain>
 export type IColumn = t.TypeOf<typeof Column>
 export type IIndex = t.TypeOf<typeof Index>
 export type IForeignKey = t.TypeOf<typeof ForeignKey>
-

@@ -1,4 +1,4 @@
-import * as r from './REL.meta.model.type'
+import * as r from './REL.meta.model.type.v2'
 import { CpxTemplate, Element, Template, WithRefProps } from '../../jsx/element'
 import { ModelStore } from '../../index'
 
@@ -17,7 +17,7 @@ export const Column: Template<r.IColumn> = (props) => {
 }
 
 export const ForeignKeyColumn: Template<r.IForeignKeyColumn> = (props) => {
-  return new Element(r.ForeignKeyColumn, props, 'columns')
+  return new Element(r.ForeignKeyColumn, props, 'fkColumns')
 }
 
 

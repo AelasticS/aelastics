@@ -326,6 +326,10 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       } else if (Array.isArray(childElement)) {
         childElement.forEach((el) => renderChild(el));
         // TODO check if child is a function - what to do with a function? What is the parameters for a function?
+      } else if (typeof childElement === "function") {
+        // TODO added new part
+        // renderChild(this);
+        throw Error("Type of childElement cannot be a function!");
       } else {
         // process proper children element
         renderChild(childElement);
@@ -365,24 +369,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         const m2mctx: M2MContext = ctx as M2MContext;
 
         // find JSXElement from source ModelElemet
-        const traceRecords = m2mctx.traceMap.get(tempE.props.input as g.IModelElement);
-
-        let targetJSXElement = undefined;
-
-        if (traceRecords) {
-          if (tempE.props.ruleName) {
-            targetJSXElement = traceRecords.find(e => e.ruleName == tempE.props.ruleName)?.target
-          } else {
-            targetJSXElement = traceRecords[0].target;
-          }
-        }
-
-        // TODO Should this be an Error or Null? The target JSXElement does not exist because of an error during the transformation or because the transformation rule is N/A
-        if (!targetJSXElement) {
-          throw new Error(
-            `Target JSXElement for ${tempE.props.input} source model element does not exists!`
-          );
-        }
+        let targetJSXElement = m2mctx.resolveJSXElement(tempE.props.input as g.IModelElement, tempE.props.ruleName);
 
         // find target ModelElement from resolveMap
         const targetModelElement = m2mctx.resolveMap.get(targetJSXElement);
@@ -396,17 +383,29 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
         // call template function and replace original childElement
         let func: Function = childElement.children[0];
-        childElement = func(targetModelElement);
+
+        // TODO childElement can be type of Element or ResolveElement
+        let childFuncElement = func(targetModelElement);
+
+
+        if (childFuncElement instanceof ResolveElement) {
+          // const a = parent.instance;
+          childFuncElement = renderChild(childFuncElement);
+        }
+        else {
+          connectToParent(childFuncElement, ctx, isImport);
+        }
+
+        return childFuncElement;
       }
 
       connectToParent(childElement, ctx, isImport);
 
-
       function connectToParent(childElement: Element<g.IModelElement>, ctx: Context, isImport: boolean | undefined) {
 
-        const child = childElement.render(ctx, isImport);
+        const childModelElement = childElement.render(ctx, isImport);
         if (ctx instanceof M2MContext) {
-          (ctx as M2MContext).resolveMap.set(childElement, child);
+          (ctx as M2MContext).resolveMap.set(childElement, childModelElement);
         }
 
         if (childElement.connectionInfo) {
@@ -417,11 +416,13 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
               childElement.connectionInfo.propName,
               t.findTypeCategory(propType),
               parent.instance,
-              child,
+              childModelElement,
               childElement.connectionInfo.isReconnectAllowed
             );
         }
       }
+
+      return childElement;
     }
   }
 }

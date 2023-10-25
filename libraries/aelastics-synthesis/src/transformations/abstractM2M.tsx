@@ -24,7 +24,7 @@ type TransformationDescr = {
   instance?: tm.IM2M_Trace;
 };
 
-interface ITraceRecord {
+export interface ITraceRecord {
   target: Element<IModelElement> | undefined;
   ruleName: string;
 }
@@ -62,14 +62,35 @@ export class M2MContext extends Context {
   }
 
   /**
-   *
-   * @param input
-   * @returns
-   *
-   * @deprecated Use resolveRender function
+   * 
+   * @param input IModelElement
+   * @param ruleName string
+   * @returns Element<IModelElement>
    */
-  public resolve(input: any): any {
-    return this.traceMap.get(input);
+  public resolveJSXElement(input: IModelElement, ruleName?: string): Element<IModelElement> {
+    // return this.traceMap.get(input);
+
+    const traceRecords = this.traceMap.get(input);
+
+    let targetJSXElement = undefined;
+
+    if (traceRecords) {
+      if (ruleName) {
+        targetJSXElement = traceRecords.find(e => e.ruleName == ruleName)?.target
+      } else {
+        targetJSXElement = traceRecords[0].target;
+      }
+    }
+
+    // TODO Should this be an Error or Null? The target JSXElement does not exist because of an error during the transformation or because the transformation rule is N/A
+    if (!targetJSXElement) {
+      throw new Error(
+        `Target JSXElement for ${input} source model element does not exists!`
+      );
+    }
+
+    return targetJSXElement;
+
   }
 }
 
@@ -126,6 +147,7 @@ export abstract class abstractM2M<S extends IModel, D extends IModel>
       if (v) {
 
         v.forEach(jsxElement => {
+
           const targetModelElement = this.context.resolveMap.get(jsxElement.target as Element<IModelElement>);
 
           const ruleType = this.context.transformation.type?.elements.find(
@@ -146,6 +168,7 @@ export abstract class abstractM2M<S extends IModel, D extends IModel>
               }
             );
           }
+
         });
       }
     });

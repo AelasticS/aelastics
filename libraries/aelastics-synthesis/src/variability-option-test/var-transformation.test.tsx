@@ -87,6 +87,10 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
           .map((el) => this.Entity2Table(el as et.IEntity))}
 
         {s.elements
+          .filter((el) => this.context.store.isTypeOf(el, et.WeakMapping))
+          .map((el) => this.WeekMappingToFK(el as et.IWeakMapping))}
+
+        {s.elements
           .filter((el) => this.context.store.isTypeOf(el, et.Relationship))
           .map((el) => this.RelationshipToElement(el as et.IRelationship))}
       </r.RelSchema>
@@ -113,39 +117,55 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
   // @E2E({ input: et.Weak, output: rt.Table })
   @SpecOption("Entity2Table", et.Weak)
   Week2Table(w: et.IWeak): Element<rt.ITable> {
-
-    // override table name from super rule
-    const parentKeyAttributes: Array<et.IAttribute> =
-      w.weakMap?.domain?.attributes?.filter(
-        (attr: et.IAttribute) => attr.isKey == true
-      );
-
     // TODO Formiraj slozeni kljuc od kljuca jakog objekta i svog kljuca. Ovo vazi pod uslov da se prvo obidju svi kerneli, pa onda slabi.
     // Ovo sve vazi pod ogranicenjem da weak moze zavisiti samo od kernela, a nema podtipova i agregacija u modelu
     return (
       <r.Table name={`w_${w.name}`}>
-
-
-        {parentKeyAttributes.map((attribute) => (this.Attribute2FKColumn(attribute)))}
-
-        {/* // TODO Resolve should have trasformation (rule) name, in case when some ModelElement can be transformed by multiple rules. 
-        In this case, attribute from kernel will be transformed by Attribute2Column rule, and by Week2Table(Entity2Table rule)  */}
-        <Resolve input={w.weakMap?.domain} name="resolve for fk columns">
-          {(result: rt.ITable) => (
-            //TODO posible namems for Resolve: resolveOne, resolve, resolveAll, resolveIn. Check with options in QVT
-            <r.ForeignKey name="parentTableFK" referencedTable={result}>
-              {parentKeyAttributes.map((attribute) => (
-                <Resolve name="resolve for inner element" input={attribute} ruleName="Attribute2FKColumn">
-                  {(domainColumn: rt.IColumn) => (
-                    <r.ForeignKeyColumn fkColumn={domainColumn} name="fk column for parentTableFK"></r.ForeignKeyColumn>
-                  )}
-                </Resolve>
-              ))}
-            </r.ForeignKey>
-          )}
-        </Resolve>
+        {/* TODO poziv weekmappinga ne može da se radi u ovom trenutku, jer table još uvek nije napravljen  */}
+        {/* {this.WeekMappingToFK(w.weakMap)} */}
       </r.Table >
     );
+  }
+
+  @E2E({ input: et.WeakMapping, output: rt.ForeignKey })
+  WeekMappingToFK(wm: et.IWeakMapping) {
+
+    // override table name from super rule
+    const parentKeyAttributes: Array<et.IAttribute> =
+      wm.domain?.attributes?.filter(
+        (attr: et.IAttribute) => attr.isKey == true
+      );
+
+    // let a = this.context.resolveJSXElement(wm.domain);
+
+    return <Resolve name="res1" input={wm.domain} ruleName="Entity2Table">
+      {(refTable: rt.ITable) => (
+        <Resolve name="res2" input={wm.codomain} ruleName="Entity2Table">
+          {(ownerTable: rt.ITable) => (
+            <r.ForeignKey name={`for_key_ref_${refTable.name}`}
+              referencedTable={<r.Table $refByName={refTable.name}></r.Table>}
+              ownerTable={<r.Table $refByName={ownerTable.name}></r.Table>}
+            >
+              {parentKeyAttributes.map((attribute) => (
+                this.Attribute2PKColumn(attribute, ownerTable)
+              ))}
+
+              {parentKeyAttributes.map((attribute) => (
+                this.Attribute2FKColumn(attribute)
+              ))}
+
+            </r.ForeignKey>
+          )}
+        </Resolve>)}
+    </Resolve>
+
+
+    {/* // TODO Resolve should have trasformation (rule) name, in case when some ModelElement can be transformed by multiple rules. 
+    In this case, attribute from kernel will be transformed by Attribute2Column rule, and by Week2Table(Entity2Table rule)
+
+    How to find a target JSX element (fk column) in case when one table has FK in more than one table? FK is a result of transformation of Association, and one FK can be
+    target of one association 
+    */}
   }
 
   @E2E({ input: et.Attribute, output: rt.Column })
@@ -154,8 +174,26 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
   }
 
   @E2E({ input: et.Attribute, output: rt.Column })
-  Attribute2FKColumn(a: et.IAttribute): Element<rt.IColumn> {
-    return <r.Column name={`fk_${a.name}`} isKey={a.isKey}></r.Column>;
+  Attribute2PKColumn(a: et.IAttribute, ownerTable: rt.ITable): Element<rt.IColumn> {
+    return <r.Column name={`fk_${a.name}`} isKey={true} ownerTable={<r.Table $refByName={ownerTable.name}></r.Table>}></r.Column >;
+  }
+
+  @E2E({ input: et.Attribute, output: rt.ForeignKeyColumn })
+  Attribute2FKColumn(a: et.IAttribute): Element<rt.IForeignKeyColumn> {
+
+    return <Resolve input={a} ruleName="Attribute2Column">
+      {(refColumn: rt.IColumn) => (
+        <Resolve input={a} ruleName="Attribute2PKColumn">
+          {(fkColumn: rt.IColumn) => (
+            <r.ForeignKeyColumn name={`fk_col_${a.name}`}
+              fkColumn={<r.Column $refByName={fkColumn.name}></r.Column>}
+              refColumn={<r.Column $refByName={refColumn.name}></r.Column>}
+            >
+            </r.ForeignKeyColumn >
+          )}
+        </Resolve>
+      )}
+    </Resolve>;
   }
 
   @VarPoint("FKorTable")
@@ -171,9 +209,9 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     // const aaa = this.context.resolve(rel.ordinaryMapping[0]);
 
     return (
-      <r.ForeignKey>
+      <r.ForeignKey >
         <r.Table $refByName=""></r.Table>
-      </r.ForeignKey>
+      </r.ForeignKey >
     );
   }
 
@@ -182,30 +220,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     const codomain = et.getCodomain(rel.ordinaryMapping[0]);
     const domain = et.getInverse(rel.ordinaryMapping[0]);
 
-    return <r.Table name="RelationshipToElement table">
-      {/* <Resolve input={codomain}>
-        {(result: rt.ITable) => (
-          <r.ForeignKey>
-            {result.columns
-              .filter((c) => c.isKey === true)
-              .map((c) => (
-                <r.Column name={`fk_column_${c.name}`}></r.Column>
-              ))}
-          </r.ForeignKey>
-        )}
-      </Resolve>
-      <Resolve input={domain}>
-        {(result: rt.ITable) => (
-          <r.ForeignKey>
-            {result.columns
-              .filter((c) => c.isKey === true)
-              .map((c) => (
-                <r.Column name={`fk_column_${c.name}`}></r.Column>
-              ))}
-          </r.ForeignKey>
-        )}
-      </Resolve> */}
-    </r.Table>;
+    return <r.Table name="RelationshipToElement table"></r.Table >;
   }
 }
 

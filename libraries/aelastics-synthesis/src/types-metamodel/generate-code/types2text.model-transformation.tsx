@@ -115,7 +115,7 @@ export class Types2TextModelTransformations extends abstractM2M<
   transformType(
     t: tmm.IType
   ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
-    if (this.context.resolve(t)) {
+    if (this.context.resolveJSXElement(t)) {
       return null;
     }
 
@@ -220,7 +220,7 @@ export class Types2TextModelTransformations extends abstractM2M<
         // TODO Add transformUnion
         return ``;
       default:
-        if (!this.context.resolve(t)) {
+        if (!this.context.resolveJSXElement(t)) {
           return `t.link(${t.parentModel.name}_Schema, '${t.name}')`;
         }
 
