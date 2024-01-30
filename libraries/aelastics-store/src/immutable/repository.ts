@@ -86,6 +86,7 @@ for(let [propName, prop] of this.props) {
     return obj as IStoreObject<P>;
   }
 
+  // detach JPA vs dispose
   exportToDTO(objType: t.ObjectType<any,any>, obj: ObjectLiteral): ObjectLiteral {
     let tr = transducer()
       .recurse("makeItem")
@@ -95,6 +96,7 @@ for(let [propName, prop] of this.props) {
     return res;
   }
 
+  // merge JPA
   importFromDTO<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, inputDTO: ObjectLiteral): IStoreObject<P> {
     let tr = transducer()
       .recurse("makeItem")
