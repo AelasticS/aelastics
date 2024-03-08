@@ -86,7 +86,7 @@ export function defaultConnectionInfo(propName?: string): ConnectionInfo {
 
 export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
   public children: Element<any>[] = [];
-  public isAbstract: boolean = false;
+  public isAbstract: boolean = false; // used to resolve SpecOption decorator
   public subElement?: Element<any>;
   public readonly connectionInfo?: ConnectionInfo;
   public props: P;
@@ -178,6 +178,11 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       this.subElement.props = { ...this.props, ...this.subElement.props };
       // create subelement
       const sub = this.subElement.create(ctx, forImport);
+
+      // TODO:Enable to specify whether children from specOption are added to the end or begining of specPoint children
+
+      // TODO: Consider overring of specPoint
+
       // take children from spec
       this.children.push(...this.subElement.children);
       return sub;
@@ -318,23 +323,11 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
           throw new Error(
             `Not allowed text "${childElement}" in content of element "${this.name}"`
           );
+      } else if (Array.isArray(childElement)) {
+        childElement.forEach((el) => renderChild(el));
       } else {
         // process proper children element
-        const child = childElement.render(ctx, isImport);
-        if (childElement.connectionInfo) {
-          // connect parent and child if propName exit
-          let propType = mapPropTypes.get(
-            childElement.connectionInfo.propName!
-          );
-          if (propType)
-            cnParentChild(
-              childElement.connectionInfo.propName,
-              t.findTypeCategory(propType),
-              parent.instance,
-              child,
-              childElement.connectionInfo.isReconnectAllowed
-            );
-        }
+        renderChild(childElement);
       }
     });
     if (parent.type.isOfType(g.Model)) {
@@ -345,6 +338,22 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       ctx.popStore();
     }
     return parent.instance as P;
+
+    function renderChild(childElement: Element<any, any>) {
+      const child = childElement.render(ctx, isImport);
+      if (childElement.connectionInfo) {
+        // connect parent and child if propName exit
+        let propType = mapPropTypes.get(childElement.connectionInfo.propName!);
+        if (propType)
+          cnParentChild(
+            childElement.connectionInfo.propName,
+            t.findTypeCategory(propType),
+            parent.instance,
+            child,
+            childElement.connectionInfo.isReconnectAllowed
+          );
+      }
+    }
   }
 }
 

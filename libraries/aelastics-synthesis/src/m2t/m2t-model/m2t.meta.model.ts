@@ -17,7 +17,9 @@ export const Directory = t.subtype(M2T_Item, {
     items:t.arrayOf(M2T_Item, "items"),
 }, "Directory", M2T_Schema);
 
-export const DocElement = t.subtype(ModelElement, {
+export const DocElement = t.subtype(ModelElement, {    
+    parentDocument: t.optional(t.link(M2T_Schema, 'Document'), 'parentDocument'),
+    parentSection: t.optional(t.link(M2T_Schema, 'Section'), 'parentSection')
 }, "DocElement", M2T_Schema);
 
 export const Document = t.subtype(M2T_Item, {
@@ -32,6 +34,9 @@ export const Section = t.subtype(DocElement, {
     elements:t.arrayOf(DocElement, "elementsOfSection"),
 }, "Section", M2T_Schema);
 
+t.inverseProps(Document, 'elements', DocElement, 'parentDocument');
+t.inverseProps(Section, 'elements', DocElement, 'parentSection');
+
 export type M2T_Model = t.TypeOf<typeof M2T_Model>
 export type IM2T_Item = t.TypeOf<typeof M2T_Item>
 export type IDirectory = t.TypeOf<typeof Directory>
@@ -41,7 +46,7 @@ export type IParagraph = t.TypeOf<typeof Paragraph>
 export type ISection = t.TypeOf<typeof Section>
 
 
-export const isDirectory = (input: IDocElement): input is IDirectory =>
+export const isDirectory = (input: IM2T_Item): input is IDirectory =>
   "items" in input;
 
 export const isParagraph = (input: IDocElement): input is IParagraph =>
