@@ -72,3 +72,11 @@ lib
 temp
 dist
 libraries/aelastics-gjsx/OUTPUT/orgJSX.ts
+libraries/aelastics-synthesis/TXT_Output2/TopDir/Doc.txt
+libraries/aelastics-synthesis/TXT_Output2/TopDir/Subdir1/Doc1.txt
+libraries/aelastics-synthesis/Types2Text_1/FirstTypeModel1_textModel.ts
+libraries/aelastics-synthesis/Types2Text_2/FirstTypeModel2_textModel.ts
+libraries/aelastics-synthesis/Types2Text_3/FirstTypeModel_textModel.ts
+libraries/aelastics-synthesis/Types2Text_4/FirstTypeModel_textModel.ts
+libraries/aelastics-synthesis/Types2Text_5/FirstTypeModel_textModel.ts
+libraries/aelastics-synthesis/Types2Text_6/FirstTypeModel_textModel.ts
