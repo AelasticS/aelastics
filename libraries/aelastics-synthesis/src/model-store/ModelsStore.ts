@@ -28,7 +28,7 @@ export enum AccessProtocol {
 } // access typescript file with a  meta-model expressed using aelastics-types definition functions
 
 export class ModelStore {
-  private store: Store<string>;
+  private store: Store;
   private mapOfNames: Map<string, IModelElement> = new Map();
   constructor(server?: ServerProxy) {
     this.store = new Store(server);
