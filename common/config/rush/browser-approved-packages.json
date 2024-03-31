@@ -1,0 +1,146 @@
+// DO NOT ADD COMMENTS IN THIS FILE.  They will be lost when the Rush tool resaves it.
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
+  "packages": [
+    {
+      "name": "@oclif/core",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@oclif/plugin-help",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@oclif/plugin-plugins",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@oclif/test",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@rushstack/eslint-config",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "@rushstack/heft",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "@rushstack/heft-jest-plugin",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "@types/chai",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/heft-jest",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "@types/mocha",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/uuid",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "aelastics-m2t",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "aelastics-monorepo-tools",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "aelastics-result",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "aelastics-store",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "aelastics-synthesis",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "aelastics-transducers",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "aelastics-types",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "chai",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "eslint-config-oclif",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-config-oclif-typescript",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "generic-metamodel",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "immer",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "mobx",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "mocha",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "my-controls",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "oclif",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "shx",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "ts-jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "ts-node",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "tslib",
+      "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "uuid",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "whatwg-fetch",
+      "allowedCategories": [ "production" ]
+    }
+  ]
+}

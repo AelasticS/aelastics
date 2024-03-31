@@ -1,0 +1,32 @@
+{
+  "name": "aelastics-result",
+  "description": "Framework for handling results of software services",
+  "version": "2.0.8",
+  "main": "lib/aelastics-result.js",
+  "typings": "lib/aelastics-result.d.ts",
+  "private": true,
+  "keywords": ["service", "error", "result", "failure", "error handling"],
+  "author": {
+    "name": "Sinisa Neskovic",
+    "email": "aelastics@gmail.com"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "scripts": {
+    "build": "heft test --clean",
+    "test": "heft test",
+    "lint": "eslint -c .eslintrc.js --ext .ts <mySrcFolder>"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-config": "~3.1.1",
+    "eslint": "~7.15.0",
+    "@rushstack/heft": "^0.48.7",
+    "@rushstack/heft-jest-plugin": "~0.3.44",
+    "@types/node": "18.11.9",
+    "@types/heft-jest": "1.0.3",
+    "my-toolchain": "workspace:^1.0.0",
+    "typescript": "^4.8.3"
+  }
+}

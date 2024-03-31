@@ -1,0 +1,21 @@
+{
+  "name": "my-controls",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An example library project",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "build": "my-build",
+    "my-bulk-command": "my-bulk-command"
+  },
+  "devDependencies": {
+    "@rushstack/heft": "^0.48.7",
+    "@rushstack/heft-jest-plugin": "~0.3.44",
+    "@types/node": "18.11.9",
+    "@types/heft-jest": "1.0.3",
+    "my-toolchain": "workspace:^1.0.0",
+    "typescript": "^4.8.3"
+  }
+}

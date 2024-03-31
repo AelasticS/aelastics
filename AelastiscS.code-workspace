@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "libraries/aelastics-synthesis"
+		},
+		{
+			"path": "libraries/aelastics-types"
+		},
+		{
+			"path": "libraries/aelastics-store"
+		},
+		{
+			"path": "libraries/examples"
+		},
+		{
+			"path": "apps/moma"
+		},
+		{
+			"path": "libraries/aelastics-gjsx"
+		}
+	],
+	"settings": {}
+}
