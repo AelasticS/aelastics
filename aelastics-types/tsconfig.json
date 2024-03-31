@@ -17,6 +17,6 @@
     ]
   },
   "include": [
-    "src"
+    "aelastics-types/src"
   ]
 }
