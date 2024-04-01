@@ -47,14 +47,6 @@
       "allowedCategories": [ "production" ]
     },
     {
-      "name": "aelastics-m2t",
-      "allowedCategories": [ "production" ]
-    },
-    {
-      "name": "aelastics-monorepo-tools",
-      "allowedCategories": [ "production" ]
-    },
-    {
       "name": "aelastics-result",
       "allowedCategories": [ "production", "prototypes" ]
     },
@@ -64,10 +56,6 @@
     },
     {
       "name": "aelastics-synthesis",
-      "allowedCategories": [ "production", "prototypes" ]
-    },
-    {
-      "name": "aelastics-transducers",
       "allowedCategories": [ "production", "prototypes" ]
     },
     {
@@ -99,10 +87,6 @@
       "allowedCategories": [ "production" ]
     },
     {
-      "name": "jest",
-      "allowedCategories": [ "production" ]
-    },
-    {
       "name": "mobx",
       "allowedCategories": [ "production" ]
     },
@@ -120,10 +104,6 @@
     },
     {
       "name": "shx",
-      "allowedCategories": [ "production" ]
-    },
-    {
-      "name": "ts-jest",
       "allowedCategories": [ "production" ]
     },
     {
