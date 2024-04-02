@@ -163,10 +163,12 @@ export const E2E = function ({ input, output }: IE2EDecorator) {
       //     <E2E_Trace from={a.id} to={ a.id /*r.id*/}/>
       // </E2E_Transformation>
 
-      this.context.makeTrace(a, {
-        type: Array.isArray(r) ? Array : r?.type,
-        element: r,
-      });
+      // this.context.makeTrace(a, {
+      //   type: Array.isArray(r) ? Array : r?.type,
+      //   element: r,
+      // });
+
+      this.context.makeTrace(a, r);
 
       return r;
     };
