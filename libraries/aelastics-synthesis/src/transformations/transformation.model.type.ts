@@ -16,14 +16,18 @@ export const E2E_Transformation = t.subtype(ModelElement, {
 
 // instance level
 export const M2M_Trace = t.subtype(Model, {
-    from: t.entityRef(Model),   // source model ID
-    to: t.entityRef(Model),     // destination model ID
+    // from: t.entityRef(Model),   // source model ID
+    // to: t.entityRef(Model),     // destination model ID
+    from: t.string,
+    to: t.string,
     instanceOf:M2M_Transformation
 }, "M2M_Trace", TrSchema);
 
 export const E2E_Trace = t.subtype(ModelElement, {
-    from: t.arrayOf(t.entityRef(ModelElement)),  // identifires of source model elements
-    to: t.arrayOf(t.entityRef(ModelElement)), // // identifires of destination model elements
+    // from: t.arrayOf(t.entityRef(ModelElement)),  // identifires of source model elements
+    // to: t.arrayOf(t.entityRef(ModelElement)), // // identifires of destination model elements
+    from: t.arrayOf(t.string),
+    to: t.arrayOf(t.string),
     instanceOf:E2E_Transformation
 }, "E2E_Trace", TrSchema);
 

@@ -62,12 +62,12 @@ export class ModelStore {
     return this.store.getObjectByID(id) as IModelElement | undefined;
   }
 
-  public newModel(
+  public newModel<T extends IModel>(
     type: t.ObjectType<any, any>,
-    initValue: Partial<IModel>,
+    initValue: Partial<T>,
     ownerModel?: IModel,
     namespace?: INamespace
-  ): IModel {
+  ): T {
     if (!type.isOfType(Model))
       throw new Error(`newModel: type ${type.name} is not a model.`);
     const data = { ...initValue };
@@ -76,7 +76,7 @@ export class ModelStore {
     // check duplicates
     if (this.mapOfNames.has(fullQName))
       throw new Error(`newModel: Duplicate name "${fullQName}"`);
-    const m = this.store.deepCreate<IModel>(type, data);
+    const m = this.store.deepCreate<T>(type, data);
     if (ownerModel) ownerModel.elements.push(m);
     if (namespace) namespace.elements.push(m);
     // add to map of names
@@ -124,24 +124,24 @@ export class ModelStore {
     return n;
   }
 
-  public newModelElement(
+  public newModelElement<E extends IModelElement>(
     model: Partial<IModel>,
     namespace: INamespace,
     type: t.ObjectType<any, any>,
-    initValue: IModelElement
-  ): IModelElement {
+    initValue: Partial<E>
+  ): E {
     if (!type.isOfType(ModelElement))
       throw new Error(
         `newModelElement: type ${type.name} is not a model element.`
       );
     const data = { ...initValue };
     this.normalizeName(data, type.name, namespace);
-    const fullQName = this.getNameWithPath(data);
+    const fullQName = this.getNameWithPath(data as IModelElement);
     // check duplicates
     if (this.mapOfNames.has(fullQName))
       throw new Error(`newModelElement: Duplicate name "${fullQName}"`);
 
-    const el = this.store.deepCreate<IModelElement>(type, data);
+    const el = this.store.deepCreate<E>(type, data);
     model.elements!.push(el);
     if (namespace != model) namespace.elements.push(el);
     // add to map of names

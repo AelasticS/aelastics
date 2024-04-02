@@ -11,7 +11,9 @@ import {
   E2E_Transformation,
   M2M_Trace,
   E2E_Trace,
-} from "./transformation.model.components_v2";
+  IM2M_Transformation,
+  IE2E_Transformation,
+} from "./transformation.model.type";
 import { abstractM2M, IM2M } from "./abstractM2M";
 import { IModel } from "generic-metamodel";
 import { CpxTemplate, Element } from "../jsx/element";
@@ -21,14 +23,16 @@ import { Sec } from "../m2t";
 export interface IM2MDecorator {
   input: t.Any;
   output: t.Any;
+  transformationName?: string;
 }
 export interface IE2EDecorator {
   input: t.Any;
   output: t.Any;
+  ruleName?: string;
 }
 
 type M2M_Ctor = {
-  new (s: string): abstractM2M<any, any>;
+  new(s: string): abstractM2M<any, any>;
 };
 
 // type Class<T = any> =  abstract new (...args: any[]) => T;
@@ -50,8 +54,10 @@ type M2M_Ctor = {
 
 type Class<T = any> = new (...args: any[]) => T;
 
-export const M2M = ({ input, output }: IM2MDecorator) => {
+export const M2M = ({ input, output, transformationName }: IM2MDecorator) => {
   return function <T extends Class<IM2M<any, any>>>(target: T) {
+    if (!transformationName) transformationName = target.name;
+
     //return function _M2M<T extends new (...args:any[]) => abstractM2M<any, any>>(target: T){
     return class extends target {
       constructor(...args: any[]) {
@@ -59,6 +65,12 @@ export const M2M = ({ input, output }: IM2MDecorator) => {
         // remember input and output model schemas
         this.context.input.type = input;
         this.context.output.type = output;
+
+        // set transformation type
+        this.context.transformation.type =
+          this.context.store.newModel<IM2M_Transformation>(M2M_Transformation, {
+            name: transformationName,
+          });
       }
     };
   };
@@ -139,38 +151,49 @@ export const M2M_v0 = ({ input, output }: IM2MDecorator) => {
 // }
 
 // method descriptor
-export const E2E = function ({ input, output }: IE2EDecorator) {
+export const E2E = function ({ input, output, ruleName }: IE2EDecorator) {
   return function (
     target: abstractM2M<IModel, IModel>,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    // find or create E2E_Transformation
-    let trE2E = (
-      <E2E_Transformation fromType={input.name} toType={output.name} />
-    );
-    // set transformation type
-    target.m2mTRansformation = trE2E;
+    if (!ruleName) ruleName = propertyKey;
+
     // save a reference to the original function
     const original = descriptor.value;
     // set the new function
     descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
-      let a = args[0];
-      let r = original.apply(this, args) as Element<any>;
-      // r.create
-      // let tr =
-      // <E2E_Transformation $ref_id={trE2E.id}>
-      //     <E2E_Trace from={a.id} to={ a.id /*r.id*/}/>
-      // </E2E_Transformation>
+      // find or create E2E_Transformation
+      const ruleType = this.context.transformation.type?.elements.find(
+        (e) => e.name == ruleName
+      ) as IE2E_Transformation;
+
+      if (!ruleType) {
+        // set transformation rule type
+        this.context.store.newModelElement<IE2E_Transformation>(
+          this.context.transformation.type!,
+          this.context.transformation.type!,
+          E2E_Transformation,
+          {
+            name: ruleName,
+            fromType: input.name,
+            toType: output.name,
+          }
+        );
+      }
+
+      let sourceModelElement = args[0];
+      let targetJSXElement = original.apply(this, args) as Element<any>;
+      targetJSXElement.rule = ruleName;
 
       // this.context.makeTrace(a, {
       //   type: Array.isArray(r) ? Array : r?.type,
       //   element: r,
       // });
 
-      this.context.makeTrace(a, r);
+      this.context.makeTrace(sourceModelElement, { target: targetJSXElement, ruleName: ruleName as string });
 
-      return r;
+      return targetJSXElement;
     };
     return descriptor;
   };
