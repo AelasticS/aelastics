@@ -1,11 +1,17 @@
 /*
- * Author: Sinisa Neskovic
- *
- * Copyright (c) 2020 Aelatics
+ * Project: aelastics-store
+ * Created Date: Thursday November 3rd 2022
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
+
 import { EventLog } from "./EventLog";
-import { prefixValue } from "../store/CommonConstants";
+import { prefixValue } from "../common/CommonConstants";
 
 import {
   IArrayChange,
@@ -14,7 +20,7 @@ import {
   IObjectDidChange,
 } from "mobx";
 import { Any } from "aelastics-types";
-import { objectSync } from "../store/CommonConstants";
+import { objectSync } from "../common/CommonConstants";
 
 export const getObjectListener = (
   eventLog: EventLog,

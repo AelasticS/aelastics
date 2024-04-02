@@ -1,6 +1,6 @@
 import * as t from "aelastics-types"
 import type { AnnotationTypes as a } from "aelastics-types"
-import { IObject } from "../types-metamodel/types-meta.model"
+
 
 export const JSX_Types = t.schema("JSX_Types")
 

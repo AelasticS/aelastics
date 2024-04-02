@@ -1,138 +1,128 @@
-// /** @jsx hm */
+/** @jsx hm */
 // /*
 //  * Copyright (c) AelasticS 2022.
 //  */
 
-// import { hm, Template } from 'aelastics-synthesis'
-// import * as t from "aelastics-types"
-// import { Process, Sequence, Task, Document, OutputDocument, InputDocument, Parallel } from './BPM.jsx-comps'
-// import { IProcess, ISequence, ITask } from './BPM.meta.model.type'
-// import { dep1 } from '../organization/example-department'
-// import { IOrganization } from '../organization/organization.model.type'
-// import { ModelStore } from 'aelastics-synthesis'
-// import { Element } from 'aelastics-synthesis'
-
-// export const Approval_X_times_Par = (x: number) => () => {
-//     let f: () => Element<IProcess> = () => {
-//         let tasks = Array<string>() // create approval tasks names
-//         for (let i = 1; i <= x; i++) {
-//             tasks.push(`${i}`)
-//         }
-//         return (
-//             <Process name='Approval' store={new ModelStore()}>
-//                 <Sequence>
-//                     <Task name='write' />
-//                     <Parallel>
-//                         {
-//                             tasks.map(t => <Task name={`approval ${t}`} />)
-//                         }
-//                     </Parallel>
-//                 </Sequence>
-//             </Process>)
-//     }
-//     return f;
-// }
-
-// export const Approval_X_Par = (x: number, isParallel: boolean) => () => {
-//     let f: () => Element<IProcess> = () => {
-//         let tasks = new Array<string>() // create approval tasks names
-//         for (let i = 1; i <= x; i++) {
-//             tasks.push(`approval ${i}`)
-//         }
-//         return (
-//             <Process name='Approval'>
-//                 <Sequence>
-//                     <Task name='write' />
-//                     {isParallel ?
-//                         <Parallel>
-//                             {tasks.map(t => <Task name={`approval ${t}`} />)}
-//                         </Parallel>
-//                         :
-//                         <Sequence>
-//                             {tasks.map(t => <Task name={`approval ${t}`} />)}
-//                         </Sequence>
-//                     }
-//                 </Sequence>
-//             </Process>)
-//     }
-//     return f
-// }
+import { hm, Template } from "aelastics-synthesis";
+import * as t from "aelastics-types";
+import {
+  Process,
+  Sequence,
+  Task,
+  Document,
+  OutputDocument,
+  InputDocument,
+  Parallel,
+} from "./BPM.jsx-comps";
+import { IProcess, ISequence, ITask } from "./BPM.meta.model.type";
+import { dep1 } from "../Organization/example-department";
+import { IOrganization } from "../Organization/organization.model.type";
+import { ModelStore } from "aelastics-synthesis";
+import { Element } from "aelastics-synthesis";
 
 
-
-// export const GenericApprovalHOC = (x: number, isParallel: boolean, WorkerTask: Template<ITask>) => () => {
-//     let f: (props: ITask) => Element<IProcess> = (props) => {
-//         let tasks = new Array<string>() // create approval tasks names
-//         for (let i = 1; i <= x; i++) {
-//             tasks.push(`approval ${i}`)
-//         }
-//         return (
-//             <Sequence>
-//                 <WorkerTask {...props} />
-//                 {isParallel ?
-//                     <Parallel>
-//                         {tasks.map(t => <Task name={`approval ${t}`} />)}
-//                     </Parallel>
-//                     :
-//                     <Sequence>
-//                         {tasks.map(t => <Task name={`approval ${t}`} />)}
-//                     </Sequence>
-//                 }
-//             </Sequence>
-//         )
-//     }
-//     return f
-// }
+export const StaticApproval:IProcess =  
+      <Process name="Approval">
+        <Sequence>
+          <Task name="Write proposal" />
+          <Task name="Approve proposal" />
+        </Sequence>
+      </Process>
+  
 
 
-// export const ApprovalConfig = t.object({
-//     xTimes: t.number,
-//     isParallel: t.boolean
-// })
+export type IApprovalConfiguration = {
+    processName: string,
+    howManyApprovers: number,
+    isParallel?:boolean
+}
 
-// type IApprovalConfig = t.TypeOf<typeof ApprovalConfig>
+export const DynamicApproval = ({processName, howManyApprovers } :IApprovalConfiguration) => {
+  return (
+    <Process name={processName}>
+      <Sequence>
+        <Task name="write proposal" />
+        <Parallel>
+        { // create parallel approval tasks
+          new Array(howManyApprovers).map((_, i) => <Task name={`approval ${i}`} />)
+        }
+        </Parallel>
+      </Sequence>
+    </Process>
+  );
+};
 
-// const appConfig1: IApprovalConfig = { xTimes: 3, isParallel: false }
-
-// const Approval = (cnfg:IApprovalConfig) => {
-//     return <Process name='Approval'>
-//         {GenericApprovalHOC(cnfg.xTimes, cnfg.isParallel, <Task name="write" />)}
-//     </Process>
-// }
-
-
-// const createApprovalConfig: (org: IOrganization) => IApprovalConfig =
-//     (org) => {
-//         return {
-//             xTimes: org.departments.length,
-//             isParallel: false
-//         }
-//     }
-
-
-// const Approval_Par_Config: (org: IOrganization) => IProcess =
-//     (org) => {
-//         let { xTimes, isParallel } = createApprovalConfig(org)
-//         return <Process name='Approval'>
-//             {GenericApprovalHOC(xTimes, isParallel, <Task name="write" />)}
-//         </Process>
-//     }
-
-// const Approval_Par_ConfigHOC: (WorkerTask: Template<ITask>) => (org: IOrganization) => IProcess =
-//     (WorkerTask) => (org) => {
-//         let { xTimes, isParallel } = createApprovalConfig(org)
-//         return <Process name='Approval'>
-//             {GenericApprovalHOC(xTimes, isParallel, <WorkerTask name="write" />)}
-//         </Process>
-//     }
-
-// const Approval_Par_Write_ConfigHOC = Approval_Par_ConfigHOC(<Task name="write" />)
+const myDynamicApproval:IProcess = <DynamicApproval processName="My Approval" howManyApprovers={3}/>
 
 
-// const Approval_Par_Write_Dept1 = Approval_Par_Write_ConfigHOC(dep1)
+export const MoreDynamicApproval = ({processName, isParallel, howManyApprovers } :IApprovalConfiguration) => {
+  // create approval tasks
+  const tasks = new Array(howManyApprovers).map((_, i) => <Task name={`approval ${i}`}/>);
+  return (
+    <Process name={processName}>
+      <Sequence>
+        <Task name="write" />
+        {isParallel ? <Parallel> {tasks} </Parallel>
+                    : <Sequence> {tasks} </Sequence>
+         }
+      </Sequence>
+    </Process>
+  );
+};
 
-// describe("Dummy test", () => {
-//     it("works if true is truthy", () => {
-//         expect(true).toBeTruthy()
-//     })
-// })
+const myModel:IProcess = <MoreDynamicApproval processName="Approval" isParallel={false} howManyApprovers={3}/>
+
+
+
+export const GenericApproval = (WorkerTask: Template<ITask>) => (c:IApprovalConfiguration) => {
+    // create approval tasks
+    const tasks = new Array(c.howManyApprovers).map((_, i) => <Task name={`approval ${i}`} />);
+    return (
+      <Sequence>
+        <WorkerTask />
+        {c.isParallel ? <Parallel> {tasks} </Parallel>
+                    : <Sequence> {tasks} </Sequence>
+        }
+      </Sequence>
+    );
+  };
+
+const GroupWork = () => 
+  <Sequence>
+    <Task name="T1"/>
+    <Parallel>
+        <Task name="T2"/>
+        <Task name="T3"/>
+    </Parallel>
+  </Sequence>
+
+const GenericGroupWorkApproval = GenericApproval(GroupWork)
+
+const myGroupWorkApproval = <GenericGroupWorkApproval 
+            processName="myGroupWorkApproval"
+            howManyApprovers={2}
+            isParallel={true}
+    />
+
+
+type IOrgUnit = {
+    name:string,
+    boss:string
+    parent?:IOrgUnit
+}
+
+const MyOrgApproval = (org: IOrgUnit) => {
+  return <DynamicApproval processName={org.name} howManyApprovers={countLevels(org)}/>
+
+  function countLevels(o:IOrgUnit) {
+    let i = 1
+    while (o.parent) { i++; o = o.parent}
+    return i
+    }
+}
+
+describe("Dummy test", () => {
+  it("works if true is truthy", () => {
+    expect(true).toBeTruthy();
+  });
+});

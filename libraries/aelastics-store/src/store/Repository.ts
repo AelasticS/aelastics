@@ -12,11 +12,12 @@ import {
 } from "aelastics-types";
 import { observable } from "mobx";
 import { EventLog } from "../eventLog/EventLog";
-import { getUnderlyingType, HandleProps } from "./HandleProps";
+import { getUnderlyingType } from "../common/CommonConstants";
+import { HandleProps } from "./HandleProps";
 import { AddEventListeners } from "../eventLog/AddEventListenersTransformer";
 import { ObjectObservable } from "../eventLog/ObservableTransformer";
 import { v4 as uuidv4 } from "uuid";
-import { IStoreObject } from "./CommonConstants";
+import { IStoreObject } from "../common/CommonConstants";
 
 let counter: number = 100;
 
@@ -24,13 +25,13 @@ let uuidv4Generator = () => {
   return uuidv4();
 };
 
-export class Repository<T extends t.Any, ID = string> {
+export class Repository<T extends t.Any> {
   readonly eventLog: EventLog | undefined;
   constructor(eventLog?: EventLog) {
     this.eventLog = eventLog;
   }
   // static create(baseType: t.Any, init?: Partial<t.TypeOf<typeof baseType>>): { [key: string]: any };
-  deepCreate<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>):IStoreObject<ID, P> {
+  deepCreate<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>):IStoreObject<P> {
     // t.TypeOf<typeof baseType> {
 
     let tr = transducer()
@@ -49,10 +50,10 @@ export class Repository<T extends t.Any, ID = string> {
       );
       //  console.log(this.eventLog.getAllActions())
     }
-    return obj as IStoreObject<ID, P>;
+    return obj as IStoreObject<P>;
   }
 
-  create<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>): IStoreObject<ID, P> {
+  create<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, init?: Partial<P>): IStoreObject<P> {
     let tr = transducer()
       // .recurse('makeItem')
       .newInstance(init, uuidv4Generator)
@@ -68,7 +69,7 @@ export class Repository<T extends t.Any, ID = string> {
       );
       //  console.log(this.eventLog.getAllActions())
     }
-    return obj as IStoreObject<ID, P>;
+    return obj as IStoreObject<P>;
   }
 
   exportToDTO(objType: t.ObjectType<any,any>, obj: ObjectLiteral): ObjectLiteral {
@@ -80,12 +81,12 @@ export class Repository<T extends t.Any, ID = string> {
     return res;
   }
 
-  importFromDTO<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, inputDTO: ObjectLiteral): IStoreObject<ID, P> {
+  importFromDTO<P extends ObjectLiteral>(baseType: t.ObjectType<any,any>, inputDTO: ObjectLiteral): IStoreObject<P> {
     let tr = transducer()
       .recurse("makeItem")
       .fromDtoGraph()
       .doFinally(identityReducer());
-    let res = baseType.transduce<IStoreObject<ID, P>>(tr,inputDTO);
+    let res = baseType.transduce<IStoreObject<P>>(tr,inputDTO);
     return res;
   }
 

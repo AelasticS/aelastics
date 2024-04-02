@@ -374,7 +374,7 @@ describe("Test FM2Type transformations", () => {
     expect((attr as t.IProperty).domain).toBe(type);
   });
 
-  it("tests export output model to JSX", async () => {    
+  it("tests export output model to JSX - BUG", async () => {    
 
     const resJSX = store.exportToJSX(typeModel);
     expect(resJSX).toBeDefined();

@@ -10,3 +10,5 @@ export * as JSX_Export from "./jsx-export/index"
 export * from "./m2t/m2t-model/m2t.meta.model"
 export * from "./m2t/m2t-model/m2t.jsx"
 export * from "./m2t/text-generation/generate"
+
+export * from "./monads/model-monad"
