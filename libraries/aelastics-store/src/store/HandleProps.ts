@@ -1,7 +1,14 @@
 /*
- * Copyright (c) 2020 AelasticS
- * Author: Sinisa Neskovic
+ * Project: aelastics-store
+ * Created Date: Thursday November 3rd 2022
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
+
 
 import { ServiceError } from 'aelastics-result';
 import * as t from 'aelastics-types';
@@ -9,7 +16,7 @@ import { computed, extendObservable, IObservableArray, observe } from 'mobx';
 import * as types from 'aelastics-types';
 import { StatusValue } from './Status';
 import { ITransformer, Node, WhatToDo } from 'aelastics-types';
-import { prefixValue, objectStatus, objectSync } from './CommonConstants';
+import { prefixValue, objectStatus, objectSync, getUnderlyingType } from '../common/CommonConstants';
 
 export class HandleProps implements ITransformer {
   private xf: ITransformer;
@@ -36,19 +43,7 @@ export class HandleProps implements ITransformer {
   }
 }
 
-export function getUnderlyingType(type: t.Any | undefined): t.Any {
-  if (type === undefined) {
-    return undefined as any;
-  }
-  if (type.typeCategory === 'Link') {
-    return getUnderlyingType((type as types.LinkType).resolveType()!);
-  }
-  // handle optional types
-  if (type.typeCategory === 'Optional') {
-    return getUnderlyingType((type as types.OptionalType<any>).base);
-  }
-  return type;
-}
+
 
 function handleProps(input: types.ObjectLiteral, type: t.Any): types.ObjectLiteral {
   let objectType: types.ObjectType<any, any> = type as any; //ObjectTypeC<{}, any> = type as any

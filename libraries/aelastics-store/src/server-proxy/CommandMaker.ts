@@ -1,9 +1,20 @@
+/*
+ * Project: aelastics-store
+ * Created Date: Thursday November 3rd 2022
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
+ */
+
 import { ObjectType, TypeSchema, undefinedType } from "aelastics-types";
 import * as EventLog from "../eventLog/EventLog";
 import {
   objectType as OBJECT_TYPE_PROPERTY,
   objectUUID,
-} from "../store/CommonConstants";
+} from "../common/CommonConstants";
 import { findTypeCategory } from "aelastics-types";
 
 /*

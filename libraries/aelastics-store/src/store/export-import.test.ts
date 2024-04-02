@@ -1,9 +1,14 @@
 /*
- * Created Date: Saturday, February 25th 2023
- * Author: Sinisa Neskovic
- *
- * Copyright (c) 2023 Aelastics
+ * Project: aelastics-store
+ * Created Date: Friday April 21st 2023
+ * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Last Modified: Saturday, 16th September 2023
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
+
 
 import * as t from "aelastics-types";
 import { Repository } from "./Repository";
@@ -36,12 +41,12 @@ type IPersonType = t.TypeOf<typeof PersonType>;
 type IPlaceType = t.TypeOf<typeof PlaceType>;
 
 describe("Test export", () => {
-  let store: Store<any>;
+  let store: Store;
   let peter: IPersonType;
   let place: IPlaceType;
-  let repo: Repository<t.Any, string> = new Repository();
+  let repo: Repository<t.Any> = new Repository();
   beforeEach(() => {
-    store = new Store<string>();
+    store = new Store();
   });
 
   it("should export a complex object with a cyclic structure", () => {
@@ -199,11 +204,11 @@ describe("Test export", () => {
 });
 
 describe("Test import", ()=>{
-  let store: Store<any>;
-  let repo: Repository<t.Any, string> = new Repository();
+  let store: Store;
+  let repo: Repository<t.Any> = new Repository();
 
   beforeEach(() => {
-    store = new Store<string>();
+    store = new Store();
   });
 
   it("should import from JSON an object with cyclic structure into store", ()=>{

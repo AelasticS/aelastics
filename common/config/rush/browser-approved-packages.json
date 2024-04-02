@@ -95,6 +95,10 @@
       "allowedCategories": [ "production", "prototypes" ]
     },
     {
+      "name": "immer",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "jest",
       "allowedCategories": [ "production" ]
     },
