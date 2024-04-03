@@ -1,10 +1,10 @@
-# Aelastics  Monorepo
+# AelasticS  Monorepo
 
 This mono repository contains an open-source framework called AelasticS.
 
-## Aelastics Framework  
+## AelasticS Framework  
 
-Aelastics is a functional TypeScript framework  designed to facilitate various data processing.
+AelasticS is a functional TypeScript framework  designed to facilitate various data processing.
 
 
 This framework comprises three main packages:
