@@ -19,7 +19,7 @@ This framework comprises three main packages:
 
     Immutability plays a critical role in guaranteeing predictable state management and streamlining the debugging process, while also aiding in the comprehension of application behavior.
 
-3. **aelastics/synthesis**: This packaged implemnts a domain-specific language (DSL), which facilitates data structure transformations based on flexible rules. 
+3. **aelastics/synthesis**: This packaged implements a domain-specific language (DSL), which facilitates data structure transformations based on flexible rules. 
 
     By leveraging this DSL, developers can express transformation logic concisely and efficiently, enabling them to manipulate data structures according to specific requirements or business rules.
 
