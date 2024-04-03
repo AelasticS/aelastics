@@ -1,40 +1,12 @@
-# Example Rush Monorepo
-
-This template is part of the documentation of the [Rush](https://rushjs.io/) tool.
-It contains documented templates for all the standard Rush configuration files.
-It also includes three barebones projects that illustrate some dependency
-relationships in a Rush repo:
-
-- **apps/my-app**: The web application
-- **libraries/my-controls**: A control library used by the application
-- **tools/my-toolchain**: A NodeJS build tool used to compile the other projects
-
-(These projects are NOT meant to provide a realistic toolchain.)
+# Aelastics  Monorepo
 
 
-# Building this repo
+Aelastics is a functional TypeScript framework  designed to facilitate various data processing with a focus on dynamic types (defined at runtime) along with corresponding metadata. This framework comprises three main packages:
 
-To build the projects in this repo, try these shell commands:
+1. **aelastics-schemas**: This package provides functionality for defining dynamic types, including both simple and complex structures such as objects and collections. It allows for the description of data structures, meta annotations, and traversal algorithms over these defined schemas. Additionally, it supports the handling of concrete data structures based on these schemas.
 
-```
-npm install -g @microsoft/rush
-rush install
-rush build
-```
+2. **aelastics-store**: The immutable stores package offers tools for implementing immutable application states. Immutability is crucial for ensuring predictable state management and facilitating easier debugging and reasoning about application behavior.
 
-For more information, see the documentation at:  https://rushjs.io/
+3. **aelastics/synthesis**: This is a domain-specific language (DSL), implemented as TypeScript package, which facilitates flexible data structure transformations based on rules. By leveraging this DSL, developers can express transformation logic concisely and efficiently, enabling them to manipulate data structures according to specific requirements or business rules.
 
-
-# Contributing
-
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.microsoft.com.
-
-When you submit a pull request, a CLA-bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+Overall, this TypeScript framework provides a comprehensive suite of tools and utilities for managing dynamic data types, immutable application states, and flexible data transformations, thereby enhancing the robustness and maintainability of data processing applications.
