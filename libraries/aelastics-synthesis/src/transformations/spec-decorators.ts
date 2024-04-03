@@ -26,10 +26,13 @@ export const SpecPoint = () => {
     descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
       const a: IModelElement = args[0];
       const aType = this.context.store.getTypeOf(a);
-      const options: ISpecOption[] = descriptor.value[__SpecPoint];
-      const option = options.find((option) => {
+
+      // TODO handle subtyping of specPoints(VarPoints). It is needed to combine options from subtype and supertype
+      const options: ISpecOption[] = (this as any)[__SpecPoint][propertyKey];
+      const option = options?.find((option) => {
         return option.inputType.isOfType(aType);
       });
+      
       if (!option) {
         throw new Error(`No specilized method found`);
       }
@@ -46,11 +49,13 @@ export const SpecPoint = () => {
       // connect corresponding results(elemnets)
       orgResult.subElement = specResult;
       orgResult.isAbstract = true;
-      // return result fofromrm original method
+      // return result from original method
       return orgResult;
     };
-    //descriptor.value[__SpecPoint] = name
-    descriptor.value[__SpecPoint] = [];
+
+    // added because in composition of decorator, descriptor will be another decorator, not a function
+    target[__SpecPoint] = { ...target[__SpecPoint], [propertyKey]: [] };
+
     return descriptor;
   };
 };
@@ -62,15 +67,15 @@ export const SpecOption = (methodName: string, type: Any) => {
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    const method: Function = target[methodName];
+    const method: Function = target[__SpecPoint][methodName];
     // @ts-ignore
-    if (method[__SpecPoint]) {
+    if (method) {
       let o: ISpecOption = {
         specMethod: propertyKey,
         inputType: type,
       };
       // @ts-ignore
-      method[__SpecPoint].push(o);
+      method.push(o);
     }
     return descriptor;
   };

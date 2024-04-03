@@ -14,13 +14,13 @@ import {
   PropertyDomain,
   TypeArray,
   ArrayElementType,
-} from "./../types-components";
+} from "../types-components";
 import { Context } from "../../jsx/context";
 import { ModelStore } from "../../index";
-import { generate } from "./../../m2t/text-generation/generate";
-import * as m2tmm from "./../../m2t/m2t-model/m2t.meta.model";
+import { generate } from "../../m2t/text-generation/generate";
+import * as m2tmm from "../../m2t/m2t-model/m2t.meta.model";
 import { Types2TextModelTransformations } from "./types2text.model-transformation";
-import { importPredefinedTypes } from "./../predefined-model";
+import { importPredefinedTypes } from "../predefined-model";
 
 const generateText = async (
   store: ModelStore,
