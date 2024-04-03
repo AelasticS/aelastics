@@ -474,12 +474,6 @@
       "projectFolder": "libraries/examples",
       "reviewCategory": "prototypes",
       "tags": ["libraries", "web"]
-    },
-    {
-      "packageName": "my-toolchain",
-      "projectFolder": "tools/my-toolchain",
-      "reviewCategory": "tools",
-      "tags": ["tools"]
     }
   ]
 }
