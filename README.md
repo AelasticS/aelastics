@@ -43,12 +43,10 @@ Before you begin, ensure you have the following prerequisites installed:
 2. Clone the forked repository to your local machine:
    ```bash
    git clone https://github.com/AelasticS/aelastics.git
-
 3. Navigate to the repository directory
     ```bash
-    npm install -g @microsoft/rush
+    cd aelastics
 4. Install Rush.js globally if you haven't already:
-
     ```bash
     npm install -g @microsoft/rush
 5. Install Rush.js dependencies for the first time:
@@ -58,11 +56,12 @@ Before you begin, ensure you have the following prerequisites installed:
     ```bash
     rush build
 
-
 Once you have set up the repository, you can start contributing to our project. 
 
 ### Contributing
-We welcome contributions from the community! To contribute to our project, please please read [GENERAL-CONTRIBUTING](GENERAL-CONTRIBUTING.md).
+We welcome contributions from the community! 
+
+To contribute to our project, please please read [GENERAL-CONTRIBUTING](GENERAL-CONTRIBUTING.md).
 
 
 ### Additional Resources
