@@ -9,12 +9,19 @@ Aelastics is a functional TypeScript framework  designed to facilitate various d
 
 This framework comprises three main packages:
 
-1. **aelastics-types**:This package enables definition of dynamic types at runtime, encompassing both simple and composite structures like objects, arrays, unions, etc. a well as more intricate data schemas such as cyclic graph structures. Furthermore, it facilitates annotations, enabling developers to enrich data definitions with relevant metadata. Additionally, it provides generic traversal algorithms for efficiently navigating and manipulating data structures adhering to these schemas. Implemented functionalities include data validation and serialization, among others.
+1. **aelastics-types**: This package enables the definition of various dynamic data types at runtime, including simple and composite types such as objects, arrays, unions, etc., along with constraints upon their values. It also supports the creation of complex data schemas that describe data structures based on these defined types, which can include intricate structures like cyclic graph data structures. 
 
+    Furthermore, it facilitates annotations, allowing developers to enrich data definitions with relevant metadata. 
+    
+    Additionally, it provides generic traversal algorithms for efficiently navigating and manipulating data structures that adhere to these schemas. Implemented functionalities include data validation and serialization, among others.
 
-2. **aelastics-store**: The package provides components for implementing immutable application states. Immutability plays a critical role in guaranteeing predictable state management and streamlining the debugging process, while also aiding in the comprehension of application behavior.
+2. **aelastics-store**: The package provides components for implementing immutable application states. 
 
-3. **aelastics/synthesis**: This packaged implemnts a domain-specific language (DSL), which facilitates data structure transformations based on flexible rules. By leveraging this DSL, developers can express transformation logic concisely and efficiently, enabling them to manipulate data structures according to specific requirements or business rules.
+    Immutability plays a critical role in guaranteeing predictable state management and streamlining the debugging process, while also aiding in the comprehension of application behavior.
+
+3. **aelastics/synthesis**: This packaged implemnts a domain-specific language (DSL), which facilitates data structure transformations based on flexible rules. 
+
+    By leveraging this DSL, developers can express transformation logic concisely and efficiently, enabling them to manipulate data structures according to specific requirements or business rules.
 
 
 ## Getting Started
@@ -25,9 +32,9 @@ Welcome to our open-source monorepo managed with Rush.js! This guide will help y
 
 Before you begin, ensure you have the following prerequisites installed:
 
-- Node.js (version x.x.x or higher)
-- npm (version x.x.x or higher)
-- Rush.js (version x.x.x or higher)
+- Node.js (version 20.11.1 or higher)
+- npm (version 10.2.4 or higher)
+- Rush.js (version 5.113.0 or higher)
 
 ### Installation
 
