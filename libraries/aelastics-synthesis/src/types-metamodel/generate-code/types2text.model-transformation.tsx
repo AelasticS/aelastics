@@ -115,13 +115,13 @@ export class Types2TextModelTransformations extends abstractM2M<
   transformType(
     t: tmm.IType
   ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
-    if (this.context.resolve(t)) {
+    if (this.context.resolveJSXElement(t)) {
       return null;
     }
 
     if (this.context.store.isTypeOf(t, tmm.SimpleType)) {
       // TODO How to map simple types
-      this.context.makeTrace(t, null);
+      this.context.makeTrace(t, { target: undefined, ruleName: 'transformType' });
 
       return null;
     }
@@ -220,7 +220,7 @@ export class Types2TextModelTransformations extends abstractM2M<
         // TODO Add transformUnion
         return ``;
       default:
-        if (!this.context.resolve(t)) {
+        if (!this.context.resolveJSXElement(t)) {
           return `t.link(${t.parentModel.name}_Schema, '${t.name}')`;
         }
 
