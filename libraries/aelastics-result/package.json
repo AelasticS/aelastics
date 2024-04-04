@@ -26,7 +26,6 @@
     "@rushstack/heft-jest-plugin": "~0.3.44",
     "@types/node": "18.11.9",
     "@types/heft-jest": "1.0.3",
-    "my-toolchain": "workspace:^1.0.0",
     "typescript": "^4.8.3"
   }
 }

@@ -51,7 +51,7 @@
      * If this field is omitted, then a separate CHANGELOG.md file will be maintained for each
      * package in the set.
      */
-    "mainProject": "my-app",
+    // "mainProject": "my-app",
 
     /**
      * (Optional) If enabled, the "rush change" command will prompt the user for their email address
