@@ -8,10 +8,6 @@ export const Email = t.string.derive("Valid email").email
 export const Age = t.number.derive('Valid student age').int8.positive.inRange(18, 45);
 export const BirthDate = t.date // new Date('1995-12-17')
 
-// Create an enum to check the program type.
-// Software Design
-// Computer Science
-// Data Science
 
 export const Assignment = t.entity({
     id: ID,
@@ -22,35 +18,43 @@ export const Assignment = t.entity({
 export const Module = t.entity({
     id: ID,
     name: Name,
-    // course:  make it a link to a specific course
+    course: t.link(UniversitySchema, 'Course', 'ModuleToCourseLink'),
     assignments: t.arrayOf(Assignment)
 }, ["id"], "Module", UniversitySchema)
 
-// Course type definition
 export const Course = t.entity({
     id: ID,
     name: Name,
-    program: t.string, // Replace this with Enum
-    modules: t.arrayOf(Module)
+    program: t.link(UniversitySchema, 'Program', 'CourseToProgramLink'),
+    modules: t.arrayOf(t.link(UniversitySchema, 'Module', 'CourseToModuleLink'))
 }, ["id"], "Course", UniversitySchema)
 
-// Student type definition
 export const Student = t.entity({
     id: ID,
     name: Name,
     email: Email,
-    age: Age,
-    birthDate: BirthDate,
-    // program: typeof ProgramName,
-    enrolledCourses: t.arrayOf(Course),
+    enrolledProgram: t.string, // link to specific program?
+    approvedCourses: t.arrayOf(t.link(UniversitySchema, 'Course', 'StudentToCourseLink')),
+    approvedAssignments: t.arrayOf(t.link(UniversitySchema, 'Assignment', 'StudentToAssignmentLink')) 
 }, ["id"], "Student", UniversitySchema)
 
+export const Program = t.entity({
+    id: ID,
+    name: Name,
+    courses: t.arrayOf(t.link(UniversitySchema, "Course", "ProgramToCourseLink")) 
+}, ["id"], "Program", UniversitySchema)
 
-// University type definition
-export const University = t.entity({}, ["id"], "University", UniversitySchema)
+export const University = t.entity({
+    id: ID,
+    name: Name,
+    programs: t.string, // Replace this with Enum
+    students: t.arrayOf(t.link(UniversitySchema, "Student", "UniversityToStudentLink")) 
+}, ["id"], "University", UniversitySchema)
+
 
 export type IAssignment = t.TypeOf<typeof Assignment>
 export type IModule = t.TypeOf<typeof Module>
 export type ICourse = t.TypeOf<typeof Course>
 export type IStudent = t.TypeOf<typeof Student>
+export type IProgram = t.TypeOf<typeof Program>
 export type IUniversity = t.TypeOf<typeof University>
