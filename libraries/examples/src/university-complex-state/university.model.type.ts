@@ -6,7 +6,23 @@ export const ID = t.string
 export const Name = t.string.derive('Valid name').alphanumeric.maxLength(128)
 export const Email = t.string.derive("Valid email").email
 export const Age = t.number.derive('Valid student age').int8.positive.inRange(18, 45);
+export const Grade = t.number.derive("Valid grade scale").int8.positive.inRange(1, 12);
 
+
+export const Program = t.entity({
+    id: ID,
+    name: Name,
+    courses: t.arrayOf(t.link(UniversitySchema, "Course", "ProgramToCourseLink")),
+    enrolledStudents:  t.arrayOf(t.link(UniversitySchema, "Student", "ProgramToStudentLink")),
+}, ["id"], "Program", UniversitySchema)
+
+export const Course = t.entity({
+    id: ID,
+    name: Name,
+    program: Program,
+    students: t.arrayOf(t.link(UniversitySchema, 'Student', 'CourseToStudentLink')),
+    assignment: t.link(UniversitySchema, 'Assignment', 'CourseToAssignmentLink')
+}, ["id"], "Course", UniversitySchema)
 
 export const Assignment = t.entity({
     id: ID,
@@ -14,44 +30,25 @@ export const Assignment = t.entity({
     description: t.string.alphanumeric.maxLength(250)
  }, ["id"], "Assignment", UniversitySchema)
 
-export const Module = t.entity({
+export const Submission = t.entity({
     id: ID,
-    name: Name,
-    assignments: t.arrayOf(t.link(UniversitySchema, 'Assignment', 'ModuleToAssignmentLink'))
-}, ["id"], "Module", UniversitySchema)
-
-export const Course = t.entity({
-    id: ID,
-    name: Name,
-    modules: t.arrayOf(t.link(UniversitySchema, 'Module', 'CourseToModuleLink'))
-}, ["id"], "Course", UniversitySchema)
+    student: t.link(UniversitySchema, "Student", "SubmissionToStudentLink"),
+    assignment: t.link(UniversitySchema, "Assignment", "SubmissionToAssignmentLink"),
+    content: t.string,
+    grade: Grade
+}, ["id"], "Submission", UniversitySchema)
 
 export const Student = t.entity({
     id: ID,
     name: Name,
     email: Email,
-    enrolledProgram: t.string, // link to specific program?
+    enrolledProgram: Program,
     approvedCourses: t.arrayOf(t.link(UniversitySchema, 'Course', 'StudentToCourseLink')),
 }, ["id"], "Student", UniversitySchema)
 
-export const Program = t.entity({
-    id: ID,
-    name: Name,
-    courses: t.arrayOf(t.link(UniversitySchema, "Course", "ProgramToCourseLink")),
-    students:  t.arrayOf(t.link(UniversitySchema, "Student", "ProgramToStudentLink")),
-}, ["id"], "Program", UniversitySchema)
 
-export const University = t.entity({
-    id: ID,
-    name: Name,
-    programs: t.arrayOf(t.link(UniversitySchema, "Program", "UniversityToProgramLink")) ,
-    students: t.arrayOf(t.link(UniversitySchema, "Student", "UniversityToStudentLink")) 
-}, ["id"], "University", UniversitySchema)
-
-
-export type IAssignment = t.TypeOf<typeof Assignment>
-export type IModule = t.TypeOf<typeof Module>
-export type ICourse = t.TypeOf<typeof Course>
-export type IStudent = t.TypeOf<typeof Student>
 export type IProgram = t.TypeOf<typeof Program>
-export type IUniversity = t.TypeOf<typeof University>
+export type ICourse = t.TypeOf<typeof Course>
+export type IAssignment = t.TypeOf<typeof Assignment>
+export type ISubmission = t.TypeOf<typeof Submission>
+export type IStudent = t.TypeOf<typeof Student>
