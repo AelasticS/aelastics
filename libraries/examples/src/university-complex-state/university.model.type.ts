@@ -17,7 +17,7 @@ export const Assignment = t.entity({
 export const Module = t.entity({
     id: ID,
     name: Name,
-    assignments: t.arrayOf(Assignment)
+    assignments: t.arrayOf(t.link(UniversitySchema, 'Assignment', 'ModuleToAssignmentLink'))
 }, ["id"], "Module", UniversitySchema)
 
 export const Course = t.entity({
