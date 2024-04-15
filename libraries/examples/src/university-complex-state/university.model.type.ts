@@ -5,7 +5,7 @@ export const UniversitySchema = t.schema("UniversitySchema")
 export const ID = t.string
 export const Name = t.string.derive('Valid name').alphanumeric.maxLength(128)
 export const Email = t.string.derive("Valid email").email
-export const Age = t.number.derive('Valid student age').int8.positive.inRange(18, 45);
+export const Age = t.number.derive('Valid student age').int8.positive.inRange(18, 99);
 export const Grade = t.number.derive("Valid grade scale").int8.positive.inRange(1, 12);
 
 
@@ -21,7 +21,7 @@ export const Course = t.entity({
     name: Name,
     program: Program,
     students: t.arrayOf(t.link(UniversitySchema, 'Student', 'CourseToStudentLink')),
-    assignment: t.link(UniversitySchema, 'Assignment', 'CourseToAssignmentLink')
+    assignment: t.arrayOf(t.link(UniversitySchema, 'Assignment', 'CourseToAssignmentLink'))
 }, ["id"], "Course", UniversitySchema)
 
 export const Assignment = t.entity({
