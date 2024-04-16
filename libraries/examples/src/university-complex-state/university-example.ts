@@ -1,25 +1,100 @@
 import { v4 as uuidv4 } from "uuid";
-import { IAssignment, ICourse, IProgram, IStudent } from "./university.model.type";
+import { IAssignment, ICourse, IProgram, IStudent, ISubmission } from "./university.model.type";
+import { Program } from "./university";
 
-const uuidv4Generator = () => {
+export const uuidv4Generator = () => {
     return uuidv4();
 };
-
 
 //#region Programs
 export const softwareDesign: IProgram = {
     id: uuidv4Generator(),
     name: "Software Design",
-    courses: [pcpp, faw],
-    enrolledStudents: [student1]
+    courses: [],
+    enrolledStudents: []
 }
 
 export const dataScience: IProgram = {
     id: uuidv4Generator(),
     name: "Data Science",
-    courses: [ids, ml],
-    enrolledStudents: [student2]
+    courses: [],
+    enrolledStudents: []
 
+}
+//#endregion
+
+
+//#region Courses
+// Parallel and Concurrent Programming
+const pcpp: ICourse = {
+    id: uuidv4Generator(),
+    name: "Parallel and Concurrent Programming",
+    program: softwareDesign,
+    students: [],
+    assignments: []
+};
+
+// Frameworks and Architectures of the Web
+const faw: ICourse = {
+    id: uuidv4Generator(),
+    name: "Frameworks and Architectures of the Web",
+    program: softwareDesign,
+    students: [],
+    assignments: []
+};
+
+// Introduction to Data Science
+const ids: ICourse = {
+    id: uuidv4Generator(),
+    name: "Introduction to Data Science",
+    program: dataScience,
+    students: [],
+    assignments: []
+};
+
+// Machine Learning
+const ml: ICourse = {
+    id: uuidv4Generator(),
+    name: "Machine Learning",
+    program: dataScience,
+    students: [],
+    assignments: []
+};
+//#endregion
+
+
+//#region Assignments Software Design
+// Assignment Parallel and Functional Programming
+const assignmentPCPP: IAssignment = {
+    id: uuidv4Generator(),
+    name: "Parallel Sorting Algorithms",
+    description: "Implement parallel versions of merge sort and quick sort.",
+    course: softwareDesign
+}
+
+// Assignment Frameworks and Architectures of the Web
+const assignmentFAW: IAssignment = {
+    id: uuidv4Generator(),
+    name: "RESTful API Design",
+    description: "Design a RESTful API for a book library system.",
+    course: softwareDesign
+}
+
+// Assignments Data Science
+// Assignment Introduction to Data Science
+const assignmentIDS: IAssignment = {
+    id: uuidv4Generator(),
+    name: "Data Cleaning and Preparation",
+    description: "Prepare and clean a dataset for analysis.",
+    course: dataScience
+}
+
+// Assignment 1 and 2 Machine Learning
+const assignmentML: IAssignment = {
+    id: uuidv4Generator(),
+    name: "Linear Regression Model",
+    description: "Build and evaluate a linear regression model on a dataset.",
+    course: dataScience
 }
 //#endregion
 
@@ -43,75 +118,63 @@ export const student2: IStudent = {
 //#endregion
 
 
-//#region Assignments Software Design
-// Assignment Parallel and Functional Programming
-const assignmentPCPP: IAssignment = {
+//#region
+const submission1: ISubmission = {
     id: uuidv4Generator(),
-    name: "Parallel Sorting Algorithms",
-    description: "Implement parallel versions of merge sort and quick sort."
-}
-
-// Assignment Frameworks and Architectures of the Web
-const assignmentFAW: IAssignment = {
-    id: uuidv4Generator(),
-    name: "RESTful API Design",
-    description: "Design a RESTful API for a book library system."
-}
-
-// Assignments Data Science
-// Assignment Introduction to Data Science
-const assignmentIDS: IAssignment = {
-    id: uuidv4Generator(),
-    name: "Data Cleaning and Preparation",
-    description: "Prepare and clean a dataset for analysis."
-}
-
-// Assignment 1 and 2 Machine Learning
-const assignmentML: IAssignment = {
-    id: uuidv4Generator(),
-    name: "Linear Regression Model",
-    description: "Build and evaluate a linear regression model on a dataset."
-}
-//#endregion
-
-
-//#region Courses
-// Parallel and Concurrent Programming
-const pcpp: ICourse = {
-    id: uuidv4Generator(),
-    name: "Parallel and Concurrent Programming",
-    program: softwareDesign,
-    students: [student1],
+    student: student1,
+    content: "Submission 1 content",
+    grade: 12,
     assignment: assignmentPCPP
-};
+}
 
-// Frameworks and Architectures of the Web
-const faw: ICourse = {
+const submission2: ISubmission = {
     id: uuidv4Generator(),
-    name: "Frameworks and Architectures of the Web",
-    program: softwareDesign,
-    students: [student1],
-    assignment: assignmentFAW
-};
-
-// Introduction to Data Science
-const ids: ICourse = {
-    id: uuidv4Generator(),
-    name: "Introduction to Data Science",
-    program: dataScience,
-    students: [student2],
-    assignment: assignmentIDS
-};
-
-// Machine Learning
-const ml: ICourse = {
-    id: uuidv4Generator(),
-    name: "Machine Learning",
-    program: dataScience,
-    students: [student2],
+    student: student2,
+    content: "Submission 2 content",
+    grade: 10,
     assignment: assignmentML
-};
+}
 //#endregion
+
+/*
+ *   Assigning Courses to Programs. They cannot be defined before as 
+ *   they have a cyclig reference with Program.
+ */
+softwareDesign.courses.push(pcpp, faw)
+dataScience.courses.push(faw, ids)
+
+/*
+ *   Assigning enrolled students to Programs. They cannot be defined before as 
+ *   they have a cyclig reference with Program.
+ */
+softwareDesign.enrolledStudents.push(student1)
+dataScience.enrolledStudents.push(student2)
+
+/*
+ *   Assigning Assignments to courses. They cannot be defined before as 
+ *   they have a cyclig reference with Courses.
+ */
+pcpp.assignments.push(assignmentPCPP)
+faw.assignments.push(assignmentFAW)
+ids.assignments.push(assignmentIDS)
+ml.assignments.push(assignmentML)
+
+/*
+ *   Assigning Students to courses. They cannot be defined before as 
+ *   they have a cyclig reference with Courses.
+ */
+pcpp.students.push(student1)
+faw.students.push(student1)
+ids.students.push(student2)
+ml.students.push(student2)
+
+/*
+ *   Assigning approved Courses to Students. They cannot be defined before as 
+ *   they have a cyclig reference with Students.
+ */
+student1.approvedCourses.push(pcpp)
+student2.approvedCourses.push(ids)
+
 
 
 

@@ -63,7 +63,7 @@ export const Student = t.entity(
     id: ID,
     name: Name,
     email: Email,
-    enrolledProgram: Program,
+    enrolledProgram: Program || null,
     approvedCourses: t.arrayOf(t.link(UniversitySchema, "Course", "StudentToCourseLink")),
   },
   ["id"],

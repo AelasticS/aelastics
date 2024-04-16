@@ -94,6 +94,32 @@ export class Course implements ICourse {
   }
 }
 
+
+export class Assignment implements IAssignment {
+  id: string
+  name: string
+  description: string
+
+  private _course: string
+
+  constructor(id: string, name: string, description: string, course: Course) {
+    this.id = id
+    this.name = name
+    this.description = description
+    this._course = course.id
+    store.assignments.set(id, this)
+  }
+
+  set course(c: ICourse) {
+    this._course = c.id
+  }
+
+  get course() {
+    return store.courses.get(this._course)!
+  }
+}
+
+
 export class Submission implements ISubmission {
   id: string
   student: Student
@@ -119,6 +145,7 @@ export class Submission implements ISubmission {
     return store.assignments.get(this._assignment)!
   }
 }
+
 
 export class Student implements IStudent {
   id: string
@@ -154,29 +181,5 @@ export class Student implements IStudent {
 
   get approvedCourses(): ICourse[] {
     return this._approvedCourses.map((courseId) => store.courses.get(courseId)!)
-  }
-}
-
-export class Assignment implements IAssignment {
-  id: string
-  name: string
-  description: string
-
-  private _course: string
-
-  constructor(id: string, name: string, description: string, course: Course) {
-    this.id = id
-    this.name = name
-    this.description = description
-    this._course = course.id
-    store.assignments.set(id, this)
-  }
-
-  set course(c: ICourse) {
-    this._course = c.id
-  }
-
-  get course() {
-    return store.courses.get(this._course)!
   }
 }
