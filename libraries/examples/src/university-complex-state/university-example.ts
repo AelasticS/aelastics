@@ -1,182 +1,58 @@
 import { v4 as uuidv4 } from "uuid";
-import { IAssignment, ICourse, IProgram, IStudent, ISubmission } from "./university.model.type";
-import { Program } from "./university";
+import { Program, Course, Assignment, Student, Submission } from "./university";
 
 export const uuidv4Generator = () => {
     return uuidv4();
 };
 
-//#region Programs
-export const softwareDesign: IProgram = {
-    id: uuidv4Generator(),
-    name: "Software Design",
-    courses: [],
-    enrolledStudents: []
-}
+const store = {
+    programs: new Map<string, Program>(),
+    courses: new Map<string, Course>(),
+    students: new Map<string, Student>(),
+    submissions: new Map<string, Submission>(),
+    assignments: new Map<string, Assignment>(),
+  }
 
-export const dataScience: IProgram = {
-    id: uuidv4Generator(),
-    name: "Data Science",
-    courses: [],
-    enrolledStudents: []
+// Programs
+const softwareDesign = new Program(uuidv4Generator(), "Software Design");
+const dataScience = new Program(uuidv4Generator(), "Data Science");
 
-}
-//#endregion
+// Courses
+const pcpp = new Course(uuidv4Generator(), "Parallel and Concurrent Programming", softwareDesign);
+const faw = new Course(uuidv4Generator(), "Frameworks and Architectures of the Web", softwareDesign);
+const ids = new Course(uuidv4Generator(), "Introduction to Data Science", dataScience);
+const ml = new Course(uuidv4Generator(), "Machine Learning", dataScience);
 
+// Assignments
+const assignmentPCPP = new Assignment(uuidv4Generator(), "Parallel Sorting Algorithms", "Implement parallel versions of merge sort and quick sort.", pcpp);
+const assignmentFAW = new Assignment(uuidv4Generator(), "RESTful API Design", "Design a RESTful API for a book library system.", faw);
+const assignmentIDS = new Assignment(uuidv4Generator(), "Data Cleaning and Preparation", "Prepare and clean a dataset for analysis.", ids);
+const assignmentML = new Assignment(uuidv4Generator(), "Linear Regression Model", "Build and evaluate a linear regression model on a dataset.", ml);
 
-//#region Courses
-// Parallel and Concurrent Programming
-const pcpp: ICourse = {
-    id: uuidv4Generator(),
-    name: "Parallel and Concurrent Programming",
-    program: softwareDesign,
-    students: [],
-    assignments: []
-};
+// Students
+const student1 = new Student(uuidv4Generator(), "Alice Johnson", "alice.johnson@example.com", dataScience);
+const student2 = new Student(uuidv4Generator(), "Bob Smith", "bob.smith@example.com", softwareDesign);
 
-// Frameworks and Architectures of the Web
-const faw: ICourse = {
-    id: uuidv4Generator(),
-    name: "Frameworks and Architectures of the Web",
-    program: softwareDesign,
-    students: [],
-    assignments: []
-};
+// Submissions
+const submission1 = new Submission(uuidv4Generator(), student1, assignmentPCPP, "Submission 1 content", 12);
+const submission2 = new Submission(uuidv4Generator(), student2, assignmentML, "Submission 2 content", 10);
 
-// Introduction to Data Science
-const ids: ICourse = {
-    id: uuidv4Generator(),
-    name: "Introduction to Data Science",
-    program: dataScience,
-    students: [],
-    assignments: []
-};
+// Using setters to establish relationships
+softwareDesign.courses = [pcpp, faw];
+dataScience.courses = [ids, ml];
 
-// Machine Learning
-const ml: ICourse = {
-    id: uuidv4Generator(),
-    name: "Machine Learning",
-    program: dataScience,
-    students: [],
-    assignments: []
-};
-//#endregion
+softwareDesign.enrolledStudents = [student1];
+dataScience.enrolledStudents = [student2];
 
+pcpp.assignments = assignmentPCPP;
+faw.assignments = assignmentFAW;
+ids.assignments = assignmentIDS;
+ml.assignments = assignmentML;
 
-//#region Assignments Software Design
-// Assignment Parallel and Functional Programming
-const assignmentPCPP: IAssignment = {
-    id: uuidv4Generator(),
-    name: "Parallel Sorting Algorithms",
-    description: "Implement parallel versions of merge sort and quick sort.",
-    course: softwareDesign
-}
+pcpp.students = student1;
+faw.students = student1;
+ids.students = student2;
+ml.students = student2;
 
-// Assignment Frameworks and Architectures of the Web
-const assignmentFAW: IAssignment = {
-    id: uuidv4Generator(),
-    name: "RESTful API Design",
-    description: "Design a RESTful API for a book library system.",
-    course: softwareDesign
-}
-
-// Assignments Data Science
-// Assignment Introduction to Data Science
-const assignmentIDS: IAssignment = {
-    id: uuidv4Generator(),
-    name: "Data Cleaning and Preparation",
-    description: "Prepare and clean a dataset for analysis.",
-    course: dataScience
-}
-
-// Assignment 1 and 2 Machine Learning
-const assignmentML: IAssignment = {
-    id: uuidv4Generator(),
-    name: "Linear Regression Model",
-    description: "Build and evaluate a linear regression model on a dataset.",
-    course: dataScience
-}
-//#endregion
-
-
-//#region Students
-export const student1: IStudent = {
-    id: uuidv4Generator(),
-    name: "Alice Johnson",
-    email: "alice.johnson@example.com",
-    enrolledProgram: dataScience,
-    approvedCourses: [],
-};
-
-export const student2: IStudent = {
-    id: uuidv4Generator(),
-    name: "Bob Smith",
-    email: "bob.smith@example.com",
-    enrolledProgram: softwareDesign,
-    approvedCourses: [],
-};
-//#endregion
-
-
-//#region
-const submission1: ISubmission = {
-    id: uuidv4Generator(),
-    student: student1,
-    content: "Submission 1 content",
-    grade: 12,
-    assignment: assignmentPCPP
-}
-
-const submission2: ISubmission = {
-    id: uuidv4Generator(),
-    student: student2,
-    content: "Submission 2 content",
-    grade: 10,
-    assignment: assignmentML
-}
-//#endregion
-
-/*
- *   Assigning Courses to Programs. They cannot be defined before as 
- *   they have a cyclig reference with Program.
- */
-softwareDesign.courses.push(pcpp, faw)
-dataScience.courses.push(faw, ids)
-
-/*
- *   Assigning enrolled students to Programs. They cannot be defined before as 
- *   they have a cyclig reference with Program.
- */
-softwareDesign.enrolledStudents.push(student1)
-dataScience.enrolledStudents.push(student2)
-
-/*
- *   Assigning Assignments to courses. They cannot be defined before as 
- *   they have a cyclig reference with Courses.
- */
-pcpp.assignments.push(assignmentPCPP)
-faw.assignments.push(assignmentFAW)
-ids.assignments.push(assignmentIDS)
-ml.assignments.push(assignmentML)
-
-/*
- *   Assigning Students to courses. They cannot be defined before as 
- *   they have a cyclig reference with Courses.
- */
-pcpp.students.push(student1)
-faw.students.push(student1)
-ids.students.push(student2)
-ml.students.push(student2)
-
-/*
- *   Assigning approved Courses to Students. They cannot be defined before as 
- *   they have a cyclig reference with Students.
- */
-student1.approvedCourses.push(pcpp)
-student2.approvedCourses.push(ids)
-
-
-
-
-
-
+student1.approvedCourses = [pcpp, faw];
+student2.approvedCourses = [ids, ml];
