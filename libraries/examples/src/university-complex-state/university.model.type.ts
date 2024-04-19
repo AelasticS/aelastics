@@ -20,12 +20,25 @@ export const Program = t.entity(
   UniversitySchema
 )
 
+export const Student = t.entity(
+  {
+    id: ID,
+    name: Name,
+    email: Email,
+    enrolledProgram: Program || null,
+    approvedCourses: t.arrayOf(t.link(UniversitySchema, "Course", "StudentToCourseLink")),
+  },
+  ["id"],
+  "Student",
+  UniversitySchema
+)
+
 export const Course = t.entity(
   {
     id: ID,
     name: Name,
     program: Program,
-    students: t.arrayOf(t.link(UniversitySchema, "Student", "CourseToStudentLink")),
+    students: t.arrayOf(Student),
     assignments: t.arrayOf(t.link(UniversitySchema, "Assignment", "CourseToAssignmentLink")),
   },
   ["id"],
@@ -55,19 +68,6 @@ export const Submission = t.entity(
   },
   ["id"],
   "Submission",
-  UniversitySchema
-)
-
-export const Student = t.entity(
-  {
-    id: ID,
-    name: Name,
-    email: Email,
-    enrolledProgram: Program || null,
-    approvedCourses: t.arrayOf(t.link(UniversitySchema, "Course", "StudentToCourseLink")),
-  },
-  ["id"],
-  "Student",
   UniversitySchema
 )
 

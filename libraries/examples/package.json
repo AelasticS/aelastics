@@ -28,9 +28,9 @@
     "aelastics-result": "workspace:*",
     "aelastics-types": "workspace:*",
     "generic-metamodel": "workspace:*",
-    "aelastics-store": "workspace:*",   
-     "aelastics-synthesis": "workspace:*",
-     "uuid": "~9.0.1",
-     "@types/uuid": "~9.0.8"
+    "aelastics-store": "workspace:*",
+    "aelastics-synthesis": "workspace:*",
+    "uuid": "~9.0.1",
+    "@types/uuid": "~9.0.8"
   }
 }
