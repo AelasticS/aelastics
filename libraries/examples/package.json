@@ -5,6 +5,7 @@
   "keywords": [],
   "main": "lib/index.js",
   "author": "Sinisa Neskovic",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": ""

@@ -28,6 +28,5 @@ export class ImmutableStore {
 
     // produce(f: (draft: State) => void) {
     //     this.currentState = produce(this.currentState, f);
-    // }
-    
+    // }    
 }

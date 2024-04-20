@@ -11,7 +11,7 @@ const store = {
     students: new Map<string, Student>(),
     submissions: new Map<string, Submission>(),
     assignments: new Map<string, Assignment>(),
-  }
+}
 
 // Programs
 const softwareDesign = new Program(uuidv4Generator(), "Software Design");
