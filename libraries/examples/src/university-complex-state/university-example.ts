@@ -44,15 +44,15 @@ dataScience.courses = [ids, ml];
 softwareDesign.enrolledStudents = [student1];
 dataScience.enrolledStudents = [student2];
 
-pcpp.assignments = assignmentPCPP;
-faw.assignments = assignmentFAW;
-ids.assignments = assignmentIDS;
-ml.assignments = assignmentML;
+pcpp.assignments = [assignmentPCPP];
+faw.assignments = [assignmentFAW];
+ids.assignments = [assignmentIDS];
+ml.assignments = [assignmentML];
 
-pcpp.students = student1;
-faw.students = student1;
-ids.students = student2;
-ml.students = student2;
+pcpp.students = [student1];
+faw.students = [student1];
+ids.students = [student2];
+ml.students = [student2];
 
 student1.approvedCourses = [pcpp, faw];
 student2.approvedCourses = [ids, ml];
