@@ -73,20 +73,24 @@ export class Course implements ICourse {
     return store.programs.get(this._program)!
   }
 
-  set students(s: IStudent) {
-    if (!this._students.find((studentId) => studentId === s.id)) {
-      this._students.push(s.id)
-    }
+  set students(s: IStudent[]) {
+    s.forEach((student) => {
+      if (!this._students.find((studentId) => studentId === student.id)) {
+        this._students.push(student.id)
+      }
+    })
   }
 
   get students(): IStudent[] {
     return this._students.map((studentId) => store.students.get(studentId)!)
   }
 
-  set assignments(a: IAssignment) {
-    if (!this._assignments.find((assignmentId) => assignmentId === a.id)) {
-      this._assignments.push(a.id)
-    }
+  set assignments(a: IAssignment[]) {
+    a.forEach((assignment) => {
+      if (!this._students.find((assignmentId) => assignmentId === assignment.id)) {
+        this._students.push(assignment.id)
+      }
+    })
   }
 
   get assignments(): IAssignment[] {
