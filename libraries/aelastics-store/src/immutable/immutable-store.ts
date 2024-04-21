@@ -23,7 +23,7 @@ export class ImmutableStore {
     // private _contextMap = new Map<AnyObjectType, OperationContext>()
 
 
-    newObject (objectType: AnyObjectType): ObjectLiteral {
+    newObject (objectType: AnyObjectType, initProps: Partial<ObjectLiteral> = {}): ObjectLiteral {
         let c = this._classMap.get(objectType)
 
         if(c === undefined) {
@@ -34,7 +34,7 @@ export class ImmutableStore {
             this._classMap.set(objectType, c)
         }
 
-        return new c({}) 
+        return new c(initProps) 
     }
 
     // produce(f: (draft: State) => void) {
