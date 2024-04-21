@@ -2,7 +2,7 @@ import * as t from "aelastics-types"
 
 export const UniversitySchema = t.schema("UniversitySchema")
 
-export const ID = t.string
+export const ID = t.number.derive('IDType').positive
 export const Name = t.string.derive("Valid name").alphanumeric.maxLength(128)
 export const Email = t.string.derive("Valid email").email
 export const Age = t.number.derive("Valid student age").int8.positive.inRange(18, 99)
@@ -50,7 +50,7 @@ export const Assignment = t.entity(
   {
     id: ID,
     name: Name,
-    description: t.string.alphanumeric.maxLength(250),
+    description: t.string,
     course: t.link(UniversitySchema, "Course", "AssignmentToCourseLink"),
   },
   ["id"],

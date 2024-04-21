@@ -13,13 +13,24 @@ import { OperationContext } from "./operation-context";
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 export class ImmutableStore {
+    // mapping created classes - works as a way of caching already existing types
     private _classMap = new Map<AnyObjectType, Class<ObjectLiteral>>()
+    ctx = new OperationContext()
+
+    // [AA] 
+    // Do we have a plain context containing all type of objects?
+    // container of contexts. It will contain one context per created type (Course, Program, ...)
+    // private _contextMap = new Map<AnyObjectType, OperationContext>()
+
 
     newObject (objectType: AnyObjectType): ObjectLiteral {
         let c = this._classMap.get(objectType)
 
         if(c === undefined) {
-            c = createClass(objectType, {} as OperationContext)
+            // [AA]
+            // const _ctx = new OperationContext()
+            // this._contextMap.set(objectType, new OperationContext)
+            c = createClass(objectType, this.ctx)
             this._classMap.set(objectType, c)
         }
 
