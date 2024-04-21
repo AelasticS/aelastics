@@ -162,12 +162,14 @@ export function createClass<P extends ObjectLiteral>(
         `Entity type "${type.name}" error - No composite identifier allowed!`
       );
     }
-    const idPropName = type.identifier[0]; //
+    const idPropName = type.identifier[0];
     const privatePropName = `_${idPropName}`;
+
     Object.defineProperty(DynamicClass.prototype, "id", {
       get() {
         return this[privatePropName];
       },
+      configurable: true
     });
   }
   // Return the dynamically created class with its own name

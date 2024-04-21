@@ -54,6 +54,7 @@ export function defineSimpleValue(
 
       this[privatePropName] = value;
     },
+    configurable: true
   });
 }
 
@@ -99,6 +100,7 @@ export function defineComplexObjectProp(
         targetType,
       });
     },
+    configurable: true
   });
 }
 
@@ -138,6 +140,7 @@ export function defineComplexArrayProp(
 
       return resultArray.filter((obj: any) => obj !== undefined);
     },
+    configurable: true
   });
 
   // Add method
@@ -257,6 +260,7 @@ export function defineOneToOne(
         newValue: value,
       });
     },
+    configurable: true
   });
 }
 
@@ -286,6 +290,7 @@ export function defineOneToMany(
         return this[privatePropName].filter((item: any) => !item.isDeleted);
       }
     },
+    configurable: true
   });
 
   // Add method
@@ -428,6 +433,7 @@ export function defineManyToOne(
         newValue: valueToSet,
       });
     },
+    configurable: true
   });
 }
 
@@ -462,6 +468,7 @@ export function defineManyToMany(
       // If the property is supposed to hold object references, filter out deleted objects
       return this[privatePropName].filter((obj: any) => !obj.isDeleted);
     },
+    configurable: true
   });
 
   // Add method

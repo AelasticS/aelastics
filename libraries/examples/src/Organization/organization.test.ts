@@ -1,16 +1,15 @@
 import { ImmutableStore } from "aelastics-store";
-import { Course, Student } from "./university.model.type";
+import { Employee } from "./organization.model.type";
 
 describe("create new object in immutable store", ()=>{
 
     const immutableStore = new ImmutableStore();
-    const pcpp = immutableStore.newObject(Course);
-    const student1 = immutableStore.newObject(Student);
+    const employee1 = immutableStore.newObject(Employee);
 
   it('log contents', () => {
   
     console.log("immutable store contents: ", immutableStore)
-    console.log("ctx contents: ", immutableStore.ctx)
+    console.log("employee1: ", employee1)
 
     expect(NaN).toEqual(NaN)
   })
