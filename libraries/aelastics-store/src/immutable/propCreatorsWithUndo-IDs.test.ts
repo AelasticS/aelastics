@@ -6,8 +6,11 @@ import {
   defineManyToOne,
   defineOneToMany,
   defineOneToOne,
+  getIDPropName,
 } from "./propCreatorsWithUndo"; // Replace with the actual import
 import { OperationContext } from "./operation-context";
+import { uuidv4Generator } from "./repository";
+import { objectUUID } from "../common/CommonConstants";
 
 class DynamicProperties {
   [key: string]: any;
@@ -24,17 +27,21 @@ describe("One-to-One Relationship with ID", () => {
   test("should set and get one-to-one relationship with ID", () => {
     class Person extends DynamicProperties {
       id: string;
+      "@@aelastics/ID": string;
       constructor(id: string) {
         super();
         this.id = id;
+        this["@@aelastics/ID"] = uuidv4Generator();
       }
     }
 
     class Car extends DynamicProperties {
       id: string;
+      "@@aelastics/ID": string;
       constructor(id: string) {
         super();
         this.id = id;
+        this["@@aelastics/ID"] = uuidv4Generator();
       }
     }
 
@@ -43,10 +50,10 @@ describe("One-to-One Relationship with ID", () => {
     const car1 = new Car("c1");
     const car2 = new Car("c2");
 
-    context.idMap.set("p1", person1);
-    context.idMap.set("p2", person2);
-    context.idMap.set("c1", car1);
-    context.idMap.set("c2", car2);
+    context.idMap.set(person1["@@aelastics/ID"], person1);
+    context.idMap.set(person2["@@aelastics/ID"], person2);
+    context.idMap.set(car1["@@aelastics/ID"], car1);
+    context.idMap.set(car2["@@aelastics/ID"], car2);
 
     const personType: AnyObjectType = {} as any;
     const carType: AnyObjectType = {} as any;
@@ -82,6 +89,8 @@ describe("One-to-One Relationship with ID", () => {
     expect(person2.car).toBe(car2);
     expect(car2.owner).toBe(person2);
 
+    console.log(person1.car, " - ", car1);
+
     // Change relationships
     person1.car = car2;
     car1.owner = person2;
@@ -96,18 +105,21 @@ describe("One-to-One Relationship with ID", () => {
 
 class Company extends DynamicProperties {
   id: string;
+  "@@aelastics/ID": string;
   constructor(id: string) {
     super();
     this.id = id;
-    this._workers = [];
+    this["@@aelastics/ID"] = uuidv4Generator();
   }
 }
 
 class Worker extends DynamicProperties {
   id: string;
+  "@@aelastics/ID": string;
   constructor(id: string) {
     super();
     this.id = id;
+    this["@@aelastics/ID"] = uuidv4Generator();
   }
 }
 
@@ -124,9 +136,9 @@ describe("One-to-Many Relationship with ID", () => {
     const worker1 = new Worker("w1");
     const worker2 = new Worker("w2");
 
-    context.idMap.set("c1", company1);
-    context.idMap.set("w1", worker1);
-    context.idMap.set("w2", worker2);
+    context.idMap.set(company1["@@aelastics/ID"], company1);
+    context.idMap.set(worker1["@@aelastics/ID"], worker1);
+    context.idMap.set(worker2["@@aelastics/ID"], worker2);
 
     const companyType: AnyObjectType = {} as any;
     const workerType: AnyObjectType = {} as any;
@@ -138,8 +150,8 @@ describe("One-to-Many Relationship with ID", () => {
       companyType,
       workerType,
       context,
-      false,
-      true
+      true,
+      false
     );
     defineManyToOne(
       Worker.prototype,
@@ -148,14 +160,15 @@ describe("One-to-Many Relationship with ID", () => {
       workerType,
       companyType,
       context,
-      true,
-      false
+      false,
+      true
     );
 
     // Add workers to company
     company1.addWorkers(worker1);
     company1.addWorkers(worker2);
 
+    const test = company1.workers
     // Test relationships
     expect(company1.workers).toEqual([worker1, worker2]);
     expect(worker1.company).toBe(company1);
@@ -173,9 +186,11 @@ describe("One-to-Many Relationship with ID", () => {
 
 class Student extends DynamicProperties {
   id: string;
+  "@@aelastics/ID": string;
   constructor(id: string) {
     super();
     this.id = id;
+    this["@@aelastics/ID"] = uuidv4Generator();
     this._courses = [];
     this._friends = [];
   }
@@ -183,8 +198,10 @@ class Student extends DynamicProperties {
 
 class Course extends DynamicProperties {
   id: string;
+  "@@aelastics/ID": string;
   constructor(id: string) {
     super();
+    this["@@aelastics/ID"] = uuidv4Generator();
     this.id = id;
     this._students = [];
   }
@@ -204,10 +221,9 @@ describe("Many-to-Many Relationship with ID", () => {
     const course1 = new Course("c1");
     const course2 = new Course("c2");
 
-    context.idMap.set("s1", student1);
-    context.idMap.set("s2", student2);
-    context.idMap.set("c1", course1);
-    context.idMap.set("c2", course2);
+    context.idMap.set(student2["@@aelastics/ID"], student2);
+    context.idMap.set(course1["@@aelastics/ID"], course1);
+    context.idMap.set(course2["@@aelastics/ID"], course2);
 
     const studentType: AnyObjectType = {} as any;
     const courseType: AnyObjectType = {} as any;
@@ -239,8 +255,8 @@ describe("Many-to-Many Relationship with ID", () => {
 
     // Test relationships
     expect(student1.courses).toEqual([course1, course2]);
-    expect(course1.students).toEqual([student1.id]);
-    expect(course2.students).toEqual([student1.id]);
+    expect(course1.students).toEqual([student1["@@aelastics/ID"]]);
+    expect(course2.students).toEqual([student1["@@aelastics/ID"]]);
 
     // Remove a course from the student
     student1.removeCourses(course1);
@@ -248,7 +264,7 @@ describe("Many-to-Many Relationship with ID", () => {
     // Test changed relationships
     expect(student1.courses).toEqual([course2]);
     expect(course1.students).toEqual([]);
-    expect(course2.students).toEqual([student1.id]);
+    expect(course2.students).toEqual([student1["@@aelastics/ID"]]);
   });
 });
 
@@ -268,8 +284,8 @@ describe('defineComplexObjectProp', () => {
 
     const worker1 = new Worker('w1');
     const worker2 = new Worker('w2');
-    context.idMap.set('w1', worker1);
-    context.idMap.set('w2', worker2);
+    context.idMap.set(worker1["@@aelastics/ID"], worker1);
+    context.idMap.set(worker2["@@aelastics/ID"], worker2);
 
     worker1.boss = worker2;
 
@@ -294,19 +310,19 @@ describe('defineComplexArrayProp', () => {
     const student1 = new Student('1');
     const student2 = new Student('2');
     const student3 = new Student('3');
-    context.idMap.set('1', student1);
-    context.idMap.set('2', student2);
-    context.idMap.set('3', student3);
+    context.idMap.set(student1["@@aelastics/ID"], student1);
+    context.idMap.set(student2["@@aelastics/ID"], student2);
+    context.idMap.set(student3["@@aelastics/ID"], student3);
 
     student1.addFriends(student2);
     student1.addFriends(student3);
 
-    expect(student1._friends).toEqual(['2', '3']);
+    expect(student1._friends).toEqual([student2["@@aelastics/ID"], student3["@@aelastics/ID"]]);
     expect(context.operationStack.length).toBe(2);
 
     student1.removeFriends(student2);
 
-    expect(student1._friends).toEqual(['3']);
+    expect(student1._friends).toEqual([student3["@@aelastics/ID"]]);
     expect(context.operationStack.length).toBe(3);
   });
 });

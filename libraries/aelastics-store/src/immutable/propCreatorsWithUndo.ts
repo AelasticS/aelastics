@@ -238,6 +238,8 @@ export function defineOneToOne(
       }
 
       const thisPropIDName = getIDPropName(targetType)
+      const inversePropIDName = getIDPropName(inverseType)
+
       const oldValue = this[propName];
       if (oldValue === value) return;
 
@@ -248,7 +250,7 @@ export function defineOneToOne(
 
       // Connect the new inverse target
       if (value) {
-        value[`_${inversePropName}`] = isInversePropID ? this.id : this;
+        value[`_${inversePropName}`] = isInversePropID ? this[inversePropIDName] : this;
       }
 
       // Update the property
@@ -281,6 +283,7 @@ export function defineOneToMany(
 ) {
   const privatePropName = `_${propName}`;
   target[privatePropName] = [];
+
 
   Object.defineProperty(target, propName, {
     get() {
@@ -357,7 +360,7 @@ export function defineManyToOne(
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
   context: OperationContext,
-  isPropID: boolean = false,
+  isPropViaID: boolean = false,
   isInversePropID: boolean = false
 ) {
   const { operationStack, redoStack } = context;
@@ -369,7 +372,7 @@ export function defineManyToOne(
         throw new Error("Cannot access properties on a deleted object.");
       }
 
-      if (isPropID) {
+      if (isPropViaID) {
         const value = this[privatePropName];
         if (value === undefined) return undefined;
 
@@ -396,10 +399,10 @@ export function defineManyToOne(
       }
 
       // Find the value to set based on isPropID
-      let valueToSet = isPropID ? value.id : value;
+      let valueToSet = isPropViaID ? value.id : value;
 
       // Find the old value
-      const oldValue = isPropID
+      const oldValue = isPropViaID
         ? context.idMap.get(this[privatePropName])
         : this[privatePropName];
 
