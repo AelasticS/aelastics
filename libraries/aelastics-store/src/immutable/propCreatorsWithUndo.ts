@@ -15,7 +15,11 @@ import {
   ObjectNotFoundError,
   Operation,
 } from "./operation-context";
-import { capitalizeFirstLetter } from "../common/CommonConstants";
+import { capitalizeFirstLetter, objectUUID } from "../common/CommonConstants";
+
+export function getIDPropName (type: AnyObjectType) {
+  return objectUUID
+}
 
 // Define simple value property
 export function defineSimpleValue(
@@ -197,7 +201,7 @@ export function defineOneToOne(
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
   context: OperationContext,
-  isPropID: boolean = false,
+  isPropViaID: boolean = false,
   isInversePropID: boolean = false
 ) {
   const privatePropName = `_${propName}`;
@@ -207,13 +211,13 @@ export function defineOneToOne(
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.");
       }
-      if (isPropID) {
+      if (isPropViaID) {
         const id = this[privatePropName];
         if (id === undefined) {
           return undefined;
         }
         const obj = context.idMap.get(id);
-        if (!obj) {
+        if (!obj) { // TODO: lazy evaluation
           throw new ObjectNotFoundError(
             id,
             targetType,
@@ -233,6 +237,7 @@ export function defineOneToOne(
         throw new Error("Cannot modify properties on a deleted object.");
       }
 
+      const thisPropIDName = getIDPropName(targetType)
       const oldValue = this[propName];
       if (oldValue === value) return;
 
@@ -247,7 +252,7 @@ export function defineOneToOne(
       }
 
       // Update the property
-      this[privatePropName] = isPropID ? value?.id : value;
+      this[privatePropName] = isPropViaID ? value[thisPropIDName] : value;
 
       // Push the operation to the stack
       context.pushOperation({
@@ -260,7 +265,7 @@ export function defineOneToOne(
         newValue: value,
       });
     },
-    configurable: true
+    enumerable: true
   });
 }
 
@@ -271,7 +276,7 @@ export function defineOneToMany(
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
   context: OperationContext,
-  isPropID: boolean = false,
+  isPropViaID: boolean = false,
   isInversePropID: boolean = false
 ) {
   const privatePropName = `_${propName}`;
@@ -282,7 +287,7 @@ export function defineOneToMany(
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.");
       }
-      if (isPropID) {
+      if (isPropViaID) {
         return this[privatePropName]
           .map((id: string) => context.idMap.get(id))
           .filter((item: any) => item && !item.isDeleted);
@@ -290,7 +295,6 @@ export function defineOneToMany(
         return this[privatePropName].filter((item: any) => !item.isDeleted);
       }
     },
-    configurable: true
   });
 
   // Add method
@@ -298,12 +302,15 @@ export function defineOneToMany(
     if (this.isDeleted || item.isDeleted) {
       throw new Error("Cannot modify properties on a deleted object.");
     }
+    
+    const thisPropIDName = getIDPropName(targetType)
+    const inversePropIDName = getIDPropName(inverseType)
 
-    const valueToAdd = isPropID ? item.id : item;
+    const valueToAdd = isPropViaID ? item[inversePropIDName] : item;
     this[privatePropName].push(valueToAdd);
 
     if (isInversePropID) {
-      item[`_${inversePropName}`] = this.id;
+      item[`_${inversePropName}`] = this[thisPropIDName];
     } else {
       item[`_${inversePropName}`] = this;
     }
@@ -322,7 +329,11 @@ export function defineOneToMany(
       if (this.isDeleted || item.isDeleted) {
         throw new Error("Cannot modify properties on a deleted object.");
       }
-      const index = this[privatePropName].indexOf(isPropID ? item.id : item);
+
+      const thisPropIDName = getIDPropName(targetType)
+      const inversePropIDName = getIDPropName(inverseType)
+
+      const index = this[privatePropName].indexOf(isPropViaID ? item[inversePropIDName] : item);
       if (index === -1) return;
 
       // Update the operation stack

@@ -1,6 +1,6 @@
-import { AnyObjectType, ObjectLiteral, object } from "aelastics-types";
-import { Class, createClass } from "./createClass";
-import { OperationContext } from "./operation-context";
+import { AnyObjectType, ObjectLiteral, object } from "aelastics-types"
+import { Class, createClass } from "./createClass"
+import { OperationContext } from "./operation-context"
 
 /*
  * Project: aelastics-store
@@ -13,31 +13,22 @@ import { OperationContext } from "./operation-context";
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 export class ImmutableStore {
-    // mapping created classes - works as a way of caching already existing types
-    private _classMap = new Map<AnyObjectType, Class<ObjectLiteral>>()
-    ctx = new OperationContext()
+  // mapping created classes - works as a way of caching already existing types
+  private _classMap = new Map<AnyObjectType, Class<ObjectLiteral>>()
+  ctx = new OperationContext()
 
-    // [AA] 
-    // Do we have a plain context containing all type of objects?
-    // container of contexts. It will contain one context per created type (Course, Program, ...)
-    // private _contextMap = new Map<AnyObjectType, OperationContext>()
+  newObject(objectType: AnyObjectType, initProps: Partial<ObjectLiteral> = {}): ObjectLiteral {
+    let c = this._classMap.get(objectType)
 
-
-    newObject (objectType: AnyObjectType, initProps: Partial<ObjectLiteral> = {}): ObjectLiteral {
-        let c = this._classMap.get(objectType)
-
-        if(c === undefined) {
-            // [AA]
-            // const _ctx = new OperationContext()
-            // this._contextMap.set(objectType, new OperationContext)
-            c = createClass(objectType, this.ctx)
-            this._classMap.set(objectType, c)
-        }
-
-        return new c(initProps) 
+    if (c === undefined) {
+      c = createClass(objectType, this.ctx)
+      this._classMap.set(objectType, c)
     }
 
-    // produce(f: (draft: State) => void) {
-    //     this.currentState = produce(this.currentState, f);
-    // }    
+    return this.ctx.createObject(c, initProps, objectType)
+  }
+
+  // produce(f: (draft: State) => void) {
+  //     this.currentState = produce(this.currentState, f);
+  // }
 }
