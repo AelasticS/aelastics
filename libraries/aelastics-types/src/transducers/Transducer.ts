@@ -3,7 +3,7 @@
  */
 
 import { Node } from "../common/Node";
-import { ITransformer, Reducer, TransformerClass } from "./Transformer";
+import { IProcessor, Reducer, ProcessorClass } from "./Transformer";
 import { Wrap } from "./Wrap";
 import { NaturalReducer } from "./NaturalReducer";
 import { IdentityReducer } from "./IdentityReducer";
@@ -21,20 +21,20 @@ import { StepperReducer } from "./StepperReducer";
 export type IMapFun = (item: any, n: Node) => any;
 
 export class Transducer {
-  transformers: Array<(t: ITransformer) => ITransformer> = [];
-  reducer: ITransformer | undefined;
+  transformers: Array<(t: IProcessor) => IProcessor> = [];
+  reducer: IProcessor | undefined;
 
-  get composed(): (xf: ITransformer) => ITransformer {
+  get composed(): (xf: IProcessor) => IProcessor {
     return (x: any) => this.transformers.reduceRight((y, f) => f(y), x);
   }
 
-  doFinally(transformer: ITransformer): ITransformer {
+  doFinally(transformer: IProcessor): IProcessor {
     this.reducer = this.composed(transformer);
     return this.reducer;
   }
 
-  do(Ctor: TransformerClass, ...args: any[]): this {
-    let tr = (xfNext: ITransformer) => {
+  do(Ctor: ProcessorClass, ...args: any[]): this {
+    let tr = (xfNext: IProcessor) => {
       return new Ctor(xfNext, ...args);
     };
     this.transformers.push(tr);
@@ -43,9 +43,9 @@ export class Transducer {
 
 
   // include transformer only if condition is satisfied
-  doIf(condition: boolean, Ctor: TransformerClass, ...args: any[]): this {
+  doIf(condition: boolean, Ctor: ProcessorClass, ...args: any[]): this {
     if (condition) {
-      let tr = (xfNext: ITransformer) => {
+      let tr = (xfNext: IProcessor) => {
         return new Ctor(xfNext, ...args);
       };
       this.transformers.push(tr);
@@ -93,8 +93,8 @@ export class Transducer {
     return this.do(AnnotationTransformer, annot)
   }
 
-  doWithAnnotations(Ctor: TransformerClass, ...na:TypedAnnotation[]): this {
-    let tr = (xfNext: ITransformer) => {
+  doWithAnnotations(Ctor: ProcessorClass, ...na:TypedAnnotation[]): this {
+    let tr = (xfNext: IProcessor) => {
       return new Ctor(xfNext, ...na);
     };
     this.transformers.push(tr);
@@ -110,18 +110,18 @@ export class Transducer {
     return this.do(FromDTOGraph);
   }
 
-  reduce<A>(stepFn: Reducer<A>, initValue: any): ITransformer {
+  reduce<A>(stepFn: Reducer<A>, initValue: any): IProcessor {
     let wrap = new Wrap(stepFn, initValue);
     return this.doFinally(wrap);
     // this.reducer = this.composed(wrap);
     // return this.reducer;
   }
 
-  count(): ITransformer {
+  count(): IProcessor {
     return this.reduce((acc: number, item: any, currNode) => acc + 1, 0);
   }
 
-  sum(): ITransformer {
+  sum(): IProcessor {
     return this.reduce((acc: number, item: any, currNode) => acc + item, 0);
   }
 }
@@ -131,22 +131,22 @@ export const wrap = (f: (result: any, currNode: Node, item: any) => any) => {
 };
 
 const nrXF = new NaturalReducer();
-export const naturalReducer = (): ITransformer => {
+export const naturalReducer = (): IProcessor => {
   return nrXF; // new NaturalReducer()
 };
 
 const idXF = new IdentityReducer();
-export const identityReducer = (): ITransformer => {
+export const identityReducer = (): IProcessor => {
   return idXF;
 };
 
 const nrStXF = new StepperReducer();
-export const stepperReducer = (): ITransformer => {
+export const stepperReducer = (): IProcessor => {
   return nrStXF;
 };
 
-export const map = (f: (currNode: Node) => any): ((xf: ITransformer) => ITransformer) => {
-  return function (xf: ITransformer) {
+export const map = (f: (currNode: Node) => any): ((xf: IProcessor) => IProcessor) => {
+  return function (xf: IProcessor) {
     return new Map(xf, f);
   };
 };
@@ -157,14 +157,14 @@ export const map = (f: (currNode: Node) => any): ((xf: ITransformer) => ITransfo
  */
 export const filter = (
   f: (currNode: Node, item: any) => boolean
-): ((xf: ITransformer) => ITransformer) => {
-  return function (xf: ITransformer) {
+): ((xf: IProcessor) => IProcessor) => {
+  return function (xf: IProcessor) {
     return new Filter(xf, f);
   };
 };
 
-export const validate = (): ((xf: ITransformer) => ITransformer) => {
-  return function (xf: ITransformer) {
+export const validate = (): ((xf: IProcessor) => IProcessor) => {
+  return function (xf: IProcessor) {
     return new Validation(xf);
   };
 };

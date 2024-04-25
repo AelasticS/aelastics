@@ -4,19 +4,19 @@
 
 import { Node } from '../common/Node';
 import { ServiceError } from 'aelastics-result';
-import { ITransformer, WhatToDo } from './Transformer';
+import { IProcessor, WhatToDo } from './Transformer';
 import { System } from '../type/TypeSchema';
 
 
 const RECURSE_LEVEL = 50;
 
-export class NewInstance implements ITransformer {
-  private xf: ITransformer;
+export class NewInstance implements IProcessor {
+  private xf: IProcessor;
   public readonly templateObj: any;
   private _currentTemplate: any[] = [];
   private _generateID?: () => any;
   
-  constructor(xf: ITransformer, templateObj?: any, generateID?: () => any) {
+  constructor(xf: IProcessor, templateObj?: any, generateID?: () => any) {
     this.xf = xf;
     this.templateObj = templateObj;
     this._generateID = generateID;

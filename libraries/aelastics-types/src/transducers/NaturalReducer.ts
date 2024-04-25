@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { ITransformer , WhatToDo } from './Transformer'
+import { IProcessor , WhatToDo } from './Transformer'
 import { Node } from '../common/Node'
 
 /**
@@ -11,7 +11,7 @@ import { Node } from '../common/Node'
  *   step - insert a child to its parent structure
  *   result - return the received value without modifications
  */
-export class NaturalReducer implements ITransformer {
+export class NaturalReducer implements IProcessor {
   init(value: any , currNode: Node): [any , WhatToDo] {
     return [currNode.type.init(currNode) , 'continue']
   }

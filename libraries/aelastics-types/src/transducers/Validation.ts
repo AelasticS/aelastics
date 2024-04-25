@@ -2,14 +2,14 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { ITransformer , WhatToDo } from './Transformer'
+import { IProcessor , WhatToDo } from './Transformer'
 import { Node } from '../common/Node'
 import { isFailure } from 'aelastics-result'
 
-export class Validation implements ITransformer {
-  private xf: ITransformer
+export class Validation implements IProcessor {
+  private xf: IProcessor
 
-  constructor(xf: ITransformer) {
+  constructor(xf: IProcessor) {
     this.xf = xf
   }
 

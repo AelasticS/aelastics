@@ -2,14 +2,14 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { ITransformer , WhatToDo } from './Transformer'
+import { IProcessor , WhatToDo } from './Transformer'
 import { Node } from '../common/Node'
 
-export class Filter implements ITransformer {
+export class Filter implements IProcessor {
   private readonly predicate: (item: any , currNode: Node) => boolean
-  private xf: ITransformer
+  private xf: IProcessor
 
-  constructor(xf: ITransformer, predicate: (item: any , currNode: Node) => boolean) {
+  constructor(xf: IProcessor, predicate: (item: any , currNode: Node) => boolean) {
     this.predicate = predicate
     this.xf = xf
   }

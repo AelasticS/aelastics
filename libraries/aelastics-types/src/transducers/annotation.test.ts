@@ -6,7 +6,7 @@ import * as t from "../common/DefinitionAPI";
 import { DefaultSchema } from "../type/TypeSchema";
 import { Annotation, AnnotationSchema, TypedAnnotation } from "../annotations/Annotation";
 import { identityReducer, transducer } from "./Transducer";
-import { ITransformer, WhatToDo } from "./Transformer";
+import { IProcessor, WhatToDo } from "./Transformer";
 import { Node } from "../common/Node";
 
 let OptionalNumber = t.optional(t.number);
@@ -99,10 +99,10 @@ p.children.push({ name: "Liza", parent: p });
 /**
  *  processor of ERM annotations
  */
-class ermProcessor implements ITransformer {
-  private xf: ITransformer;
+class ermProcessor implements IProcessor {
+  private xf: IProcessor;
 
-  constructor(xf: ITransformer) {
+  constructor(xf: IProcessor) {
     this.xf = xf;
   }
 

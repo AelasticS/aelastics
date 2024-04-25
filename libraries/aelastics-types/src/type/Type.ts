@@ -7,7 +7,7 @@ import { Any } from '../common/DefinitionAPI';
 import { Node } from '../common/Node';
 import { DefaultSchema, System, TypeSchema } from './TypeSchema';
 import { failures, ServiceError, ServiceResult, success } from 'aelastics-result';
-import { ITransformer, WhatToDo } from '../transducers/Transformer';
+import { IProcessor, WhatToDo } from '../transducers/Transformer';
 import { identityReducer, naturalReducer, transducer } from '../transducers/Transducer';
 
 export type RoleType =
@@ -141,13 +141,13 @@ export abstract class Type<V, G, T> {
     return hasError;
   }
 
-  transduce<A>(t: ITransformer, input: any | Node, initObj?: A, resetAcc?: boolean, typeLevel:boolean=false): A {
+  transduce<A>(t: IProcessor, input: any | Node, initObj?: A, resetAcc?: boolean, typeLevel:boolean=false): A {
     let [res, _] = this.doTransformation(t, input, initObj, resetAcc, typeLevel);
     return res;
   }
 
   abstract doTransformation<A>(
-    t: ITransformer,
+    t: IProcessor,
     input: any | Node,
     initObj?: A,
     resetAcc?: boolean,

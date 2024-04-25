@@ -6,7 +6,7 @@ import { ExtraInfo , Type } from '../type/Type'
 import { Any, DtoGraphTypeOf, TypeOf } from '../common/DefinitionAPI'
 import { Node } from '../common/Node'
 import { TypeSchema } from '../type/TypeSchema'
-import { ITransformer , WhatToDo } from '../transducers/Transformer'
+import { IProcessor , WhatToDo } from '../transducers/Transformer'
 
 const getOptionalName = (base: Any): string => `optional ${base.name}`
 
@@ -50,7 +50,7 @@ export class OptionalType<T extends Any> extends Type<
   }
 
   doTransformation<A>(
-    t: ITransformer,
+    t: IProcessor,
     input: Node | TypeOf<T> | undefined,
     initObj: A | undefined,
     resetAcc: boolean | undefined,

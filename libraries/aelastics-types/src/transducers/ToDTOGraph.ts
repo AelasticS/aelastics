@@ -2,16 +2,16 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { ITransformer, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Transformer'
 import { Node } from '../common/Node'
 import { ServiceError } from 'aelastics-result'
 import { getTypeInfo } from './FromDTOGraph'
 import { System } from '../type/TypeSchema'
 
-export class ToDTOGraph implements ITransformer {
-  private xf: ITransformer
+export class ToDTOGraph implements IProcessor {
+  private xf: IProcessor
 
-  constructor(xf: ITransformer) {
+  constructor(xf: IProcessor) {
     this.xf = xf
   }
 

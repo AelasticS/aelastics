@@ -10,7 +10,7 @@
 //    model export import 
 
 
-import { ITransformer, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Transformer'
 import { Node } from '../common/Node'
 import { InstanceReference } from '../type/TypeDefinisions'
 import { System } from '../type/TypeSchema'
@@ -23,10 +23,10 @@ export function getTypeInfo(obj: any): string {
   return obj['@@aelastics/type'] as string
 }
 
-export class FromDTOGraph implements ITransformer {
-  private xf: ITransformer
+export class FromDTOGraph implements IProcessor {
+  private xf: IProcessor
 
-  constructor(xf: ITransformer) {
+  constructor(xf: IProcessor) {
     this.xf = xf
   }
 

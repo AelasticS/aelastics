@@ -7,23 +7,23 @@
 import { Any } from "../common/DefinitionAPI";
 import { Node } from "../common/Node";
 import { TypeCategory } from "../type/TypeDefinisions";
-import { ITransformer, TransformerClass, WhatToDo } from "./Transformer";
+import { IProcessor, ProcessorClass, WhatToDo } from "./Transformer";
 
 export class TransformerBuilder {
-  private initFs: Array<ITransformer["init"]> = [];
-  private stepFs: Array<ITransformer["step"]> = [];
-  private resultFs: Array<ITransformer["result"]> = [];
+  private initFs: Array<IProcessor["init"]> = [];
+  private stepFs: Array<IProcessor["step"]> = [];
+  private resultFs: Array<IProcessor["result"]> = [];
 
-  public onInit(f: ITransformer["init"] | Array<ITransformer["init"]>) {
+  public onInit(f: IProcessor["init"] | Array<IProcessor["init"]>) {
     Array.isArray(f) ? this.initFs.push(...f) : this.initFs.push(f);
     return this;
   }
 
-  public onStep(f: ITransformer["step"] | Array<ITransformer["step"]>) {
+  public onStep(f: IProcessor["step"] | Array<IProcessor["step"]>) {
     Array.isArray(f) ? this.stepFs.push(...f) : this.stepFs.push(f);
     return this;
   }
-  public onResult(f: ITransformer["result"] | Array<ITransformer["result"]>) {
+  public onResult(f: IProcessor["result"] | Array<IProcessor["result"]>) {
     Array.isArray(f) ? this.resultFs.push(...f) : this.resultFs.push(f);
     return this;
   }
@@ -31,17 +31,17 @@ export class TransformerBuilder {
   
 
   private createTransformClass(
-    initFs: Array<ITransformer["init"]>,
-    stepFs: Array<ITransformer["step"]>,
-    resultFs: Array<ITransformer["result"]>
-  ): TransformerClass {
-    return class implements ITransformer {
+    initFs: Array<IProcessor["init"]>,
+    stepFs: Array<IProcessor["step"]>,
+    resultFs: Array<IProcessor["result"]>
+  ): ProcessorClass {
+    return class implements IProcessor {
       private args:any[]
-      constructor(readonly xfNext: ITransformer, ...args:any[]) {
+      constructor(readonly xfNext: IProcessor, ...args:any[]) {
         this.args = args
       }
 
-      private runInits: ITransformer["init"] = (value, currNode) => {
+      private runInits: IProcessor["init"] = (value, currNode) => {
         let what: WhatToDo = "continue";
         for (let i = 0; i < initFs.length && what === "continue"; i++) {
           [value, what] = initFs[i](value, currNode, ...this.args);
@@ -49,7 +49,7 @@ export class TransformerBuilder {
         return [value, what];
       };
     
-      private runSteps: ITransformer["step"] = (result, currNode, item) => {
+      private runSteps: IProcessor["step"] = (result, currNode, item) => {
         let what: WhatToDo = "continue";
         for (let i = 0; i < stepFs.length && what === "continue"; i++) {
           [result, what] = stepFs[i](result, currNode, item, ...this.args);
@@ -57,7 +57,7 @@ export class TransformerBuilder {
         return [result, what];
       };
     
-      private runResults: ITransformer["result"] = (result, currNode) => {
+      private runResults: IProcessor["result"] = (result, currNode) => {
         let what: WhatToDo = "continue";
         for (let i = 0; i < resultFs.length && what === "continue"; i++) {
           [result, what] = resultFs[i](result, currNode,...this.args);
@@ -85,7 +85,7 @@ export class TransformerBuilder {
     };
   }
 
-  public build():TransformerClass {
+  public build():ProcessorClass {
     return this.createTransformClass(this.initFs, this.stepFs, this.resultFs);
   }
 }
@@ -129,8 +129,8 @@ abstract class FunctionBuilder<F extends (...args: any[]) => [any, WhatToDo]> {
   }
 }
 
-export class InitBuilder extends FunctionBuilder<ITransformer["init"]> {}
+export class InitBuilder extends FunctionBuilder<IProcessor["init"]> {}
 
-export class StepBuilder extends FunctionBuilder<ITransformer["step"]> {}
+export class StepBuilder extends FunctionBuilder<IProcessor["step"]> {}
 
-export class ResultBuilder extends FunctionBuilder<ITransformer["result"]> {}
+export class ResultBuilder extends FunctionBuilder<IProcessor["result"]> {}

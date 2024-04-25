@@ -2,14 +2,14 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { ITransformer , WhatToDo } from './Transformer'
+import { IProcessor , WhatToDo } from './Transformer'
 import { Node } from '../common/Node'
 
-export class Map implements ITransformer {
+export class Map implements IProcessor {
   private readonly f: (item: any , currNode: Node) => any
-  private xf: ITransformer
+  private xf: IProcessor
 
-  constructor(xf: ITransformer, f: (item: any , currNode: Node) => any) {
+  constructor(xf: IProcessor, f: (item: any , currNode: Node) => any) {
     this.f = f
     this.xf = xf
   }

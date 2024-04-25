@@ -1,4 +1,4 @@
-import { ITransformer } from "./Transformer";
+import { IProcessor } from "./Transformer";
 import * as tb from "./TransformerBuilder";
 import * as t from "../index";
 import { naturalReducer } from "../index";
@@ -47,17 +47,17 @@ let Tom: IPerson = {
 };
 
 describe("test TransformerBuilder", () => {
-  let fInit: ITransformer["init"] = (v, c) => {
+  let fInit: IProcessor["init"] = (v, c) => {
     console.log(`INIT: node type:${c.type.name}, value:${v}, instance:${c.instance}`);
     return [v, "continue"];
   };
 
-  let fStep: ITransformer["step"] = (v, c, i) => {
+  let fStep: IProcessor["step"] = (v, c, i) => {
     console.log(`STEP: node type:${c.type.name}, value:${v}, instance:${c.instance}`);
     return [v, "continue"];
   };
 
-  let fResult: ITransformer["init"] = (v, c) => {
+  let fResult: IProcessor["init"] = (v, c) => {
     console.log(`RESULT: node type:${c.type.name}, value:${v}, instance:${c.instance}`);
     return [v, "continue"];
   };
