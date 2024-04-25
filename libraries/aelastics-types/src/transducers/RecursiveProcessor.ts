@@ -2,11 +2,11 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { IProcessor, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Processor'
 import { Node } from '../common/Node'
 import { Transducer } from './Transducer'
 
-export class RecursiveTransformer implements IProcessor {
+export class RecursiveProcessor implements IProcessor {
   transducer: Transducer
   xf: IProcessor
   resetAcc: boolean

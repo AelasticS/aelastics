@@ -5,7 +5,7 @@
 import * as t from '../common/DefinitionAPI'
 import { transducer } from '../transducers/Transducer'
 import { Node } from '../common/Node'
-import { Reducer } from '../transducers/Transformer'
+import { Reducer } from '../transducers/Processor'
 
 /**
  *  test

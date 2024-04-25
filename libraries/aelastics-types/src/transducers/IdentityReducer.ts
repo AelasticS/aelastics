@@ -8,7 +8,7 @@
  *   step - return the received value without modifications
  *   result - return the received value without modifications
  */
-import { IProcessor, WhatToDo } from "./Transformer";
+import { IProcessor, WhatToDo } from "./Processor";
 import { Node } from "../common/Node";
 
 export class IdentityReducer implements IProcessor {

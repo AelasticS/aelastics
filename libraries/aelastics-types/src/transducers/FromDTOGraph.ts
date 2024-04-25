@@ -10,7 +10,7 @@
 //    model export import 
 
 
-import { IProcessor, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Processor'
 import { Node } from '../common/Node'
 import { InstanceReference } from '../type/TypeDefinisions'
 import { System } from '../type/TypeSchema'

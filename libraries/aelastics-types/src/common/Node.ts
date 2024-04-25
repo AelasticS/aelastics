@@ -5,7 +5,7 @@
 import { Any } from "./DefinitionAPI";
 import { ExtraInfo } from "../type/Type";
 import { VisitedNodes } from "./VisitedMap";
-import { AnnotationTransformer } from "../transducers/AnnotationTransformer";
+import { AnnotationProcessor } from "../transducers/AnnotationProcessor";
 import { TypedAnnotation } from "../annotations/Annotation";
 
 export class Node {
@@ -16,7 +16,7 @@ export class Node {
   extra: ExtraInfo;
   parent?: Node;
   visited: VisitedNodes;
-  annotationTransformers: Map<TypedAnnotation, AnnotationTransformer>;
+  annotationProcessor: Map<TypedAnnotation, AnnotationProcessor>;
   private _revisited: boolean = false;
 
   constructor(
@@ -31,7 +31,7 @@ export class Node {
     this.type = t;
     this.acc = acc;
     this.extra = e;
-    this.annotationTransformers = parent ? parent.annotationTransformers : new Map();
+    this.annotationProcessor = parent ? parent.annotationProcessor : new Map();
     this.parent = parent;
     this.visited = this.parent !== undefined ? this.parent.visited : new VisitedNodes();
     this.typeLevel = this.parent !== undefined ? this.parent.typeLevel : typeLevel;
@@ -46,11 +46,11 @@ export class Node {
   }
 
   getCurrentAnnotationElement(a: TypedAnnotation): any {
-    return this.annotationTransformers.get(a)?.currentAnnotationElement;
+    return this.annotationProcessor.get(a)?.currentAnnotationElement;
   }
 
-  getAnnotationTransformer(a: TypedAnnotation): AnnotationTransformer | undefined {
-    return this.annotationTransformers.get(a);
+  getAnnotationProcessor(a: TypedAnnotation): AnnotationProcessor | undefined {
+    return this.annotationProcessor.get(a);
   }
 
   static makeNode(

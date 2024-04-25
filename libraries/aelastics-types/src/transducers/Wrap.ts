@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { IProcessor, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Processor'
 import { Node } from '../common/Node'
 
 export class Wrap implements IProcessor {

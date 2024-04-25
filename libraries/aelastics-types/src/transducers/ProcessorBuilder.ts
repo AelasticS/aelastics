@@ -7,9 +7,9 @@
 import { Any } from "../common/DefinitionAPI";
 import { Node } from "../common/Node";
 import { TypeCategory } from "../type/TypeDefinisions";
-import { IProcessor, ProcessorClass, WhatToDo } from "./Transformer";
+import { IProcessor, ProcessorClass, WhatToDo } from "./Processor";
 
-export class TransformerBuilder {
+export class ProcessorBuilder {
   private initFs: Array<IProcessor["init"]> = [];
   private stepFs: Array<IProcessor["step"]> = [];
   private resultFs: Array<IProcessor["result"]> = [];

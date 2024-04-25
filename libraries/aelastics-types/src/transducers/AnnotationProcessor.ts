@@ -7,7 +7,7 @@
 // Map<AnnotationName, AnnotationTransformer> getCurrentAnnotation, 
 import { Node } from '../common/Node'
 import { ServiceError } from 'aelastics-result'
-import { IProcessor, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Processor'
 import { AnyAnnotation, TypedAnnotation } from '../annotations/Annotation'
 
 // export interface IAnnotationProcessor {
@@ -16,7 +16,7 @@ import { AnyAnnotation, TypedAnnotation } from '../annotations/Annotation'
 //   step: (result: any, currNode: Node, item: any, p: AnnotationTransformer) => [any, WhatToDo]
 // }
 
-export class AnnotationTransformer implements IProcessor {
+export class AnnotationProcessor implements IProcessor {
   private readonly typedAnnotation:  TypedAnnotation
   private readonly xf: IProcessor
   private _annotationStack: any[] = []
@@ -41,7 +41,7 @@ export class AnnotationTransformer implements IProcessor {
     // set current node to point to this instance
     // if(!currNode.annotationTransformers?.get(this.namedAnnotation.annotation))
     //   new Error(`No annotation - node type: ${currNode.type.name}, value:${currNode.instance}`)
-    currNode.annotationTransformers.set(this.typedAnnotation, this)
+    currNode.annotationProcessor.set(this.typedAnnotation, this)
 
     switch (currNode.extra.role) {
       case 'asRoot':

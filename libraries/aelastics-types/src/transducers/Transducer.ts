@@ -3,7 +3,7 @@
  */
 
 import { Node } from "../common/Node";
-import { IProcessor, Reducer, ProcessorClass } from "./Transformer";
+import { IProcessor, Reducer, ProcessorClass } from "./Processor";
 import { Wrap } from "./Wrap";
 import { NaturalReducer } from "./NaturalReducer";
 import { IdentityReducer } from "./IdentityReducer";
@@ -12,8 +12,8 @@ import { Filter } from "./Filter";
 import { ToDTOGraph } from "./ToDTOGraph";
 import { FromDTOGraph } from "./FromDTOGraph";
 import { Validation } from "./Validation";
-import { RecursiveTransformer } from "./RecursiveTransformer";
-import { AnnotationTransformer } from "./AnnotationTransformer";
+import { RecursiveProcessor } from "./RecursiveProcessor";
+import { AnnotationProcessor } from "./AnnotationProcessor";
 import { AnyAnnotation, TypedAnnotation} from "../annotations/Annotation";
 import { NewInstance } from "./NewInstance";
 import { StepperReducer } from "./StepperReducer";
@@ -21,15 +21,15 @@ import { StepperReducer } from "./StepperReducer";
 export type IMapFun = (item: any, n: Node) => any;
 
 export class Transducer {
-  transformers: Array<(t: IProcessor) => IProcessor> = [];
+  processors: Array<(t: IProcessor) => IProcessor> = [];
   reducer: IProcessor | undefined;
 
   get composed(): (xf: IProcessor) => IProcessor {
-    return (x: any) => this.transformers.reduceRight((y, f) => f(y), x);
+    return (x: any) => this.processors.reduceRight((y, f) => f(y), x);
   }
 
-  doFinally(transformer: IProcessor): IProcessor {
-    this.reducer = this.composed(transformer);
+  doFinally(processor: IProcessor): IProcessor {
+    this.reducer = this.composed(processor);
     return this.reducer;
   }
 
@@ -37,7 +37,7 @@ export class Transducer {
     let tr = (xfNext: IProcessor) => {
       return new Ctor(xfNext, ...args);
     };
-    this.transformers.push(tr);
+    this.processors.push(tr);
     return this;
   }
 
@@ -48,7 +48,7 @@ export class Transducer {
       let tr = (xfNext: IProcessor) => {
         return new Ctor(xfNext, ...args);
       };
-      this.transformers.push(tr);
+      this.processors.push(tr);
     }
     return this;
   }
@@ -58,7 +58,7 @@ export class Transducer {
   }
 
   recurse(mode: "accumulate" | "makeItem"): this {
-    return this.do(RecursiveTransformer, this, mode === "makeItem");
+    return this.do(RecursiveProcessor, this, mode === "makeItem");
   }
 
   filter(f: (item: any, currNode: Node) => boolean): this {
@@ -90,14 +90,14 @@ export class Transducer {
   }
 
   processAnnotations(annot: TypedAnnotation): this {
-    return this.do(AnnotationTransformer, annot)
+    return this.do(AnnotationProcessor, annot)
   }
 
   doWithAnnotations(Ctor: ProcessorClass, ...na:TypedAnnotation[]): this {
     let tr = (xfNext: IProcessor) => {
       return new Ctor(xfNext, ...na);
     };
-    this.transformers.push(tr);
+    this.processors.push(tr);
     return this;
   }
 

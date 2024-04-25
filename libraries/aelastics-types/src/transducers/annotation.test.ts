@@ -6,7 +6,7 @@ import * as t from "../common/DefinitionAPI";
 import { DefaultSchema } from "../type/TypeSchema";
 import { Annotation, AnnotationSchema, TypedAnnotation } from "../annotations/Annotation";
 import { identityReducer, transducer } from "./Transducer";
-import { IProcessor, WhatToDo } from "./Transformer";
+import { IProcessor, WhatToDo } from "./Processor";
 import { Node } from "../common/Node";
 
 let OptionalNumber = t.optional(t.number);

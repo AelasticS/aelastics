@@ -6,7 +6,7 @@ import { ExtraInfo , Type } from '../type/Type'
 import { Any, DtoGraphTypeOf, TypeOf } from '../common/DefinitionAPI'
 import { Node } from '../common/Node'
 import { TypeSchema } from '../type/TypeSchema'
-import { IProcessor , WhatToDo } from '../transducers/Transformer'
+import { IProcessor , WhatToDo } from '../transducers/Processor'
 
 const getOptionalName = (base: Any): string => `optional ${base.name}`
 

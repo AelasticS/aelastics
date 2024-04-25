@@ -1,5 +1,5 @@
-import { IProcessor } from "./Transformer";
-import * as tb from "./TransformerBuilder";
+import { IProcessor } from "./Processor";
+import * as tb from "./ProcessorBuilder";
 import * as t from "../index";
 import { naturalReducer } from "../index";
 
@@ -63,7 +63,7 @@ describe("test TransformerBuilder", () => {
   };
 
   test("onInit", () => {
-    let oi = new tb.TransformerBuilder()
+    let oi = new tb.ProcessorBuilder()
       .onInit(
         new tb.InitBuilder()
           .onTypeCategory("Object", fInit)

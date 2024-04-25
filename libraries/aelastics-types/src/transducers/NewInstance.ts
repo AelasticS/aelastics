@@ -4,7 +4,7 @@
 
 import { Node } from '../common/Node';
 import { ServiceError } from 'aelastics-result';
-import { IProcessor, WhatToDo } from './Transformer';
+import { IProcessor, WhatToDo } from './Processor';
 import { System } from '../type/TypeSchema';
 
 

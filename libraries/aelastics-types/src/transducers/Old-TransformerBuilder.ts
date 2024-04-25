@@ -5,7 +5,7 @@ import { ObjectType } from "../complex-types/ObjectType";
 import { SimpleType } from "../simple-types/SimpleType";
 import { TypeCategory } from "../type/TypeDefinisions";
 import { IdentityReducer } from "./IdentityReducer";
-import { IProcessor, WhatToDo } from "./Transformer";
+import { IProcessor, WhatToDo } from "./Processor";
 
 export class TransformerBuilder {
     private initFs: Array<IProcessor["init"]> = [];

@@ -8,7 +8,7 @@ import { TypeSchema } from '../type/TypeSchema'
 import { ServiceError } from 'aelastics-result'
 import { ExtraInfo, Type } from '../type/Type'
 import { Node } from '../common/Node'
-import { IProcessor , WhatToDo } from '../transducers/Transformer'
+import { IProcessor , WhatToDo } from '../transducers/Processor'
 
 export class LinkType extends Type<any, any, any> {
   public readonly LinkSchema: TypeSchema

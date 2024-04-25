@@ -1,6 +1,6 @@
 import { Type } from '../type/Type'
 import { Node } from '../common/Node'
-import { IProcessor, WhatToDo } from '../transducers/Transformer'
+import { IProcessor, WhatToDo } from '../transducers/Processor'
 
 export abstract class ComplexType<V, G, T> extends Type<V, G, T> {
   isSimple(): boolean {
