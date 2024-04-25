@@ -20,13 +20,28 @@ export const Program = t.entity(
   UniversitySchema
 )
 
+export const Address = t.object(
+  { streetName: t.string, streetNumber: t.string, city: t.string, postNumber: t.string },
+  "Child",
+  UniversitySchema
+)
+
+export const Book = t.object(
+  { bookName: t.string, bookAuthor: t.string, relatedCourse: t.link(UniversitySchema, "Course", "BookToCourseLink") },
+  "Child",
+  UniversitySchema
+)
+
 export const Student = t.entity(
   {
     id: ID,
     name: Name,
     email: Email,
-    enrolledProgram: Program || null,
+    enrolledProgram: Program,
     approvedCourses: t.arrayOf(t.link(UniversitySchema, "Course", "StudentToCourseLink")),
+    address: Address,
+    books: t.arrayOf(Book),
+    buddy: t.link(UniversitySchema, "Student", "StudentToStudentLink"),
   },
   ["id"],
   "Student",
