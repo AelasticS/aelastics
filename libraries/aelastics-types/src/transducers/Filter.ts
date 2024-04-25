@@ -2,6 +2,13 @@
  * Copyright (c) AelasticS 2020.
  */
 
+
+/**
+ *  Filter implements filtering of nodes during the processing
+ *   init - pass on control (i.e. do nothing)
+ *   step - pass on control  if predicate is true, otherwise skip the processing
+ *   result - pass on control (i.e. do nothing)
+ */
 import { IProcessor , WhatToDo } from './Processor'
 import { Node } from '../common/Node'
 

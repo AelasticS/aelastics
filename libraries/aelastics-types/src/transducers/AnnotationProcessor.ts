@@ -3,7 +3,7 @@
   
  */
 
-// TODO: make AnnotationProcessor as usual Transfomer, other can acces annotations via Node
+// TODO: make AnnotationProcessor as usual Processor, other can acces annotations via Node
 // Map<AnnotationName, AnnotationProcessor> getCurrentAnnotation, 
 import { Node } from '../common/Node'
 import { ServiceError } from 'aelastics-result'
