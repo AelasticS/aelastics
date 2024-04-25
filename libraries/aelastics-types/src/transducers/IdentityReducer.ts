@@ -3,7 +3,7 @@
  */
 
 /**
- *  IdentityReducer do nothing, just return wht it receive
+ *  IdentityReducer do nothing, just return what it receives
  *   init - return the received value without modifications
  *   step - return the received value without modifications
  *   result - return the received value without modifications
