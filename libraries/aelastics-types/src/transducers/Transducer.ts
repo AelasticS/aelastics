@@ -3,7 +3,7 @@
  */
 
 import { Node } from "../common/Node";
-import { IProcessor, Reducer, ProcessorClass } from "./Processor";
+import { IProcessor, Reducer, IProcessorConstructor } from "./Processor";
 import { Wrap } from "./Wrap";
 import { NaturalReducer } from "./NaturalReducer";
 import { IdentityReducer } from "./IdentityReducer";
@@ -33,7 +33,7 @@ export class Transducer {
     return this.reducer;
   }
 
-  do(Ctor: ProcessorClass, ...args: any[]): this {
+  do(Ctor: IProcessorConstructor, ...args: any[]): this {
     let tr = (xfNext: IProcessor) => {
       return new Ctor(xfNext, ...args);
     };
@@ -43,7 +43,7 @@ export class Transducer {
 
 
   // include Processor only if condition is satisfied
-  doIf(condition: boolean, Ctor: ProcessorClass, ...args: any[]): this {
+  doIf(condition: boolean, Ctor: IProcessorConstructor, ...args: any[]): this {
     if (condition) {
       let tr = (xfNext: IProcessor) => {
         return new Ctor(xfNext, ...args);
@@ -93,7 +93,7 @@ export class Transducer {
     return this.do(AnnotationProcessor, annot)
   }
 
-  doWithAnnotations(Ctor: ProcessorClass, ...na:TypedAnnotation[]): this {
+  doWithAnnotations(Ctor: IProcessorConstructor, ...na:TypedAnnotation[]): this {
     let tr = (xfNext: IProcessor) => {
       return new Ctor(xfNext, ...na);
     };

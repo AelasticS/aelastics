@@ -7,7 +7,7 @@
 import { Any } from "../common/DefinitionAPI";
 import { Node } from "../common/Node";
 import { TypeCategory } from "../type/TypeDefinisions";
-import { IProcessor, ProcessorClass, WhatToDo } from "./Processor";
+import { IProcessor, IProcessorConstructor, WhatToDo } from "./Processor";
 
 export class ProcessorBuilder {
   private initFs: Array<IProcessor["init"]> = [];
@@ -34,7 +34,7 @@ export class ProcessorBuilder {
     initFs: Array<IProcessor["init"]>,
     stepFs: Array<IProcessor["step"]>,
     resultFs: Array<IProcessor["result"]>
-  ): ProcessorClass {
+  ): IProcessorConstructor {
     return class implements IProcessor {
       private args:any[]
       constructor(readonly xfNext: IProcessor, ...args:any[]) {
@@ -85,7 +85,7 @@ export class ProcessorBuilder {
     };
   }
 
-  public build():ProcessorClass {
+  public build():IProcessorConstructor {
     return this.createTransformClass(this.initFs, this.stepFs, this.resultFs);
   }
 }

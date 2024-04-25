@@ -11,7 +11,7 @@ export interface IProcessor {
   result(result: any, currNode: Node, ...args: any[]): [any, WhatToDo];
   step(result: any, currNode: Node, item: any, ...args: any[]): [any, WhatToDo];
 }
-export type ProcessorClass = { new (xfNext: IProcessor, ...args: any[]): IProcessor };
+export type IProcessorConstructor = { new (xfNext: IProcessor, ...args: any[]): IProcessor };
 
 export type Reducer<A> = (result: A, currNode: Node, item: any) => A;
 
