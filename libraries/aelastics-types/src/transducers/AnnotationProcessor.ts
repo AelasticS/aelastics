@@ -3,17 +3,17 @@
   
  */
 
-// TODO: make AnnotationTransformer as usual Transfomer, other can acces annotations via Node
-// Map<AnnotationName, AnnotationTransformer> getCurrentAnnotation, 
+// TODO: make AnnotationProcessor as usual Transfomer, other can acces annotations via Node
+// Map<AnnotationName, AnnotationProcessor> getCurrentAnnotation, 
 import { Node } from '../common/Node'
 import { ServiceError } from 'aelastics-result'
 import { IProcessor, WhatToDo } from './Processor'
 import { AnyAnnotation, TypedAnnotation } from '../annotations/Annotation'
 
 // export interface IAnnotationProcessor {
-//   init: (value: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
-//   result: (result: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
-//   step: (result: any, currNode: Node, item: any, p: AnnotationTransformer) => [any, WhatToDo]
+//   init: (value: any, currNode: Node, p: AnnotationProcessor) => [any, WhatToDo]
+//   result: (result: any, currNode: Node, p: AnnotationProcessor) => [any, WhatToDo]
+//   step: (result: any, currNode: Node, item: any, p: AnnotationProcessor) => [any, WhatToDo]
 // }
 
 export class AnnotationProcessor implements IProcessor {
@@ -39,7 +39,7 @@ export class AnnotationProcessor implements IProcessor {
 
   init(value: any, currNode: Node): [any, WhatToDo] {
     // set current node to point to this instance
-    // if(!currNode.annotationTransformers?.get(this.namedAnnotation.annotation))
+    // if(!currNode.annotationProcessors?.get(this.namedAnnotation.annotation))
     //   new Error(`No annotation - node type: ${currNode.type.name}, value:${currNode.instance}`)
     currNode.annotationProcessor.set(this.typedAnnotation, this)
 

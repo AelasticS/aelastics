@@ -7,7 +7,7 @@ import { TypeCategory } from "../type/TypeDefinisions";
 import { IdentityReducer } from "./IdentityReducer";
 import { IProcessor, WhatToDo } from "./Processor";
 
-export class TransformerBuilder {
+export class ProcessorBuilder {
     private initFs: Array<IProcessor["init"]> = [];
     private stepFs: Array<IProcessor["step"]> = [];
     private resultFs: Array<IProcessor["result"]> = [];

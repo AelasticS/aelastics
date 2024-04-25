@@ -42,7 +42,7 @@ export class Transducer {
   }
 
 
-  // include transformer only if condition is satisfied
+  // include Processor only if condition is satisfied
   doIf(condition: boolean, Ctor: ProcessorClass, ...args: any[]): this {
     if (condition) {
       let tr = (xfNext: IProcessor) => {
@@ -82,7 +82,7 @@ export class Transducer {
    *    { name:'John',
    *      parent: { name:'Tom'}
    *      children:[{name:'Ana}, {name:{Peter}}]
-   *    }).transformer().
+   *    }).Processor().
    *
    */
   newInstance(initValues?: any, generateID?: () => any): this {

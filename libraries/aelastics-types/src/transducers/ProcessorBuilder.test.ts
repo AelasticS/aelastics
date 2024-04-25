@@ -46,7 +46,7 @@ let Tom: IPerson = {
   employed: true,
 };
 
-describe("test TransformerBuilder", () => {
+describe("test ProcessorBuilder", () => {
   let fInit: IProcessor["init"] = (v, c) => {
     console.log(`INIT: node type:${c.type.name}, value:${v}, instance:${c.instance}`);
     return [v, "continue"];
