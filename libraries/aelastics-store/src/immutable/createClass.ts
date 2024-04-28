@@ -33,13 +33,13 @@ export type Class<P> = { new (init: Partial<P>): P }
  * Initializes the class with properties and defines getter and setter methods for each property.
  * Handles the creation of inverse relationships between objects.
  *
- * @param type - The object type for which the class is being created.
+ * @param objectType - The object type for which the class is being created.
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ObjectLiteral>(type: AnyObjectType, ctx: OperationContext): Class<P> {
-  const props = type.allProperties
-  const inverses = type.allInverse
+export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, ctx: OperationContext): Class<P> {
+  const props = objectType.allProperties
+  const inverses = objectType.allInverse
 
   class DynamicClass {
     [key: string]: any
@@ -48,6 +48,8 @@ export function createClass<P extends ObjectLiteral>(type: AnyObjectType, ctx: O
       // Initialize private properties
       props.forEach((type, propName) => {
         const privatePropName = `_${propName}`
+        //TODO: Currently the initialization is wrong. In the case where we pass actual references to the objest, they must be stored accordinglt, based on the uuid or object, depending on the type of the property
+
         if (init[propName]) this[privatePropName] = init[propName]
         else if (type.typeCategory === "Array") {
           this[privatePropName] = []
@@ -62,13 +64,14 @@ export function createClass<P extends ObjectLiteral>(type: AnyObjectType, ctx: O
       // get inverse info
       const inverseDescriptor = inverses.get(propName)!
       // set local variables
+      const propObjectType = objectType // COMMENT: This is the type of the object that the property belongs to
+      const realPropType = getUnderlyingType(propType) // COMMENT: In the case when the propType is a link, this will return the actual type of the link
       const { propName: inversePropName, propType: inversePropType, type: inverseObjectType } = inverseDescriptor
-      const propObjectType = propType as AnyObjectType
       const isPropID = propObjectType.isEntity
       const isInversePropID = inverseObjectType.isEntity
 
       // Define the property using the appropriate function based on its type and inverse
-      if (propType.typeCategory === "Object" && inversePropType === "Object") {
+      if (realPropType.typeCategory === "Object" && inversePropType === "Object") {
         defineOneToOne(
           DynamicClass.prototype,
           propName,
@@ -79,18 +82,7 @@ export function createClass<P extends ObjectLiteral>(type: AnyObjectType, ctx: O
           isPropID,
           isInversePropID
         )
-      } else if (propType.typeCategory === "Object" && inversePropType === "Array") {
-        defineOneToMany(
-          DynamicClass.prototype,
-          propName,
-          inversePropName,
-          propObjectType,
-          inverseObjectType,
-          ctx,
-          isPropID,
-          isInversePropID
-        )
-      } else if (propType.typeCategory === "Array" && inversePropType === "Object") {
+      } else if (realPropType.typeCategory === "Object" && inversePropType === "Array") {
         defineManyToOne(
           DynamicClass.prototype,
           propName,
@@ -101,7 +93,18 @@ export function createClass<P extends ObjectLiteral>(type: AnyObjectType, ctx: O
           isPropID,
           isInversePropID
         )
-      } else if (propType.typeCategory === "Array" && inversePropType === "Array") {
+      } else if (realPropType.typeCategory === "Array" && inversePropType === "Object") {
+        defineOneToMany(
+          DynamicClass.prototype,
+          propName,
+          inversePropName,
+          propObjectType,
+          inverseObjectType,
+          ctx,
+          isPropID,
+          isInversePropID
+        )
+      } else if (realPropType.typeCategory === "Array" && inversePropType === "Array") {
         defineManyToMany(
           DynamicClass.prototype,
           propName,
@@ -145,6 +148,6 @@ export function createClass<P extends ObjectLiteral>(type: AnyObjectType, ctx: O
   //   })
   // }
   // Return the dynamically created class with its own name
-  Object.defineProperty(DynamicClass, "name", { value: type.name })
+  Object.defineProperty(DynamicClass, "name", { value: objectType.name })
   return DynamicClass as Class<P>
 }
