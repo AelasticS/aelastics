@@ -1,11 +1,11 @@
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid"
 // import { Program, Course, Assignment, Student, Submission } from "./university";
 import { ImmutableStore } from "aelastics-store"
-import { Course } from "./university.model.type";
+import { CourseType } from "./university.model.type"
 
 export const uuidv4Generator = () => {
-    return uuidv4();
-};
+  return uuidv4()
+}
 
 // const store = {
 //     programs: new Map<string, Program>(),
