@@ -1,5 +1,6 @@
 import { ImmutableStore } from "aelastics-store"
 import {
+  AddressType,
   AssignmentType,
   BookType,
   CourseType,
@@ -201,18 +202,37 @@ describe("Many-to-Many Relationship with ID", () => {
 
     student1.removeCourses(course2)
     expect(student1.courses).toStrictEqual([course1])
+    expect(course2.students).toStrictEqual([])
   })
 })
 
-// describe("defineComplexObjectProp", () => {
-//   beforeEach(() => {
-//     // setup code
-//   })
+describe("defineComplexObjectProp", () => {
+  const immutableStore = new ImmutableStore()
 
-//   it("should set and get complex object property for Worker", () => {
-//     // test implementation
-//   })
-// })
+  const student1 = immutableStore.newObject(StudentType, {
+    id: "s1",
+    name: "Student 1",
+    email: "student1@example.com",
+    program: undefined,
+    courses: [],
+    address: undefined,
+    books: [],
+    buddy: undefined,
+  })
+
+  const address = immutableStore.newObject(AddressType, {
+    streetName: "street",
+    streetNumber: "1",
+    city: "city",
+    postNumber: "1",
+  })
+
+  it("should set and get complex object property for Student", () => {
+    student1.address = address
+
+    expect(student1.address).toBe(address)
+  })
+})
 
 // describe("defineComplexArrayProp", () => {
 //   beforeEach(() => {

@@ -20,7 +20,7 @@ export const ProgramType = t.entity(
   UniversitySchema
 )
 
-export const Address = t.object(
+export const AddressType = t.object(
   { streetName: t.string, streetNumber: t.string, city: t.string, postNumber: t.string },
   "Child",
   UniversitySchema
@@ -45,7 +45,7 @@ export const StudentType = t.entity(
     email: Email,
     program: ProgramType,
     courses: t.arrayOf(t.link(UniversitySchema, "Course", "StudentToCourseLink")),
-    address: Address,
+    address: AddressType,
     books: t.arrayOf(BookType),
     buddy: t.link(UniversitySchema, "Student", "StudentToStudentLink"),
   },
