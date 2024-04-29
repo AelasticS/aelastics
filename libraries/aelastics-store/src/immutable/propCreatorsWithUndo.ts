@@ -515,7 +515,7 @@ export function defineManyToMany(
 
     // Remove the inverse item
     const inverseIndex = isInversePropViaID
-      ? item[privateInversePropName].indexOf(this[thisPropIDName])
+      ? item[privateInversePropName].indexOf(this[inversePropIDName])
       : item[privateInversePropName].indexOf(this)
 
     if (inverseIndex !== -1) {

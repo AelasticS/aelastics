@@ -121,6 +121,7 @@ describe("One-to-One Relationship with ID", () => {
 
 describe("One-to-Many Relationship with ID", () => {
   const immutableStore = new ImmutableStore()
+
   const program1 = immutableStore.newObject(ProgramType, {
     id: "p1",
     name: "Program 1",
@@ -159,20 +160,49 @@ describe("One-to-Many Relationship with ID", () => {
   })
 })
 
-//   test("should set and get one-to-many relationship with ID", () => {
-//     // test implementation
-//   })
-// })
+describe("Many-to-Many Relationship with ID", () => {
+  const immutableStore = new ImmutableStore()
 
-// describe("Many-to-Many Relationship with ID", () => {
-//   beforeEach(() => {
-//     // setup code
-//   })
+  const student1 = immutableStore.newObject(StudentType, {
+    id: "s1",
+    name: "Student 1",
+    email: "student1@example.com",
+    program: undefined,
+    courses: [],
+    address: undefined,
+    books: [],
+    buddy: undefined,
+  })
 
-//   test("should set and get many-to-many relationship with ID", () => {
-//     // test implementation
-//   })
-// })
+  const course1 = immutableStore.newObject(CourseType, {
+    id: "c1",
+    name: "Course 1",
+    program: undefined,
+    students: [],
+    assignments: [],
+    book: undefined,
+  })
+
+  const course2 = immutableStore.newObject(CourseType, {
+    id: "c2",
+    name: "Course 2",
+    program: undefined,
+    students: [],
+    assignments: [],
+    book: undefined,
+  })
+
+  test("should set and get many-to-many relationship with ID", () => {
+    student1.addCourses(course1)
+    student1.addCourses(course2)
+
+    expect(student1.courses).toStrictEqual([course1, course2])
+    expect(course1.students).toStrictEqual([student1])
+
+    student1.removeCourses(course2)
+    expect(student1.courses).toStrictEqual([course1])
+  })
+})
 
 // describe("defineComplexObjectProp", () => {
 //   beforeEach(() => {
