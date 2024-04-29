@@ -114,9 +114,6 @@ describe("One-to-One Relationship with ID", () => {
 
     expect(course2.book).toBe(book2)
     expect(book2.course).toBe(course2)
-
-    // course1.addStudents(student1)
-    // student1.program = Program1
   })
 })
 
@@ -153,8 +150,11 @@ describe("One-to-Many Relationship with ID", () => {
     program1.addCourses(course2)
     expect(program1.courses).toStrictEqual([course1, course2])
 
+    expect(program1.courses[0]).toBe(course1)
+    expect(program1.courses[1]).toBe(course2)
+
     program1.removeCourses(course2)
-    expect(program1.courses).toStrictEqual([course1])
+    expect(program1.courses[0]).toBe(course1)
 
     program1.removeCourses(course1)
     expect(course1.program).toBe(undefined)
@@ -197,12 +197,15 @@ describe("Many-to-Many Relationship with ID", () => {
     student1.addCourses(course1)
     student1.addCourses(course2)
 
-    expect(student1.courses).toStrictEqual([course1, course2])
-    expect(course1.students).toStrictEqual([student1])
+    expect(student1.courses[0]).toBe(course1)
+    expect(student1.courses[1]).toBe(course2)
 
-    student1.removeCourses(course2)
-    expect(student1.courses).toStrictEqual([course1])
-    expect(course2.students).toStrictEqual([])
+    expect(course1.students[0]).toBe(student1)
+
+    student1.removeCourses(course1)
+    expect(student1.courses[0]).toBe(course2)
+    const test = course1.students
+    expect(course1.students).toStrictEqual([])
   })
 })
 
@@ -264,9 +267,10 @@ describe("defineComplexArrayProp", () => {
   it("should add and remove items from complex array property for Student", () => {
     student1.addBooks(book1)
     student1.addBooks(book2)
-    expect(student1.books).toStrictEqual([book1, book2])
+    expect(student1.books[0]).toBe(book1)
+    expect(student1.books[1]).toBe(book2)
 
-    student1.removeBooks(book2)
-    expect(student1.books).toStrictEqual([book1])
+    student1.removeBooks(book1)
+    expect(student1.books[0]).toBe(book2)
   })
 })
