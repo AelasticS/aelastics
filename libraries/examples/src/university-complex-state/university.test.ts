@@ -119,37 +119,42 @@ describe("One-to-One Relationship with ID", () => {
   })
 })
 
-//   describe("One-to-Many Relationship with ID", () => {
-//     beforeEach(() => {
-//       // setup code
-//       // const immutableStore = new ImmutableStore()
+describe("One-to-Many Relationship with ID", () => {
+  const immutableStore = new ImmutableStore()
+  const program1 = immutableStore.newObject(ProgramType, {
+    id: "p1",
+    name: "Program 1",
+    courses: [],
+    students: [],
+  })
 
-//       // const pcpp = immutableStore.newObject(Course, {
-//       //   id: "c1",
-//       //   name: "PCPP",
-//       //   program: null,
-//       //   students: [],
-//       //   assignments: [],
-//       // })
+  const course1 = immutableStore.newObject(CourseType, {
+    id: "c1",
+    name: "Course 1",
+    program: undefined,
+    students: [],
+    assignments: [],
+    book: undefined,
+  })
 
-//       // // create new assignent
-//       // const assignment = immutableStore.newObject(Assignment, {
-//       //   id: "a1",
-//       //   name: "PCPP Assignment",
-//       //   description: "PCPP assignment description",
-//       //   course: null,
-//       // })
+  const course2 = immutableStore.newObject(CourseType, {
+    id: "c2",
+    name: "Course 2",
+    program: undefined,
+    students: [],
+    assignments: [],
+    book: undefined,
+  })
 
-//       // // create new submission
-//       // const submission = immutableStore.newObject(Submission, {
-//       //   id: "s1",
-//       //   student: null,
-//       //   0: null,
-//       //   content: "Submission content",
-//       //   grade: 12,
-//       // })
-//     })
-//   })
+  test("should set and get one-to-many relationship with ID", () => {
+    program1.addCourses(course1)
+    program1.addCourses(course2)
+    expect(program1.courses).toStrictEqual([course1, course2])
+
+    program1.removeCourses(course2)
+    expect(program1.courses).toStrictEqual([course1])
+  })
+})
 
 //   test("should set and get one-to-many relationship with ID", () => {
 //     // test implementation
