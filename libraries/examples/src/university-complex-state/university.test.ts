@@ -153,6 +153,9 @@ describe("One-to-Many Relationship with ID", () => {
 
     program1.removeCourses(course2)
     expect(program1.courses).toStrictEqual([course1])
+
+    program1.removeCourses(course1)
+    expect(course1.program).toBe(undefined)
   })
 })
 
