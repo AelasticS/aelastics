@@ -229,17 +229,44 @@ describe("defineComplexObjectProp", () => {
 
   it("should set and get complex object property for Student", () => {
     student1.address = address
-
     expect(student1.address).toBe(address)
   })
 })
 
-// describe("defineComplexArrayProp", () => {
-//   beforeEach(() => {
-//     // setup code
-//   })
+describe("defineComplexArrayProp", () => {
+  const immutableStore = new ImmutableStore()
 
-//   it("should add and remove items from complex array property for Student", () => {
-//     // test implementation
-//   })
-// })
+  const student1 = immutableStore.newObject(StudentType, {
+    id: "s1",
+    name: "Student 1",
+    email: "student1@example.com",
+    program: undefined,
+    courses: [],
+    address: undefined,
+    books: [],
+    buddy: undefined,
+  })
+
+  const book1 = immutableStore.newObject(BookType, {
+    id: "b1",
+    bookName: "Book 1",
+    bookAuthor: "Author 1",
+    course: undefined,
+  })
+
+  const book2 = immutableStore.newObject(BookType, {
+    id: "b2",
+    bookName: "Book 2",
+    bookAuthor: "Author 2",
+    course: undefined,
+  })
+
+  it("should add and remove items from complex array property for Student", () => {
+    student1.addBooks(book1)
+    student1.addBooks(book2)
+    expect(student1.books).toStrictEqual([book1, book2])
+
+    student1.removeBooks(book2)
+    expect(student1.books).toStrictEqual([book1])
+  })
+})
