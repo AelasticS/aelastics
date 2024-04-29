@@ -135,7 +135,6 @@ describe("One-to-Many Relationship with ID", () => {
     company1.addWorkers(worker2)
     worker3.company = company1
 
-    const test = company1.workers
     // Test relationships
     expect(company1.workers).toEqual([worker1, worker2, worker3])
     expect(worker1.company).toBe(company1)
