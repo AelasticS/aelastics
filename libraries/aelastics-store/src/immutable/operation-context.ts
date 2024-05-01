@@ -12,6 +12,7 @@
 import { Any, AnyObjectType, ObjectLiteral } from "aelastics-types";
 import { capitalizeFirstLetter } from "../common/CommonConstants";
 import { Class } from "./createClass";
+import { getIDPropName } from "./propCreatorsWithUndo";
 
 // export type Operation = {
 //     operationType: "add" | "remove" | "set";
@@ -102,9 +103,9 @@ export class OperationContext {
   createObject<P extends ObjectLiteral>(dynamicClass: Class<P>, initialProps: Partial<P>, targetType: AnyObjectType): any {
     // Create a new instance of the dynamic class
     const instance = new dynamicClass(initialProps);
-
+    const IDName = getIDPropName(targetType);
     // Add the object to the idMap
-    this.idMap.set(instance.id, instance);
+    this.idMap.set(instance[IDName], instance);
 
     // Push the create operation onto the operation stack
     this.pushOperation({

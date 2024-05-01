@@ -20,3 +20,5 @@ export * from './server-proxy/ServerProxy'
 export {Command} from './server-proxy/CommandMaker'
 export {ObjectObservable} from './eventLog/ObservableTransformer'
 export {AddEventListeners} from './eventLog/AddEventListenersTransformer'
+export * from "./immutable/createClass"
+export * from "./immutable/immutable-store"

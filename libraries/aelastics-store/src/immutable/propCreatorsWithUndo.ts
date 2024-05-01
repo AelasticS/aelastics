@@ -9,36 +9,31 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import { Any, AnyObjectType } from "aelastics-types";
-import {
-  OperationContext,
-  ObjectNotFoundError,
-  Operation,
-} from "./operation-context";
-import { capitalizeFirstLetter } from "../common/CommonConstants";
+import { Any, AnyObjectType } from "aelastics-types"
+import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context"
+import { capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
+
+export function getIDPropName(type: AnyObjectType) {
+  return objectUUID
+}
 
 // Define simple value property
-export function defineSimpleValue(
-  target: any,
-  propName: string,
-  targetType: Any,
-  context: OperationContext
-) {
-  const privatePropName = `_${propName}`;
-  target[privatePropName] = undefined;
+export function defineSimpleValue(target: any, propName: string, targetType: Any, context: OperationContext) {
+  const privatePropName = `_${propName}`
+  target[privatePropName] = undefined
 
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
-        throw new Error("Cannot access properties on a deleted object.");
+        throw new Error("Cannot access properties on a deleted object.")
       }
-      return this[privatePropName];
+      return this[privatePropName]
     },
     set(value: any) {
       if (this.isDeleted) {
-        throw new Error("Cannot modify properties on a deleted object.");
+        throw new Error("Cannot modify properties on a deleted object.")
       }
-      if (this[privatePropName] === value) return;
+      if (this[privatePropName] === value) return
 
       const operation: Operation = {
         operationType: "set",
@@ -48,47 +43,47 @@ export function defineSimpleValue(
         newValue: value,
         targetType: targetType,
         inversePropName: undefined,
-      };
+      }
 
-      context.pushOperation(operation);
+      context.pushOperation(operation)
 
-      this[privatePropName] = value;
+      this[privatePropName] = value
     },
-  });
+  })
 }
 
 export function defineComplexObjectProp(
   target: any,
   propName: string,
-  isPropID: boolean,
+  isPropViaID: boolean,
   context: OperationContext,
   targetType: AnyObjectType
 ) {
-  const privatePropName = `_${propName}`;
+  const privatePropName = `_${propName}`
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
-        throw new Error("Cannot access properties on a deleted object.");
+        throw new Error("Cannot access properties on a deleted object.")
       }
       // check for deleted objects
-      const propValue = isPropID
-        ? context.idMap.get(this[privatePropName])
-        : this[privatePropName];
+      const propValue = isPropViaID ? context.idMap.get(this[privatePropName]) : this[privatePropName]
       if (propValue && propValue.isDeleted) {
-        return undefined;
+        return undefined
       }
-      return propValue;
+      return propValue
     },
     set(value: any) {
       if (this.isDeleted) {
-        throw new Error("Cannot modify properties on a deleted object.");
+        throw new Error("Cannot modify properties on a deleted object.")
       }
 
+      const thisPropIDName = getIDPropName(targetType)
+
       if (value && value.isDeleted) {
-        throw new Error("Cannot set a property to a deleted object.");
+        throw new Error("Cannot set a property to a deleted object.")
       }
-      const oldValue = this[privatePropName];
-      this[privatePropName] = isPropID ? value.id : value;
+      const oldValue = this[privatePropName]
+      this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
 
       context.pushOperation({
         operationType: "set",
@@ -97,85 +92,82 @@ export function defineComplexObjectProp(
         oldValue: oldValue,
         newValue: value,
         targetType,
-      });
+      })
     },
-  });
+  })
 }
 
 export function defineComplexArrayProp(
   target: any,
   propName: string,
-  isPropID: boolean,
+  isPropViaID: boolean,
   context: OperationContext,
   targetType: AnyObjectType
 ) {
-  const privatePropName = `_${propName}`;
+  const privatePropName = `_${propName}`
 
   // Getter
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
-        throw new Error("Cannot access properties on a deleted object.");
+        throw new Error("Cannot access properties on a deleted object.")
       }
 
-      let resultArray: any[] = [];
+      let resultArray: any[] = []
 
-      if (isPropID) {
+      if (isPropViaID) {
         resultArray = this[privatePropName].map((id: string) => {
-          const obj = context.idMap.get(id);
+          const obj = context.idMap.get(id)
           if (!obj) {
-            throw new Error(
-              `Object with ID "${id}" of type "${targetType.name}" not found.`
-            );
+            throw new Error(`Object with ID "${id}" of type "${targetType.name}" not found.`)
           }
-          return obj.isDeleted ? undefined : obj;
-        });
+          return obj.isDeleted ? undefined : obj
+        })
       } else {
-        resultArray = this[privatePropName].filter(
-          (obj: any) => !obj.isDeleted
-        );
+        resultArray = this[privatePropName].filter((obj: any) => !obj.isDeleted)
       }
 
-      return resultArray.filter((obj: any) => obj !== undefined);
+      return resultArray.filter((obj: any) => obj !== undefined)
     },
-  });
+  })
+
+  const thisPropIDName = getIDPropName(targetType)
 
   // Add method
   target[`add${capitalizeFirstLetter(propName)}`] = function (item: any) {
     if (this.isDeleted || item.isDeleted) {
-      throw new Error("Cannot modify properties on a deleted object.");
+      throw new Error("Cannot modify properties on a deleted object.")
     }
-    this[privatePropName].push(isPropID ? item.id : item);
+    this[privatePropName].push(isPropViaID ? item[thisPropIDName] : item)
     context.pushOperation({
       operationType: "add",
       target: this,
       targetType,
       propName,
       value: item,
-    });
-  };
+    })
+  }
 
-  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
-    function (item: any) {
-      this[privatePropName].push(isPropID ? item.id : item);
-      context.pushOperation({
-        operationType: "add",
-        target: this,
-        propName: propName,
-        value: item,
-        targetType: targetType,
-      });
-    };
+  target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
+    this[privatePropName].push(isPropViaID ? item[thisPropIDName] : item)
+    context.pushOperation({
+      operationType: "add",
+      target: this,
+      propName: propName,
+      value: item,
+      targetType: targetType,
+    })
+  }
   // Remove method
   target[`remove${capitalizeFirstLetter(propName)}`] = function (item: any) {
     if (this.isDeleted || item.isDeleted) {
-      throw new Error("Cannot modify properties on a deleted object.");
+      throw new Error("Cannot modify properties on a deleted object.")
     }
 
-    const index = this[privatePropName].indexOf(isPropID ? item.id : item);
-    if (index === -1) return;
+    const index = this[privatePropName].indexOf(isPropViaID ? item[thisPropIDName] : item)
+    if (index === -1) return
 
-    this[privatePropName].splice(index, 1);
+    this[privatePropName].splice(index, 1)
 
     context.pushOperation({
       operationType: "remove",
@@ -183,8 +175,8 @@ export function defineComplexArrayProp(
       targetType: targetType,
       propName: propName,
       value: item,
-    });
-  };
+    })
+  }
 }
 
 export function defineOneToOne(
@@ -194,57 +186,59 @@ export function defineOneToOne(
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
   context: OperationContext,
-  isPropID: boolean = false,
-  isInversePropID: boolean = false
+  isPropViaID: boolean = false,
+  isInversePropViaID: boolean = false
 ) {
-  const privatePropName = `_${propName}`;
+  const privatePropName = `_${propName}`
 
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
-        throw new Error("Cannot access properties on a deleted object.");
+        throw new Error("Cannot access properties on a deleted object.")
       }
-      if (isPropID) {
-        const id = this[privatePropName];
+      if (isPropViaID) {
+        const id = this[privatePropName]
         if (id === undefined) {
-          return undefined;
+          return undefined
         }
-        const obj = context.idMap.get(id);
+        const obj = context.idMap.get(id)
         if (!obj) {
+          // TODO: lazy evaluation
           throw new ObjectNotFoundError(
             id,
             targetType,
             `Object with ID "${id}" not found in idMap for target type "${targetType.name}".`
-          );
+          )
         }
-        return obj.isDeleted ? undefined : obj;
+        return obj.isDeleted ? undefined : obj
       } else {
-        return this[privatePropName]?.isDeleted
-          ? undefined
-          : this[privatePropName];
+        return this[privatePropName]?.isDeleted ? undefined : this[privatePropName]
       }
     },
 
     set(value: any) {
       if (this.isDeleted || (value && value.isDeleted)) {
-        throw new Error("Cannot modify properties on a deleted object.");
+        throw new Error("Cannot modify properties on a deleted object.")
       }
 
-      const oldValue = this[propName];
-      if (oldValue === value) return;
+      const thisPropIDName = getIDPropName(targetType)
+      const inversePropIDName = getIDPropName(inverseType)
+
+      const oldValue = this[propName]
+      if (oldValue === value) return
 
       // Disconnect the old inverse target
       if (oldValue) {
-        oldValue[`_${inversePropName}`] = undefined;
+        oldValue[`_${inversePropName}`] = undefined
       }
 
       // Connect the new inverse target
       if (value) {
-        value[`_${inversePropName}`] = isInversePropID ? this.id : this;
+        value[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
       }
 
       // Update the property
-      this[privatePropName] = isPropID ? value?.id : value;
+      this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
 
       // Push the operation to the stack
       context.pushOperation({
@@ -255,9 +249,10 @@ export function defineOneToOne(
         propName,
         oldValue,
         newValue: value,
-      });
+      })
     },
-  });
+    enumerable: true,
+  })
 }
 
 export function defineOneToMany(
@@ -267,40 +262,43 @@ export function defineOneToMany(
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
   context: OperationContext,
-  isPropID: boolean = false,
-  isInversePropID: boolean = false
+  isPropViaID: boolean = false,
+  isInversePropViaID: boolean = false
 ) {
-  const privatePropName = `_${propName}`;
-  target[privatePropName] = [];
+  const privatePropName = `_${propName}`
+  target[privatePropName] = []
 
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
-        throw new Error("Cannot access properties on a deleted object.");
+        throw new Error("Cannot access properties on a deleted object.")
       }
-      if (isPropID) {
+      if (isPropViaID) {
         return this[privatePropName]
           .map((id: string) => context.idMap.get(id))
-          .filter((item: any) => item && !item.isDeleted);
+          .filter((item: any) => item && !item.isDeleted)
       } else {
-        return this[privatePropName].filter((item: any) => !item.isDeleted);
+        return this[privatePropName].filter((item: any) => !item.isDeleted)
       }
     },
-  });
+  })
 
   // Add method
   target[`add${capitalizeFirstLetter(propName)}`] = function (item: any) {
     if (this.isDeleted || item.isDeleted) {
-      throw new Error("Cannot modify properties on a deleted object.");
+      throw new Error("Cannot modify properties on a deleted object.")
     }
 
-    const valueToAdd = isPropID ? item.id : item;
-    this[privatePropName].push(valueToAdd);
+    const thisPropIDName = getIDPropName(targetType)
+    const inversePropIDName = getIDPropName(inverseType)
 
-    if (isInversePropID) {
-      item[`_${inversePropName}`] = this.id;
+    const valueToAdd = isPropViaID ? item[inversePropIDName] : item
+    this[privatePropName].push(valueToAdd)
+
+    if (isInversePropViaID) {
+      item[`_${inversePropName}`] = this[thisPropIDName]
     } else {
-      item[`_${inversePropName}`] = this;
+      item[`_${inversePropName}`] = this
     }
 
     context.pushOperation({
@@ -309,29 +307,32 @@ export function defineOneToMany(
       targetType,
       propName,
       value: item,
-    });
-  };
+    })
+  }
 
-  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] =
-    function (item: any) {
-      if (this.isDeleted || item.isDeleted) {
-        throw new Error("Cannot modify properties on a deleted object.");
-      }
-      const index = this[privatePropName].indexOf(isPropID ? item.id : item);
-      if (index === -1) return;
+  target[`remove${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
+    if (this.isDeleted || item.isDeleted) {
+      throw new Error("Cannot modify properties on a deleted object.")
+    }
 
-      // Update the operation stack
-      context.pushOperation({
-        operationType: "remove",
-        target: this,
-        targetType,
-        propName,
-        value: item,
-      });
+    const thisPropIDName = getIDPropName(targetType)
+    const inversePropIDName = getIDPropName(inverseType)
 
-      this[privatePropName].splice(index, 1);
-      item[`_${inversePropName}`] = undefined;
-    };
+    const index = this[privatePropName].indexOf(isPropViaID ? item[inversePropIDName] : item)
+    if (index === -1) return
+
+    // Update the operation stack
+    context.pushOperation({
+      operationType: "remove",
+      target: this,
+      targetType,
+      propName,
+      value: item,
+    })
+
+    this[privatePropName].splice(index, 1)
+    item[`_${inversePropName}`] = undefined
+  }
 }
 
 export function defineManyToOne(
@@ -341,79 +342,71 @@ export function defineManyToOne(
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
   context: OperationContext,
-  isPropID: boolean = false,
-  isInversePropID: boolean = false
+  isPropViaID: boolean = false,
+  isInversePropViaID: boolean = false
 ) {
-  const { operationStack, redoStack } = context;
-  const privatePropName = `_${propName}`;
+  const { operationStack, redoStack } = context
+  const privatePropName = `_${propName}`
+
+  const thisPropIDName = getIDPropName(targetType)
+  const inversePropIDName = getIDPropName(inverseType)
 
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
-        throw new Error("Cannot access properties on a deleted object.");
+        throw new Error("Cannot access properties on a deleted object.")
       }
 
-      if (isPropID) {
-        const value = this[privatePropName];
-        if (value === undefined) return undefined;
+      if (isPropViaID) {
+        const value = this[privatePropName]
+        if (value === undefined) return undefined
 
-        const obj = context.idMap.get(value);
+        const obj = context.idMap.get(value)
         if (!obj) {
           throw new ObjectNotFoundError(
             value,
             targetType,
             `Object with ID "${value}" not found in idMap for target type "${targetType.name}".`
-          );
+          )
         }
 
-        return obj.isDeleted ? undefined : obj;
+        return obj.isDeleted ? undefined : obj
       } else {
-        return this[privatePropName]?.isDeleted
-          ? undefined
-          : this[privatePropName];
+        return this[privatePropName]?.isDeleted ? undefined : this[privatePropName]
       }
     },
 
     set(value: any) {
       if (this.isDeleted) {
-        throw new Error("Cannot modify properties on a deleted object.");
+        throw new Error("Cannot modify properties on a deleted object.")
       }
+      //TODO! check that this is correct!
 
-      // Find the value to set based on isPropID
-      let valueToSet = isPropID ? value.id : value;
+      // Find the value to set based on isPropViaID
+      let valueToSet = isPropViaID ? value[inversePropIDName] : value
 
       // Find the old value
-      const oldValue = isPropID
-        ? context.idMap.get(this[privatePropName])
-        : this[privatePropName];
+      const oldValue = isPropViaID ? context.idMap.get(this[privatePropName]) : this[privatePropName]
 
-      if (oldValue === valueToSet) return;
+      if (oldValue === valueToSet) return
 
       // Disconnect the old parent
       if (oldValue) {
-        const index = oldValue[`_${inversePropName}`].indexOf(
-          isInversePropID ? this.id : this
-        );
+        const index = oldValue[`_${inversePropName}`].indexOf(isInversePropViaID ? this[thisPropIDName] : this)
         if (index !== -1) {
-          oldValue[`_${inversePropName}`].splice(index, 1);
+          oldValue[`_${inversePropName}`].splice(index, 1)
         }
       }
 
       // Update the property
-      this[privatePropName] = valueToSet;
+      this[privatePropName] = valueToSet
 
       // Connect the new parent
       if (value) {
-        if (
-          isInversePropID &&
-          !value[`_${inversePropName}`].includes(this.id)
-        ) {
-          value[`_${inversePropName}`].push(this.id);
-        } else if (
-          !isInversePropID &&
-          !value[`_${inversePropName}`].includes(this)
-        ) {
-          value[`_${inversePropName}`].push(this);
+        if (isInversePropViaID && !value[`_${inversePropName}`].includes(this[thisPropIDName])) {
+          value[`_${inversePropName}`].push(this[thisPropIDName])
+        } else if (!isInversePropViaID && !value[`_${inversePropName}`].includes(this)) {
+          value[`_${inversePropName}`].push(this)
         }
       }
 
@@ -426,9 +419,9 @@ export function defineManyToOne(
         propName,
         oldValue,
         newValue: valueToSet,
-      });
+      })
     },
-  });
+  })
 }
 
 export function defineManyToMany(
@@ -438,54 +431,56 @@ export function defineManyToMany(
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
   context: OperationContext,
-  isPropID: boolean = false,
-  isInversePropID: boolean = false
+  isPropViaID: boolean = false,
+  isInversePropViaID: boolean = false
 ) {
-  const { operationStack, redoStack } = context;
-  const privatePropName = `_${propName}`;
-  const privateInversePropName = `_${inversePropName}`;
+  const { operationStack, redoStack } = context
+  const privatePropName = `_${propName}`
+  const privateInversePropName = `_${inversePropName}`
+
+  const thisPropIDName = getIDPropName(targetType)
+  const inversePropIDName = getIDPropName(inverseType)
 
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
-        throw new Error("Cannot access properties on a deleted object.");
+        throw new Error("Cannot access properties on a deleted object.")
       }
 
       // If the property is supposed to hold IDs, simply return the array of IDs
-      if (isPropID) {
-        return this[privatePropName].filter((id: string) => {
-          const obj = context.idMap.get(id);
-          return obj && !obj.isDeleted;
-        });
+      if (isPropViaID) {
+        return this[privatePropName]
+          .map((id: string) => context.idMap.get(id))
+          .filter((item: any) => item && !item.isDeleted)
       }
 
       // If the property is supposed to hold object references, filter out deleted objects
-      return this[privatePropName].filter((obj: any) => !obj.isDeleted);
+      return this[privatePropName].filter((obj: any) => !obj.isDeleted)
     },
-  });
+  })
 
   // Add method
   target[`add${capitalizeFirstLetter(propName)}`] = function (item: any) {
     if (this.isDeleted || item.isDeleted) {
-      throw new Error("Cannot modify properties on a deleted object.");
+      throw new Error("Cannot modify properties on a deleted object.")
     }
 
-    // Find the value to add based on isPropID
-    const valueToAdd = isPropID ? item.id : item;
+    // Find the value to add based on isPropViaID
+    const valueToAdd = isPropViaID ? item[inversePropIDName] : item
 
     // Check if the item is already in the array
     if (this[privatePropName].includes(valueToAdd)) {
-      return;
+      return
     }
 
     // Add the item to the array
-    this[privatePropName].push(valueToAdd);
+    this[privatePropName].push(valueToAdd)
 
     // Add the inverse item
-    if (isInversePropID) {
-      item[privateInversePropName].push(this.id);
+    if (isInversePropViaID) {
+      item[privateInversePropName].push(this[thisPropIDName])
     } else {
-      item[privateInversePropName].push(this);
+      item[privateInversePropName].push(this)
     }
 
     // Push the operation to the operation stack
@@ -495,36 +490,36 @@ export function defineManyToMany(
       targetType,
       propName,
       value: item,
-    });
-  };
+    })
+  }
 
   // Remove method
   target[`remove${capitalizeFirstLetter(propName)}`] = function (item: any) {
     if (this.isDeleted || item.isDeleted) {
-      throw new Error("Cannot modify properties on a deleted object.");
+      throw new Error("Cannot modify properties on a deleted object.")
     }
 
-    // Find the value to remove based on isPropID
-    const valueToRemove = isPropID ? item.id : item;
+    // Find the value to remove based on isPropViaID
+    const valueToRemove = isPropViaID ? item[inversePropIDName] : item
 
     // Find the index of the item in the array
-    const index = this[privatePropName].indexOf(valueToRemove);
+    const index = this[privatePropName].indexOf(valueToRemove)
 
     // If the item is not in the array, return
     if (index === -1) {
-      return;
+      return
     }
 
     // Remove the item from the array
-    this[privatePropName].splice(index, 1);
+    this[privatePropName].splice(index, 1)
 
     // Remove the inverse item
-    const inverseIndex = isInversePropID
-      ? item[privateInversePropName].indexOf(this.id)
-      : item[privateInversePropName].indexOf(this);
+    const inverseIndex = isInversePropViaID
+      ? item[privateInversePropName].indexOf(this[inversePropIDName])
+      : item[privateInversePropName].indexOf(this)
 
     if (inverseIndex !== -1) {
-      item[privateInversePropName].splice(inverseIndex, 1);
+      item[privateInversePropName].splice(inverseIndex, 1)
     }
 
     // Push the operation to the operation stack
@@ -534,6 +529,6 @@ export function defineManyToMany(
       targetType,
       propName,
       value: item,
-    });
-  };
+    })
+  }
 }
