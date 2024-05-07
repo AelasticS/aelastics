@@ -2,7 +2,6 @@ import { AnyObjectType, ObjectLiteral, object } from "aelastics-types"
 import { Class, createClass } from "./createClass"
 import { OperationContext } from "./operation-context"
 import { immerable, produce } from "immer"
-import { urlToHttpOptions } from "url"
 
 /*
  * Project: aelastics-store
@@ -15,17 +14,15 @@ import { urlToHttpOptions } from "url"
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 export class ImmutableStore<S extends ObjectLiteral> {
-  // mapping created classes - works as a way of caching already existing types
   private _classMap = new Map<AnyObjectType, Class<ObjectLiteral>>()
   ctx = new OperationContext()
   private _state: S
 
-  //state is an object and cannot be an array ( TODO: we can test with arrays in the future)
-  constructor(type: AnyObjectType, initialState: S) {
-    this._state = this.newObject(type, initialState)
+  constructor(initialState: S) {
+    this._state = initialState
   }
 
-  newObject<P extends ObjectLiteral>(objectType: AnyObjectType, initProps: P): P {
+  newObject(objectType: AnyObjectType, initProps: Partial<ObjectLiteral> = {}): ObjectLiteral {
     let c = this._classMap.get(objectType)
 
     if (c === undefined) {
@@ -35,10 +32,6 @@ export class ImmutableStore<S extends ObjectLiteral> {
 
     return this.ctx.createObject(c, initProps, objectType)
   }
-
-  // newObject2 = function <P extends ObjectLiteral>(arg: P): P {
-  //   return arg
-  // }
 
   produce(f: (draft: S, store: ImmutableStore<S>) => void) {
     const { state, map } = produce(new ImmerState(this._state, this.ctx.idMap), (imm: ImmerState) => f(imm.state, this))
