@@ -2,7 +2,8 @@ import * as t from "aelastics-types"
 
 export const UniversitySchema = t.schema("UniversitySchema")
 
-export const ID = t.number.derive("IDType").positive
+// export const ID = t.number.derive("IDType").positive
+export const ID = t.string
 export const Name = t.string.derive("Valid name").alphanumeric.maxLength(128)
 export const Email = t.string.derive("Valid email").email
 export const Age = t.number.derive("Valid student age").int8.positive.inRange(18, 99)
@@ -45,9 +46,9 @@ export const StudentType = t.entity(
     email: Email,
     program: ProgramType,
     courses: t.arrayOf(t.link(UniversitySchema, "Course", "StudentToCourseLink")),
-    address: AddressType,
+    address: t.optional(AddressType),
     books: t.arrayOf(BookType),
-    buddy: t.link(UniversitySchema, "Student", "StudentToStudentLink"),
+    buddy: t.optional(t.link(UniversitySchema, "Student", "StudentToStudentLink")),
   },
   ["id"],
   "Student",
@@ -102,8 +103,10 @@ t.inverseProps(CourseType, "assignments", AssignmentType, "course")
 t.inverseProps(CourseType, "book", BookType, "course")
 t.inverseProps(AssignmentType, "submissions", SubmissionType, "assignment")
 
-export type IProgram = t.TypeOf<typeof ProgramType>
-export type ICourse = t.TypeOf<typeof CourseType>
-export type IAssignment = t.TypeOf<typeof AssignmentType>
-export type ISubmission = t.TypeOf<typeof SubmissionType>
-export type IStudent = t.TypeOf<typeof StudentType>
+export type IProgramType = t.TypeOf<typeof ProgramType>
+export type ICourseType = t.TypeOf<typeof CourseType>
+export type IAssignmentType = t.TypeOf<typeof AssignmentType>
+export type ISubmissionType = t.TypeOf<typeof SubmissionType>
+export type IStudentType = t.TypeOf<typeof StudentType>
+export type IBookType = t.TypeOf<typeof BookType>
+export type IAdressType = t.TypeOf<typeof AddressType>

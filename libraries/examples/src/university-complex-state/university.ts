@@ -1,11 +1,11 @@
-import { IAssignment, ICourse, IProgram, IStudent, ISubmission } from "./university.model.type"
+import { IAssignmentType, ICourseType, IProgramType, IStudentType, ISubmissionType } from "./university.model.type"
 
 const store = {
-  programs: new Map<string, IProgram>(),
-  courses: new Map<string, ICourse>(),
-  students: new Map<string, IStudent>(),
-  submissions: new Map<string, ISubmission>(),
-  assignments: new Map<string, IAssignment>(),
+  programs: new Map<string, IProgramType>(),
+  courses: new Map<string, ICourseType>(),
+  students: new Map<string, IStudentType>(),
+  submissions: new Map<string, ISubmissionType>(),
+  assignments: new Map<string, IAssignmentType>(),
 }
 
 // export class Program implements IProgram {
@@ -98,7 +98,6 @@ const store = {
 //   }
 // }
 
-
 // export class Assignment implements IAssignment {
 //   id: string
 //   name: string
@@ -122,7 +121,6 @@ const store = {
 //     return store.courses.get(this._course)!
 //   }
 // }
-
 
 // export class Submission implements ISubmission {
 //   id: string
@@ -149,7 +147,6 @@ const store = {
 //     return store.assignments.get(this._assignment)!
 //   }
 // }
-
 
 // export class Student implements IStudent {
 //   id: string

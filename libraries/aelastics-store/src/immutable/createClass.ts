@@ -26,7 +26,7 @@ import { OperationContext } from "./operation-context"
 import { uuidv4Generator } from "./repository"
 
 //
-export type Class<P> = { new (init: Partial<P>): P }
+export type Class<P> = { new (init: P): P }
 
 /**
  * Dynamically creates a class based on a given object type.
@@ -43,11 +43,11 @@ export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, 
 
   class DynamicClass {
     [key: string]: any
-    constructor(init: Partial<P>) {
+    [immerable] = true // Mark this class as immerable
+    constructor(init: P) {
       this.isDeleted = false
       // Initialize private properties
       props.forEach((type, propName) => {
-        const privatePropName = `_${propName}`
         //TODO: Currently the initialization is wrong. In the case where we pass actual references to the objest, they must be stored accordinglt, based on the uuid or object, depending on the type of the property
 
         // if init[propName] and the type is an entity, then we should store the uuid of the object
@@ -56,13 +56,13 @@ export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, 
         // if init[propName] is undefined, then we should store undefined
 
         // if (init[propName] && type.isEntity) {
-        //   this[privatePropName] = init[propName][objectUUID]
+        //   this[propName] = init[propName]
         // }
 
-        if (init[propName]) this[privatePropName] = init[propName]
-        else if (type.typeCategory === "Array") {
-          this[privatePropName] = []
-        } else this[privatePropName] = undefined
+        if (init[propName]) this[propName] = init[propName]
+        //   else if (type.typeCategory === "Array") {
+        //     this[propName] = []
+        //   } else this[propName] = undefined
       })
       this[objectUUID] = uuidv4Generator()
     }
@@ -158,5 +158,5 @@ export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, 
   // }
   // Return the dynamically created class with its own name
   Object.defineProperty(DynamicClass, "name", { value: objectType.name })
-  return DynamicClass as Class<P>
+  return DynamicClass as unknown as Class<P>
 }
