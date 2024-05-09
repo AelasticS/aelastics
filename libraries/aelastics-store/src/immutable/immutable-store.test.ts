@@ -43,17 +43,7 @@ describe("ImmutableStore", () => {
       courses: [],
     })
 
-    // const course1 = immutableStore.newObject(CourseType, {
-    //   id: uuidv4Generator(),
-    //   name: "Course 1",
-    //   program: [],
-    // })
-
     immutableStore.addObject("programs", program1)
-
-    // immutableStore.produce((draft) => {
-    //   draft["programs"].push(program1)
-    // })
 
     immutableStore.produce((draft) => {
       draft["programs"][0].name = "Udpated Program 1 name"
@@ -63,8 +53,5 @@ describe("ImmutableStore", () => {
 
     expect(changedState["programs"][0]).not.toBe(program1)
     console.log("Program")
-    // expect(program1.courses[0]).toStrictEqual(course1)
-    // expect(store.getState().count).toBe(10)
-    // expect(initialState.count).toBe(0)
   })
 })

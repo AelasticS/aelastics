@@ -37,6 +37,11 @@ export class ImmutableStore<S> {
     this._state[key].push(object)
   }
 
+  /**
+   *
+   * idMap has to be part of the state for the producer
+   * f should have access to state and store
+   */
   // produce(f: (draft: S, store: ImmutableStore<S>) => void) {
   //   const { state, map } = produce(new ImmerState(this._state, this.ctx.idMap), (imm: ImmerState) => f(imm.state, this))
   //   this._state = state
@@ -51,9 +56,6 @@ export class ImmutableStore<S> {
     return this._state
   }
 }
-
-//map has to be part of the state for the producer
-// f should have access to state and store
 
 class ImmerState {
   [immerable] = true
