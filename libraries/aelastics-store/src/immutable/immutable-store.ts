@@ -14,6 +14,12 @@ enableMapSet()
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
+// TODO: implement immer inside the syncIdMapWithState function if needed.
+
+class ImmerState {
+  [immerable] = true
+  constructor(readonly state: any) {}
+}
 interface IdentifiableItem {
   id: string
   [key: string]: any
@@ -72,12 +78,9 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
 
   syncIdMapWithState(state: any, map: any): Map<string, any> {
     for (const key of Object.keys(state)) {
-      console.log("Key: ", key)
       if (Array.isArray(state[key])) {
         state[key].forEach((item: any) => {
-          console.log("Item: ", item)
           if (item["@@aelastics/ID"] && map.has(item["@@aelastics/ID"])) {
-            console.log("Has the item, should update!!")
             map.set(item["@@aelastics/ID"], item)
           }
         })
@@ -90,10 +93,3 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
     return this._state
   }
 }
-
-class ImmerState {
-  [immerable] = true
-  constructor(readonly state: any) {}
-}
-
-// TODO: implement immer inside the syncIdMapWithState function if needed.
