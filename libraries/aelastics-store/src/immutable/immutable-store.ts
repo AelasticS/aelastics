@@ -13,12 +13,12 @@ import { immerable, produce } from "immer"
  * -----
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
-export class ImmutableStore<S extends ObjectLiteral> {
+export class ImmutableStore<S> {
   private _classMap = new Map<AnyObjectType, Class<ObjectLiteral>>()
   ctx = new OperationContext()
-  private _state: S
+  private _state: any
 
-  constructor(initialState: S) {
+  constructor(initialState: unknown) {
     this._state = initialState
   }
 
@@ -33,10 +33,18 @@ export class ImmutableStore<S extends ObjectLiteral> {
     return this.ctx.createObject(c, initProps, objectType)
   }
 
-  produce(f: (draft: S, store: ImmutableStore<S>) => void) {
-    const { state, map } = produce(new ImmerState(this._state, this.ctx.idMap), (imm: ImmerState) => f(imm.state, this))
-    this._state = state
-    this.ctx.idMap = map
+  addObject(key: string, object: ObjectLiteral): void {
+    this._state[key].push(object)
+  }
+
+  // produce(f: (draft: S, store: ImmutableStore<S>) => void) {
+  //   const { state, map } = produce(new ImmerState(this._state, this.ctx.idMap), (imm: ImmerState) => f(imm.state, this))
+  //   this._state = state
+  //   this.ctx.idMap = map
+  // }
+
+  produce(f: (draft: any) => void): void {
+    this._state = produce(this._state, f)
   }
 
   getState() {

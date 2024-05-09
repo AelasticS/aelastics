@@ -44,25 +44,15 @@ export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, 
   class DynamicClass {
     [key: string]: any
     [immerable] = true // Mark this class as immerable
-    constructor(init: P) {
+    constructor(init: Partial<P>) {
       this.isDeleted = false
       // Initialize private properties
       props.forEach((type, propName) => {
-        //TODO: Currently the initialization is wrong. In the case where we pass actual references to the objest, they must be stored accordinglt, based on the uuid or object, depending on the type of the property
-
-        // if init[propName] and the type is an entity, then we should store the uuid of the object
-        // if init[propName] and the type is not an entity, then we should store the object itself
-        // if init[propName] is an array, then we should check if the type of the objects inside the array is an entity and store the uuids of the objects, or store the objects themselves, otherwise store an empty array
-        // if init[propName] is undefined, then we should store undefined
-
-        // if (init[propName] && type.isEntity) {
-        //   this[propName] = init[propName]
-        // }
-
-        if (init[propName]) this[propName] = init[propName]
-        //   else if (type.typeCategory === "Array") {
-        //     this[propName] = []
-        //   } else this[propName] = undefined
+        const privatePropName = `_${propName}`
+        if (init[propName]) this[privatePropName] = init[propName]
+        else if (type.typeCategory === "Array") {
+          this[privatePropName] = []
+        } else this[privatePropName] = undefined
       })
       this[objectUUID] = uuidv4Generator()
     }
