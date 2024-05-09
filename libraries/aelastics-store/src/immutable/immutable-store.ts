@@ -1,8 +1,8 @@
 import { AnyObjectType, ObjectLiteral, object } from "aelastics-types"
 import { Class, createClass } from "./createClass"
 import { OperationContext } from "./operation-context"
-import { immerable, produce } from "immer"
-
+import { immerable, produce, enableMapSet } from "immer"
+enableMapSet()
 /*
  * Project: aelastics-store
  * Created Date: Monday July 10th 2023
@@ -13,12 +13,18 @@ import { immerable, produce } from "immer"
  * -----
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
-export class ImmutableStore<S> {
-  private _classMap = new Map<AnyObjectType, Class<ObjectLiteral>>()
-  ctx = new OperationContext()
-  private _state: any
 
-  constructor(initialState: unknown) {
+interface IdentifiableItem {
+  id: string
+  [key: string]: any
+}
+
+export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
+  private _classMap = new Map<AnyObjectType, Class<ObjectLiteral>>()
+  private _state: S
+  ctx = new OperationContext()
+
+  constructor(initialState: S) {
     this._state = initialState
   }
 
@@ -33,8 +39,12 @@ export class ImmutableStore<S> {
     return this.ctx.createObject(c, initProps, objectType)
   }
 
-  addObject(key: string, object: ObjectLiteral): void {
-    this._state[key].push(object)
+  addObject(key: keyof S, object: any): void {
+    if (Array.isArray(this._state[key])) {
+      ;(this._state[key] as Array<any>).push(object)
+    } else {
+      throw new Error(`${key as string} is not an array or does not exist on state.`)
+    }
   }
 
   /**
@@ -48,16 +58,42 @@ export class ImmutableStore<S> {
   //   this.ctx.idMap = map
   // }
 
-  produce(f: (draft: any) => void): void {
-    this._state = produce(this._state, f)
+  // produce(f: (draft: any) => void): void {
+  //   this._state = produce(this._state, f)
+  // }
+
+  produce(f: (draft: any) => void) {
+    const { state } = produce(new ImmerState(this._state), (imm: ImmerState) => {
+      f(imm.state)
+    })
+    this.ctx.idMap = this.syncIdMapWithState(state, this.ctx.idMap)
+    this._state = state
   }
 
-  getState() {
+  syncIdMapWithState(state: any, map: any): Map<string, any> {
+    for (const key of Object.keys(state)) {
+      console.log("Key: ", key)
+      if (Array.isArray(state[key])) {
+        state[key].forEach((item: any) => {
+          console.log("Item: ", item)
+          if (item["@@aelastics/ID"] && map.has(item["@@aelastics/ID"])) {
+            console.log("Has the item, should update!!")
+            map.set(item["@@aelastics/ID"], item)
+          }
+        })
+      }
+    }
+    return map
+  }
+
+  getState(): S {
     return this._state
   }
 }
 
 class ImmerState {
   [immerable] = true
-  constructor(readonly state: any, readonly map: Map<string, any>) {}
+  constructor(readonly state: any) {}
 }
+
+// TODO: implement immer inside the syncIdMapWithState function if needed.

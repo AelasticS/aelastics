@@ -46,12 +46,11 @@ describe("ImmutableStore", () => {
     immutableStore.addObject("programs", program1)
 
     immutableStore.produce((draft) => {
-      draft["programs"][0].name = "Udpated Program 1 name"
+      draft.programs[0].name = "Udpated Program 1 name"
     })
 
     const changedState = immutableStore.getState()
 
     expect(changedState["programs"][0]).not.toBe(program1)
-    console.log("Program")
   })
 })
