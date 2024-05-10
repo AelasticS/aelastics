@@ -35,7 +35,7 @@ export const CourseType = t.entity(
 
 describe("ImmutableStore", () => {
   test("Updating object should maintain immutability", () => {
-    let immutableStore = new ImmutableStore({ programs: [], courses: [] })
+    let immutableStore = new ImmutableStore({ programs: [] as any[], courses: [] as any[] })
 
     const program1 = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
@@ -43,8 +43,16 @@ describe("ImmutableStore", () => {
       courses: [],
     })
 
-    immutableStore.addObject("programs", program1)
+    const program2 = immutableStore.newObject(ProgramType, {
+      id: uuidv4Generator(),
+      name: "Program 2",
+      courses: [],
+    })
 
+    immutableStore.addObject("programs", program1)
+    immutableStore.addObject("programs", program2)
+
+    // Change program1 in an immutable way
     immutableStore.produce((draft) => {
       draft.programs[0].name = "Udpated Program 1 name"
     })
@@ -52,5 +60,6 @@ describe("ImmutableStore", () => {
     const changedState = immutableStore.getState()
 
     expect(changedState["programs"][0]).not.toBe(program1)
+    expect(changedState["programs"][1]).toBe(program2)
   })
 })

@@ -53,11 +53,6 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
     }
   }
 
-  /**
-   *
-   * idMap has to be part of the state for the producer
-   * f should have access to state and store
-   */
   // produce(f: (draft: S, store: ImmutableStore<S>) => void) {
   //   const { state, map } = produce(new ImmerState(this._state, this.ctx.idMap), (imm: ImmerState) => f(imm.state, this))
   //   this._state = state
@@ -80,7 +75,8 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
     for (const key of Object.keys(state)) {
       if (Array.isArray(state[key])) {
         state[key].forEach((item: any) => {
-          if (item["@@aelastics/ID"] && map.has(item["@@aelastics/ID"])) {
+          if (map.has(item["@@aelastics/ID"]) && !Object.is(map.get(item["@@aelastics/ID"]), item)) {
+            console.log("This object will be updated in the idMap: ", item)
             map.set(item["@@aelastics/ID"], item)
           }
         })
