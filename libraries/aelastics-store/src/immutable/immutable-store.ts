@@ -14,8 +14,6 @@ enableMapSet()
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-// TODO: implement immer inside the syncIdMapWithState function if needed.
-
 /**
  * Implements an immutable state management store using Immer library to handle state updates immutably.
  * The store supports objects that are identifiable by unique IDs ("@@aelastics/ID").
