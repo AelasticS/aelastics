@@ -84,4 +84,21 @@ describe("ImmutableStore", () => {
     expect(newState.programs).toContain(newProgram)
     expect(initialPrograms).not.toBe(newState.programs)
   })
+
+  test("Removing object should maintain immutability", () => {
+    let immutableStore = new ImmutableStore({ programs: [] })
+
+    const program = immutableStore.newObject(ProgramType, {
+      id: uuidv4Generator(),
+      name: "Program for Removal",
+      courses: [],
+    })
+
+    immutableStore.addObject("programs", program)
+    expect(immutableStore.getState().programs).toHaveLength(1)
+
+    immutableStore.removeObject("programs", program)
+
+    expect(immutableStore.getState().programs).toHaveLength(0)
+  })
 })

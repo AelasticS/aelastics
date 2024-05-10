@@ -1,7 +1,7 @@
 import { AnyObjectType, ObjectLiteral } from "aelastics-types"
 import { Class, createClass } from "./createClass"
 import { OperationContext } from "./operation-context"
-import { immerable, produce, enableMapSet } from "immer"
+import { immerable, produce, enableMapSet, Immer } from "immer"
 enableMapSet()
 /*
  * Project: aelastics-store
@@ -65,14 +65,33 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
    * @param {any} object - The object to add to the store.
    * @throws {Error} if the key is not an array or does not exist on the state.
    */
-  addObject(key: any, object: any): void {
+  addObject(key: string, object: any): void {
+    if (!Array.isArray(this._state[key])) {
+      throw new Error(`${key as string} is not an array or does not exist on state.`)
+    }
+
+    this._state = produce(this._state, (draft) => {
+      if (Array.isArray(draft[key])) draft[key].push(object)
+    })
+  }
+
+  /**
+   * Removes an object from the store under the specified key.
+   * @param {keyof S} key - The key under which the object should be removed.
+   * @param {any} object - The object to add to the store.
+   * @throws {Error} if the key is not an array or does not exist on the state.
+   */
+  removeObject(key: string, object: any): void {
     if (!Array.isArray(this._state[key])) {
       throw new Error(`${key as string} is not an array or does not exist on state.`)
     }
 
     this._state = produce(this._state, (draft) => {
       if (Array.isArray(draft[key])) {
-        ;(draft[key] as Array<any>).push(object)
+        const index = draft[key].findIndex((item) => item["@@aelastics/ID"] === object["@@aelastics/ID"])
+        if (index > -1) {
+          draft[key].splice(index, 1)
+        }
       }
     })
   }
