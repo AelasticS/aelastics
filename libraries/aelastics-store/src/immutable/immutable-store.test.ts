@@ -101,4 +101,29 @@ describe("ImmutableStore", () => {
 
     expect(immutableStore.getState().programs).toHaveLength(0)
   })
+
+  test("Deep nested changes should maintain immutability", () => {
+    let immutableStore = new ImmutableStore({ departments: [{ id: "dept1", programs: [] as any[] }] })
+
+    const program = immutableStore.newObject(ProgramType, {
+      id: uuidv4Generator(),
+      name: "Nested Program",
+      courses: [],
+    })
+
+    immutableStore.produce((draft) => {
+      draft.departments[0].programs.push(program)
+    })
+
+    const initialDeptPrograms = immutableStore.getState()
+    expect(initialDeptPrograms.departments[0].programs[0].name).toBe("Nested Program")
+
+    immutableStore.produce((draft) => {
+      draft.departments[0].programs[0].name = "Updated Nested Program"
+    })
+
+    const updatedDeptPrograms = immutableStore.getState().departments[0].programs
+    expect(updatedDeptPrograms[0].name).toBe("Updated Nested Program")
+    expect(initialDeptPrograms).not.toBe(updatedDeptPrograms)
+  })
 })
