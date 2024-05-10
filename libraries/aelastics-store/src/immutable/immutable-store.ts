@@ -76,7 +76,6 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
       if (Array.isArray(state[key])) {
         state[key].forEach((item: any) => {
           if (map.has(item["@@aelastics/ID"]) && !Object.is(map.get(item["@@aelastics/ID"]), item)) {
-            console.log("This object will be updated in the idMap: ", item)
             map.set(item["@@aelastics/ID"], item)
           }
         })
