@@ -86,22 +86,24 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
   }
 
   /**
-   * Synchronizes the identity map with the current state.
+   * Synchronizes the identity map with the current state immutably using Immer.
    * @param {any} state - The current state of the store.
-   * @param {any} map - The existing map of IDs to objects.
-   * @returns {Map<string, any>} The updated map.
+   * @param {Map<string, any>} map - The existing map of IDs to objects.
+   * @returns {Map<string, any>} The updated map immutably.
    */
-  syncIdMapWithState(state: any, map: any): Map<string, any> {
-    for (const key of Object.keys(state)) {
-      if (Array.isArray(state[key])) {
-        state[key].forEach((item: any) => {
-          if (map.has(item["@@aelastics/ID"]) && !Object.is(map.get(item["@@aelastics/ID"]), item)) {
-            map.set(item["@@aelastics/ID"], item)
-          }
-        })
+  syncIdMapWithState(state: any, map: Map<string, any>): Map<string, any> {
+    return produce(map, (draftMap) => {
+      for (const key of Object.keys(state)) {
+        if (Array.isArray(state[key])) {
+          state[key].forEach((item: any) => {
+            const itemId = item["@@aelastics/ID"]
+            if (itemId && (!draftMap.has(itemId) || !Object.is(draftMap.get(itemId), item))) {
+              draftMap.set(itemId, item)
+            }
+          })
+        }
       }
-    }
-    return map
+    })
   }
 
   /**
@@ -110,5 +112,14 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
    */
   getState(): S {
     return this._state
+  }
+
+  // TODO: remove this method after testing.
+  /**
+   * Retrieves the idMap of the store with all existing objects.
+   * @returns {Map<string, any>} The current idMap.
+   */
+  getIdMap(): Map<string, any> {
+    return this.ctx.idMap
   }
 }

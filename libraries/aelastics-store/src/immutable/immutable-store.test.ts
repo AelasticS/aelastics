@@ -58,8 +58,12 @@ describe("ImmutableStore", () => {
     })
 
     const changedState = immutableStore.getState()
+    const changedIdMap = immutableStore.getIdMap()
 
     expect(changedState["programs"][0]).not.toBe(program1)
     expect(changedState["programs"][1]).toBe(program2)
+
+    expect(changedIdMap.get(program1["@@aelastics/ID"])).not.toBe(program1)
+    expect(changedIdMap.get(program2["@@aelastics/ID"])).toBe(program2)
   })
 })
