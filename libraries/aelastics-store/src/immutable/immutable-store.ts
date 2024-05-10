@@ -65,12 +65,16 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
    * @param {any} object - The object to add to the store.
    * @throws {Error} if the key is not an array or does not exist on the state.
    */
-  addObject(key: keyof S, object: any): void {
-    if (Array.isArray(this._state[key])) {
-      ;(this._state[key] as Array<any>).push(object)
-    } else {
+  addObject(key: any, object: any): void {
+    if (!Array.isArray(this._state[key])) {
       throw new Error(`${key as string} is not an array or does not exist on state.`)
     }
+
+    this._state = produce(this._state, (draft) => {
+      if (Array.isArray(draft[key])) {
+        ;(draft[key] as Array<any>).push(object)
+      }
+    })
   }
 
   /**

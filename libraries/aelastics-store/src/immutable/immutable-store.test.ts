@@ -66,4 +66,22 @@ describe("ImmutableStore", () => {
     expect(changedIdMap.get(program1["@@aelastics/ID"])).not.toBe(program1)
     expect(changedIdMap.get(program2["@@aelastics/ID"])).toBe(program2)
   })
+
+  test("Adding object should not mutate existing state", () => {
+    let immutableStore = new ImmutableStore({ programs: [] })
+    const initialPrograms = immutableStore.getState().programs
+
+    const newProgram = immutableStore.newObject(ProgramType, {
+      id: uuidv4Generator(),
+      name: "New Program",
+      courses: [],
+    })
+
+    immutableStore.addObject("programs", newProgram)
+
+    const newState = immutableStore.getState()
+
+    expect(newState.programs).toContain(newProgram)
+    expect(initialPrograms).not.toBe(newState.programs)
+  })
 })
