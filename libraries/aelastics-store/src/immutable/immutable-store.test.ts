@@ -126,4 +126,25 @@ describe("ImmutableStore", () => {
     expect(updatedDeptPrograms[0].name).toBe("Updated Nested Program")
     expect(initialDeptPrograms).not.toBe(updatedDeptPrograms)
   })
+
+  test("idMap should synchronize correctly with state changes", () => {
+    let immutableStore = new ImmutableStore({ programs: [] as any[] })
+
+    const program = immutableStore.newObject(ProgramType, {
+      id: uuidv4Generator(),
+      name: "Program",
+      courses: [],
+    })
+
+    immutableStore.addObject("programs", program)
+
+    // Simulate an update that would affect the ID map
+    immutableStore.produce((draft) => {
+      draft.programs[0].name = "Updated Name"
+    })
+
+    const idMap = immutableStore.getIdMap()
+
+    expect(idMap.get(program["@@aelastics/ID"]).name).toBe("Updated Name")
+  })
 })
