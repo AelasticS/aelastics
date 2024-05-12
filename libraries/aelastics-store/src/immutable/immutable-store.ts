@@ -58,52 +58,14 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
   }
 
   /**
-   * Adds an object to the store under the specified key.
-   * @param {keyof S} key - The key under which the object should be added.
-   * @param {any} object - The object to add to the store.
-   * @throws {Error} if the key is not an array or does not exist on the state.
-   */
-  addObject(key: string, object: any): void {
-    if (!Array.isArray(this._state[key])) {
-      throw new Error(`${key as string} is not an array or does not exist on state.`)
-    }
-
-    this._state = produce(this._state, (draft) => {
-      if (Array.isArray(draft[key])) draft[key].push(object)
-    })
-  }
-
-  /**
-   * Removes an object from the store under the specified key.
-   * @param {keyof S} key - The key under which the object should be removed.
-   * @param {any} object - The object to add to the store.
-   * @throws {Error} if the key is not an array or does not exist on the state.
-   */
-  removeObject(key: string, object: any): void {
-    if (!Array.isArray(this._state[key])) {
-      throw new Error(`${key as string} is not an array or does not exist on state.`)
-    }
-
-    this._state = produce(this._state, (draft) => {
-      if (Array.isArray(draft[key])) {
-        const index = draft[key].findIndex((item) => item["@@aelastics/ID"] === object["@@aelastics/ID"])
-        if (index > -1) {
-          draft[key].splice(index, 1)
-        }
-      }
-    })
-  }
-
-  /**
    * Applies a function to modify the store's state immutably.
    * @param {(draft: any) => void} f - A function that receives the current state as a draft and modifies it.
    */
   produce(f: (draft: any) => void) {
-    const { state } = produce(new ImmerState(this._state), (imm: ImmerState) => {
-      f(imm.state)
+    this._state = produce(this._state, (draft) => {
+      f(draft)
     })
-    this.ctx.idMap = this.syncIdMapWithState(state, this.ctx.idMap)
-    this._state = state
+    this.ctx.idMap = this.syncIdMapWithState(this._state, this.ctx.idMap)
   }
 
   /**
@@ -114,17 +76,26 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
    */
   syncIdMapWithState(state: any, map: Map<string, any>): Map<string, any> {
     return produce(map, (draftMap) => {
-      for (const key of Object.keys(state)) {
-        if (Array.isArray(state[key])) {
-          state[key].forEach((item: any) => {
-            const itemId = item["@@aelastics/ID"]
-            if (itemId && (!draftMap.has(itemId) || !Object.is(draftMap.get(itemId), item))) {
-              draftMap.set(itemId, item)
-            }
-          })
-        }
-      }
+      this.updateIdMap(state, draftMap)
     })
+  }
+
+  private updateIdMap(state: any, map: Map<string, any>) {
+    if (state === null) throw new Error("Cannot update null state.")
+    if (typeof state === "object" && Object.keys(state).includes("@@aelastics/ID")) {
+      const itemId = state["@@aelastics/ID"]
+      if (itemId && (!map.has(itemId) || !Object.is(map.get(itemId), state))) {
+        map.set(itemId, state)
+      }
+    } else if (typeof state === "object" && Object.keys(state).length) {
+      for (const key of Object.keys(state)) {
+        this.updateIdMap(state[key], map)
+      }
+    } else if (Array.isArray(state) && state.length) {
+      state.forEach((entry) => {
+        this.updateIdMap(entry, map)
+      })
+    }
   }
 
   /**

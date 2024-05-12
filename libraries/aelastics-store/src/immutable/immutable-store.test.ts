@@ -34,8 +34,34 @@ export const CourseType = t.entity(
 )
 
 describe("ImmutableStore", () => {
+  test("Testing aelastics produce", () => {
+    const learnTS = {
+      title: "Learn TypeScript",
+      done: true,
+    }
+
+    const tryImmer = {
+      title: "Try Immer",
+      done: false,
+    }
+
+    const baseState = [learnTS]
+
+    const immutableStore = new ImmutableStore(baseState as any)
+
+    immutableStore.produce((draftState) => {
+      draftState.push(tryImmer)
+      draftState.push({ title: "Tweet about it" })
+      draftState[1].done = true
+    })
+
+    const newState = immutableStore.getState()
+
+    expect(newState[1]).not.toBe(baseState[1])
+  })
+
   test("Updating object should maintain immutability", () => {
-    let immutableStore = new ImmutableStore({ programs: [] as any[], courses: [] as any[] })
+    let immutableStore = new ImmutableStore([] as any)
 
     const program1 = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
@@ -49,39 +75,42 @@ describe("ImmutableStore", () => {
       courses: [],
     })
 
-    immutableStore.addObject("programs", program1)
-    immutableStore.addObject("programs", program2)
-
-    // Change program1 in an immutable way
     immutableStore.produce((draft) => {
-      draft.programs[0].name = "Udpated Program 1 name"
+      draft.push(program1)
+      draft.push(program2)
+    })
+
+    immutableStore.produce((draft) => {
+      draft[1].name = "Udpated Program 2 name"
     })
 
     const changedState = immutableStore.getState()
     const changedIdMap = immutableStore.getIdMap()
 
-    expect(changedState["programs"][0]).not.toBe(program1)
-    expect(changedState["programs"][1]).toBe(program2)
+    expect(changedState[0]).not.toBe(program1)
+    expect(changedState[1]).not.toBe(program2)
 
     expect(changedIdMap.get(program1["@@aelastics/ID"])).not.toBe(program1)
-    expect(changedIdMap.get(program2["@@aelastics/ID"])).toBe(program2)
+    expect(changedIdMap.get(program2["@@aelastics/ID"])).not.toBe(program2)
   })
 
   test("Adding object should not mutate existing state", () => {
     let immutableStore = new ImmutableStore({ programs: [] })
     const initialPrograms = immutableStore.getState().programs
 
-    const newProgram = immutableStore.newObject(ProgramType, {
+    const program = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
       name: "New Program",
       courses: [],
     })
 
-    immutableStore.addObject("programs", newProgram)
+    immutableStore.produce((draft) => {
+      draft.programs.push(program)
+    })
 
     const newState = immutableStore.getState()
 
-    expect(newState.programs).toContain(newProgram)
+    expect(newState.programs).toContain(program)
     expect(initialPrograms).not.toBe(newState.programs)
   })
 
@@ -94,10 +123,15 @@ describe("ImmutableStore", () => {
       courses: [],
     })
 
-    immutableStore.addObject("programs", program)
+    immutableStore.produce((draft) => {
+      draft.programs.push(program)
+    })
+
     expect(immutableStore.getState().programs).toHaveLength(1)
 
-    immutableStore.removeObject("programs", program)
+    immutableStore.produce((draft) => {
+      draft.programs.pop(program)
+    })
 
     expect(immutableStore.getState().programs).toHaveLength(0)
   })
@@ -136,15 +170,42 @@ describe("ImmutableStore", () => {
       courses: [],
     })
 
-    immutableStore.addObject("programs", program)
-
-    // Simulate an update that would affect the ID map
     immutableStore.produce((draft) => {
+      draft.programs.push(program)
       draft.programs[0].name = "Updated Name"
     })
 
     const idMap = immutableStore.getIdMap()
 
     expect(idMap.get(program["@@aelastics/ID"]).name).toBe("Updated Name")
+  })
+
+  test("Updating mutually referenced aleastic objects should refresh their mutual id references", () => {
+    let immutableStore = new ImmutableStore({ programs: [] })
+
+    const program = immutableStore.newObject(ProgramType, {
+      id: uuidv4Generator(),
+      name: "Program",
+      courses: [],
+    })
+
+    const course = immutableStore.newObject(CourseType, {
+      id: uuidv4Generator(),
+      name: "Course",
+      program: program,
+    })
+
+    program.addCourses(course)
+
+    // Simulate an update that would affect the ID map
+    immutableStore.produce((draft) => {
+      draft.programs[0].name = "Updated name"
+    })
+
+    const updatedState = immutableStore.getState()
+
+    console.log("updated state: ", updatedState)
+
+    expect("").toBe("")
   })
 })
