@@ -45,19 +45,21 @@ describe("ImmutableStore", () => {
       done: false,
     }
 
-    const baseState = [learnTS]
+    const immutableStore = new ImmutableStore([] as any)
 
-    const immutableStore = new ImmutableStore(baseState as any)
+    const originalState = immutableStore.getState()
 
     immutableStore.produce((draftState) => {
+      draftState.push(learnTS)
       draftState.push(tryImmer)
       draftState.push({ title: "Tweet about it" })
       draftState[1].done = true
     })
 
     const newState = immutableStore.getState()
-
-    expect(newState[1]).not.toBe(baseState[1])
+    expect(originalState).not.toBe(newState)
+    // expect(newState[1]).not.toBe(baseState[1])
+    // expect(newState[0]).not.toBe(baseState[0])
   })
 
   test("Updating object should maintain immutability", () => {
@@ -81,17 +83,17 @@ describe("ImmutableStore", () => {
     })
 
     immutableStore.produce((draft) => {
-      draft[1].name = "Udpated Program 2 name"
+      draft[0].name = "Udpated Program 1 name"
     })
 
     const changedState = immutableStore.getState()
     const changedIdMap = immutableStore.getIdMap()
 
     expect(changedState[0]).not.toBe(program1)
-    expect(changedState[1]).not.toBe(program2)
+    expect(changedState[1]).toBe(program2)
 
     expect(changedIdMap.get(program1["@@aelastics/ID"])).not.toBe(program1)
-    expect(changedIdMap.get(program2["@@aelastics/ID"])).not.toBe(program2)
+    expect(changedIdMap.get(program2["@@aelastics/ID"])).toBe(program2)
   })
 
   test("Adding object should not mutate existing state", () => {
@@ -181,7 +183,7 @@ describe("ImmutableStore", () => {
   })
 
   test("Updating mutually referenced aleastic objects should refresh their mutual id references", () => {
-    let immutableStore = new ImmutableStore({ programs: [] })
+    let immutableStore = new ImmutableStore({ programs: [] as any[], courses: [] as any[] })
 
     const program = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
@@ -195,17 +197,20 @@ describe("ImmutableStore", () => {
       program: program,
     })
 
-    program.addCourses(course)
-
-    // Simulate an update that would affect the ID map
     immutableStore.produce((draft) => {
-      draft.programs[0].name = "Updated name"
+      draft.programs.push(program)
+      draft.courses.push(course)
     })
 
-    const updatedState = immutableStore.getState()
+    immutableStore.produce((draft) => {
+      draft.programs[0].name = "Updated program name"
+    })
 
-    console.log("updated state: ", updatedState)
+    const newState = immutableStore.getState()
+    const changedProgram = newState.programs[0]
+    const newIdMap = immutableStore.getIdMap()
 
-    expect("").toBe("")
+    expect(newIdMap.get(changedProgram["@@aelastics/ID"])).toBe(changedProgram)
+    expect(newIdMap.get(newState.courses[0].program)).toBe(changedProgram)
   })
 })
