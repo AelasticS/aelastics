@@ -271,7 +271,7 @@ describe("ImmutableStore", () => {
     })
 
     immutableStore.produce((draft) => {
-      draft.tutor.tutee = student
+      draft.tutor.tutee = draft.tutee
     })
 
     const newState = immutableStore.getState()

@@ -59,7 +59,8 @@ export class ImmutableStore<S> {
     this._state = produce(this._state, (draft) => {
       f(draft)
     })
-    this.ctx.idMap = this.syncIdMapWithState(this._state, this.ctx.idMap)
+    // this.ctx.idMap = this.syncIdMapWithState(this._state, this.ctx.idMap)
+    this.updateIdMap(this._state, this.ctx.idMap)
   }
 
   /**

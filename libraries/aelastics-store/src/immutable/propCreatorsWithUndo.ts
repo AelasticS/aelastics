@@ -12,7 +12,7 @@
 import { Any, AnyObjectType } from "aelastics-types"
 import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context"
 import { ImmerableObjectLiteral, capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
-import { produce } from "immer"
+import { immerable, produce } from "immer"
 import { ObjectLiteral } from "aelastics-types"
 
 export function getIDPropName(type: AnyObjectType) {
@@ -233,13 +233,26 @@ export function defineOneToOne(
         oldValue[`_${inversePropName}`] = undefined
       }
 
-      // Connect the new inverse target
+      // // Connect the new inverse target
+      // if (value) {
+      //   value = produce(value, (draftValue: any) => {
+      //     draftValue[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
+      //   })
+      // }
+      // context.idMap.set(value[inversePropIDName], value)
+
+      // Ensure the new value is immerable and draftable
       if (value) {
+        // const oldValue = value
+        // if (!value[immerable]) {
+        //   value = { ...value, [immerable]: true }
+        // }
         value = produce(value, (draftValue: any) => {
           draftValue[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
-          context.idMap.set(value[inversePropIDName], value)
         })
+        context.idMap.set(value[inversePropIDName], value)
       }
+
       // Update the property
       this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
 
