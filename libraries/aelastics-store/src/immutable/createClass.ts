@@ -12,7 +12,7 @@
 import { AnyObjectType, ObjectLiteral } from "aelastics-types"
 
 import { immerable } from "immer"
-import { getUnderlyingType, objectUUID } from "../common/CommonConstants"
+import { ImmerableObjectLiteral, getUnderlyingType, objectUUID } from "../common/CommonConstants"
 import {
   defineSimpleValue,
   defineComplexObjectProp,
@@ -26,7 +26,7 @@ import { OperationContext } from "./operation-context"
 import { uuidv4Generator } from "./repository"
 
 //
-export type Class<P> = { new (init: P): P }
+export type Class<P extends ImmerableObjectLiteral> = { new (init: P): P }
 
 /**
  * Dynamically creates a class based on a given object type.
@@ -37,14 +37,17 @@ export type Class<P> = { new (init: P): P }
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, ctx: OperationContext): Class<P> {
+export function createClass<P extends ImmerableObjectLiteral>(
+  objectType: AnyObjectType,
+  ctx: OperationContext
+): Class<P> {
   const props = objectType.allProperties
   const inverses = objectType.allInverse
 
   class DynamicClass {
     [key: string]: any
     [immerable] = true // Mark this class as immerable
-    constructor(init: Partial<P>) {
+    constructor(init: P) {
       this.isDeleted = false
       // Initialize private properties
       props.forEach((type, propName) => {
@@ -148,5 +151,5 @@ export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, 
   // }
   // Return the dynamically created class with its own name
   Object.defineProperty(DynamicClass, "name", { value: objectType.name })
-  return DynamicClass as unknown as Class<P>
+  return DynamicClass as Class<P>
 }

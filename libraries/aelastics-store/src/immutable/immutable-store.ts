@@ -1,7 +1,8 @@
 import { AnyObjectType, ObjectLiteral } from "aelastics-types"
 import { Class, createClass } from "./createClass"
 import { OperationContext } from "./operation-context"
-import { immerable, produce, enableMapSet, Immer } from "immer"
+import { immerable, produce, enableMapSet, Immer, Draft } from "immer"
+import { IImmutableStoreObject, ImmerableObjectLiteral } from "../common/CommonConstants"
 enableMapSet()
 /*
  * Project: aelastics-store
@@ -22,13 +23,9 @@ class ImmerState {
   [immerable] = true
   constructor(readonly state: any) {}
 }
-interface IdentifiableItem {
-  id: string
-  [key: string]: any
-}
 
-export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
-  private _classMap = new Map<AnyObjectType, Class<ObjectLiteral>>()
+export class ImmutableStore<S> {
+  private _classMap = new Map<AnyObjectType, Class<any>>()
   private _state: S
   ctx = new OperationContext()
 
@@ -42,26 +39,23 @@ export class ImmutableStore<S extends { [key: string]: IdentifiableItem[] }> {
 
   /**
    * Creates a new object of the specified type and initializes it with provided properties.
-   * @param {AnyObjectType} objectType - The type of object to create.
-   * @param {Partial<ObjectLiteral>} initProps - Initial properties to set on the new object.
-   * @returns {ObjectLiteral} The newly created object.
    */
-  newObject(objectType: AnyObjectType, initProps: Partial<ObjectLiteral> = {}): ObjectLiteral {
-    let c = this._classMap.get(objectType)
+  newObject<P extends ImmerableObjectLiteral>(objectType: AnyObjectType, initProps: P): P {
+    let c: Class<P> | undefined = this._classMap.get(objectType)
 
     if (c === undefined) {
       c = createClass(objectType, this.ctx)
       this._classMap.set(objectType, c)
     }
-
-    return this.ctx.createObject(c, initProps, objectType)
+    const obj = this.ctx.createObject<P>(c, initProps, objectType)
+    return obj
   }
 
   /**
    * Applies a function to modify the store's state immutably.
    * @param {(draft: any) => void} f - A function that receives the current state as a draft and modifies it.
    */
-  produce(f: (draft: any) => void) {
+  produce(f: (draft: Draft<S>) => void) {
     this._state = produce(this._state, (draft) => {
       f(draft)
     })

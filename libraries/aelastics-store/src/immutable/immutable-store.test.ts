@@ -1,21 +1,21 @@
 import * as t from "aelastics-types"
 import { v4 as uuidv4 } from "uuid"
 import { ImmutableStore } from "./immutable-store"
+import { IImmutableStoreObject, ImmerableObjectLiteral } from "../common/CommonConstants"
 
 export const uuidv4Generator = () => {
   return uuidv4()
 }
 
+// Define the schema for the university domain
 export const UniversitySchema = t.schema("UniversitySchema")
 
-export const ID = t.string
-export const Name = t.string.derive("Valid name").alphanumeric.maxLength(128)
-
+// Define the object types for the university domain
 export const ProgramType = t.entity(
   {
-    id: ID,
-    name: Name,
-    courses: t.arrayOf(t.link(UniversitySchema, "Course", "ProgramToCourseLink")),
+    id: t.string,
+    name: t.string,
+    courses: t.optional(t.arrayOf(t.link(UniversitySchema, "Course", "CourseType"))),
   },
   ["id"],
   "Program",
@@ -24,14 +24,21 @@ export const ProgramType = t.entity(
 
 export const CourseType = t.entity(
   {
-    id: ID,
-    name: Name,
-    program: ProgramType,
+    id: t.string,
+    name: t.string,
+    program: t.optional(ProgramType),
   },
   ["id"],
   "Course",
   UniversitySchema
 )
+
+// Define the inverse properties for the university domain
+t.inverseProps(ProgramType, "courses", CourseType, "program")
+
+// Define the interface types for the university domain
+type IProgramType = t.TypeOf<typeof ProgramType> & ImmerableObjectLiteral
+type ICourseType = t.TypeOf<typeof CourseType> & ImmerableObjectLiteral
 
 describe("ImmutableStore", () => {
   test("Testing aelastics produce", () => {
@@ -63,15 +70,24 @@ describe("ImmutableStore", () => {
   })
 
   test("Updating object should maintain immutability", () => {
-    let immutableStore = new ImmutableStore([] as any)
+    // const progStore = new ImmutableStore<{ programs: IProgramType[] }>({ programs: [] })
 
-    const program1 = immutableStore.newObject(ProgramType, {
+    // progStore.produce((draft) => {
+    //   draft.programs.forEach((program) => {
+    //     program.name = "Updated Program 1"
+    //     program.addCourses(immutableStore.newObject(CourseType, { id: uuidv4Generator(), name: "Course 1" }))
+    //   })
+    // })
+
+    let immutableStore = new ImmutableStore<IProgramType[]>([])
+
+    const program1 = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "Program 1",
       courses: [],
     })
 
-    const program2 = immutableStore.newObject(ProgramType, {
+    const program2 = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "Program 2",
       courses: [],
@@ -83,7 +99,7 @@ describe("ImmutableStore", () => {
     })
 
     immutableStore.produce((draft) => {
-      draft[0].name = "Udpated Program 1 name"
+      draft[0].name = "Updated Program 1 name"
     })
 
     const changedState = immutableStore.getState()
@@ -97,10 +113,11 @@ describe("ImmutableStore", () => {
   })
 
   test("Adding object should not mutate existing state", () => {
-    let immutableStore = new ImmutableStore({ programs: [] })
-    const initialPrograms = immutableStore.getState().programs
+    let immutableStore = new ImmutableStore<{ programs: IProgramType[] }>({ programs: [] })
 
-    const program = immutableStore.newObject(ProgramType, {
+    const initialState = immutableStore.getState()
+
+    const program = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "New Program",
       courses: [],
@@ -113,11 +130,13 @@ describe("ImmutableStore", () => {
     const newState = immutableStore.getState()
 
     expect(newState.programs).toContain(program)
-    expect(initialPrograms).not.toBe(newState.programs)
+    expect(initialState).not.toBe(newState)
   })
 
   test("Removing object should maintain immutability", () => {
-    let immutableStore = new ImmutableStore({ programs: [] })
+    let immutableStore = new ImmutableStore<{ programs: IProgramType[] }>({ programs: [] })
+
+    const initialState = immutableStore.getState()
 
     const program = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
@@ -132,41 +151,46 @@ describe("ImmutableStore", () => {
     expect(immutableStore.getState().programs).toHaveLength(1)
 
     immutableStore.produce((draft) => {
-      draft.programs.pop(program)
+      draft.programs.pop()
     })
 
+    const newState = immutableStore.getState()
+
     expect(immutableStore.getState().programs).toHaveLength(0)
+    expect(initialState).not.toBe(newState)
   })
 
   test("Deep nested changes should maintain immutability", () => {
-    let immutableStore = new ImmutableStore({ departments: [{ id: "dept1", programs: [] as any[] }] })
+    let immutableStore = new ImmutableStore<{ universities: [{ id: string; programs: IProgramType[] }] }>({
+      universities: [{ id: "university1", programs: [] }],
+    })
 
-    const program = immutableStore.newObject(ProgramType, {
+    const program: IProgramType = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
       name: "Nested Program",
       courses: [],
     })
 
     immutableStore.produce((draft) => {
-      draft.departments[0].programs.push(program)
+      draft.universities[0].programs.push(program)
     })
 
     const initialDeptPrograms = immutableStore.getState()
-    expect(initialDeptPrograms.departments[0].programs[0].name).toBe("Nested Program")
+    expect(initialDeptPrograms.universities[0].programs[0].name).toBe("Nested Program")
 
     immutableStore.produce((draft) => {
-      draft.departments[0].programs[0].name = "Updated Nested Program"
+      draft.universities[0].programs[0].name = "Updated Nested Program"
     })
 
-    const updatedDeptPrograms = immutableStore.getState().departments[0].programs
+    const updatedDeptPrograms = immutableStore.getState().universities[0].programs
     expect(updatedDeptPrograms[0].name).toBe("Updated Nested Program")
     expect(initialDeptPrograms).not.toBe(updatedDeptPrograms)
   })
 
   test("idMap should synchronize correctly with state changes", () => {
-    let immutableStore = new ImmutableStore({ programs: [] as any[] })
+    let immutableStore = new ImmutableStore<{ programs: IProgramType[] }>({ programs: [] })
 
-    const program = immutableStore.newObject(ProgramType, {
+    const program: IProgramType = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
       name: "Program",
       courses: [],
@@ -178,20 +202,28 @@ describe("ImmutableStore", () => {
     })
 
     const idMap = immutableStore.getIdMap()
+    const newState = immutableStore.getState()
+    const changedProgram = newState.programs[0]
 
-    expect(idMap.get(program["@@aelastics/ID"]).name).toBe("Updated Name")
+    expect(idMap.get(changedProgram["@@aelastics/ID"]).name).toBe("Updated Name")
   })
 
   test("Updating mutually referenced aleastic objects should refresh their mutual id references", () => {
-    let immutableStore = new ImmutableStore({ programs: [] as any[], courses: [] as any[] })
+    let immutableStore = new ImmutableStore<{
+      programs: IProgramType[]
+      courses: ICourseType[]
+    }>({
+      programs: [],
+      courses: [],
+    })
 
-    const program = immutableStore.newObject(ProgramType, {
+    const program: IProgramType = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
       name: "Program",
       courses: [],
     })
 
-    const course = immutableStore.newObject(CourseType, {
+    const course: ICourseType = immutableStore.newObject(CourseType, {
       id: uuidv4Generator(),
       name: "Course",
       program: program,
@@ -208,9 +240,9 @@ describe("ImmutableStore", () => {
 
     const newState = immutableStore.getState()
     const changedProgram = newState.programs[0]
-    const newIdMap = immutableStore.getIdMap()
+    const idMap = immutableStore.getIdMap()
 
-    expect(newIdMap.get(changedProgram["@@aelastics/ID"])).toBe(changedProgram)
-    expect(newIdMap.get(newState.courses[0].program)).toBe(changedProgram)
+    expect(idMap.get(changedProgram["@@aelastics/ID"])).toBe(changedProgram)
+    expect(idMap.get(newState.courses[0]["@@aelastics/ID"])).toBe(changedProgram)
   })
 })

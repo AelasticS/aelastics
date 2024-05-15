@@ -10,7 +10,7 @@
  */
 
 import { Any, AnyObjectType, ObjectLiteral } from "aelastics-types"
-import { capitalizeFirstLetter } from "../common/CommonConstants"
+import { IImmutableStoreObject, ImmerableObjectLiteral, capitalizeFirstLetter } from "../common/CommonConstants"
 import { Class } from "./createClass"
 import { getIDPropName } from "./propCreatorsWithUndo"
 
@@ -95,7 +95,11 @@ export class OperationContext {
     }
   }
 
-  createObject<P extends ObjectLiteral>(dynamicClass: Class<P>, initialProps: P, targetType: AnyObjectType): any {
+  createObject<P extends ImmerableObjectLiteral>(
+    dynamicClass: Class<P>,
+    initialProps: P,
+    targetType: AnyObjectType
+  ): P {
     // Create a new instance of the dynamic class
     const instance = new dynamicClass(initialProps)
     const IDName = getIDPropName(targetType)
@@ -110,7 +114,7 @@ export class OperationContext {
       initialProps: initialProps,
       dynamicClass: dynamicClass,
     })
-    return instance
+    return instance as P
   }
 
   deleteObject(obj: any) {
