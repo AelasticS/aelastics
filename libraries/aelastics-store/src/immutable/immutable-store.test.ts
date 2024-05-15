@@ -81,13 +81,13 @@ describe("ImmutableStore", () => {
 
     let immutableStore = new ImmutableStore<IProgramType[]>([])
 
-    const program1 = immutableStore.newObject<IProgramType>(ProgramType, {
+    const program1: IProgramType = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "Program 1",
       courses: [],
     })
 
-    const program2 = immutableStore.newObject<IProgramType>(ProgramType, {
+    const program2: IProgramType = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "Program 2",
       courses: [],
@@ -117,7 +117,7 @@ describe("ImmutableStore", () => {
 
     const initialState = immutableStore.getState()
 
-    const program = immutableStore.newObject<IProgramType>(ProgramType, {
+    const program: IProgramType = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "New Program",
       courses: [],
@@ -138,7 +138,7 @@ describe("ImmutableStore", () => {
 
     const initialState = immutableStore.getState()
 
-    const program = immutableStore.newObject(ProgramType, {
+    const program: IProgramType = immutableStore.newObject(ProgramType, {
       id: uuidv4Generator(),
       name: "Program for Removal",
       courses: [],
