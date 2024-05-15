@@ -43,7 +43,8 @@ export function capitalizeFirstLetter(string: string) {
 
 // Extend ObjectLiteral to include the [immerable] symbol
 export interface ImmerableObjectLiteral extends t.ObjectLiteral {
-  [immerable]?: boolean
+  isDeleted?: ImmerableObjectLiteral
+  [immerable]?: true
 }
 export type IImmutableStoreObject<P extends ImmerableObjectLiteral> = P & {
   readonly [objectUUID]: string

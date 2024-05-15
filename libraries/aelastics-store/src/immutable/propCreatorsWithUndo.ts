@@ -11,7 +11,9 @@
 
 import { Any, AnyObjectType } from "aelastics-types"
 import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context"
-import { capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
+import { ImmerableObjectLiteral, capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
+import { produce } from "immer"
+import { ObjectLiteral } from "aelastics-types"
 
 export function getIDPropName(type: AnyObjectType) {
   return objectUUID
@@ -220,7 +222,6 @@ export function defineOneToOne(
       if (this.isDeleted || (value && value.isDeleted)) {
         throw new Error("Cannot modify properties on a deleted object.")
       }
-
       const thisPropIDName = getIDPropName(targetType)
       const inversePropIDName = getIDPropName(inverseType)
 
@@ -234,9 +235,11 @@ export function defineOneToOne(
 
       // Connect the new inverse target
       if (value) {
-        value[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
+        value = produce(value, (draftValue: any) => {
+          draftValue[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
+          context.idMap.set(value[inversePropIDName], value)
+        })
       }
-
       // Update the property
       this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
 

@@ -1,7 +1,8 @@
 import * as t from "aelastics-types"
 import { v4 as uuidv4 } from "uuid"
 import { ImmutableStore } from "./immutable-store"
-import { IImmutableStoreObject, ImmerableObjectLiteral } from "../common/CommonConstants"
+import { IImmutableStoreObject, ImmerableObjectLiteral, getUnderlyingType } from "../common/CommonConstants"
+import { immerable } from "immer"
 
 export const uuidv4Generator = () => {
   return uuidv4()
@@ -210,39 +211,88 @@ describe("ImmutableStore", () => {
 
   test("Updating mutually referenced aleastic objects should refresh their mutual id references", () => {
     let immutableStore = new ImmutableStore<{
-      programs: IProgramType[]
-      courses: ICourseType[]
+      tutor: ITutorType
+      tutee: IStudentType
     }>({
-      programs: [],
-      courses: [],
+      tutor: {} as ITutorType,
+      tutee: {} as IStudentType,
     })
 
-    const program: IProgramType = immutableStore.newObject(ProgramType, {
+    // Define the schema for the university domain
+    const UniversitySchema = t.schema("UniversitySchema")
+
+    // Define the object types for the university domain
+    const StudentType = t.entity(
+      {
+        id: t.string,
+        name: t.string,
+        tutor: t.optional(t.link(UniversitySchema, "Tutor", "TutorType")),
+      },
+      ["id"],
+      "Student",
+      UniversitySchema
+    )
+
+    const TutorType = t.entity(
+      {
+        id: t.string,
+        name: t.string,
+        tutee: t.optional(StudentType),
+      },
+      ["id"],
+      "Tutor",
+      UniversitySchema
+    )
+
+    // Define the inverse properties for the university domain
+    t.inverseProps(StudentType, "tutor", TutorType, "tutee")
+
+    // Define the interface types for the university domain
+    type IStudentType = t.TypeOf<typeof StudentType> & ImmerableObjectLiteral
+    type ITutorType = t.TypeOf<typeof TutorType> & ImmerableObjectLiteral
+
+    const tutor: ITutorType = immutableStore.newObject(TutorType, {
       id: uuidv4Generator(),
-      name: "Program",
-      courses: [],
+      name: "Tutor 1",
+      tutee: undefined,
     })
 
-    const course: ICourseType = immutableStore.newObject(CourseType, {
+    const student: IStudentType = immutableStore.newObject(StudentType, {
       id: uuidv4Generator(),
-      name: "Course",
-      program: program,
+      name: "Student 1",
+      tutor: undefined,
+    })
+
+    const initState = immutableStore.getState()
+
+    immutableStore.produce((draft) => {
+      draft.tutor = tutor
+      draft.tutee = student
     })
 
     immutableStore.produce((draft) => {
-      draft.programs.push(program)
-      draft.courses.push(course)
-    })
-
-    immutableStore.produce((draft) => {
-      draft.programs[0].name = "Updated program name"
+      draft.tutor.tutee = student
     })
 
     const newState = immutableStore.getState()
-    const changedProgram = newState.programs[0]
+
     const idMap = immutableStore.getIdMap()
 
-    expect(idMap.get(changedProgram["@@aelastics/ID"])).toBe(changedProgram)
-    expect(idMap.get(newState.courses[0]["@@aelastics/ID"])).toBe(changedProgram)
+    // next stage is to check if both objects have been reinstantiated
+    const changedTutor = newState.tutor
+    const changedStudent = newState.tutee
+
+    // check if the idMap has been updated
+    expect(idMap.get(changedTutor["@@aelastics/ID"])).toBe(changedTutor)
+    expect(idMap.get(changedStudent["@@aelastics/ID"])).toBe(changedStudent)
+    expect(idMap.get(changedTutor["@@aelastics/ID"])).not.toBe(tutor)
+    expect(idMap.get(changedStudent["@@aelastics/ID"])).not.toBe(student)
+
+    //this only checks if the references are set up
+    expect(newState.tutor.tutee).toBe(newState.tutee)
+    expect(newState.tutee.tutor).toBe(newState.tutor)
+
+    expect(changedTutor).not.toBe(tutor)
+    expect(changedStudent).not.toBe(student)
   })
 })

@@ -46,7 +46,7 @@ export function createClass<P extends ImmerableObjectLiteral>(
 
   class DynamicClass {
     [key: string]: any
-    [immerable] = true // Mark this class as immerable
+    [immerable] = true
     constructor(init: P) {
       this.isDeleted = false
       // Initialize private properties
