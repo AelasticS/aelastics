@@ -16,14 +16,17 @@ enableMapSet()
  */
 
 /**
- * Implements an immutable state management store using Immer library to handle state updates immutably.
- * The store supports objects that are identifiable by unique IDs ("@@aelastics/ID").
+ * Represents the state of the store that can be modified immutably.
  */
 class ImmerState<S> {
   [immerable] = true
-  constructor(readonly state: S, readonly idMap: Map<string, any>) {}
+  constructor(readonly state: S) {}
 }
 
+/**
+ * Implements an immutable state management store using Immer library to handle state updates immutably.
+ * The store supports objects that are identifiable by unique IDs ("@@aelastics/ID").
+ */
 export class ImmutableStore<S> {
   private _classMap = new Map<AnyObjectType, Class<any>>()
   private _state: S
@@ -53,35 +56,71 @@ export class ImmutableStore<S> {
 
   /**
    * Applies a function to modify the store's state immutably.
-   * @param {(draft: any) => void} f - A function that receives the current state as a draft and modifies it.
+   * @param {(draft: Draft<S>) => void} f - A function that receives the current state as a draft and modifies it.
    */
   produce(f: (draft: Draft<S>) => void) {
-    const result = produce(new ImmerState(this._state, this.ctx.idMap), (draft) => {
+    const result = produce(new ImmerState(this._state), (draft) => {
       f(draft.state)
-      this.updateIdMap(draft.state, draft.idMap)
+      // this.updateIdMap(draft.state, draft.idMap) -  this is commented, in case we want our idMap to be immutable as well
     })
 
     this._state = result.state
-    this.ctx.idMap = result.idMap
+    // this.ctx.idMap = result.idMap -  this is commented, in case we want our idMap to be immutable as well
 
-    // this.updateIdMap(this._state, this.ctx.idMap)
+    // Update the idMap with the new state
+    this.updateIdMap(this._state, this.ctx.idMap)
   }
 
+  // private updateIdMap(state: any, map: Map<string, any>) {
+  //   if (state === null) throw new Error("Cannot update null state.")
+  //   if (typeof state === "object" && Object.keys(state).includes("@@aelastics/ID")) {
+  //     const itemId = state["@@aelastics/ID"]
+  //     if (itemId && (!map.has(itemId) || !Object.is(map.get(itemId), state))) {
+  //       map.set(itemId, state)
+  //     }
+  //   } else if (typeof state === "object" && Object.keys(state).length) {
+  //     for (const key of Object.keys(state)) {
+  //       this.updateIdMap(state[key], map)
+  //     }
+  //   } else if (Array.isArray(state) && state.length) {
+  //     state.forEach((entry) => {
+  //       this.updateIdMap(entry, map)
+  //     })
+  //   }
+  // }
+
+  /**
+   * Updates the idMap with the new state. Stack based iteration is used to traverse the state object.
+   * @param state - The new state.
+   * @param {Map<string, any>} map - The idMap to update.
+   */
   private updateIdMap(state: any, map: Map<string, any>) {
-    if (state === null) throw new Error("Cannot update null state.")
-    if (typeof state === "object" && Object.keys(state).includes("@@aelastics/ID")) {
-      const itemId = state["@@aelastics/ID"]
-      if (itemId && (!map.has(itemId) || !Object.is(map.get(itemId), state))) {
-        map.set(itemId, state)
+    if (state === null || typeof state !== "object") return
+
+    const stack = [state]
+
+    while (stack.length > 0) {
+      const current = stack.pop()
+
+      if (current && typeof current === "object") {
+        // Check if the current object has an ID
+        if (current["@@aelastics/ID"]) {
+          const itemId = current["@@aelastics/ID"]
+          if (itemId && (!map.has(itemId) || !Object.is(map.get(itemId), current))) {
+            map.set(itemId, current)
+          }
+        }
+
+        // Add properties of the current object to the stack
+        for (const key in current) {
+          if (Object.hasOwnProperty.call(current, key)) {
+            stack.push(current[key])
+          }
+        }
+      } else if (Array.isArray(current)) {
+        // If the current element is an array, add its elements to the stack
+        stack.push(...current)
       }
-    } else if (typeof state === "object" && Object.keys(state).length) {
-      for (const key of Object.keys(state)) {
-        this.updateIdMap(state[key], map)
-      }
-    } else if (Array.isArray(state) && state.length) {
-      state.forEach((entry) => {
-        this.updateIdMap(entry, map)
-      })
     }
   }
 

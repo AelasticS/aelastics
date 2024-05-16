@@ -264,6 +264,7 @@ describe("ImmutableStore", () => {
     })
 
     const initState = immutableStore.getState()
+    const initIdMap = immutableStore.getIdMap()
 
     immutableStore.produce((draft) => {
       draft.tutor = tutor
@@ -275,8 +276,10 @@ describe("ImmutableStore", () => {
     })
 
     const newState = immutableStore.getState()
+    const newIdMap = immutableStore.getIdMap()
 
-    const idMap = immutableStore.getIdMap()
+    // check if the initial state is not the same as the new state
+    expect(initState).not.toBe(newState)
 
     //this only checks if the references are set up
     expect(newState.tutor.tutee).toBe(newState.tutee)
@@ -290,9 +293,9 @@ describe("ImmutableStore", () => {
     expect(changedStudent).not.toBe(student)
 
     // check if the idMap has been updated
-    expect(idMap.get(changedTutor["@@aelastics/ID"])).toBe(changedTutor)
-    expect(idMap.get(changedStudent["@@aelastics/ID"])).toBe(changedStudent)
-    expect(idMap.get(changedTutor["@@aelastics/ID"])).not.toBe(tutor)
-    expect(idMap.get(changedStudent["@@aelastics/ID"])).not.toBe(student)
+    expect(newIdMap.get(changedTutor["@@aelastics/ID"])).toBe(changedTutor)
+    expect(newIdMap.get(changedStudent["@@aelastics/ID"])).toBe(changedStudent)
+    expect(newIdMap.get(changedTutor["@@aelastics/ID"])).not.toBe(tutor)
+    expect(newIdMap.get(changedStudent["@@aelastics/ID"])).not.toBe(student)
   })
 })
