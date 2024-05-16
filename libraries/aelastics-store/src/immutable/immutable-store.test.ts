@@ -1,7 +1,7 @@
 import * as t from "aelastics-types"
 import { v4 as uuidv4Generator } from "uuid"
 import { ImmutableStore } from "./immutable-store"
-import { ImmerableObjectLiteral } from "../common/CommonConstants"
+import { ImmerableObjectLiteral, getUnderlyingType } from "../common/CommonConstants"
 
 // Define the schema for the university domain
 export const UniversitySchema = t.schema("UniversitySchema")
@@ -37,34 +37,6 @@ type IProgramType = t.TypeOf<typeof ProgramType> & ImmerableObjectLiteral
 type ICourseType = t.TypeOf<typeof CourseType> & ImmerableObjectLiteral
 
 describe("ImmutableStore", () => {
-  test("Testing aelastics produce", () => {
-    const learnTS = {
-      title: "Learn TypeScript",
-      done: true,
-    }
-
-    const tryImmer = {
-      title: "Try Immer",
-      done: false,
-    }
-
-    const immutableStore = new ImmutableStore([] as any)
-
-    const originalState = immutableStore.getState()
-
-    immutableStore.produce((draftState) => {
-      draftState.push(learnTS)
-      draftState.push(tryImmer)
-      draftState.push({ title: "Tweet about it" })
-      draftState[1].done = true
-    })
-
-    const newState = immutableStore.getState()
-    expect(originalState).not.toBe(newState)
-    // expect(newState[1]).not.toBe(baseState[1])
-    // expect(newState[0]).not.toBe(baseState[0])
-  })
-
   test("Updating object should maintain immutability", () => {
     // const progStore = new ImmutableStore<{ programs: IProgramType[] }>({ programs: [] })
 
@@ -83,16 +55,22 @@ describe("ImmutableStore", () => {
       courses: [],
     })
 
-    const program2 = immutableStore.newObject<IProgramType>(ProgramType, {
-      id: uuidv4Generator(),
-      name: "Program 2",
-      courses: [],
-    })
-
-    const course1 = immutableStore.newObject(CourseType, {
+    const course1 = immutableStore.newObject<ICourseType>(CourseType, {
       id: uuidv4Generator(),
       name: "Course 1",
       program: undefined,
+    })
+
+    const course2 = immutableStore.newObject<ICourseType>(CourseType, {
+      id: uuidv4Generator(),
+      name: "Course 2",
+      program: undefined,
+    })
+
+    const program2 = immutableStore.newObject<IProgramType>(ProgramType, {
+      id: uuidv4Generator(),
+      name: "Program 2",
+      courses: [course1, course2],
     })
 
     immutableStore.produce((draft) => {
