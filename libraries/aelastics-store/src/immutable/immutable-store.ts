@@ -19,9 +19,9 @@ enableMapSet()
  * Implements an immutable state management store using Immer library to handle state updates immutably.
  * The store supports objects that are identifiable by unique IDs ("@@aelastics/ID").
  */
-class ImmerState {
+class ImmerState<S> {
   [immerable] = true
-  constructor(readonly state: any) {}
+  constructor(readonly state: S, readonly idMap: Map<string, any>) {}
 }
 
 export class ImmutableStore<S> {
@@ -56,23 +56,15 @@ export class ImmutableStore<S> {
    * @param {(draft: any) => void} f - A function that receives the current state as a draft and modifies it.
    */
   produce(f: (draft: Draft<S>) => void) {
-    this._state = produce(this._state, (draft) => {
-      f(draft)
+    const result = produce(new ImmerState(this._state, this.ctx.idMap), (draft) => {
+      f(draft.state)
+      this.updateIdMap(draft.state, draft.idMap)
     })
-    // this.ctx.idMap = this.syncIdMapWithState(this._state, this.ctx.idMap)
-    this.updateIdMap(this._state, this.ctx.idMap)
-  }
 
-  /**
-   * Synchronizes the identity map with the current state immutably using Immer.
-   * @param {any} state - The current state of the store.
-   * @param {Map<string, any>} map - The existing map of IDs to objects.
-   * @returns {Map<string, any>} The updated map immutably.
-   */
-  syncIdMapWithState(state: any, map: Map<string, any>): Map<string, any> {
-    return produce(map, (draftMap) => {
-      this.updateIdMap(state, draftMap)
-    })
+    this._state = result.state
+    this.ctx.idMap = result.idMap
+
+    // this.updateIdMap(this._state, this.ctx.idMap)
   }
 
   private updateIdMap(state: any, map: Map<string, any>) {

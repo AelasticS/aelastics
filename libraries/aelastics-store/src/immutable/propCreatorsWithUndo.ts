@@ -234,23 +234,9 @@ export function defineOneToOne(
       }
 
       // // Connect the new inverse target
-      // if (value) {
-      //   value = produce(value, (draftValue: any) => {
-      //     draftValue[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
-      //   })
-      // }
-      // context.idMap.set(value[inversePropIDName], value)
-
       // Ensure the new value is immerable and draftable
       if (value) {
-        // const oldValue = value
-        // if (!value[immerable]) {
-        //   value = { ...value, [immerable]: true }
-        // }
-        value = produce(value, (draftValue: any) => {
-          draftValue[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
-        })
-        context.idMap.set(value[inversePropIDName], value)
+        value[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
       }
 
       // Update the property

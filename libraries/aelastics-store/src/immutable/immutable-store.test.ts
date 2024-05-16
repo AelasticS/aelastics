@@ -278,21 +278,21 @@ describe("ImmutableStore", () => {
 
     const idMap = immutableStore.getIdMap()
 
+    //this only checks if the references are set up
+    expect(newState.tutor.tutee).toBe(newState.tutee)
+    expect(newState.tutee.tutor).toBe(newState.tutor)
+
     // next stage is to check if both objects have been reinstantiated
     const changedTutor = newState.tutor
     const changedStudent = newState.tutee
+
+    expect(changedTutor).not.toBe(tutor)
+    expect(changedStudent).not.toBe(student)
 
     // check if the idMap has been updated
     expect(idMap.get(changedTutor["@@aelastics/ID"])).toBe(changedTutor)
     expect(idMap.get(changedStudent["@@aelastics/ID"])).toBe(changedStudent)
     expect(idMap.get(changedTutor["@@aelastics/ID"])).not.toBe(tutor)
     expect(idMap.get(changedStudent["@@aelastics/ID"])).not.toBe(student)
-
-    //this only checks if the references are set up
-    expect(newState.tutor.tutee).toBe(newState.tutee)
-    expect(newState.tutee.tutor).toBe(newState.tutor)
-
-    expect(changedTutor).not.toBe(tutor)
-    expect(changedStudent).not.toBe(student)
   })
 })
