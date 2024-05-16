@@ -25,7 +25,6 @@ import {
 import { OperationContext } from "./operation-context"
 import { uuidv4Generator } from "./repository"
 
-//
 export type Class<P extends ImmerableObjectLiteral> = { new (init: P): P }
 
 /**

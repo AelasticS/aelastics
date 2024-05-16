@@ -1,12 +1,7 @@
 import * as t from "aelastics-types"
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4Generator } from "uuid"
 import { ImmutableStore } from "./immutable-store"
-import { IImmutableStoreObject, ImmerableObjectLiteral, getUnderlyingType } from "../common/CommonConstants"
-import { immerable } from "immer"
-
-export const uuidv4Generator = () => {
-  return uuidv4()
-}
+import { ImmerableObjectLiteral } from "../common/CommonConstants"
 
 // Define the schema for the university domain
 export const UniversitySchema = t.schema("UniversitySchema")
@@ -80,18 +75,24 @@ describe("ImmutableStore", () => {
     //   })
     // })
 
-    let immutableStore = new ImmutableStore<IProgramType[]>([])
+    let immutableStore = new ImmutableStore<(IProgramType | ICourseType)[]>([])
 
-    const program1: IProgramType = immutableStore.newObject<IProgramType>(ProgramType, {
+    const program1 = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "Program 1",
       courses: [],
     })
 
-    const program2: IProgramType = immutableStore.newObject<IProgramType>(ProgramType, {
+    const program2 = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "Program 2",
       courses: [],
+    })
+
+    const course1 = immutableStore.newObject(CourseType, {
+      id: uuidv4Generator(),
+      name: "Course 1",
+      program: undefined,
     })
 
     immutableStore.produce((draft) => {
