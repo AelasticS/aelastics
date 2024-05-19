@@ -10,7 +10,7 @@
  */
 
 import { Any, AnyObjectType, ObjectLiteral } from "aelastics-types"
-import { IImmutableStoreObject, ImmerableObjectLiteral, capitalizeFirstLetter } from "../common/CommonConstants"
+import { capitalizeFirstLetter } from "../common/CommonConstants"
 import { Class } from "./createClass"
 import { getIDPropName } from "./propCreatorsWithUndo"
 
@@ -78,6 +78,7 @@ export class OperationContext {
   redoStack: Operation[] = []
   isUndoRedoOperation: boolean = false
   idMap: Map<string, any> = new Map()
+  deletedMap: Map<string, any> = new Map()
 
   startUndoRedoOperation() {
     this.isUndoRedoOperation = true
@@ -95,11 +96,7 @@ export class OperationContext {
     }
   }
 
-  createObject<P extends ImmerableObjectLiteral>(
-    dynamicClass: Class<P>,
-    initialProps: P,
-    targetType: AnyObjectType
-  ): P {
+  createObject<P extends ObjectLiteral>(dynamicClass: Class<P>, initialProps: P, targetType: AnyObjectType): P {
     // Create a new instance of the dynamic class
     const instance = new dynamicClass(initialProps)
     const IDName = getIDPropName(targetType)
@@ -117,12 +114,21 @@ export class OperationContext {
     return instance as P
   }
 
-  deleteObject(obj: any) {
+  deleteObject<P extends ObjectLiteral>(obj: P) {
     this.pushOperation({
       operationType: "delete",
       target: obj,
     })
-    obj.isDeleted = true
+    // retrieve the object's ID and set the object's isDeleted  property FROM THE IDMAP  to true
+    const ID = obj["@@aelastics/ID"]
+
+    // this.idMap.set(ID, obj)
+
+    const objToDel = this.idMap.get(ID)
+    //objToDel.isDeleted = true
+
+    this.deletedMap.set(ID, objToDel)
+    this.idMap.delete(ID)
   }
 
   undo() {

@@ -9,7 +9,7 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import { AnyObjectType, ObjectLiteral } from "aelastics-types"
+import { AnyObjectType } from "aelastics-types"
 
 import { immerable } from "immer"
 import { ImmerableObjectLiteral, capitalizeFirstLetter, getUnderlyingType, objectUUID } from "../common/CommonConstants"
@@ -170,6 +170,17 @@ export function createClass<P extends ImmerableObjectLiteral>(
   //     configurable: true,
   //   })
   // }
+
+  // Object.defineProperty(DynamicClass.prototype, "isDeleted", {
+  //   get() {
+  //     return this["_isDeleted"]
+  //   },
+  //   set(value: boolean) {
+  //     this["_isDeleted"] = value
+  //   },
+  //   configurable: true,
+  // })
+
   // Return the dynamically created class with its own name
   Object.defineProperty(DynamicClass, "name", { value: objectType.name })
   return DynamicClass as Class<P>

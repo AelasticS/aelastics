@@ -2,7 +2,10 @@ import * as t from "aelastics-types"
 import { v4 as uuidv4Generator } from "uuid"
 import { ImmutableStore } from "./immutable-store"
 import { ImmerableObjectLiteral, getUnderlyingType } from "../common/CommonConstants"
+import { enablePatches } from "immer"
+enablePatches()
 
+// ----------------------------------------------
 // Define the schema for the university domain
 export const UniversitySchema = t.schema("UniversitySchema")
 
@@ -36,17 +39,44 @@ t.inverseProps(ProgramType, "courses", CourseType, "program")
 type IProgramType = t.TypeOf<typeof ProgramType> & ImmerableObjectLiteral
 type ICourseType = t.TypeOf<typeof CourseType> & ImmerableObjectLiteral
 
+// ----------------------------------------------
+// Define the schema for the university domain
+const UniversitySchema2 = t.schema("UniversitySchema2")
+
+// Define the object types for the university domain
+const StudentType = t.entity(
+  {
+    id: t.string,
+    name: t.string,
+    tutor: t.optional(t.link(UniversitySchema2, "Tutor", "TutorType")),
+  },
+  ["id"],
+  "Student",
+  UniversitySchema2
+)
+
+const TutorType = t.entity(
+  {
+    id: t.string,
+    name: t.string,
+    tutee: t.optional(StudentType),
+  },
+  ["id"],
+  "Tutor",
+  UniversitySchema2
+)
+
+// Define the inverse properties for the university domain
+t.inverseProps(StudentType, "tutor", TutorType, "tutee")
+
+// Define the interface types for the university domain
+type IStudentType = t.TypeOf<typeof StudentType> & ImmerableObjectLiteral
+type ITutorType = t.TypeOf<typeof TutorType> & ImmerableObjectLiteral
+
+// ----------------------------------------------
+
 describe("ImmutableStore", () => {
   test("Updating object should maintain immutability", () => {
-    // const progStore = new ImmutableStore<{ programs: IProgramType[] }>({ programs: [] })
-
-    // progStore.produce((draft) => {
-    //   draft.programs.forEach((program) => {
-    //     program.name = "Updated Program 1"
-    //     program.addCourses(immutableStore.newObject(CourseType, { id: uuidv4Generator(), name: "Course 1" }))
-    //   })
-    // })
-
     let immutableStore = new ImmutableStore<(IProgramType | ICourseType)[]>([])
 
     const program1 = immutableStore.newObject<IProgramType>(ProgramType, {
@@ -76,6 +106,8 @@ describe("ImmutableStore", () => {
     immutableStore.produce((draft) => {
       draft.push(program1)
       draft.push(program2)
+      draft.push(course1)
+      draft.push(course2)
     })
 
     immutableStore.produce((draft) => {
@@ -84,6 +116,10 @@ describe("ImmutableStore", () => {
 
     const changedState = immutableStore.getState()
     const changedIdMap = immutableStore.getIdMap()
+
+    // expect that progrsm2 courses are not changed but also thatthey point to the ones in the state
+    expect(changedState[1].courses[0]).toBe(changedState[2])
+    expect(changedState[1].courses[1]).toBe(changedState[3])
 
     expect(changedState[0]).not.toBe(program1)
     expect(changedState[1]).toBe(program2)
@@ -118,7 +154,7 @@ describe("ImmutableStore", () => {
 
     const initialState = immutableStore.getState()
 
-    const program: IProgramType = immutableStore.newObject(ProgramType, {
+    const program = immutableStore.newObject<IProgramType>(ProgramType, {
       id: uuidv4Generator(),
       name: "Program for Removal",
       courses: [],
@@ -138,6 +174,7 @@ describe("ImmutableStore", () => {
 
     expect(immutableStore.getState().programs).toHaveLength(0)
     expect(initialState).not.toBe(newState)
+    expect(immutableStore.getIdMapWithDeleted().get(program["@@aelastics/ID"])).toBeDefined()
   })
 
   test("Deep nested changes should maintain immutability", () => {
@@ -155,16 +192,18 @@ describe("ImmutableStore", () => {
       draft.universities[0].programs.push(program)
     })
 
-    const initialDeptPrograms = immutableStore.getState()
-    expect(initialDeptPrograms.universities[0].programs[0].name).toBe("Nested Program")
+    const initialState = immutableStore.getState()
+
+    expect(initialState.universities[0].programs[0].name).toBe("Nested Program")
 
     immutableStore.produce((draft) => {
       draft.universities[0].programs[0].name = "Updated Nested Program"
     })
 
-    const updatedDeptPrograms = immutableStore.getState().universities[0].programs
-    expect(updatedDeptPrograms[0].name).toBe("Updated Nested Program")
-    expect(initialDeptPrograms).not.toBe(updatedDeptPrograms)
+    const newState = immutableStore.getState()
+
+    expect(newState.universities[0].programs[0].name).toBe("Updated Nested Program")
+    expect(initialState).not.toBe(newState)
   })
 
   test("idMap should synchronize correctly with state changes", () => {
@@ -197,39 +236,6 @@ describe("ImmutableStore", () => {
       tutee: {} as IStudentType,
     })
 
-    // Define the schema for the university domain
-    const UniversitySchema = t.schema("UniversitySchema")
-
-    // Define the object types for the university domain
-    const StudentType = t.entity(
-      {
-        id: t.string,
-        name: t.string,
-        tutor: t.optional(t.link(UniversitySchema, "Tutor", "TutorType")),
-      },
-      ["id"],
-      "Student",
-      UniversitySchema
-    )
-
-    const TutorType = t.entity(
-      {
-        id: t.string,
-        name: t.string,
-        tutee: t.optional(StudentType),
-      },
-      ["id"],
-      "Tutor",
-      UniversitySchema
-    )
-
-    // Define the inverse properties for the university domain
-    t.inverseProps(StudentType, "tutor", TutorType, "tutee")
-
-    // Define the interface types for the university domain
-    type IStudentType = t.TypeOf<typeof StudentType> & ImmerableObjectLiteral
-    type ITutorType = t.TypeOf<typeof TutorType> & ImmerableObjectLiteral
-
     const tutor: ITutorType = immutableStore.newObject(TutorType, {
       id: uuidv4Generator(),
       name: "Tutor 1",
@@ -243,7 +249,6 @@ describe("ImmutableStore", () => {
     })
 
     const initState = immutableStore.getState()
-    const initIdMap = immutableStore.getIdMap()
 
     immutableStore.produce((draft) => {
       draft.tutor = tutor
@@ -265,16 +270,59 @@ describe("ImmutableStore", () => {
     expect(newState.tutee.tutor).toBe(newState.tutor)
 
     // next stage is to check if both objects have been reinstantiated
-    const changedTutor = newState.tutor
-    const changedStudent = newState.tutee
-
-    expect(changedTutor).not.toBe(tutor)
-    expect(changedStudent).not.toBe(student)
+    expect(newState.tutor).not.toBe(tutor)
+    expect(newState.tutee).not.toBe(student)
 
     // check if the idMap has been updated
-    expect(newIdMap.get(changedTutor["@@aelastics/ID"])).toBe(changedTutor)
-    expect(newIdMap.get(changedStudent["@@aelastics/ID"])).toBe(changedStudent)
-    expect(newIdMap.get(changedTutor["@@aelastics/ID"])).not.toBe(tutor)
-    expect(newIdMap.get(changedStudent["@@aelastics/ID"])).not.toBe(student)
+    expect(newIdMap.get(newState.tutor["@@aelastics/ID"])).toBe(newState.tutor)
+    expect(newIdMap.get(newState.tutee["@@aelastics/ID"])).toBe(newState.tutee)
+    expect(newIdMap.get(newState.tutor["@@aelastics/ID"])).not.toBe(tutor)
+    expect(newIdMap.get(newState.tutee["@@aelastics/ID"])).not.toBe(student)
+  })
+
+  test("Updating nested aelastic objects should refresh the state", () => {
+    let immutableStore = new ImmutableStore<{
+      tutor: ITutorType
+      tutee: IStudentType
+    }>({
+      tutor: {} as ITutorType,
+      tutee: {} as IStudentType,
+    })
+
+    const tutor: ITutorType = immutableStore.newObject(TutorType, {
+      id: uuidv4Generator(),
+      name: "Tutor 1",
+      tutee: undefined,
+    })
+
+    const student: IStudentType = immutableStore.newObject(StudentType, {
+      id: uuidv4Generator(),
+      name: "Student 1",
+      tutor: undefined,
+    })
+
+    immutableStore.produce((draft) => {
+      draft.tutor = tutor
+      draft.tutee = student
+    })
+
+    immutableStore.produce((draft) => {
+      draft.tutor.tutee = draft.tutee
+    })
+
+    // TODO: This is an issue with the current implementation of the library. The student returned from draft.tutor.tutee is retrieved from the idMap, which will be outside the draft scope.
+    // KEEP IN MIND: even if you pass the idmap to the produce function, getter methods from object instances will not access the drafted idmap, but the nondrafted version.
+    immutableStore.produce((draft) => {
+      const student = draft.tutor.tutee
+      if (student) {
+        student.name = "Updated Student Name"
+      }
+    })
+
+    const newState = immutableStore.getState()
+
+    //this checks if the references are the same, and with the updated student name
+    expect(newState.tutor.tutee).toBe(newState.tutee)
+    expect(newState.tutee.tutor).toBe(newState.tutor)
   })
 })
