@@ -8,48 +8,14 @@ let child: iFoo
 let store: TestStore
 let immutableStore: ImmutableTestStore
 
-// describe("produce only the state", () => {
-//   beforeAll(() => {
-//     store = new TestStore()
-//     parent = store.createObj("1", "parent")
-//     child = store.createObj("2", "child")
-//   })
-//   test("Add stuff to state", () => {
-//     store.produce((draft) => {
-//       draft.push(parent)
-//       draft.push(child)
-//     })
-//     const state = store.getState()
-
-//     expect(state[0]).toBe(parent)
-//     expect(state[1]).toBe(child)
-//   })
-
-//   test("Add relation between foos", () => {
-//     store.produce((draft) => {
-//       draft[1].parent = draft[0]
-//     })
-//     const state = store.getState()
-
-//     expect(state[0]?.parent).toBe(parent)
-//     expect(state[1]?.child).toBe(child)
-//   })
-
-//   test("change name of the nested parent", () => {
-//     store.produce((draft) => {
-//       draft[1].parent.name = "new name"
-//     })
-//   })
-// })
-// ------------------------------------------------------------
-describe("produce the state and the map", () => {
+describe("produce only the state", () => {
   beforeAll(() => {
     store = new TestStore()
     parent = store.createObj("1", "parent")
     child = store.createObj("2", "child")
   })
   test("Add stuff to state", () => {
-    store.produceWithIdMap((draft) => {
+    store.produce((draft) => {
       draft.push(parent)
       draft.push(child)
     })
@@ -60,21 +26,55 @@ describe("produce the state and the map", () => {
   })
 
   test("Add relation between foos", () => {
-    store.produceWithIdMap((draft) => {
+    store.produce((draft) => {
       draft[1].parent = draft[0]
     })
     const state = store.getState()
 
-    expect(state[0]?.parent).toBe(parent)
-    expect(state[1]?.child).toBe(child)
+    expect(state[0]?.parent).toBe(state[1])
+    expect(state[1]?.child).toBe(state[0])
   })
 
   test("change name of the nested parent", () => {
-    store.produceWithIdMap((draft) => {
+    store.produce((draft) => {
       draft[1].parent.name = "new name"
     })
   })
 })
+// ------------------------------------------------------------
+// describe("produce the state and the map", () => {
+//   beforeAll(() => {
+//     store = new TestStore()
+//     parent = store.createObj("1", "parent")
+//     child = store.createObj("2", "child")
+//   })
+//   test("Add stuff to state", () => {
+//     store.produceWithIdMap((draft) => {
+//       draft.push(parent)
+//       draft.push(child)
+//     })
+//     const state = store.getState()
+
+//     expect(state[0]).toBe(parent)
+//     expect(state[1]).toBe(child)
+//   })
+
+//   test("Add relation between foos", () => {
+//     store.produceWithIdMap((draft) => {
+//       draft[1].parent = draft[0]
+//     })
+//     const state = store.getState()
+
+//     expect(state[0]?.parent).toBe(state[1])
+//     expect(state[1]?.child).toBe(state[0])
+//   })
+
+//   test("change name of the nested parent", () => {
+//     store.produceWithIdMap((draft) => {
+//       draft[1].parent.name = "new name"
+//     })
+//   })
+// })
 // ------------------------------------------------------------
 // describe("produce the entire store", () => {
 //   beforeAll(() => {
@@ -99,8 +99,8 @@ describe("produce the state and the map", () => {
 //     })
 //     const state = immutableStore.getState()
 
-//     expect(state[0]?.parent).toBe(parent)
-//     expect(state[1]?.child).toBe(child)
+//     expect(state[0]?.parent).toBe(state[1])
+//     expect(state[1]?.child).toBe(state[0])
 //   })
 
 //   test("change name of the nested parent", () => {

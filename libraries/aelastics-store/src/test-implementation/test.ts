@@ -48,6 +48,12 @@ export function createClass(idMap: Map<string, any>) {
       if (value) {
         value[privatechild] = this.id
         this[privateparent] = value.id
+
+        //------ SOLUTION  ATTEMPT 1 ------
+        // cannot do this because then we store the proxy of the object in the idmap
+        // idMap.set(this.id, this)
+        // idMap.set(value?.id, value)
+        //------
       } else {
         this[privateparent] = undefined
       }
@@ -70,6 +76,12 @@ export function createClass(idMap: Map<string, any>) {
       if (value !== undefined) {
         this[privatechild] = value.id
         value[privateparent] = this.id
+
+        //------ SOLUTION ATTEMPT 1 ------
+        // cannot do this because then we store the proxy of the object in the idmap
+        // idMap.set(this.id, this)
+        // idMap.set(value?.id, value)
+        //------
       } else {
         this[privatechild] = undefined
       }
@@ -117,6 +129,13 @@ export class TestStore {
     this._state = newState.state
     this._idMap = newState.idMap
   }
+
+  //----------------- SOLUTION ATTEMPT 2 -----------------
+  /*
+  we will try here to update the idmap manually,
+  however, what happens when we change name in the nested object??
+  */
+  produceAndUpdateIdMap(f: (draft: any) => void) {}
 
   getState() {
     return this._state
