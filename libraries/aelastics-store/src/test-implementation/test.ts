@@ -1,5 +1,6 @@
-import { enablePatches, immerable, produce, produceWithPatches } from "immer"
+import { enablePatches, immerable, produce, produceWithPatches, setAutoFreeze } from "immer"
 enablePatches()
+setAutoFreeze(true) // setting auto freeze to false to avoid the error "Cannot assign to read only property 'parent' of object"
 
 // The createClass function creates a class with a parent and child relation
 export function createClass(idMap: Map<string, any>) {
@@ -110,7 +111,7 @@ export class TestStore {
     this._idMap = new Map()
   }
 
-  createObj(id: string, name: string) {
+  newObject(id: string, name: string) {
     const obj = createClass(this._idMap)
     const objInstance = new obj({ id, name })
     this._idMap.set(id, objInstance)
@@ -135,7 +136,30 @@ export class TestStore {
   we will try here to update the idmap manually,
   however, what happens when we change name in the nested object??
   */
-  produceAndUpdateIdMap(f: (draft: any) => void) {}
+  produceAndUpdateIdMap(f: (draft: any) => void) {
+    const [newState, patches] = produceWithPatches(this._state, (draft) => f(draft))
+
+    this._state = newState
+
+    patches.forEach((patch) => {
+      let ref = this._state as any
+      for (const key of patch.path) {
+        ref = ref[key]
+        if (typeof ref === "object" && ref.id) {
+          break
+        }
+      }
+
+      switch (patch.op) {
+        case "replace":
+          this._idMap.set(ref.id, ref)
+          break
+        // case "remove":
+        //   this._idMap.delete(ref.id)
+        //   break
+      }
+    })
+  }
 
   getState() {
     return this._state
@@ -172,5 +196,59 @@ export class ImmutableTestStore {
 
   getState() {
     return this._state
+  }
+}
+
+class ImmerState {
+  [immerable] = true
+  private _state: []
+  private _idMap: Map<string, any>
+  constructor() {
+    this._state = []
+    this._idMap = new Map()
+  }
+
+  get idMap() {
+    return this._idMap
+  }
+  set idMap(value: Map<string, any>) {
+    this._idMap = value
+  }
+  get state() {
+    return this._state
+  }
+  set state(value) {
+    this._state = value
+  }
+}
+
+// The ImmutableTestStore class where we store our state AND IDMAP in an ImmerState object
+export class TestStorewithImmutableImmerState<S> {
+  private immerState: ImmerState
+
+  constructor() {
+    this.immerState = new ImmerState()
+  }
+
+  newObject(id: string, name: string) {
+    const obj = createClass(this.immerState.idMap)
+
+    const objInstance = new obj({ id, name })
+    // Produce an immutable object instance
+    const immutableObjInstance = produce(objInstance, (draft) => {})
+
+    // Store the immutable object instance in the map
+    this.immerState.idMap.set(id, immutableObjInstance)
+
+    return objInstance
+  }
+
+  produce(f: (draft: []) => void) {
+    const newImmerstate = produce(this.immerState, (draft: ImmerState) => f(draft.state))
+    this.immerState = newImmerstate
+  }
+
+  getState() {
+    return this.immerState.state
   }
 }
