@@ -1,7 +1,7 @@
 // RUN inside aelastics-store folder:
 // heft test --test-path-pattern ./src/test-implementation/test.test.ts
 
-import { iFoo, ImmutableTestStore, TestStore, TestStorewithImmutableImmerState } from "./test"
+import { iFoo, ImmerState, ImmutableTestStore, TestStore } from "./test"
 
 let parent: iFoo
 let child: iFoo
@@ -110,10 +110,14 @@ describe("produce the state and update the id map", () => {
     expect(state[1]?.parent).toBe(state[0])
   })
 
+  // state = [foo1, foo2]
+  // idMap = { "1": foo1, "2": foo2 }
+
   test("change name of the nested parent", () => {
     const initialparent = store.getState()[0]
-    store.produceAndUpdateIdMap((draft: any[]) => {
-      draft[1].parent.name = "new name"
+    store.produceAndUpdateIdMap((draft: ImmerState) => {
+      // store._idMap.set(draft[0].id, draft[0])
+      draft!.state[1]!.setParentName("new name", draft.idMap)
     })
 
     const state = store.getState()
@@ -121,6 +125,19 @@ describe("produce the state and update the id map", () => {
     expect(state[0]).not.toBe(initialparent)
     expect(state[0].name).toBe("new name")
   })
+
+  // test("change name of the nested parent", () => {
+  //   const initialparent = store.getState()[0]
+  //   store.produceAndUpdateIdMap((draft: ImmerState) => {
+  //     // store._idMap.set(draft[0].id, draft[0])
+  //     draft!.state[1]!.parent!.name = "new name"
+  //   })
+
+  //   const state = store.getState()
+  //   //check that this is a new object
+  //   expect(state[0]).not.toBe(initialparent)
+  //   expect(state[0].name).toBe("new name")
+  // })
 })
 // ------------------------------------------------------------
 

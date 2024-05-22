@@ -1,9 +1,15 @@
-import { enablePatches, immerable, produce, produceWithPatches, setAutoFreeze } from "immer"
+import { enableMapSet, enablePatches, immerable, produce, produceWithPatches, setAutoFreeze } from "immer"
 enablePatches()
-setAutoFreeze(true) // setting auto freeze to false to avoid the error "Cannot assign to read only property 'parent' of object"
+enableMapSet()
+setAutoFreeze(false) // setting auto freeze to false to avoid the error "Cannot assign to read only property 'parent' of object"
 
 // The createClass function creates a class with a parent and child relation
 export function createClass(idMap: Map<string, any>) {
+  const parent = "parent"
+  const child = "child"
+  const privateparent = "_parent"
+  const privatechild = "_child"
+
   class Foo implements iFoo {
     _id: string
     _name: string
@@ -27,11 +33,14 @@ export function createClass(idMap: Map<string, any>) {
     set name(value: string) {
       this._name = value
     }
+
+    setParentName(value: string, idMap: Map<string, Foo>) {
+      const parent = idMap.get(this._parent!)!
+      if (parent) {
+        parent.name = value
+      }
+    }
   }
-  const parent = "parent"
-  const child = "child"
-  const privateparent = "_parent"
-  const privatechild = "_child"
 
   // Define the parent and child properties
   Object.defineProperty(Foo.prototype, "parent", {
@@ -99,11 +108,12 @@ export interface iFoo {
   name: string
   parent?: iFoo | undefined
   child?: iFoo | undefined
+  setParentName(value: string, idMap: Map<string, iFoo>): void
 }
 
 // The TestStore class where only the state and/or the idMap is mutable
 export class TestStore {
-  private _state: any[]
+  private _state: iFoo[]
   private _idMap: Map<string, any>
 
   constructor() {
@@ -137,9 +147,9 @@ export class TestStore {
   however, what happens when we change name in the nested object??
   */
   produceAndUpdateIdMap(f: (draft: any) => void) {
-    const [newState, patches] = produceWithPatches(this._state, (draft) => f(draft))
+    const [newState, patches] = produceWithPatches(new ImmerState(this._state, this._idMap), (draft) => f(draft))
 
-    this._state = newState
+    this._state = newState.state
 
     patches.forEach((patch) => {
       let ref = this._state as any
@@ -199,13 +209,14 @@ export class ImmutableTestStore {
   }
 }
 
-class ImmerState {
+//----------------- SOLUTION ATTEMPT 3 -----------------
+export class ImmerState {
   [immerable] = true
-  private _state: []
+  private _state: iFoo[]
   private _idMap: Map<string, any>
-  constructor() {
-    this._state = []
-    this._idMap = new Map()
+  constructor(state: iFoo[], idMap: Map<string, any>) {
+    this._state = state
+    this._idMap = idMap
   }
 
   get idMap() {
@@ -223,32 +234,32 @@ class ImmerState {
 }
 
 // The ImmutableTestStore class where we store our state AND IDMAP in an ImmerState object
-export class TestStorewithImmutableImmerState<S> {
-  private immerState: ImmerState
+// export class TestStorewithImmutableImmerState<S> {
+//   private immerState: ImmerState
 
-  constructor() {
-    this.immerState = new ImmerState()
-  }
+//   constructor() {
+//     this.immerState = new ImmerState()
+//   }
 
-  newObject(id: string, name: string) {
-    const obj = createClass(this.immerState.idMap)
+//   newObject(id: string, name: string) {
+//     const obj = createClass(this.immerState.idMap)
 
-    const objInstance = new obj({ id, name })
-    // Produce an immutable object instance
-    const immutableObjInstance = produce(objInstance, (draft) => {})
+//     const objInstance = new obj({ id, name })
+//     // Produce an immutable object instance
+//     const immutableObjInstance = produce(objInstance, (draft) => {})
 
-    // Store the immutable object instance in the map
-    this.immerState.idMap.set(id, immutableObjInstance)
+//     // Store the immutable object instance in the map
+//     this.immerState.idMap.set(id, immutableObjInstance)
 
-    return objInstance
-  }
+//     return objInstance
+//   }
 
-  produce(f: (draft: []) => void) {
-    const newImmerstate = produce(this.immerState, (draft: ImmerState) => f(draft.state))
-    this.immerState = newImmerstate
-  }
+//   produce(f: (draft: []) => void) {
+//     const newImmerstate = produce(this.immerState, (draft: ImmerState) => f(draft.state))
+//     this.immerState = newImmerstate
+//   }
 
-  getState() {
-    return this.immerState.state
-  }
-}
+//   getState() {
+//     return this.immerState.state
+//   }
+// }
