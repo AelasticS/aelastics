@@ -5,6 +5,7 @@
   "keywords": [],
   "main": "lib/index.js",
   "author": "Sinisa Neskovic",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": ""
@@ -28,7 +29,9 @@
     "aelastics-result": "workspace:*",
     "aelastics-types": "workspace:*",
     "generic-metamodel": "workspace:*",
-    "aelastics-store": "workspace:*",   
-     "aelastics-synthesis": "workspace:*"
+    "aelastics-store": "workspace:*",
+    "aelastics-synthesis": "workspace:*",
+    "uuid": "~9.0.1",
+    "@types/uuid": "~9.0.8"
   }
 }

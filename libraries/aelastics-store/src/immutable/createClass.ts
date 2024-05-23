@@ -9,10 +9,10 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import { Any, AnyObjectType, ArrayType, ObjectLiteral } from "aelastics-types";
+import { AnyObjectType } from "aelastics-types"
 
-import { immerable } from "immer";
-import { getUnderlyingType } from "../common/CommonConstants";
+import { immerable } from "immer"
+import { ImmerableObjectLiteral, capitalizeFirstLetter, getUnderlyingType, objectUUID } from "../common/CommonConstants"
 import {
   defineSimpleValue,
   defineComplexObjectProp,
@@ -21,59 +21,80 @@ import {
   defineManyToOne,
   defineOneToMany,
   defineOneToOne,
-} from "./propCreatorsWithUndo";
-import { OperationContext } from "./operation-context";
+} from "./propCreatorsWithUndo"
+import { OperationContext } from "./operation-context"
+import { uuidv4Generator } from "./repository"
 
-//
-export type Class<P> = { new (init: Partial<P>): P };
+export type Class<P extends ImmerableObjectLiteral> = { new (init: P): P }
 
 /**
  * Dynamically creates a class based on a given object type.
  * Initializes the class with properties and defines getter and setter methods for each property.
  * Handles the creation of inverse relationships between objects.
  *
- * @param type - The object type for which the class is being created.
+ * @param objectType - The object type for which the class is being created.
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ObjectLiteral>(
-  type: AnyObjectType,
+export function createClass<P extends ImmerableObjectLiteral>(
+  objectType: AnyObjectType,
   ctx: OperationContext
 ): Class<P> {
-  const props = type.allProperties;
-  const inverses = type.allInverse;
+  const props = objectType.allProperties
+  const inverses = objectType.allInverse
 
   class DynamicClass {
-    [key: string]: any;
-    constructor(init: Partial<P>) {
-      this.isDeleted = false;
+    [key: string]: any
+    [immerable] = true
+    constructor(init: P) {
+      this.isDeleted = false
+      this[objectUUID] = uuidv4Generator()
       // Initialize private properties
       props.forEach((type, propName) => {
-        const privatePropName = `_${propName}`;
-        if (init[propName]) this[privatePropName] = init[propName];
-        else if (type.typeCategory === "Array") {
-          this[privatePropName] = [];
-        } else this[privatePropName] = undefined;
-      });
+        // if init[propName] is an optional or link, we get the underlying type. here we need to figure out to be able to provide undefined if the value is not there
+
+        // if init[propName] is a simple value or an object, we assign the setter method for it
+        // if init[propName] is an array and holds either objects or simple values, then for each object in the array, we call the method declared in the prototype for it
+        // if init[propName] is an array and is empty, we assign an empty array to it only if the property is not optional
+        // if init[propName] is undefined, then we should store undefined only if the property is optional
+
+        const privatePropName = `_${propName}`
+
+        // in case we have optional type we get the underlying type
+        const underlyingType = getUnderlyingType(type)
+
+        if (underlyingType.typeCategory === "Array") {
+          this[privatePropName] = []
+          if (init[propName] && init[propName].length > 0) {
+            // for each element in the array of init[propName], we call the method this[`add${capitalizeFirstLetter(propName)}`](init[propName]) declared in the prototype for it
+            init[propName].forEach((element: any) => {
+              this[`add${capitalizeFirstLetter(propName)}`](element)
+            })
+          }
+        } else if (init[propName]) {
+          this[propName] = init[propName]
+        } else if (type.typeCategory === "Optional") {
+          this[privatePropName] = undefined
+        } else {
+          throw new Error(`Property "${propName}" is required!`)
+        }
+      })
     }
   }
   // Define properties
   props.forEach((propType, propName) => {
     if (inverses.has(propName)) {
       // get inverse info
-      const inverseDescriptor = inverses.get(propName)!;
+      const inverseDescriptor = inverses.get(propName)!
       // set local variables
-      const {
-        propName: inversePropName,
-        propType: inversePropType,
-        type: inverseObjectType,
-      } = inverseDescriptor;
-      const propObjectType = propType as AnyObjectType;
-      const isPropID = propObjectType.isEntity;
-      const isInversePropID = inverseObjectType.isEntity;
+      const propObjectType = objectType // COMMENT: This is the type of the object that the property belongs to
+      const realPropType = getUnderlyingType(propType) // COMMENT: In the case when the propType is a link, this will return the actual type of the link
+      const { propName: inversePropName, propType: inversePropType, type: inverseObjectType } = inverseDescriptor
+      const isPropID = propObjectType.isEntity
+      const isInversePropID = inverseObjectType.isEntity
 
       // Define the property using the appropriate function based on its type and inverse
-      if (propType.typeCategory === "Object" && inversePropType === "Object") {
+      if (realPropType.typeCategory === "Object" && inversePropType === "Object") {
         defineOneToOne(
           DynamicClass.prototype,
           propName,
@@ -83,25 +104,8 @@ export function createClass<P extends ObjectLiteral>(
           ctx,
           isPropID,
           isInversePropID
-        );
-      } else if (
-        propType.typeCategory === "Object" &&
-        inversePropType === "Array"
-      ) {
-        defineOneToMany(
-          DynamicClass.prototype,
-          propName,
-          inversePropName,
-          propObjectType,
-          inverseObjectType,
-          ctx,
-          isPropID,
-          isInversePropID
-        );
-      } else if (
-        propType.typeCategory === "Array" &&
-        inversePropType === "Object"
-      ) {
+        )
+      } else if (realPropType.typeCategory === "Object" && inversePropType === "Array") {
         defineManyToOne(
           DynamicClass.prototype,
           propName,
@@ -111,11 +115,19 @@ export function createClass<P extends ObjectLiteral>(
           ctx,
           isPropID,
           isInversePropID
-        );
-      } else if (
-        propType.typeCategory === "Array" &&
-        inversePropType === "Array"
-      ) {
+        )
+      } else if (realPropType.typeCategory === "Array" && inversePropType === "Object") {
+        defineOneToMany(
+          DynamicClass.prototype,
+          propName,
+          inversePropName,
+          propObjectType,
+          inverseObjectType,
+          ctx,
+          isPropID,
+          isInversePropID
+        )
+      } else if (realPropType.typeCategory === "Array" && inversePropType === "Array") {
         defineManyToMany(
           DynamicClass.prototype,
           propName,
@@ -125,52 +137,51 @@ export function createClass<P extends ObjectLiteral>(
           ctx,
           isPropID,
           isInversePropID
-        );
+        )
       }
     } else {
       // Define the property without an inverse
-      const realPropType = getUnderlyingType(propType);
+      const realPropType = getUnderlyingType(propType)
       if (realPropType.isSimple()) {
-        defineSimpleValue(DynamicClass.prototype, propName, realPropType, ctx);
+        defineSimpleValue(DynamicClass.prototype, propName, realPropType, ctx)
       } else if (realPropType.typeCategory === "Object") {
-        const invType = realPropType as AnyObjectType;
+        const invType = realPropType as AnyObjectType
 
-        defineComplexObjectProp(
-          DynamicClass.prototype,
-          propName,
-          invType.isEntity,
-          ctx,
-          invType
-        );
+        defineComplexObjectProp(DynamicClass.prototype, propName, invType.isEntity, ctx, invType)
       } else if (realPropType.typeCategory === "Array") {
-        const invType = realPropType as AnyObjectType;
-        defineComplexArrayProp(
-          DynamicClass.prototype,
-          propName,
-          invType.isEntity,
-          ctx,
-          invType
-        );
+        const invType = realPropType as AnyObjectType
+        defineComplexArrayProp(DynamicClass.prototype, propName, invType.isEntity, ctx, invType)
       }
     }
-  });
+  })
 
   // define id property if it is an entity
-  if (type.isEntity) {
-    if (type.identifier.length > 1) {
-      throw new Error(
-        `Entity type "${type.name}" error - No composite identifier allowed!`
-      );
-    }
-    const idPropName = type.identifier[0]; //
-    const privatePropName = `_${idPropName}`;
-    Object.defineProperty(DynamicClass.prototype, "id", {
-      get() {
-        return this[privatePropName];
-      },
-    });
-  }
+  // if (type.isEntity) {
+  //   if (type.identifier.length > 1) {
+  //     throw new Error(`Entity type "${type.name}" error - No composite identifier allowed!`)
+  //   }
+  //   const idPropName = type.identifier[0]
+  //   const privatePropName = `_${idPropName}`
+
+  //   Object.defineProperty(DynamicClass.prototype, objectUUID, {
+  //     get() {
+  //       return this[privatePropName]
+  //     },
+  //     configurable: true,
+  //   })
+  // }
+
+  // Object.defineProperty(DynamicClass.prototype, "isDeleted", {
+  //   get() {
+  //     return this["_isDeleted"]
+  //   },
+  //   set(value: boolean) {
+  //     this["_isDeleted"] = value
+  //   },
+  //   configurable: true,
+  // })
+
   // Return the dynamically created class with its own name
-  Object.defineProperty(DynamicClass, "name", { value: type.name });
-  return DynamicClass as Class<P>;
+  Object.defineProperty(DynamicClass, "name", { value: objectType.name })
+  return DynamicClass as Class<P>
 }

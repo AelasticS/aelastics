@@ -44,7 +44,7 @@
     },
     {
       "name": "@types/uuid",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "aelastics-result",
@@ -116,7 +116,7 @@
     },
     {
       "name": "uuid",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "whatwg-fetch",

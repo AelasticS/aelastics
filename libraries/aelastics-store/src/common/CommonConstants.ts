@@ -9,33 +9,42 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import * as t from "aelastics-types";
+import * as t from "aelastics-types"
+import { immerable } from "immer"
 
-export const prefixValue = "@@_";
-export const objectStatus = "@@aelastics/status";
-export const objectSync = "@@aelastics/sync";
-export const objectUUID = "@@aelastics/ID";
-export const objectType = "@@aelastics/type";
+export const prefixValue = "@@_"
+export const objectStatus = "@@aelastics/status"
+export const objectSync = "@@aelastics/sync"
+export const objectUUID = "@@aelastics/ID"
+export const objectType = "@@aelastics/type"
 
 export type IStoreObject<P extends t.ObjectLiteral> = P & {
-  readonly [objectType]: string;
-  readonly [objectUUID]: string;
-};
+  readonly [objectType]: string
+  readonly [objectUUID]: string
+}
 
 export function getUnderlyingType(type: t.Any | undefined): t.Any {
   if (type === undefined) {
-    return undefined as any;
+    return undefined as any
   }
-  if (type.typeCategory === 'Link') {
-    return getUnderlyingType((type as t.LinkType).resolveType()!);
+  if (type.typeCategory === "Link") {
+    return getUnderlyingType((type as t.LinkType).resolveType()!)
   }
   // handle optional types
-  if (type.typeCategory === 'Optional') {
-    return getUnderlyingType((type as t.OptionalType<any>).base);
+  if (type.typeCategory === "Optional") {
+    return getUnderlyingType((type as t.OptionalType<any>).base)
   }
-  return type;
+  return type
 }
 
 export function capitalizeFirstLetter(string: string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+// Extend ObjectLiteral to include the [immerable] symbol
+export interface ImmerableObjectLiteral extends t.ObjectLiteral {
+  [immerable]?: true
+}
+export type IImmutableStoreObject<P extends ImmerableObjectLiteral> = P & {
+  readonly [objectUUID]: string
 }
