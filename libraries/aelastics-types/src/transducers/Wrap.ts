@@ -2,12 +2,12 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { ITransformer, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Processor'
 import { Node } from '../common/Node'
 
-export class Wrap implements ITransformer {
+export class Wrap implements IProcessor {
   private readonly initValue: any
-  private readonly stepFn: ITransformer["step"]
+  private readonly stepFn: IProcessor["step"]
 
   constructor(stepFn: (result: any, currNode: Node, item: any) => any, initValue?: any) {
     this.initValue = initValue

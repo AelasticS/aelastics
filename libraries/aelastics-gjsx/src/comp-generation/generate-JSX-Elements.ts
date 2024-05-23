@@ -22,7 +22,7 @@ function calculate(
   return [tagName, refType, refValue];
 }
 
-const toJSX_Element = new tr.TransformerBuilder()
+const toJSX_Element = new tr.ProcessorBuilder()
   .onInit(
     new tr.InitBuilder()
       .onTypeCategory("Object", (result, currNode, annot) => {

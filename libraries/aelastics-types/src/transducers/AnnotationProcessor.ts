@@ -3,28 +3,28 @@
   
  */
 
-// TODO: make AnnotationTransformer as usual Transfomer, other can acces annotations via Node
-// Map<AnnotationName, AnnotationTransformer> getCurrentAnnotation, 
+// TODO: make AnnotationProcessor as usual Processor, other can acces annotations via Node
+// Map<AnnotationName, AnnotationProcessor> getCurrentAnnotation, 
 import { Node } from '../common/Node'
 import { ServiceError } from 'aelastics-result'
-import { ITransformer, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Processor'
 import { AnyAnnotation, TypedAnnotation } from '../annotations/Annotation'
 
 // export interface IAnnotationProcessor {
-//   init: (value: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
-//   result: (result: any, currNode: Node, p: AnnotationTransformer) => [any, WhatToDo]
-//   step: (result: any, currNode: Node, item: any, p: AnnotationTransformer) => [any, WhatToDo]
+//   init: (value: any, currNode: Node, p: AnnotationProcessor) => [any, WhatToDo]
+//   result: (result: any, currNode: Node, p: AnnotationProcessor) => [any, WhatToDo]
+//   step: (result: any, currNode: Node, item: any, p: AnnotationProcessor) => [any, WhatToDo]
 // }
 
-export class AnnotationTransformer implements ITransformer {
+export class AnnotationProcessor implements IProcessor {
   private readonly typedAnnotation:  TypedAnnotation
-  private readonly xf: ITransformer
+  private readonly xf: IProcessor
   private _annotationStack: any[] = []
 
 
   get annotation() { return this.typedAnnotation.value }
 
-  constructor(xf: ITransformer, na: TypedAnnotation, ) {
+  constructor(xf: IProcessor, na: TypedAnnotation, ) {
     // ToDo: extend to support an array (a map) of annotations
     this.typedAnnotation = na
     this.xf = xf
@@ -39,9 +39,9 @@ export class AnnotationTransformer implements ITransformer {
 
   init(value: any, currNode: Node): [any, WhatToDo] {
     // set current node to point to this instance
-    // if(!currNode.annotationTransformers?.get(this.namedAnnotation.annotation))
+    // if(!currNode.annotationProcessors?.get(this.namedAnnotation.annotation))
     //   new Error(`No annotation - node type: ${currNode.type.name}, value:${currNode.instance}`)
-    currNode.annotationTransformers.set(this.typedAnnotation, this)
+    currNode.annotationProcessor.set(this.typedAnnotation, this)
 
     switch (currNode.extra.role) {
       case 'asRoot':

@@ -3,15 +3,15 @@
  */
 
 /**
- *  IdentityReducer do nothing, just return wht it receive
+ *  IdentityReducer do nothing, just return what it receives
  *   init - return the received value without modifications
  *   step - return the received value without modifications
  *   result - return the received value without modifications
  */
-import { ITransformer, WhatToDo } from "./Transformer";
+import { IProcessor, WhatToDo } from "./Processor";
 import { Node } from "../common/Node";
 
-export class IdentityReducer implements ITransformer {
+export class IdentityReducer implements IProcessor {
   init(value: any, currNode: Node): [any, WhatToDo] {
     return [value, "continue"];
   }
