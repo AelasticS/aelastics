@@ -3,19 +3,10 @@ enablePatches()
 enableMapSet()
 setAutoFreeze(false) // setting auto freeze to false to avoid the error "Cannot assign to read only property 'parent' of object"
 
-// The createClass function creates a class with a parent and child relation
-
-// The interface for the Foo class
-export interface iFoo {
-  id: string
-  name: string
-  parent?: iFoo | undefined
-  child?: iFoo | undefined
-}
-
-// The TestStore class where only the state and/or the idMap is mutable
 /**
- *
+ * This approach will try to centralise the way we instantiate objects
+ * and guarantee that get methods inside the entity properties always
+ * point to an updated idMap.
  */
 export class TestStore {
   private _state: iFoo[]
@@ -132,4 +123,12 @@ export class TestStore {
   getState() {
     return this._state
   }
+}
+
+// The interface for the Foo class
+export interface iFoo {
+  id: string
+  name: string
+  parent?: iFoo | undefined
+  child?: iFoo | undefined
 }
