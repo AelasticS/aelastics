@@ -11,7 +11,9 @@
 
 import { Any, AnyObjectType } from "aelastics-types"
 import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context"
-import { capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
+import { ImmerableObjectLiteral, capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
+import { immerable, produce } from "immer"
+import { ObjectLiteral } from "aelastics-types"
 
 export function getIDPropName(type: AnyObjectType) {
   return objectUUID
@@ -220,7 +222,6 @@ export function defineOneToOne(
       if (this.isDeleted || (value && value.isDeleted)) {
         throw new Error("Cannot modify properties on a deleted object.")
       }
-
       const thisPropIDName = getIDPropName(targetType)
       const inversePropIDName = getIDPropName(inverseType)
 
@@ -232,13 +233,14 @@ export function defineOneToOne(
         oldValue[`_${inversePropName}`] = undefined
       }
 
-      // Connect the new inverse target
       if (value) {
+        // Connect the new inverse target
         value[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
+        // Update the property
+        this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
+      } else {
+        this[privatePropName] = undefined
       }
-
-      // Update the property
-      this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
 
       // Push the operation to the stack
       context.pushOperation({
@@ -380,15 +382,11 @@ export function defineManyToOne(
       if (this.isDeleted) {
         throw new Error("Cannot modify properties on a deleted object.")
       }
-      //TODO! check that this is correct!
-
-      // Find the value to set based on isPropViaID
-      let valueToSet = isPropViaID ? value[inversePropIDName] : value
 
       // Find the old value
-      const oldValue = isPropViaID ? context.idMap.get(this[privatePropName]) : this[privatePropName]
+      const oldValue = this[propName]
 
-      if (oldValue === valueToSet) return
+      if (oldValue === value) return
 
       // Disconnect the old parent
       if (oldValue) {
@@ -398,16 +396,18 @@ export function defineManyToOne(
         }
       }
 
-      // Update the property
-      this[privatePropName] = valueToSet
-
-      // Connect the new parent
       if (value) {
+        // Update the property
+        this[privatePropName] = isPropViaID ? value[inversePropIDName] : value
+
+        // Connect the new parent
         if (isInversePropViaID && !value[`_${inversePropName}`].includes(this[thisPropIDName])) {
           value[`_${inversePropName}`].push(this[thisPropIDName])
         } else if (!isInversePropViaID && !value[`_${inversePropName}`].includes(this)) {
           value[`_${inversePropName}`].push(this)
         }
+      } else {
+        this[privatePropName] = undefined
       }
 
       // Push the operation to the stack
@@ -418,7 +418,7 @@ export function defineManyToOne(
         inversePropName,
         propName,
         oldValue,
-        newValue: valueToSet,
+        newValue: value,
       })
     },
   })

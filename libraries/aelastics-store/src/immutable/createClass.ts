@@ -9,10 +9,10 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import { AnyObjectType, ObjectLiteral } from "aelastics-types"
+import { AnyObjectType } from "aelastics-types"
 
 import { immerable } from "immer"
-import { getUnderlyingType, objectUUID } from "../common/CommonConstants"
+import { ImmerableObjectLiteral, capitalizeFirstLetter, getUnderlyingType, objectUUID } from "../common/CommonConstants"
 import {
   defineSimpleValue,
   defineComplexObjectProp,
@@ -25,8 +25,7 @@ import {
 import { OperationContext } from "./operation-context"
 import { uuidv4Generator } from "./repository"
 
-//
-export type Class<P> = { new (init: Partial<P>): P }
+export type Class<P extends ImmerableObjectLiteral> = { new (init: P): P }
 
 /**
  * Dynamically creates a class based on a given object type.
@@ -37,34 +36,49 @@ export type Class<P> = { new (init: Partial<P>): P }
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, ctx: OperationContext): Class<P> {
+export function createClass<P extends ImmerableObjectLiteral>(
+  objectType: AnyObjectType,
+  ctx: OperationContext
+): Class<P> {
   const props = objectType.allProperties
   const inverses = objectType.allInverse
 
   class DynamicClass {
     [key: string]: any
-    constructor(init: Partial<P>) {
+    [immerable] = true
+    constructor(init: P) {
       this.isDeleted = false
+      this[objectUUID] = uuidv4Generator()
       // Initialize private properties
       props.forEach((type, propName) => {
+        // if init[propName] is an optional or link, we get the underlying type. here we need to figure out to be able to provide undefined if the value is not there
+
+        // if init[propName] is a simple value or an object, we assign the setter method for it
+        // if init[propName] is an array and holds either objects or simple values, then for each object in the array, we call the method declared in the prototype for it
+        // if init[propName] is an array and is empty, we assign an empty array to it only if the property is not optional
+        // if init[propName] is undefined, then we should store undefined only if the property is optional
+
         const privatePropName = `_${propName}`
-        //TODO: Currently the initialization is wrong. In the case where we pass actual references to the objest, they must be stored accordinglt, based on the uuid or object, depending on the type of the property
 
-        // if init[propName] and the type is an entity, then we should store the uuid of the object
-        // if init[propName] and the type is not an entity, then we should store the object itself
-        // if init[propName] is an array, then we should check if the type of the objects inside the array is an entity and store the uuids of the objects, or store the objects themselves, otherwise store an empty array
-        // if init[propName] is undefined, then we should store undefined
+        // in case we have optional type we get the underlying type
+        const underlyingType = getUnderlyingType(type)
 
-        // if (init[propName] && type.isEntity) {
-        //   this[privatePropName] = init[propName][objectUUID]
-        // }
-
-        if (init[propName]) this[privatePropName] = init[propName]
-        else if (type.typeCategory === "Array") {
+        if (underlyingType.typeCategory === "Array") {
           this[privatePropName] = []
-        } else this[privatePropName] = undefined
+          if (init[propName] && init[propName].length > 0) {
+            // for each element in the array of init[propName], we call the method this[`add${capitalizeFirstLetter(propName)}`](init[propName]) declared in the prototype for it
+            init[propName].forEach((element: any) => {
+              this[`add${capitalizeFirstLetter(propName)}`](element)
+            })
+          }
+        } else if (init[propName]) {
+          this[propName] = init[propName]
+        } else if (type.typeCategory === "Optional") {
+          this[privatePropName] = undefined
+        } else {
+          throw new Error(`Property "${propName}" is required!`)
+        }
       })
-      this[objectUUID] = uuidv4Generator()
     }
   }
   // Define properties
@@ -156,6 +170,17 @@ export function createClass<P extends ObjectLiteral>(objectType: AnyObjectType, 
   //     configurable: true,
   //   })
   // }
+
+  // Object.defineProperty(DynamicClass.prototype, "isDeleted", {
+  //   get() {
+  //     return this["_isDeleted"]
+  //   },
+  //   set(value: boolean) {
+  //     this["_isDeleted"] = value
+  //   },
+  //   configurable: true,
+  // })
+
   // Return the dynamically created class with its own name
   Object.defineProperty(DynamicClass, "name", { value: objectType.name })
   return DynamicClass as Class<P>

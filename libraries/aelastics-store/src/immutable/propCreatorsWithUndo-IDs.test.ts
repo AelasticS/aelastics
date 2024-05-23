@@ -71,8 +71,6 @@ describe("One-to-One Relationship with ID", () => {
     expect(person2.car).toBe(car2)
     expect(car2.owner).toBe(person2)
 
-    console.log(person1.car, " - ", car1)
-
     // Change relationships
     person1.car = car2
     car1.owner = person2

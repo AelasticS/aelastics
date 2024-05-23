@@ -1,52 +1,49 @@
 import { ImmutableStore } from "aelastics-store"
-import {
-  AddressType,
-  AssignmentType,
-  BookType,
-  CourseType,
-  ProgramType,
-  StudentType,
-  SubmissionType,
-  UniversitySchema,
-} from "./university.model.type"
+import { AddressType, AssignmentType, BookType, CourseType, ProgramType, StudentType } from "./university.model.type"
 import { v4 as uuidv4 } from "uuid"
 
 export const uuidv4Generator = () => {
   return uuidv4()
 }
 
-// describe("create new object in immutable store", () => {
-//   const immutableStore = new ImmutableStore()
-//   const softwareDesign = immutableStore.newObject(Program, {
-//     id: uuidv4Generator(),
-//     name: "Software Design",
-//     courses: [],
-//     enrolledStudents: [],
-//   })
+describe("create new object in immutable store", () => {
+  const immutableStore = new ImmutableStore({})
+  const softwareDesign = immutableStore.newObject(ProgramType, {
+    id: uuidv4Generator(),
+    name: "Software Design",
+    courses: [],
+    enrolledStudents: [],
+  })
 
-//   const pcpp = immutableStore.newObject(Course, {
-//     id: uuidv4Generator(),
-//     name: "PCPP",
-//     program: softwareDesign,
-//     students: [],
-//     assignments: [],
-//   })
+  const pcpp = immutableStore.newObject(CourseType, {
+    id: uuidv4Generator(),
+    name: "PCPP",
+    program: softwareDesign,
+    students: [],
+    assignments: [],
+  })
 
-//   const pcppAssignment = immutableStore.newObject(Assignment, {
-//     id: uuidv4Generator(),
-//     name: "PCPP Assignment",
-//     description: "PCPP assignment description",
-//     course: pcpp,
-//   })
-// })
+  const pcppAssignment = immutableStore.newObject(AssignmentType, {
+    id: uuidv4Generator(),
+    name: "PCPP Assignment",
+    description: "PCPP assignment description",
+    course: pcpp,
+  })
+})
 
 describe("One-to-One Relationship with ID", () => {
-  const immutableStore = new ImmutableStore()
+  const immutableStore = new ImmutableStore({})
 
+  const program1 = immutableStore.newObject(ProgramType, {
+    id: "p1",
+    name: "Program 1",
+    courses: [],
+    students: [],
+  })
   const course1 = immutableStore.newObject(CourseType, {
     id: "c1",
     name: "Course 1",
-    program: undefined,
+    program: program1,
     students: [],
     assignments: [],
     book: undefined,
@@ -55,20 +52,12 @@ describe("One-to-One Relationship with ID", () => {
   const course2 = immutableStore.newObject(CourseType, {
     id: "c2",
     name: "Course 2",
-    program: undefined,
+    program: program1,
     students: [],
     assignments: [],
     book: undefined,
   })
 
-  const Program1 = immutableStore.newObject(ProgramType, {
-    id: "p1",
-    name: "Program 1",
-    courses: [],
-    students: [],
-  })
-
-  // create new book:
   const book1 = immutableStore.newObject(BookType, {
     id: "b1",
     bookName: "Book 1",
@@ -87,7 +76,7 @@ describe("One-to-One Relationship with ID", () => {
     id: "s1",
     name: "Student 1",
     email: "student1@example.com",
-    program: undefined,
+    program: program1,
     courses: [],
     address: undefined,
     books: [],
@@ -98,7 +87,7 @@ describe("One-to-One Relationship with ID", () => {
     id: "s1",
     name: "Student 1",
     email: "student1@example.com",
-    program: Program1,
+    program: program1,
     courses: [course1],
     address: undefined,
     books: [book1],
@@ -114,11 +103,12 @@ describe("One-to-One Relationship with ID", () => {
 
     expect(course2.book).toBe(book2)
     expect(book2.course).toBe(course2)
+    expect(true).toBeTruthy
   })
 })
 
 describe("One-to-Many Relationship with ID", () => {
-  const immutableStore = new ImmutableStore()
+  const immutableStore = new ImmutableStore({})
 
   const program1 = immutableStore.newObject(ProgramType, {
     id: "p1",
@@ -158,11 +148,13 @@ describe("One-to-Many Relationship with ID", () => {
 
     program1.removeCourses(course1)
     expect(course1.program).toBe(undefined)
+
+    expect(true).toBeTruthy
   })
 })
 
 describe("Many-to-Many Relationship with ID", () => {
-  const immutableStore = new ImmutableStore()
+  const immutableStore = new ImmutableStore({})
 
   const student1 = immutableStore.newObject(StudentType, {
     id: "s1",
@@ -206,11 +198,12 @@ describe("Many-to-Many Relationship with ID", () => {
     expect(student1.courses[0]).toBe(course2)
     const test = course1.students
     expect(course1.students).toStrictEqual([])
+    expect(true).toBeTruthy
   })
 })
 
 describe("defineComplexObjectProp", () => {
-  const immutableStore = new ImmutableStore()
+  const immutableStore = new ImmutableStore({})
 
   const student1 = immutableStore.newObject(StudentType, {
     id: "s1",
@@ -237,7 +230,7 @@ describe("defineComplexObjectProp", () => {
 })
 
 describe("defineComplexArrayProp", () => {
-  const immutableStore = new ImmutableStore()
+  const immutableStore = new ImmutableStore({})
 
   const student1 = immutableStore.newObject(StudentType, {
     id: "s1",
@@ -272,5 +265,6 @@ describe("defineComplexArrayProp", () => {
 
     student1.removeBooks(book1)
     expect(student1.books[0]).toBe(book2)
+    expect(true).toBeTruthy
   })
 })
