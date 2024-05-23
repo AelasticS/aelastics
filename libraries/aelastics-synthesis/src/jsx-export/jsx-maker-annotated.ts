@@ -5,7 +5,7 @@ import { AnnotationTypes as a } from "aelastics-types";
 import { IPropertyJSXAnnotType, IObjectJSXAnnotType, ISimpleJSXAnnotType, Typed_JSX_Annotation } from "./jsx-annotation";
 
 
-const builder = new tr.TransformerBuilder();
+const builder = new tr.ProcessorBuilder();
 
 type calcType = [tagName: string, reftType: "refByName" | "refByID", refValue: string]
 

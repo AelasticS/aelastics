@@ -2,7 +2,7 @@
  * Copyright (c) AelasticS 2020.
  */
 
-import { ITransformer, WhatToDo } from './Transformer'
+import { IProcessor, WhatToDo } from './Processor'
 import { Node } from '../common/Node'
 import { Transducer } from './Transducer'
 
@@ -12,12 +12,12 @@ import { Transducer } from './Transducer'
  *   step - forward step
  *   result - forward step
  */
-export class ShallowCopier implements ITransformer {
+export class ShallowCopier implements IProcessor {
   transducer: Transducer
-  xf: ITransformer
+  xf: IProcessor
   resetAcc: boolean
 
-  constructor(xf: ITransformer, t: Transducer, resetAcc: boolean) {
+  constructor(xf: IProcessor, t: Transducer, resetAcc: boolean) {
     this.transducer = t
     this.xf = xf
     this.resetAcc = resetAcc

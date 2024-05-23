@@ -4,7 +4,7 @@
 
 import * as t from '../common/DefinitionAPI'
 import { DefaultSchema } from '../type/TypeSchema'
-import { compose } from '../transducers/Transformer'
+import { compose } from '../transducers/Processor'
 
 let OptionalNumber = t.optional(t.number)
 let LinkToPerson = t.link(DefaultSchema, "Person")

@@ -21,6 +21,6 @@
     "target": "es2017",
     "lib": ["es2017"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/transducers/AnnotationProcessor.ts"],
   "exclude": ["node_modules", "lib"]
 }

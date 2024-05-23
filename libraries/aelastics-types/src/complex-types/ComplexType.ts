@@ -1,6 +1,6 @@
 import { Type } from '../type/Type'
 import { Node } from '../common/Node'
-import { ITransformer, WhatToDo } from '../transducers/Transformer'
+import { IProcessor, WhatToDo } from '../transducers/Processor'
 
 export abstract class ComplexType<V, G, T> extends Type<V, G, T> {
   isSimple(): boolean {
@@ -8,7 +8,7 @@ export abstract class ComplexType<V, G, T> extends Type<V, G, T> {
   }
 
   doTransformation<A>(
-    t: ITransformer,
+    t: IProcessor,
     input: V | Node,
     initObj?: A,
     resetAcc: boolean = false,
