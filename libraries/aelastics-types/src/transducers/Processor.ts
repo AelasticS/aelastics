@@ -43,6 +43,11 @@ export interface IProcessor {
   step(result: any, currNode: Node, item: any, ...args: any[]): [any, WhatToDo];
 }
 
+
+export type IProcessorInit = IProcessor["init"]
+export type IProcessorStep = IProcessor["step"]
+export type IProcessorResult = IProcessor["result"]
+
 /**
  * Represents a constructor type for creating processors.
  */
