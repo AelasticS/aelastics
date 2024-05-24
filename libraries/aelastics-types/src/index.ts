@@ -13,6 +13,7 @@ export * from './common/Node'
 
 export * from './type/TypeDefinisions'
 export { IProcessor as ITransformer, WhatToDo } from './transducers/Processor'
+export {ProcessorBuilder} from './transducers/ProcessorBuilder'
 export { IMapFun, identityReducer, naturalReducer , stepperReducer, transducer} from './transducers/Transducer'
 export { Node } from './common/Node'
 export { Type } from './type/Type'
