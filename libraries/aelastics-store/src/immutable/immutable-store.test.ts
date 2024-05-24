@@ -70,12 +70,30 @@ const TutorType = t.entity(
 t.inverseProps(StudentType, "tutor", TutorType, "tutee")
 
 // Define the interface types for the university domain
-type IStudentType = t.TypeOf<typeof StudentType> & ImmutableObject
-type ITutorType = t.TypeOf<typeof TutorType> & ImmutableObject
+type IStudentType = t.TypeOf<typeof StudentType> // & ImmutableObject
+type ITutorType = t.TypeOf<typeof TutorType> // & ImmutableObject
 
 // ----------------------------------------------
 
 describe("ImmutableStore", () => {
+  test("state consisting of objects only", ()=>{
+    let initStudent:IStudentType = {
+      id:"1",
+      name:"student1",
+      tutor:undefined
+    }
+
+    let immutableStore = new ImmutableStore<IStudentType>(StudentType)
+    immutableStore.createRoot(initStudent)
+    let oldState = immutableStore.getState
+    immutableStore.produce((draft)=> {
+      let tt = immutableStore.newObject(TutorType, {id:"2", name:"tutor1"})
+      draft.tutor = tt
+
+    })
+    expect(oldState).toBe(immutableStore.getState)
+
+  })
   test("Updating object should maintain immutability", () => {
     expect(true).toBeTruthy()
     // let immutableStore = new ImmutableStore<(IProgramType | ICourseType)[]>([])

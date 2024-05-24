@@ -28,7 +28,7 @@ export class ImmutableStore<S> {
 
 
   private _classMap = new Map<t.AnyObjectType, Class<any>>()
-  private _state: S
+  private _state: S = null as S
   ctx = new OperationContext()
   private _toDeleteIDs: string[] = []
 
@@ -47,8 +47,11 @@ export class ImmutableStore<S> {
    * Creates an instance of ImmutableStore.
    * @param {S} initialState - The initial state of the store.
    */
-  constructor(initialState: S, readonly type:t.AnyObjectType) {
-    this._state = initialState
+  constructor(readonly rootType:t.AnyObjectType) {
+  }
+
+  createRoot(initialState: S, ) {
+    this._state = this.newObject(this.rootType, initialState as t.ObjectLiteral) as S
   }
 
   /**
@@ -133,7 +136,7 @@ private makeNewStateVersion() {
       .recurse("makeItem")
       .do(newStateProcessor, "arg")
     .doFinally(t.identityReducer());
-    let r = this.type.transduce(tr, this.getState);
+    let r = this.rootType.transduce(tr, this.getState);
 }
   // produce(f: (draft: Draft<S>) => void) {
   //   const [result, patches, inversePatches] = produceWithPatches(this._state, (draft) => {
