@@ -44,6 +44,8 @@ export function capitalizeFirstLetter(string: string) {
 export interface ImmutableObject extends t.ObjectLiteral {
   readonly [objectUUID]: string
   [objectStatus]: string
+  get isDeleted():boolean
+  get isUpdated():boolean
 }
 
 

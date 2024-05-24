@@ -9,9 +9,16 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import { AnyObjectType, boolean } from "aelastics-types"
+import { AnyObjectType, ObjectType, boolean } from "aelastics-types"
 
-import { ImmutableObject, capitalizeFirstLetter, getUnderlyingType, objectStatus, objectUUID } from "../common/CommonConstants"
+import {
+  ImmutableObject,
+  capitalizeFirstLetter,
+  getUnderlyingType,
+  objectStatus,
+  objectUUID,
+  objectType as OT,
+} from "../common/CommonConstants"
 import {
   defineSimpleValue,
   defineComplexObjectProp,
@@ -37,23 +44,24 @@ export type Class<P extends ImmutableObject> = { new (init: P): P }
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ImmutableObject>(
-  objectType: AnyObjectType,
-  ctx: OperationContext
-): Class<P> {
+export function createClass<P extends ImmutableObject>(objectType: AnyObjectType, ctx: OperationContext): Class<P> {
   const props = objectType.allProperties
   const inverses = objectType.allInverse
 
   class DynamicClass {
     [key: string]: any
 
-    public get isDeleted():boolean {
+    public get isDeleted(): boolean {
       return this[objectStatus] === StatusValue.Deleted
     }
-    
-    constructor(init: P) {
-  
-      this[objectUUID] = uuidv4Generator()
+
+    public get isUpdated(): boolean {
+      return this[objectStatus] === StatusValue.Updated
+    }
+
+    constructor(init: P, ID = uuidv4Generator()) {
+      this[OT] = objectType
+      this[objectUUID] = ID
       this[objectStatus] = StatusValue.Created
       // Initialize private properties
       props.forEach((type, propName) => {
@@ -70,7 +78,7 @@ export function createClass<P extends ImmutableObject>(
         const underlyingType = getUnderlyingType(type)
 
         if (underlyingType.typeCategory === "Array") {
-          this[privatePropName] = []
+          this[privatePropName] = createArray()
           if (init[propName] && init[propName].length > 0) {
             // for each element in the array of init[propName], we call the method this[`add${capitalizeFirstLetter(propName)}`](init[propName]) declared in the prototype for it
             init[propName].forEach((element: any) => {
@@ -192,3 +200,9 @@ export function createClass<P extends ImmutableObject>(
   Object.defineProperty(DynamicClass, "name", { value: objectType.name })
   return DynamicClass as unknown as Class<P>
 }
+
+//TODO: create an observarable array
+function createArray(): any {
+  return []
+}
+

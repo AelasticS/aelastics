@@ -3,6 +3,7 @@ import { Class, createClass } from "./createClass"
 import { OperationContext } from "./operation-context"
 // import { immerable, produce, enableMapSet, Immer, Draft, produceWithPatches } from "immer"
 import {ImmutableObject } from "../common/CommonConstants"
+import { IProcessorInit, IProcessorResult, IProcessorStep } from "aelastics-types/lib/transducers"
 // enableMapSet()
 /*
  * Project: aelastics-store
@@ -46,7 +47,7 @@ export class ImmutableStore<S> {
    * Creates an instance of ImmutableStore.
    * @param {S} initialState - The initial state of the store.
    */
-  constructor(initialState: S) {
+  constructor(initialState: S, readonly type:t.AnyObjectType) {
     this._state = initialState
   }
 
@@ -80,10 +81,32 @@ export class ImmutableStore<S> {
 
 
 private makeNewStateVersion() {
-  let oi = new t.ProcessorBuilder()
+
+  interface IResult {object:any, makeCopy:boolean}
+  const shouldMakeCopy = (obj:ImmutableObject):boolean => {
+    return obj.isUpdated
+  }
+
+  const fInit:IProcessorInit = (value:ImmutableObject,currNode) => {
+    let res:IResult = {object:currNode.instance, makeCopy:false}
+    if(shouldMakeCopy(value))
+      res.makeCopy=true
+    return [value, "continue"];
+  }
+
+  const fStep:IProcessorStep = (value:IResult,currNode, item) => {
+      return [value, "continue"];
+  }
+
+  const fResult:IProcessorResult = (result:IResult,currNode) => {
+    return [result, "continue"];
+  }
+
+
+  let newStateProcessor = new t.ProcessorBuilder()
       .onInit(
         new t.InitBuilder()
-          // .onTypeCategory("Object", (fInit))
+          .onTypeCategory("Object", (fInit))
           // .onTypeCategory("Array", fInit)
           // .onTypeCategory("Simple", fInit)
           // .onPredicate((value, currNode) => value === "Number", (v, c) => [v, "continue"])
@@ -91,7 +114,7 @@ private makeNewStateVersion() {
       )
       .onStep(
         new t.StepBuilder()
-          // .onTypeCategory("Object", fStep)
+          .onTypeCategory("Object", fStep)
           // .onTypeCategory("Array", fStep)
           // .onTypeCategory("Number", fStep)
           // .onTypeCategory("Simple", fStep)
@@ -99,7 +122,7 @@ private makeNewStateVersion() {
       )
       .onResult(
         new t.ResultBuilder()
-          // .onTypeCategory("Object", fResult)
+          .onTypeCategory("Object", fResult)
           // .onTypeCategory("Array", fResult)
           // .onTypeCategory("Number", fResult)
           // .onTypeCategory("Simple", fResult)
@@ -108,9 +131,9 @@ private makeNewStateVersion() {
       .build();
     let tr = t.transducer()
       .recurse("makeItem")
-      .do(oi, "arg")
-    //  .doFinally(naturalReducer());
-    //let r = Person.transduce(tr, Tom);
+      .do(newStateProcessor, "arg")
+    .doFinally(t.identityReducer());
+    let r = this.type.transduce(tr, this.getState);
 }
   // produce(f: (draft: Draft<S>) => void) {
   //   const [result, patches, inversePatches] = produceWithPatches(this._state, (draft) => {
