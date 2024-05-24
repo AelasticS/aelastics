@@ -1,9 +1,8 @@
-import { AnyObjectType, ObjectLiteral } from "aelastics-types"
+import * as t from "aelastics-types"
 import { Class, createClass } from "./createClass"
 import { OperationContext } from "./operation-context"
 // import { immerable, produce, enableMapSet, Immer, Draft, produceWithPatches } from "immer"
-import { IImmutableStoreObject, ImmerableObjectLiteral } from "../common/CommonConstants"
-
+import {ImmutableObject } from "../common/CommonConstants"
 // enableMapSet()
 /*
  * Project: aelastics-store
@@ -13,26 +12,35 @@ import { IImmutableStoreObject, ImmerableObjectLiteral } from "../common/CommonC
  * Last Modified: Saturday, 16th September 2023
  * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
  * -----
- * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
+ * Last Modified: Friday, 24th May 2024
+ * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
+ * -----
+ * Copyright (c) 2024 Aelastics (https://github.com/AelasticS)
  */
-
-/**
- * Represents the state of the store that can be modified immutably.
- */
-class ImmerState<S> {
- // [immerable] = true
-  constructor(readonly state: S, readonly idMap: Map<string, any>) {}
-}
 
 /**
  * Implements an immutable state management store using Immer library to handle state updates immutably.
  * The store supports objects that are identifiable by unique IDs ("@@aelastics/ID").
  */
 export class ImmutableStore<S> {
-  private _classMap = new Map<AnyObjectType, Class<any>>()
+
+
+
+  private _classMap = new Map<t.AnyObjectType, Class<any>>()
   private _state: S
   ctx = new OperationContext()
   private _toDeleteIDs: string[] = []
+
+  getState() {
+    return this._state
+  }
+  
+  getIdMap() {
+    return this.ctx.idMap
+  }
+  getIdMapWithDeleted() {
+    return this.ctx.deletedMap
+  }
 
   /**
    * Creates an instance of ImmutableStore.
@@ -48,7 +56,7 @@ export class ImmutableStore<S> {
    * @param {P} initProps - The initial properties of the object.
    * @returns {P} The newly created object.
    */
-  newObject<P extends ImmerableObjectLiteral>(objectType: AnyObjectType, initProps: P): P {
+  newObject<P extends ImmutableObject>(objectType: t.AnyObjectType, initProps: t.ObjectLiteral): P {
     let c: Class<P> | undefined = this._classMap.get(objectType)
 
     if (c === undefined) {
@@ -70,38 +78,39 @@ export class ImmutableStore<S> {
 
   }
 
+
 private makeNewStateVersion() {
-  let oi = new tb.TransformerBuilder()
+  let oi = new t.ProcessorBuilder()
       .onInit(
-        new tb.InitBuilder()
-          .onTypeCategory("Object", fInit)
-          .onTypeCategory("Array", fInit)
-          .onTypeCategory("Simple", fInit)
+        new t.InitBuilder()
+          // .onTypeCategory("Object", (fInit))
+          // .onTypeCategory("Array", fInit)
+          // .onTypeCategory("Simple", fInit)
           // .onPredicate((value, currNode) => value === "Number", (v, c) => [v, "continue"])
           .build()
       )
       .onStep(
-        new tb.StepBuilder()
-          .onTypeCategory("Object", fStep)
-          .onTypeCategory("Array", fStep)
-          .onTypeCategory("Number", fStep)
-          .onTypeCategory("Simple", fStep)
+        new t.StepBuilder()
+          // .onTypeCategory("Object", fStep)
+          // .onTypeCategory("Array", fStep)
+          // .onTypeCategory("Number", fStep)
+          // .onTypeCategory("Simple", fStep)
           .build()
       )
       .onResult(
-        new tb.ResultBuilder()
-          .onTypeCategory("Object", fResult)
-          .onTypeCategory("Array", fResult)
-          .onTypeCategory("Number", fResult)
-          .onTypeCategory("Simple", fResult)
+        new t.ResultBuilder()
+          // .onTypeCategory("Object", fResult)
+          // .onTypeCategory("Array", fResult)
+          // .onTypeCategory("Number", fResult)
+          // .onTypeCategory("Simple", fResult)
           .build()
       )
       .build();
     let tr = t.transducer()
       .recurse("makeItem")
       .do(oi, "arg")
-      .doFinally(naturalReducer());
-    let r = Person.transduce(tr, Tom);
+    //  .doFinally(naturalReducer());
+    //let r = Person.transduce(tr, Tom);
 }
   // produce(f: (draft: Draft<S>) => void) {
   //   const [result, patches, inversePatches] = produceWithPatches(this._state, (draft) => {

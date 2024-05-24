@@ -1,9 +1,9 @@
 import * as t from "aelastics-types"
 import { v4 as uuidv4Generator } from "uuid"
 import { ImmutableStore } from "./immutable-store"
-import { ImmerableObjectLiteral, getUnderlyingType } from "../common/CommonConstants"
-import { enablePatches } from "immer"
-enablePatches()
+import { ImmutableObject, getUnderlyingType } from "../common/CommonConstants"
+// import { enablePatches } from "immer"
+// enablePatches()
 
 // ----------------------------------------------
 // Define the schema for the university domain
@@ -36,8 +36,8 @@ export const CourseType = t.entity(
 t.inverseProps(ProgramType, "courses", CourseType, "program")
 
 // Define the interface types for the university domain
-type IProgramType = t.TypeOf<typeof ProgramType> & ImmerableObjectLiteral
-type ICourseType = t.TypeOf<typeof CourseType> & ImmerableObjectLiteral
+type IProgramType = t.TypeOf<typeof ProgramType> & ImmutableObject
+type ICourseType = t.TypeOf<typeof CourseType> & ImmutableObject
 
 // ----------------------------------------------
 // Define the schema for the university domain
@@ -70,8 +70,8 @@ const TutorType = t.entity(
 t.inverseProps(StudentType, "tutor", TutorType, "tutee")
 
 // Define the interface types for the university domain
-type IStudentType = t.TypeOf<typeof StudentType> & ImmerableObjectLiteral
-type ITutorType = t.TypeOf<typeof TutorType> & ImmerableObjectLiteral
+type IStudentType = t.TypeOf<typeof StudentType> & ImmutableObject
+type ITutorType = t.TypeOf<typeof TutorType> & ImmutableObject
 
 // ----------------------------------------------
 

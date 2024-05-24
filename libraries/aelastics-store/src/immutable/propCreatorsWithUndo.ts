@@ -11,9 +11,8 @@
 
 import { Any, AnyObjectType } from "aelastics-types"
 import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context"
-import { ImmerableObjectLiteral, capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
-import { immerable, produce } from "immer"
-import { ObjectLiteral } from "aelastics-types"
+import { capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
+
 
 export function getIDPropName(type: AnyObjectType) {
   return objectUUID

@@ -10,7 +10,6 @@
  */
 
 import * as t from "aelastics-types"
-import { immerable } from "immer"
 
 export const prefixValue = "@@_"
 export const objectStatus = "@@aelastics/status"
@@ -41,10 +40,11 @@ export function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
 
-// Extend ObjectLiteral to include the [immerable] symbol
-export interface ImmerableObjectLiteral extends t.ObjectLiteral {
-  [immerable]?: true
-}
-export type IImmutableStoreObject<P extends ImmerableObjectLiteral> = P & {
+// Extend ObjectLiteral to include properties needed by immutabale store
+export interface ImmutableObject extends t.ObjectLiteral {
   readonly [objectUUID]: string
+  [objectStatus]: string
 }
+
+
+

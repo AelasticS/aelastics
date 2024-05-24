@@ -96,7 +96,7 @@ export class OperationContext {
     }
   }
 
-  createObject<P extends ObjectLiteral>(dynamicClass: Class<P>, initialProps: P, targetType: AnyObjectType): P {
+  createObject<P extends ObjectLiteral>(dynamicClass: Class<any>, initialProps: ObjectLiteral, targetType: AnyObjectType): P {
     // Create a new instance of the dynamic class
     const instance = new dynamicClass(initialProps)
     const IDName = getIDPropName(targetType)

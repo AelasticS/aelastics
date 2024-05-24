@@ -9,10 +9,9 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import { AnyObjectType } from "aelastics-types"
+import { AnyObjectType, boolean } from "aelastics-types"
 
-import { immerable } from "immer"
-import { ImmerableObjectLiteral, capitalizeFirstLetter, getUnderlyingType, objectUUID } from "../common/CommonConstants"
+import { ImmutableObject, capitalizeFirstLetter, getUnderlyingType, objectStatus, objectUUID } from "../common/CommonConstants"
 import {
   defineSimpleValue,
   defineComplexObjectProp,
@@ -24,8 +23,10 @@ import {
 } from "./propCreatorsWithUndo"
 import { OperationContext } from "./operation-context"
 import { uuidv4Generator } from "./repository"
+import { Status, StatusValue } from "../common/Status"
+import { get } from "http"
 
-export type Class<P extends ImmerableObjectLiteral> = { new (init: P): P }
+export type Class<P extends ImmutableObject> = { new (init: P): P }
 
 /**
  * Dynamically creates a class based on a given object type.
@@ -36,7 +37,7 @@ export type Class<P extends ImmerableObjectLiteral> = { new (init: P): P }
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ImmerableObjectLiteral>(
+export function createClass<P extends ImmutableObject>(
   objectType: AnyObjectType,
   ctx: OperationContext
 ): Class<P> {
@@ -45,10 +46,15 @@ export function createClass<P extends ImmerableObjectLiteral>(
 
   class DynamicClass {
     [key: string]: any
-    [immerable] = true
+
+    public get isDeleted():boolean {
+      return this[objectStatus] === StatusValue.Deleted
+    }
+    
     constructor(init: P) {
-      this.isDeleted = false
+  
       this[objectUUID] = uuidv4Generator()
+      this[objectStatus] = StatusValue.Created
       // Initialize private properties
       props.forEach((type, propName) => {
         // if init[propName] is an optional or link, we get the underlying type. here we need to figure out to be able to provide undefined if the value is not there
@@ -81,6 +87,7 @@ export function createClass<P extends ImmerableObjectLiteral>(
       })
     }
   }
+
   // Define properties
   props.forEach((propType, propName) => {
     if (inverses.has(propName)) {
@@ -183,5 +190,5 @@ export function createClass<P extends ImmerableObjectLiteral>(
 
   // Return the dynamically created class with its own name
   Object.defineProperty(DynamicClass, "name", { value: objectType.name })
-  return DynamicClass as Class<P>
+  return DynamicClass as unknown as Class<P>
 }
