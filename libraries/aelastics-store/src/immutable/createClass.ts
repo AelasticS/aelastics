@@ -33,7 +33,7 @@ import { uuidv4Generator } from "./repository"
 import { Status, StatusValue } from "../common/Status"
 import { get } from "http"
 
-export type Class<P extends ImmutableObject> = { new (init: P): P }
+export type Class<P extends ImmutableObject> = { new (init: P, ID?:string): P }
 
 /**
  * Dynamically creates a class based on a given object type.

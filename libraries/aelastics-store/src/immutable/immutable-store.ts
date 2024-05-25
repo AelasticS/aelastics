@@ -50,8 +50,8 @@ export class ImmutableStore<S> {
   constructor(readonly rootType:t.AnyObjectType) {
   }
 
-  createRoot(initialState: S, ) {
-    this._state = this.newObject(this.rootType, initialState as t.ObjectLiteral) as S
+  createRoot(initialState: S, ID?:string) {
+    this._state = this.newObject(this.rootType, initialState as t.ObjectLiteral, ID) as S
   }
 
   /**
@@ -60,14 +60,14 @@ export class ImmutableStore<S> {
    * @param {P} initProps - The initial properties of the object.
    * @returns {P} The newly created object.
    */
-  newObject<P extends ImmutableObject>(objectType: t.AnyObjectType, initProps: t.ObjectLiteral): P {
+  newObject<P extends ImmutableObject>(objectType: t.AnyObjectType, initProps: t.ObjectLiteral, ID?:string): P {
     let c: Class<P> | undefined = this._classMap.get(objectType)
 
     if (c === undefined) {
       c = createClass(objectType, this.ctx)
       this._classMap.set(objectType, c)
     }
-    const obj = this.ctx.createObject<P>(c, initProps, objectType)
+    const obj = this.ctx.createObject<P>(c, initProps, objectType, ID)
     return obj
   }
 
@@ -129,7 +129,7 @@ private makeNewStateVersion() {
       .onInit(
         new t.InitBuilder()
           .onTypeCategory("Object", (fInitObject))
-          .onTypeCategory("Simple", fInitSimple)
+          // .onTypeCategory("Simple", fInitSimple)
           // .onTypeCategory("Array", fInit)
           // .onPredicate((value, currNode) => value === "Number", (v, c) => [v, "continue"])
           .build()
@@ -138,14 +138,14 @@ private makeNewStateVersion() {
         new t.StepBuilder()
           .onTypeCategory("Object", fStepObject)
           // .onTypeCategory("Array", fStep)
-          .onTypeCategory("Simple", fStepSimple)
+          // .onTypeCategory("Simple", fStepSimple)
           .build()
       )
       .onResult(
         new t.ResultBuilder()
           .onTypeCategory("Object", fResultObject)
           // .onTypeCategory("Array", fResult)
-          .onTypeCategory("Simple", fResultSimple)
+          // .onTypeCategory("Simple", fResultSimple)
           .build()
       )
       .build();

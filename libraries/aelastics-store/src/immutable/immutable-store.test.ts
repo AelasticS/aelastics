@@ -84,7 +84,7 @@ describe("ImmutableStore", () => {
     }
 
     let immutableStore = new ImmutableStore<IStudentType>(StudentType)
-    immutableStore.createRoot(initStudent)
+    immutableStore.createRoot(initStudent, "1")
     let oldState = immutableStore.getState()
     immutableStore.produce((draft)=> {
       let tt = immutableStore.newObject(TutorType, {id:"2", name:"tutor1"})
