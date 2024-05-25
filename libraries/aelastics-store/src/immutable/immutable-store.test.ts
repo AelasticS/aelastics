@@ -85,13 +85,13 @@ describe("ImmutableStore", () => {
 
     let immutableStore = new ImmutableStore<IStudentType>(StudentType)
     immutableStore.createRoot(initStudent)
-    let oldState = immutableStore.getState
+    let oldState = immutableStore.getState()
     immutableStore.produce((draft)=> {
       let tt = immutableStore.newObject(TutorType, {id:"2", name:"tutor1"})
       draft.tutor = tt
 
     })
-    expect(oldState).toBe(immutableStore.getState)
+    expect(oldState).toBe(immutableStore.getState())
 
   })
   test("Updating object should maintain immutability", () => {

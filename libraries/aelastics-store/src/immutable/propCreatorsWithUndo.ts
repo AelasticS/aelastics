@@ -11,7 +11,8 @@
 
 import { Any, AnyObjectType } from "aelastics-types"
 import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context"
-import { capitalizeFirstLetter, objectUUID } from "../common/CommonConstants"
+import { capitalizeFirstLetter, objectStatus, objectUUID } from "../common/CommonConstants"
+import { StatusValue, setStatus } from "../common/Status"
 
 
 export function getIDPropName(type: AnyObjectType) {
@@ -35,7 +36,7 @@ export function defineSimpleValue(target: any, propName: string, targetType: Any
         throw new Error("Cannot modify properties on a deleted object.")
       }
       if (this[privatePropName] === value) return
-
+      this[objectStatus] =  setStatus(this[objectStatus], StatusValue.Updated)
       const operation: Operation = {
         operationType: "set",
         target: this,
@@ -85,7 +86,7 @@ export function defineComplexObjectProp(
       }
       const oldValue = this[privatePropName]
       this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
-
+      this[objectStatus] =  setStatus(this[objectStatus], StatusValue.Updated)
       context.pushOperation({
         operationType: "set",
         target: this,
@@ -114,7 +115,7 @@ export function defineComplexArrayProp(
         throw new Error("Cannot access properties on a deleted object.")
       }
 
-      let resultArray: any[] = []
+      let resultArray: any[] = []  //TODO: create observable array
 
       if (isPropViaID) {
         resultArray = this[privatePropName].map((id: string) => {
@@ -140,6 +141,7 @@ export function defineComplexArrayProp(
       throw new Error("Cannot modify properties on a deleted object.")
     }
     this[privatePropName].push(isPropViaID ? item[thisPropIDName] : item)
+    //TODO: set array status modified
     context.pushOperation({
       operationType: "add",
       target: this,
@@ -227,12 +229,20 @@ export function defineOneToOne(
       const oldValue = this[propName]
       if (oldValue === value) return
 
+      // set this object status
+      this[objectStatus] =  setStatus(this[objectStatus], StatusValue.Updated)
+      
       // Disconnect the old inverse target
       if (oldValue) {
         oldValue[`_${inversePropName}`] = undefined
+        // set oldValue object status
+        oldValue[objectStatus] =  setStatus(oldValue[objectStatus], StatusValue.Updated)
       }
 
       if (value) {
+        // set oldValue object status
+        value[objectStatus] =  setStatus(value[objectStatus], StatusValue.Updated)
+
         // Connect the new inverse target
         value[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
         // Update the property

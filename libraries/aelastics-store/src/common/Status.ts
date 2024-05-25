@@ -30,8 +30,11 @@ const statusOutcome: StatusValue [][] = [
 
 
 
-function setStatus(oldStatus: StatusValue, newStatus: StatusValue): StatusValue {
-    return statusOutcome[oldStatus][newStatus];
+export function setStatus(oldStatus: StatusValue, newStatus: StatusValue): StatusValue {
+    if(oldStatus && newStatus)
+        return statusOutcome[oldStatus][newStatus];
+    else 
+        return oldStatus
 }
 
 // Used by persistent objects to keep its status

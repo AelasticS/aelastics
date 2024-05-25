@@ -59,10 +59,15 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
       return this[objectStatus] === StatusValue.Updated
     }
 
-    constructor(init: P, ID = uuidv4Generator()) {
-      this[OT] = objectType
-      this[objectUUID] = ID
-      this[objectStatus] = StatusValue.Created
+    constructor(init: P, ID?:string) {
+      this[OT] = objectType.fullPathName
+      if (ID) { // allready existing objects
+        this[objectUUID] = ID
+        this[objectStatus] = StatusValue.Unmodified
+      } else {
+        this[objectUUID] = uuidv4Generator()
+        this[objectStatus] = StatusValue.Created
+      }
       // Initialize private properties
       props.forEach((type, propName) => {
         // if init[propName] is an optional or link, we get the underlying type. here we need to figure out to be able to provide undefined if the value is not there
@@ -205,4 +210,3 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
 function createArray(): any {
   return []
 }
-

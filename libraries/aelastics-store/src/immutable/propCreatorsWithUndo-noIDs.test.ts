@@ -1,3 +1,5 @@
+import { objectStatus } from '../common/CommonConstants';
+import { StatusValue } from '../common/Status';
 import { OperationContext} from './operation-context';
 import { defineOneToOne, defineManyToOne, defineOneToMany, defineManyToMany, defineSimpleValue } from './propCreatorsWithUndo'; // Replace with the actual module where these functions are defined
 import { AnyObjectType } from 'aelastics-types';
@@ -7,6 +9,9 @@ const inverseObjType = {} as AnyObjectType
 
 class DynamicProperties {
   [key: string]: any;
+  constructor() {
+    this[objectStatus] = StatusValue.Unmodified
+  }
 }
 class Company extends DynamicProperties {
   id: string;
@@ -15,15 +20,6 @@ class Company extends DynamicProperties {
     this.id = id;
     this._workers = []
 
-  }
-}
-
-class Boss {
-  id: string;
-  _company: string | null = null;
-
-  constructor(id: string) {
-    this.id = id;
   }
 }
 
@@ -263,6 +259,8 @@ describe('Simple value changes combined with Undo and Redo Operations', () => {
   test('Simple value changes combined with one-to-one relationship', () => {
     const person = {}  as any;
     const car = {}  as any;
+    person[objectStatus] = StatusValue.Unmodified
+    car[objectStatus] = StatusValue.Unmodified
     defineSimpleValue(person, 'name', targetObjType, context);
     defineOneToOne(person, 'car', 'owner', targetObjType, inverseObjType,context);
     defineOneToOne(car, 'owner', 'car', targetObjType, inverseObjType,context);

@@ -48,5 +48,10 @@ export interface ImmutableObject extends t.ObjectLiteral {
   get isUpdated():boolean
 }
 
-
+// Create a shallow copy of the object including hidden properties
+export function shallowCopyObject<T>(obj: T): T {
+  const copiedObj = Object.create(Object.getPrototypeOf(obj));
+  Object.defineProperties(copiedObj, Object.getOwnPropertyDescriptors(obj));
+  return copiedObj;
+}
 

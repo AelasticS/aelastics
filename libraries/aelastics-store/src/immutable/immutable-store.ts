@@ -2,7 +2,7 @@ import * as t from "aelastics-types"
 import { Class, createClass } from "./createClass"
 import { OperationContext } from "./operation-context"
 // import { immerable, produce, enableMapSet, Immer, Draft, produceWithPatches } from "immer"
-import {ImmutableObject } from "../common/CommonConstants"
+import {ImmutableObject, shallowCopyObject } from "../common/CommonConstants"
 import { IProcessorInit, IProcessorResult, IProcessorStep } from "aelastics-types/lib/transducers"
 // enableMapSet()
 /*
@@ -79,6 +79,7 @@ export class ImmutableStore<S> {
     // apply f
     f(this._state)
     // make a new version of the state
+    this.makeNewStateVersion()
 
   }
 
@@ -90,18 +91,36 @@ private makeNewStateVersion() {
     return obj.isUpdated
   }
 
-  const fInit:IProcessorInit = (value:ImmutableObject,currNode) => {
-    let res:IResult = {object:currNode.instance, makeCopy:false}
-    if(shouldMakeCopy(value))
+  const fInitObject:IProcessorInit = (value:ImmutableObject,currNode) => {
+    let res:IResult = {object:currNode.instance, makeCopy:true}
+    if(shouldMakeCopy(res.object)) {
+      res.object= shallowCopyObject(res.object)
       res.makeCopy=true
-    return [value, "continue"];
+    }
+    return [res, "continue"];
   }
 
-  const fStep:IProcessorStep = (value:IResult,currNode, item) => {
+  const fStepObject:IProcessorStep = (value:IResult,currNode, item) => {
+      if(value.makeCopy)
+        currNode.parent?.type.addChild(value.object, item, currNode)
       return [value, "continue"];
   }
 
-  const fResult:IProcessorResult = (result:IResult,currNode) => {
+  const fResultObject:IProcessorResult = (result:IResult,currNode) => {
+    return [result, "continue"];
+  }
+
+  const fInitSimple:IProcessorInit = (value:any,currNode) => {
+    return [value, "continue"];
+  }
+
+  const fStepSimple:IProcessorStep = (value:IResult,currNode, item) => {
+    if(value.makeCopy)
+      currNode.parent?.type.addChild(value.object, item, currNode)
+    return [value, "continue"];
+  }
+
+  const fResultSimple:IProcessorResult = (result:IResult,currNode) => {
     return [result, "continue"];
   }
 
@@ -109,26 +128,24 @@ private makeNewStateVersion() {
   let newStateProcessor = new t.ProcessorBuilder()
       .onInit(
         new t.InitBuilder()
-          .onTypeCategory("Object", (fInit))
+          .onTypeCategory("Object", (fInitObject))
+          .onTypeCategory("Simple", fInitSimple)
           // .onTypeCategory("Array", fInit)
-          // .onTypeCategory("Simple", fInit)
           // .onPredicate((value, currNode) => value === "Number", (v, c) => [v, "continue"])
           .build()
       )
       .onStep(
         new t.StepBuilder()
-          .onTypeCategory("Object", fStep)
+          .onTypeCategory("Object", fStepObject)
           // .onTypeCategory("Array", fStep)
-          // .onTypeCategory("Number", fStep)
-          // .onTypeCategory("Simple", fStep)
+          .onTypeCategory("Simple", fStepSimple)
           .build()
       )
       .onResult(
         new t.ResultBuilder()
-          .onTypeCategory("Object", fResult)
+          .onTypeCategory("Object", fResultObject)
           // .onTypeCategory("Array", fResult)
-          // .onTypeCategory("Number", fResult)
-          // .onTypeCategory("Simple", fResult)
+          .onTypeCategory("Simple", fResultSimple)
           .build()
       )
       .build();
@@ -136,7 +153,7 @@ private makeNewStateVersion() {
       .recurse("makeItem")
       .do(newStateProcessor, "arg")
     .doFinally(t.identityReducer());
-    let r = this.rootType.transduce(tr, this.getState);
+    let r = this.rootType.transduce(tr, this.getState());
 }
   // produce(f: (draft: Draft<S>) => void) {
   //   const [result, patches, inversePatches] = produceWithPatches(this._state, (draft) => {
