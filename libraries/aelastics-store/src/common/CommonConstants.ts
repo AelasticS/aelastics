@@ -10,6 +10,7 @@
  */
 
 import * as t from "aelastics-types"
+import { StatusValue } from "./Status"
 
 export const prefixValue = "@@_"
 export const objectStatus = "@@aelastics/status"
@@ -43,7 +44,7 @@ export function capitalizeFirstLetter(string: string) {
 // Extend ObjectLiteral to include properties needed by immutabale store
 export interface ImmutableObject extends t.ObjectLiteral {
   readonly [objectUUID]: string
-  [objectStatus]: string
+  [objectStatus]: StatusValue
   get isDeleted():boolean
   get isUpdated():boolean
 }
