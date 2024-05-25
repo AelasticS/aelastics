@@ -63,7 +63,7 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
       this[OT] = objectType.fullPathName
       if (ID) { // allready existing objects
         this[objectUUID] = ID
-        this[objectStatus] = StatusValue.Unmodified
+        this[objectStatus] = StatusValue.Initializing
       } else {
         this[objectUUID] = uuidv4Generator()
         this[objectStatus] = StatusValue.Created
@@ -98,6 +98,9 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           throw new Error(`Property "${propName}" is required!`)
         }
       })
+      if (ID) { // allready existing objects
+        this[objectStatus] = StatusValue.Unmodified
+      }
     }
   }
 

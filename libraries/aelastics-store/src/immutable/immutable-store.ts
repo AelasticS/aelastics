@@ -92,7 +92,7 @@ private makeNewStateVersion() {
   }
 
   const fInitObject:IProcessorInit = (value:ImmutableObject,currNode) => {
-    let res:IResult = {object:currNode.instance, makeCopy:true}
+    let res:IResult = {object:currNode.instance, makeCopy:false}
     if(shouldMakeCopy(res.object)) {
       res.object= shallowCopyObject(res.object)
       res.makeCopy=true
