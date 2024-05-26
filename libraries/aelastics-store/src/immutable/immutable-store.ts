@@ -6,6 +6,7 @@ import {
   ImmutableObject,
   checkJavascriptType,
   isTypeEntity,
+  objectUUID,
   shallowCloneObject,
 } from "../common/CommonConstants"
 import { IProcessorInit, IProcessorResult, IProcessorStep } from "aelastics-types/lib/transducers"
@@ -102,15 +103,16 @@ export class ImmutableStore<S> {
   }
 
   private getNewVersionOfState() {
-    function makeClone(res: IResult) {
+    function makeClone(res: IResult, store:ImmutableStore<unknown>) {
       res.object = shallowCloneObject(res.object)
       res.cloned = true
-      //TODO:Update IdMap
+      // Update IdMap
+      store.getIdMap().set(res.object[objectUUID], res.object)
     }
     const fInitObject: IProcessorInit = (value: ImmutableObject, currNode) => {
       let res: IResult = { object: currNode.instance, cloned: false }
       if (res.object.isUpdated) {
-        makeClone(res)
+        makeClone(res, this)
       }
       return [res, "continue"]
     }
@@ -122,7 +124,7 @@ export class ImmutableStore<S> {
 
       if (item.cloned && !value.cloned) {
         // child is cloned, so make clone of parent too if it is not cloned already
-        makeClone(value)
+        makeClone(value, this)
         // if child is not an entity then value.object needed to update its prop to point to new clone
         // otherwise, child is entity and no need to update value.object since ID of child is not changed
         if (!isChildEntity(item.object)) {
