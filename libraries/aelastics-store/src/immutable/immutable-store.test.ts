@@ -1,7 +1,9 @@
 import * as t from "aelastics-types"
 import { v4 as uuidv4Generator } from "uuid"
 import { ImmutableStore } from "./immutable-store"
-import { ImmutableObject, getUnderlyingType } from "../common/CommonConstants"
+import { ImmutableObject, getUnderlyingType, objectStatus } from "../common/CommonConstants"
+import { StatusValue } from "../common/Status"
+import exp from "constants"
 // import { enablePatches } from "immer"
 // enablePatches()
 
@@ -76,22 +78,48 @@ type ITutorType = t.TypeOf<typeof TutorType> // & ImmutableObject
 // ----------------------------------------------
 
 describe("ImmutableStore", () => {
-  test("state consisting of objects only", ()=>{
+  let immutableStore:ImmutableStore<IStudentType> 
+
+  it("should create a new instance of the state root when a simple prop of a nested object is updated", ()=>{
     let initStudent:IStudentType = {
       id:"1",
       name:"student1",
       tutor:undefined
     }
+    immutableStore = new ImmutableStore<IStudentType>(StudentType)
+    const student:ImmutableObject = immutableStore.createRoot(initStudent, "1") as unknown as ImmutableObject
+    let tt = immutableStore.newObject(TutorType, {id:"2", name:"tutor1"}, "2")
+    student.tutor = tt
+    student[objectStatus] = StatusValue.Unmodified
+    tt[objectStatus] = StatusValue.Unmodified
 
-    let immutableStore = new ImmutableStore<IStudentType>(StudentType)
-    immutableStore.createRoot(initStudent, "1")
-    let oldState = immutableStore.getState()
-    immutableStore.produce((draft)=> {
-      let tt = immutableStore.newObject(TutorType, {id:"2", name:"tutor1"})
-      draft.tutor = tt
-
+    const  oldState = immutableStore.getState()
+    const newState = immutableStore.produce((draft)=> {
+      draft.tutor.name = "new tutor name"
     })
-    expect(oldState).toBe(immutableStore.getState())
+    expect(oldState).not.toBe(newState)
+    expect(oldState.tutor.name).toEqual("tutor1")
+    expect(oldState.tutor).not.toBe(newState.tutor)
+    expect(newState.tutor.name).toEqual("new tutor name")
+
+  })
+
+  test("should create a new instance of the state root when a cyclic prop of a nested object is updated", ()=>{
+    const initStudent:IStudentType = {
+      id:"1",
+      name:"student1",
+      tutor:undefined
+    }
+    immutableStore = new ImmutableStore<IStudentType>(StudentType)
+    const student:ImmutableObject = immutableStore.createRoot(initStudent, "1") as unknown as ImmutableObject
+    student[objectStatus] = StatusValue.Unmodified
+
+    const oldState = immutableStore.getState()
+    immutableStore.produce((draft)=> {
+      const tt = immutableStore.newObject(TutorType, {id:"2", name:"tutor1"})
+      draft.tutor = tt
+    })
+    expect(oldState).not.toBe(immutableStore.getState())
 
   })
   test("Updating object should maintain immutability", () => {

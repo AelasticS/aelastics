@@ -18,6 +18,7 @@ import {
   objectStatus,
   objectUUID,
   objectType as OT,
+  isTypeEntity,
 } from "../common/CommonConstants"
 import {
   defineSimpleValue,
@@ -30,8 +31,8 @@ import {
 } from "./propCreatorsWithUndo"
 import { OperationContext } from "./operation-context"
 import { uuidv4Generator } from "./repository"
-import { Status, StatusValue } from "../common/Status"
-import { get } from "http"
+import { StatusValue } from "../common/Status"
+import { ImmutableStore } from "./immutable-store"
 
 export type Class<P extends ImmutableObject> = { new (init: P, ID?:string): P }
 
@@ -44,10 +45,9 @@ export type Class<P extends ImmutableObject> = { new (init: P, ID?:string): P }
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ImmutableObject>(objectType: AnyObjectType, ctx: OperationContext): Class<P> {
+export function createClass<P extends ImmutableObject>(objectType: AnyObjectType, store:ImmutableStore<unknown>): Class<P> {
   const props = objectType.allProperties
   const inverses = objectType.allInverse
-
   class DynamicClass {
     [key: string]: any
 
@@ -61,6 +61,8 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
 
     constructor(init: P, ID?:string) {
       this[OT] = objectType.fullPathName
+      this[isTypeEntity] = objectType.isEntity
+
       if (ID) { // allready existing objects
         this[objectUUID] = ID
         this[objectStatus] = StatusValue.Initializing
@@ -124,7 +126,7 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           inversePropName,
           propObjectType,
           inverseObjectType,
-          ctx,
+          store,
           isPropID,
           isInversePropID
         )
@@ -135,7 +137,7 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           inversePropName,
           propObjectType,
           inverseObjectType,
-          ctx,
+          store,
           isPropID,
           isInversePropID
         )
@@ -146,7 +148,7 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           inversePropName,
           propObjectType,
           inverseObjectType,
-          ctx,
+          store,
           isPropID,
           isInversePropID
         )
@@ -157,7 +159,7 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           inversePropName,
           propObjectType,
           inverseObjectType,
-          ctx,
+          store,
           isPropID,
           isInversePropID
         )
@@ -166,14 +168,14 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
       // Define the property without an inverse
       const realPropType = getUnderlyingType(propType)
       if (realPropType.isSimple()) {
-        defineSimpleValue(DynamicClass.prototype, propName, realPropType, ctx)
+        defineSimpleValue(DynamicClass.prototype, propName, realPropType, store)
       } else if (realPropType.typeCategory === "Object") {
         const invType = realPropType as AnyObjectType
 
-        defineComplexObjectProp(DynamicClass.prototype, propName, invType.isEntity, ctx, invType)
+        defineComplexObjectProp(DynamicClass.prototype, propName, invType.isEntity, store, invType)
       } else if (realPropType.typeCategory === "Array") {
         const invType = realPropType as AnyObjectType
-        defineComplexArrayProp(DynamicClass.prototype, propName, invType.isEntity, ctx, invType)
+        defineComplexArrayProp(DynamicClass.prototype, propName, invType.isEntity, store, invType)
       }
     }
   })

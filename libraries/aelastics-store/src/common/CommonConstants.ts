@@ -17,6 +17,7 @@ export const objectStatus = "@@aelastics/status"
 export const objectSync = "@@aelastics/sync"
 export const objectUUID = "@@aelastics/ID"
 export const objectType = "@@aelastics/type"
+export const isTypeEntity = "@@aelastics/isTypeEntity"
 
 export type IStoreObject<P extends t.ObjectLiteral> = P & {
   readonly [objectType]: string
@@ -37,6 +38,10 @@ export function getUnderlyingType(type: t.Any | undefined): t.Any {
   return type
 }
 
+export function getIDPropName(type: t.AnyObjectType) {
+  return objectUUID
+}
+
 export function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
@@ -49,8 +54,22 @@ export interface ImmutableObject extends t.ObjectLiteral {
   get isUpdated():boolean
 }
 
+
+// Combined function to distinguish between arrays, objects, Maps, and other types
+export function checkJavascriptType(value: any): 'array' | 'object' |  'map' | 'neither'{
+  if (Array.isArray(value)) {
+      return 'array';
+    } else if (value instanceof Map) {
+      return 'map';
+  } else if (typeof value === 'object' && value !== null) {
+      return 'object';
+  } else {
+      return 'neither';
+  }
+}
+
 // Create a shallow copy of the object including hidden properties
-export function shallowCopyObject<T>(obj: T): T {
+export function shallowCloneObject<T>(obj: T): T {
   const copiedObj = Object.create(Object.getPrototypeOf(obj));
   Object.defineProperties(copiedObj, Object.getOwnPropertyDescriptors(obj));
   return copiedObj;

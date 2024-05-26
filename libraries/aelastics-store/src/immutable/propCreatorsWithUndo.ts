@@ -11,16 +11,15 @@
 
 import { Any, AnyObjectType } from "aelastics-types"
 import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context"
-import { capitalizeFirstLetter, objectStatus, objectUUID } from "../common/CommonConstants"
+import { capitalizeFirstLetter, getIDPropName, objectStatus} from "../common/CommonConstants"
 import { StatusValue, setStatus } from "../common/Status"
+import { ImmutableStore } from "./immutable-store"
 
 
-export function getIDPropName(type: AnyObjectType) {
-  return objectUUID
-}
+
 
 // Define simple value property
-export function defineSimpleValue(target: any, propName: string, targetType: Any, context: OperationContext) {
+export function defineSimpleValue(target: any, propName: string, targetType: Any, store:ImmutableStore<any>) {
   const privatePropName = `_${propName}`
   target[privatePropName] = undefined
 
@@ -47,7 +46,7 @@ export function defineSimpleValue(target: any, propName: string, targetType: Any
         inversePropName: undefined,
       }
 
-      context.pushOperation(operation)
+      store.getContext().pushOperation(operation)
 
       this[privatePropName] = value
     },
@@ -58,7 +57,7 @@ export function defineComplexObjectProp(
   target: any,
   propName: string,
   isPropViaID: boolean,
-  context: OperationContext,
+  store:ImmutableStore<any>,
   targetType: AnyObjectType
 ) {
   const privatePropName = `_${propName}`
@@ -68,7 +67,7 @@ export function defineComplexObjectProp(
         throw new Error("Cannot access properties on a deleted object.")
       }
       // check for deleted objects
-      const propValue = isPropViaID ? context.idMap.get(this[privatePropName]) : this[privatePropName]
+      const propValue = isPropViaID ? store.getContext().idMap.get(this[privatePropName]) : this[privatePropName]
       if (propValue && propValue.isDeleted) {
         return undefined
       }
@@ -87,7 +86,7 @@ export function defineComplexObjectProp(
       const oldValue = this[privatePropName]
       this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
       this[objectStatus] =  setStatus(this[objectStatus], StatusValue.Updated)
-      context.pushOperation({
+      store.getContext().pushOperation({
         operationType: "set",
         target: this,
         propName: propName,
@@ -103,7 +102,7 @@ export function defineComplexArrayProp(
   target: any,
   propName: string,
   isPropViaID: boolean,
-  context: OperationContext,
+  store:ImmutableStore<any>,
   targetType: AnyObjectType
 ) {
   const privatePropName = `_${propName}`
@@ -119,7 +118,7 @@ export function defineComplexArrayProp(
 
       if (isPropViaID) {
         resultArray = this[privatePropName].map((id: string) => {
-          const obj = context.idMap.get(id)
+          const obj = store.getContext().idMap.get(id)
           if (!obj) {
             throw new Error(`Object with ID "${id}" of type "${targetType.name}" not found.`)
           }
@@ -142,7 +141,7 @@ export function defineComplexArrayProp(
     }
     this[privatePropName].push(isPropViaID ? item[thisPropIDName] : item)
     //TODO: set array status modified
-    context.pushOperation({
+    store.getContext().pushOperation({
       operationType: "add",
       target: this,
       targetType,
@@ -153,7 +152,7 @@ export function defineComplexArrayProp(
 
   target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
     this[privatePropName].push(isPropViaID ? item[thisPropIDName] : item)
-    context.pushOperation({
+    store.getContext().pushOperation({
       operationType: "add",
       target: this,
       propName: propName,
@@ -172,7 +171,7 @@ export function defineComplexArrayProp(
 
     this[privatePropName].splice(index, 1)
 
-    context.pushOperation({
+    store.getContext().pushOperation({
       operationType: "remove",
       target: this,
       targetType: targetType,
@@ -188,7 +187,7 @@ export function defineOneToOne(
   inversePropName: string,
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
-  context: OperationContext,
+  store:ImmutableStore<any>,
   isPropViaID: boolean = false,
   isInversePropViaID: boolean = false
 ) {
@@ -204,7 +203,7 @@ export function defineOneToOne(
         if (id === undefined) {
           return undefined
         }
-        const obj = context.idMap.get(id)
+        const obj = store.getContext().idMap.get(id)
         if (!obj) {
           // TODO: lazy evaluation
           throw new ObjectNotFoundError(
@@ -252,7 +251,7 @@ export function defineOneToOne(
       }
 
       // Push the operation to the stack
-      context.pushOperation({
+      store.getContext().pushOperation({
         operationType: "set",
         target: this,
         targetType,
@@ -272,7 +271,7 @@ export function defineOneToMany(
   inversePropName: string,
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
-  context: OperationContext,
+  store:ImmutableStore<any>,
   isPropViaID: boolean = false,
   isInversePropViaID: boolean = false
 ) {
@@ -286,7 +285,7 @@ export function defineOneToMany(
       }
       if (isPropViaID) {
         return this[privatePropName]
-          .map((id: string) => context.idMap.get(id))
+          .map((id: string) => store.getContext().idMap.get(id))
           .filter((item: any) => item && !item.isDeleted)
       } else {
         return this[privatePropName].filter((item: any) => !item.isDeleted)
@@ -312,7 +311,7 @@ export function defineOneToMany(
       item[`_${inversePropName}`] = this
     }
 
-    context.pushOperation({
+    store.getContext().pushOperation({
       operationType: "add",
       target: this,
       targetType,
@@ -333,7 +332,7 @@ export function defineOneToMany(
     if (index === -1) return
 
     // Update the operation stack
-    context.pushOperation({
+    store.getContext().pushOperation({
       operationType: "remove",
       target: this,
       targetType,
@@ -352,12 +351,11 @@ export function defineManyToOne(
   inversePropName: string,
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
-  context: OperationContext,
+  store:ImmutableStore<any>,
   isPropViaID: boolean = false,
   isInversePropViaID: boolean = false
 ) {
-  const { operationStack, redoStack } = context
-  const privatePropName = `_${propName}`
+   const privatePropName = `_${propName}`
 
   const thisPropIDName = getIDPropName(targetType)
   const inversePropIDName = getIDPropName(inverseType)
@@ -372,7 +370,7 @@ export function defineManyToOne(
         const value = this[privatePropName]
         if (value === undefined) return undefined
 
-        const obj = context.idMap.get(value)
+        const obj = store.getContext().idMap.get(value)
         if (!obj) {
           throw new ObjectNotFoundError(
             value,
@@ -420,7 +418,7 @@ export function defineManyToOne(
       }
 
       // Push the operation to the stack
-      context.pushOperation({
+      store.getContext().pushOperation({
         operationType: "set",
         target: this,
         targetType,
@@ -439,11 +437,11 @@ export function defineManyToMany(
   inversePropName: string,
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
-  context: OperationContext,
+  store:ImmutableStore<any>,
   isPropViaID: boolean = false,
   isInversePropViaID: boolean = false
 ) {
-  const { operationStack, redoStack } = context
+
   const privatePropName = `_${propName}`
   const privateInversePropName = `_${inversePropName}`
 
@@ -459,7 +457,7 @@ export function defineManyToMany(
       // If the property is supposed to hold IDs, simply return the array of IDs
       if (isPropViaID) {
         return this[privatePropName]
-          .map((id: string) => context.idMap.get(id))
+          .map((id: string) => store.getContext().idMap.get(id))
           .filter((item: any) => item && !item.isDeleted)
       }
 
@@ -493,7 +491,7 @@ export function defineManyToMany(
     }
 
     // Push the operation to the operation stack
-    context.pushOperation({
+    store.getContext().pushOperation({
       operationType: "add",
       target: this,
       targetType,
@@ -532,7 +530,7 @@ export function defineManyToMany(
     }
 
     // Push the operation to the operation stack
-    context.pushOperation({
+    store.getContext().pushOperation({
       operationType: "remove",
       target: this,
       targetType,
