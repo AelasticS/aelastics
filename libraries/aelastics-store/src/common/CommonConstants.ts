@@ -11,6 +11,7 @@
 
 import * as t from "aelastics-types"
 import { StatusValue } from "./Status"
+import { OperationContext } from "../immutable/operation-context"
 
 export const prefixValue = "@@_"
 export const objectStatus = "@@aelastics/status"
@@ -18,6 +19,8 @@ export const objectSync = "@@aelastics/sync"
 export const objectUUID = "@@aelastics/ID"
 export const objectType = "@@aelastics/type"
 export const isTypeEntity = "@@aelastics/isTypeEntity"
+export const clone = "@@aelastics/clone"
+export const context = "@@aelastics/context"
 
 export type IStoreObject<P extends t.ObjectLiteral> = P & {
   readonly [objectType]: string
@@ -50,6 +53,8 @@ export function capitalizeFirstLetter(string: string) {
 export interface ImmutableObject extends t.ObjectLiteral {
   readonly [objectUUID]: string
   [objectStatus]: StatusValue
+  [clone]: ImmutableObject | undefined
+  [context]:OperationContext<any>
   get isDeleted():boolean
   get isUpdated():boolean
 }

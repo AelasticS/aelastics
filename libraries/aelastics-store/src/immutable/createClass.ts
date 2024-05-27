@@ -9,7 +9,7 @@
  * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
  */
 
-import { AnyObjectType, ObjectType, boolean } from "aelastics-types"
+import { AnyObjectType } from "aelastics-types"
 
 import {
   ImmutableObject,
@@ -19,6 +19,8 @@ import {
   objectUUID,
   objectType as OT,
   isTypeEntity,
+  clone,
+  context,
 } from "../common/CommonConstants"
 import {
   defineSimpleValue,
@@ -34,7 +36,7 @@ import { uuidv4Generator } from "./repository"
 import { StatusValue } from "../common/Status"
 import { ImmutableStore } from "./immutable-store"
 
-export type Class<P extends ImmutableObject> = { new (init: P, ID?:string): P }
+export type Class<P extends ImmutableObject> = { new (init: P, ctx:OperationContext<unknown>, ID?:string): P }
 
 /**
  * Dynamically creates a class based on a given object type.
@@ -59,9 +61,11 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
       return this[objectStatus] === StatusValue.Updated
     }
 
-    constructor(init: P, ID?:string) {
+    constructor(init: P, ctx:OperationContext<any>, ID?:string) {
       this[OT] = objectType.fullPathName
       this[isTypeEntity] = objectType.isEntity
+      this[clone] = undefined
+      this[context] = ctx
 
       if (ID) { // allready existing objects
         this[objectUUID] = ID
@@ -126,7 +130,6 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           inversePropName,
           propObjectType,
           inverseObjectType,
-          store,
           isPropID,
           isInversePropID
         )
@@ -137,7 +140,6 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           inversePropName,
           propObjectType,
           inverseObjectType,
-          store,
           isPropID,
           isInversePropID
         )
@@ -148,7 +150,6 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           inversePropName,
           propObjectType,
           inverseObjectType,
-          store,
           isPropID,
           isInversePropID
         )
@@ -159,7 +160,6 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           inversePropName,
           propObjectType,
           inverseObjectType,
-          store,
           isPropID,
           isInversePropID
         )
@@ -168,14 +168,14 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
       // Define the property without an inverse
       const realPropType = getUnderlyingType(propType)
       if (realPropType.isSimple()) {
-        defineSimpleValue(DynamicClass.prototype, propName, realPropType, store)
+        defineSimpleValue(DynamicClass.prototype, propName, realPropType)
       } else if (realPropType.typeCategory === "Object") {
         const invType = realPropType as AnyObjectType
 
-        defineComplexObjectProp(DynamicClass.prototype, propName, invType.isEntity, store, invType)
+        defineComplexObjectProp(DynamicClass.prototype, propName, invType.isEntity, invType)
       } else if (realPropType.typeCategory === "Array") {
         const invType = realPropType as AnyObjectType
-        defineComplexArrayProp(DynamicClass.prototype, propName, invType.isEntity, store, invType)
+        defineComplexArrayProp(DynamicClass.prototype, propName, invType.isEntity, invType)
       }
     }
   })

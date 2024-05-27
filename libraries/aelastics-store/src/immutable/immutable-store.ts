@@ -5,6 +5,8 @@ import { OperationContext } from "./operation-context"
 import {
   ImmutableObject,
   checkJavascriptType,
+  clone,
+  context,
   isTypeEntity,
   objectUUID,
   shallowCloneObject,
@@ -36,14 +38,14 @@ export class ImmutableStore<S> {
   private history: OperationContext<S>[] = []
   // private _state: S = null as S
 
-  makeNewOperationContext(state?:S) {
+  makeNewOperationContext(state?: S) {
     this.history.push(new OperationContext(state))
   }
   cloneOperationContext() {
     this.history.push(new OperationContext(this.getState(), this.getIdMap(), this.getIdMapWithDeleted()))
   }
 
-  getContext():OperationContext<S> {
+  getContext(): OperationContext<S> {
     if (this.history.length > 0) return this.history[this.history.length - 1]
     else throw new Error("ImmutableStore has no created operation context. You should invoke createRoot() method!")
   }
@@ -66,7 +68,7 @@ export class ImmutableStore<S> {
    */
   constructor(readonly rootType: t.AnyObjectType) {}
 
-  createRoot(initialState: S, ID?: string):S {
+  createRoot(initialState: S, ID?: string): S {
     this.history.push(new OperationContext())
     this.getContext().setState(this.newObject(this.rootType, initialState as t.ObjectLiteral, ID) as S)
     return this.getState()
@@ -93,20 +95,33 @@ export class ImmutableStore<S> {
    * Applies a function to modify the store's state immutably.
    * @param {(draft: Draft<S>) => void} f - A function that receives the current state as a draft and modifies it.
    */
-  produce(f: (draft: S) => void):S {
-    // apply f
+  produce(f: (draft: S) => void): S {
+
+    // change the operation mode
+    const oldMode = this.getContext().operationMode
+    this.getContext().operationMode = "immutable"
+        // apply f
     f(this.getState())
     // get a new version of the state
     const r = this.getNewVersionOfState()
     this.getContext().setState(r.object)
+    this.getContext().operationMode = oldMode
     return this.getState()
   }
 
   private getNewVersionOfState() {
-    function makeClone(res: IResult, store:ImmutableStore<unknown>) {
-      res.object = shallowCloneObject(res.object)
+    function makeClone(res: IResult, store: ImmutableStore<unknown>) {
+      const oldObject = res.object
+      if (res.object[clone]) 
+        res.object = res.object[clone]
+      else 
+        res.object = shallowCloneObject(res.object)
       res.cloned = true
-      // Update IdMap
+      // update context
+      res.object[context] = store.getContext()
+      // delete clone in old object
+      oldObject[clone] = undefined
+      // Update IdMap in new object
       store.getIdMap().set(res.object[objectUUID], res.object)
     }
     const fInitObject: IProcessorInit = (value: ImmutableObject, currNode) => {
@@ -178,10 +193,10 @@ export class ImmutableStore<S> {
       )
       .build()
 
-     // make new operation context
-     this.cloneOperationContext()
-     
-      // define transducer consisting of only newStateProcessor
+    // make new operation context
+    this.cloneOperationContext()
+
+    // define transducer consisting of only newStateProcessor
     const tr = t.transducer().recurse("makeItem").do(newStateProcessor, "arg").doFinally(t.identityReducer())
     // run transducer
     const r = this.rootType.transduce<IResult>(tr, this.getState())

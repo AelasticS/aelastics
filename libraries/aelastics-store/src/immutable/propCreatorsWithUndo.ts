@@ -11,31 +11,47 @@
 
 import { Any, AnyObjectType } from "aelastics-types"
 import { OperationContext, ObjectNotFoundError, Operation } from "./operation-context"
-import { capitalizeFirstLetter, getIDPropName, objectStatus} from "../common/CommonConstants"
+import { capitalizeFirstLetter, clone, context, getIDPropName, objectStatus, shallowCloneObject } from "../common/CommonConstants"
 import { StatusValue, setStatus } from "../common/Status"
-import { ImmutableStore } from "./immutable-store"
-
-
-
 
 // Define simple value property
-export function defineSimpleValue(target: any, propName: string, targetType: Any, store:ImmutableStore<any>) {
+export function defineSimpleValue(target: any, propName: string, targetType: Any) {
   const privatePropName = `_${propName}`
   target[privatePropName] = undefined
+
 
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.")
       }
-      return this[privatePropName]
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
+      if (ctx.operationMode === "immutable" && this[clone]) {
+        return this[clone][privatePropName]
+      } else return this[privatePropName]
     },
     set(value: any) {
       if (this.isDeleted) {
         throw new Error("Cannot modify properties on a deleted object.")
       }
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
+      if (ctx.operationMode === "frozen") {
+        throw new Error("Cannot modify properties on an object in frozen mode of the store.")
+      }
       if (this[privatePropName] === value) return
-      this[objectStatus] =  setStatus(this[objectStatus], StatusValue.Updated)
+      this[objectStatus] = setStatus(this[objectStatus], StatusValue.Updated)
+      if (ctx.operationMode === "immutable") {
+        if (!this[clone]) {
+          this[clone] = shallowCloneObject(this)
+        }
+        this[clone][privatePropName] = value
+      } else this[privatePropName] = value
+
+      // make operation log
       const operation: Operation = {
         operationType: "set",
         target: this,
@@ -45,10 +61,7 @@ export function defineSimpleValue(target: any, propName: string, targetType: Any
         targetType: targetType,
         inversePropName: undefined,
       }
-
-      store.getContext().pushOperation(operation)
-
-      this[privatePropName] = value
+      ctx.pushOperation(operation)
     },
   })
 }
@@ -57,17 +70,21 @@ export function defineComplexObjectProp(
   target: any,
   propName: string,
   isPropViaID: boolean,
-  store:ImmutableStore<any>,
   targetType: AnyObjectType
 ) {
   const privatePropName = `_${propName}`
+
+
   Object.defineProperty(target, propName, {
     get() {
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.")
       }
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
       // check for deleted objects
-      const propValue = isPropViaID ? store.getContext().idMap.get(this[privatePropName]) : this[privatePropName]
+      const propValue = isPropViaID ? ctx.idMap.get(this[privatePropName]) : this[privatePropName]
       if (propValue && propValue.isDeleted) {
         return undefined
       }
@@ -77,7 +94,9 @@ export function defineComplexObjectProp(
       if (this.isDeleted) {
         throw new Error("Cannot modify properties on a deleted object.")
       }
-
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
       const thisPropIDName = getIDPropName(targetType)
 
       if (value && value.isDeleted) {
@@ -85,8 +104,8 @@ export function defineComplexObjectProp(
       }
       const oldValue = this[privatePropName]
       this[privatePropName] = isPropViaID ? value[thisPropIDName] : value
-      this[objectStatus] =  setStatus(this[objectStatus], StatusValue.Updated)
-      store.getContext().pushOperation({
+      this[objectStatus] = setStatus(this[objectStatus], StatusValue.Updated)
+      ctx.pushOperation({
         operationType: "set",
         target: this,
         propName: propName,
@@ -102,7 +121,6 @@ export function defineComplexArrayProp(
   target: any,
   propName: string,
   isPropViaID: boolean,
-  store:ImmutableStore<any>,
   targetType: AnyObjectType
 ) {
   const privatePropName = `_${propName}`
@@ -113,12 +131,15 @@ export function defineComplexArrayProp(
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.")
       }
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
 
-      let resultArray: any[] = []  //TODO: create observable array
+      let resultArray: any[] = [] //TODO: create observable array
 
       if (isPropViaID) {
         resultArray = this[privatePropName].map((id: string) => {
-          const obj = store.getContext().idMap.get(id)
+          const obj = ctx.idMap.get(id)
           if (!obj) {
             throw new Error(`Object with ID "${id}" of type "${targetType.name}" not found.`)
           }
@@ -139,9 +160,13 @@ export function defineComplexArrayProp(
     if (this.isDeleted || item.isDeleted) {
       throw new Error("Cannot modify properties on a deleted object.")
     }
+    const ctx:OperationContext<any> = this[context]
+    if(!ctx)
+      throw new Error("Object has no operation context!")
+
     this[privatePropName].push(isPropViaID ? item[thisPropIDName] : item)
     //TODO: set array status modified
-    store.getContext().pushOperation({
+    ctx.pushOperation({
       operationType: "add",
       target: this,
       targetType,
@@ -151,8 +176,12 @@ export function defineComplexArrayProp(
   }
 
   target[`add${propName.charAt(0).toUpperCase() + propName.slice(1)}`] = function (item: any) {
+    const ctx:OperationContext<any> = this[context]
+    if(!ctx)
+      throw new Error("Object has no operation context!")
+
     this[privatePropName].push(isPropViaID ? item[thisPropIDName] : item)
-    store.getContext().pushOperation({
+    ctx.pushOperation({
       operationType: "add",
       target: this,
       propName: propName,
@@ -165,13 +194,15 @@ export function defineComplexArrayProp(
     if (this.isDeleted || item.isDeleted) {
       throw new Error("Cannot modify properties on a deleted object.")
     }
-
+  const ctx:OperationContext<any> = this[context]
+  if(!ctx)
+    throw new Error("Object has no operation context!")
     const index = this[privatePropName].indexOf(isPropViaID ? item[thisPropIDName] : item)
     if (index === -1) return
 
     this[privatePropName].splice(index, 1)
 
-    store.getContext().pushOperation({
+    ctx.pushOperation({
       operationType: "remove",
       target: this,
       targetType: targetType,
@@ -187,7 +218,6 @@ export function defineOneToOne(
   inversePropName: string,
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
-  store:ImmutableStore<any>,
   isPropViaID: boolean = false,
   isInversePropViaID: boolean = false
 ) {
@@ -198,12 +228,16 @@ export function defineOneToOne(
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.")
       }
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
+
       if (isPropViaID) {
         const id = this[privatePropName]
         if (id === undefined) {
           return undefined
         }
-        const obj = store.getContext().idMap.get(id)
+        const obj = ctx.idMap.get(id)
         if (!obj) {
           // TODO: lazy evaluation
           throw new ObjectNotFoundError(
@@ -222,6 +256,9 @@ export function defineOneToOne(
       if (this.isDeleted || (value && value.isDeleted)) {
         throw new Error("Cannot modify properties on a deleted object.")
       }
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
       const thisPropIDName = getIDPropName(targetType)
       const inversePropIDName = getIDPropName(inverseType)
 
@@ -229,18 +266,18 @@ export function defineOneToOne(
       if (oldValue === value) return
 
       // set this object status
-      this[objectStatus] =  setStatus(this[objectStatus], StatusValue.Updated)
-      
+      this[objectStatus] = setStatus(this[objectStatus], StatusValue.Updated)
+
       // Disconnect the old inverse target
       if (oldValue) {
         oldValue[`_${inversePropName}`] = undefined
         // set oldValue object status
-        oldValue[objectStatus] =  setStatus(oldValue[objectStatus], StatusValue.Updated)
+        oldValue[objectStatus] = setStatus(oldValue[objectStatus], StatusValue.Updated)
       }
 
       if (value) {
         // set oldValue object status
-        value[objectStatus] =  setStatus(value[objectStatus], StatusValue.Updated)
+        value[objectStatus] = setStatus(value[objectStatus], StatusValue.Updated)
 
         // Connect the new inverse target
         value[`_${inversePropName}`] = isInversePropViaID ? this[inversePropIDName] : this
@@ -251,7 +288,7 @@ export function defineOneToOne(
       }
 
       // Push the operation to the stack
-      store.getContext().pushOperation({
+      ctx.pushOperation({
         operationType: "set",
         target: this,
         targetType,
@@ -271,7 +308,6 @@ export function defineOneToMany(
   inversePropName: string,
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
-  store:ImmutableStore<any>,
   isPropViaID: boolean = false,
   isInversePropViaID: boolean = false
 ) {
@@ -283,9 +319,13 @@ export function defineOneToMany(
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.")
       }
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
+
       if (isPropViaID) {
         return this[privatePropName]
-          .map((id: string) => store.getContext().idMap.get(id))
+          .map((id: string) => ctx.idMap.get(id))
           .filter((item: any) => item && !item.isDeleted)
       } else {
         return this[privatePropName].filter((item: any) => !item.isDeleted)
@@ -298,6 +338,9 @@ export function defineOneToMany(
     if (this.isDeleted || item.isDeleted) {
       throw new Error("Cannot modify properties on a deleted object.")
     }
+  const ctx:OperationContext<any> = this[context]
+  if(!ctx)
+    throw new Error("Object has no operation context!")
 
     const thisPropIDName = getIDPropName(targetType)
     const inversePropIDName = getIDPropName(inverseType)
@@ -311,7 +354,7 @@ export function defineOneToMany(
       item[`_${inversePropName}`] = this
     }
 
-    store.getContext().pushOperation({
+    ctx.pushOperation({
       operationType: "add",
       target: this,
       targetType,
@@ -324,6 +367,9 @@ export function defineOneToMany(
     if (this.isDeleted || item.isDeleted) {
       throw new Error("Cannot modify properties on a deleted object.")
     }
+  const ctx:OperationContext<any> = this[context]
+  if(!ctx)
+    throw new Error("Object has no operation context!")
 
     const thisPropIDName = getIDPropName(targetType)
     const inversePropIDName = getIDPropName(inverseType)
@@ -332,7 +378,7 @@ export function defineOneToMany(
     if (index === -1) return
 
     // Update the operation stack
-    store.getContext().pushOperation({
+    ctx.pushOperation({
       operationType: "remove",
       target: this,
       targetType,
@@ -351,11 +397,10 @@ export function defineManyToOne(
   inversePropName: string,
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
-  store:ImmutableStore<any>,
   isPropViaID: boolean = false,
   isInversePropViaID: boolean = false
 ) {
-   const privatePropName = `_${propName}`
+  const privatePropName = `_${propName}`
 
   const thisPropIDName = getIDPropName(targetType)
   const inversePropIDName = getIDPropName(inverseType)
@@ -365,12 +410,15 @@ export function defineManyToOne(
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.")
       }
-
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
+    
       if (isPropViaID) {
         const value = this[privatePropName]
         if (value === undefined) return undefined
 
-        const obj = store.getContext().idMap.get(value)
+        const obj = ctx.idMap.get(value)
         if (!obj) {
           throw new ObjectNotFoundError(
             value,
@@ -389,7 +437,10 @@ export function defineManyToOne(
       if (this.isDeleted) {
         throw new Error("Cannot modify properties on a deleted object.")
       }
-
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
+    
       // Find the old value
       const oldValue = this[propName]
 
@@ -418,7 +469,7 @@ export function defineManyToOne(
       }
 
       // Push the operation to the stack
-      store.getContext().pushOperation({
+      ctx.pushOperation({
         operationType: "set",
         target: this,
         targetType,
@@ -437,7 +488,6 @@ export function defineManyToMany(
   inversePropName: string,
   targetType: AnyObjectType,
   inverseType: AnyObjectType,
-  store:ImmutableStore<any>,
   isPropViaID: boolean = false,
   isInversePropViaID: boolean = false
 ) {
@@ -453,11 +503,14 @@ export function defineManyToMany(
       if (this.isDeleted) {
         throw new Error("Cannot access properties on a deleted object.")
       }
+      const ctx:OperationContext<any> = this[context]
+      if(!ctx)
+        throw new Error("Object has no operation context!")
 
       // If the property is supposed to hold IDs, simply return the array of IDs
       if (isPropViaID) {
         return this[privatePropName]
-          .map((id: string) => store.getContext().idMap.get(id))
+          .map((id: string) => ctx.idMap.get(id))
           .filter((item: any) => item && !item.isDeleted)
       }
 
@@ -471,6 +524,9 @@ export function defineManyToMany(
     if (this.isDeleted || item.isDeleted) {
       throw new Error("Cannot modify properties on a deleted object.")
     }
+  const ctx:OperationContext<any> = this[context]
+  if(!ctx)
+    throw new Error("Object has no operation context!")
 
     // Find the value to add based on isPropViaID
     const valueToAdd = isPropViaID ? item[inversePropIDName] : item
@@ -491,7 +547,7 @@ export function defineManyToMany(
     }
 
     // Push the operation to the operation stack
-    store.getContext().pushOperation({
+    ctx.pushOperation({
       operationType: "add",
       target: this,
       targetType,
@@ -506,6 +562,10 @@ export function defineManyToMany(
       throw new Error("Cannot modify properties on a deleted object.")
     }
 
+    const ctx:OperationContext<any> = this[context]
+    if(!ctx)
+      throw new Error("Object has no operation context!")
+    
     // Find the value to remove based on isPropViaID
     const valueToRemove = isPropViaID ? item[inversePropIDName] : item
 
@@ -530,7 +590,7 @@ export function defineManyToMany(
     }
 
     // Push the operation to the operation stack
-    store.getContext().pushOperation({
+    ctx.pushOperation({
       operationType: "remove",
       target: this,
       targetType,

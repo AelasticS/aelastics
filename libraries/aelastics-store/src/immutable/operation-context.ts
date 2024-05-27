@@ -72,8 +72,11 @@ export class ObjectNotFoundError extends Error {
   }
 }
 
+export type OperationMode = "mutable" | "immutable" | "frozen" 
+
 export class OperationContext<S> {
   state: S = null as S
+  operationMode : OperationMode = "mutable"
   operationStack: Operation[] = []
   redoStack: Operation[] = []
   isUndoRedoOperation: boolean = false
@@ -114,7 +117,7 @@ export class OperationContext<S> {
     ID?: string
   ): P {
     // Create a new instance of the dynamic class
-    const instance = new dynamicClass(initialProps, ID)
+    const instance = new dynamicClass(initialProps, this, ID)
     const IDName = getIDPropName(targetType)
     // Add the object to the idMap
     this.idMap.set(instance[IDName], instance)
