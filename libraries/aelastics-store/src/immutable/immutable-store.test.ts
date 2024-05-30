@@ -58,6 +58,7 @@ const TutorType = t.entity(
     id: t.string,
     name: t.string,
     tutee: t.optional(StudentType),
+    tutee2: t.optional(StudentType),
   },
   ["id"],
   "Tutor",
@@ -128,13 +129,22 @@ describe("ImmutableStore", () => {
     const oldState = immutableStore.getState()
 
     // Act
+    const tt = immutableStore.newObject(TutorType, { id: "2", name: "tutor1" }, "2")
     immutableStore.produce((draft) => {
-      const tt = immutableStore.newObject(TutorType, { id: "2", name: "tutor1" })
       draft.tutor = tt
     })
 
+    const zz = immutableStore.newObject(StudentType, { id: "3", name: "student2" }, "3")
+    immutableStore.produce((draft) => {
+      draft.tutor.tutee2 = zz
+    })
+
+    const newState = immutableStore.getState()
     // Assert
-    expect(oldState).not.toBe(immutableStore.getState())
+    expect(newState.tutor).not.toBe(oldState.tutor)
+    expect(newState.tutor.tutee2).not.toBe(oldState.tutor.tutee2)
+    expect(newState.tutor.tutee).not.toBe(oldState.tutor.tutee)
+    expect(newState).not.toBe(oldState)
   })
 
   // One-to-one

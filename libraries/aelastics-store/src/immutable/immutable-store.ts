@@ -96,11 +96,10 @@ export class ImmutableStore<S> {
    * @param {(draft: Draft<S>) => void} f - A function that receives the current state as a draft and modifies it.
    */
   produce(f: (draft: S) => void): S {
-
     // change the operation mode
     const oldMode = this.getContext().operationMode
     this.getContext().operationMode = "immutable"
-        // apply f
+    // apply f
     f(this.getState())
     // get a new version of the state
     const r = this.getNewVersionOfState()
@@ -112,10 +111,8 @@ export class ImmutableStore<S> {
   private getNewVersionOfState() {
     function makeClone(res: IResult, store: ImmutableStore<unknown>) {
       const oldObject = res.object
-      if (res.object[clone]) 
-        res.object = res.object[clone]
-      else 
-        res.object = shallowCloneObject(res.object)
+      if (res.object[clone]) res.object = res.object[clone]
+      else res.object = shallowCloneObject(res.object)
       res.cloned = true
       // update context
       res.object[context] = store.getContext()
@@ -124,6 +121,7 @@ export class ImmutableStore<S> {
       // Update IdMap in new object
       store.getIdMap().set(res.object[objectUUID], res.object)
     }
+
     const fInitObject: IProcessorInit = (value: ImmutableObject, currNode) => {
       let res: IResult = { object: currNode.instance, cloned: false }
       if (res.object.isUpdated) {

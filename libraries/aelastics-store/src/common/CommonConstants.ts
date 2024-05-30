@@ -54,29 +54,27 @@ export interface ImmutableObject extends t.ObjectLiteral {
   readonly [objectUUID]: string
   [objectStatus]: StatusValue
   [clone]: ImmutableObject | undefined
-  [context]:OperationContext<any>
-  get isDeleted():boolean
-  get isUpdated():boolean
+  [context]: OperationContext<any>
+  get isDeleted(): boolean
+  get isUpdated(): boolean
 }
 
-
 // Combined function to distinguish between arrays, objects, Maps, and other types
-export function checkJavascriptType(value: any): 'array' | 'object' |  'map' | 'neither'{
+export function checkJavascriptType(value: any): "array" | "object" | "map" | "neither" {
   if (Array.isArray(value)) {
-      return 'array';
-    } else if (value instanceof Map) {
-      return 'map';
-  } else if (typeof value === 'object' && value !== null) {
-      return 'object';
+    return "array"
+  } else if (value instanceof Map) {
+    return "map"
+  } else if (typeof value === "object" && value !== null) {
+    return "object"
   } else {
-      return 'neither';
+    return "neither"
   }
 }
 
 // Create a shallow copy of the object including hidden properties
 export function shallowCloneObject<T>(obj: T): T {
-  const copiedObj = Object.create(Object.getPrototypeOf(obj));
-  Object.defineProperties(copiedObj, Object.getOwnPropertyDescriptors(obj));
-  return copiedObj;
+  const copiedObj = Object.create(Object.getPrototypeOf(obj))
+  Object.defineProperties(copiedObj, Object.getOwnPropertyDescriptors(obj))
+  return copiedObj
 }
-

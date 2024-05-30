@@ -36,7 +36,7 @@ import { uuidv4Generator } from "./repository"
 import { StatusValue } from "../common/Status"
 import { ImmutableStore } from "./immutable-store"
 
-export type Class<P extends ImmutableObject> = { new (init: P, ctx:OperationContext<unknown>, ID?:string): P }
+export type Class<P extends ImmutableObject> = { new (init: P, ctx: OperationContext<unknown>, ID?: string): P }
 
 /**
  * Dynamically creates a class based on a given object type.
@@ -47,7 +47,10 @@ export type Class<P extends ImmutableObject> = { new (init: P, ctx:OperationCont
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ImmutableObject>(objectType: AnyObjectType, store:ImmutableStore<unknown>): Class<P> {
+export function createClass<P extends ImmutableObject>(
+  objectType: AnyObjectType,
+  store: ImmutableStore<unknown>
+): Class<P> {
   const props = objectType.allProperties
   const inverses = objectType.allInverse
   class DynamicClass {
@@ -61,13 +64,14 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
       return this[objectStatus] === StatusValue.Updated
     }
 
-    constructor(init: P, ctx:OperationContext<any>, ID?:string) {
+    constructor(init: P, ctx: OperationContext<any>, ID?: string) {
       this[OT] = objectType.fullPathName
       this[isTypeEntity] = objectType.isEntity
       this[clone] = undefined
       this[context] = ctx
 
-      if (ID) { // allready existing objects
+      if (ID) {
+        // allready existing objects
         this[objectUUID] = ID
         this[objectStatus] = StatusValue.Initializing
       } else {
@@ -104,7 +108,8 @@ export function createClass<P extends ImmutableObject>(objectType: AnyObjectType
           throw new Error(`Property "${propName}" is required!`)
         }
       })
-      if (ID) { // allready existing objects
+      if (ID) {
+        // allready existing objects
         this[objectStatus] = StatusValue.Unmodified
       }
     }
