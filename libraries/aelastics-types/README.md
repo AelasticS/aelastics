@@ -49,20 +49,20 @@ The example defines four different elements of an application state: `A` as an o
 Importing all exported methods from the library will give the developer access to all available methods for type definition:
 
 ### Import all available types
-```
+```ts
 import * as t from "aelastics-types"
 ```
 
 ### Schema definition
 Defining a schema in the `aelastics-types` library is crucial as it serves as the blueprint for the application state model. The schema defines the structure, relationships, and constraints of the entities within the application. By creating a schema, you ensure that the data adheres to a consistent format, enabling efficient state management and updates.
-```
+```ts
 export const ExampleSchema = t.schema("ExampleSchema")
 ```
 
 ### Types and relationships definition
 #### Step 1 - Schema and type definition
 In this step, you define the schema and the types that represent the entities and their relationships within the application. Each entity is defined with its properties and the relationships it holds with other entities.
-```
+```ts
 // Type definition
 const AType = t.object({
   name: "A"
@@ -104,7 +104,7 @@ ExampleSchema)
 ```
 
 This type definition can then be exported to be used in the instantiation of new state objects through the use of the `aelastics-store` library in the following way:
-```
+```ts
 export type IAType = t.TypeOf<typeof AType>
 export type IBType = t.TypeOf<typeof BType>
 export type IBType = t.TypeOf<typeof CType>
