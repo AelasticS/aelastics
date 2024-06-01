@@ -472,10 +472,10 @@ export function defineManyToOne(
         this[privatePropName] = isPropViaID ? value[inversePropIDName] : value
 
         // Connect the new parent
-        if (isInversePropViaID && !value[`_${inversePropName}`].includes(this[thisPropIDName])) {
-          value[`_${inversePropName}`].push(this[thisPropIDName])
-        } else if (!isInversePropViaID && !value[`_${inversePropName}`].includes(this)) {
-          value[`_${inversePropName}`].push(this)
+        if (isInversePropViaID && !value[`_${inversePropName}`]?.includes(this[thisPropIDName])) {
+          value[`_${inversePropName}`]?.push(this[thisPropIDName])
+        } else if (!isInversePropViaID && !value[`_${inversePropName}`]?.includes(this)) {
+          value[`_${inversePropName}`]?.push(this)
         }
       } else {
         this[privatePropName] = undefined
