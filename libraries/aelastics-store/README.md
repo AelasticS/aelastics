@@ -26,18 +26,51 @@ The `aelastics-store` library relies on the type definitions documented in the `
 
 
 ## Usage example
-### Creating and managing state
-
+### Type definition assumptions
+The following example assumes that the entities and relationships below have been previously defined using the `aelastics-types` library.
 ```ts
 import * as t from "aelastics-types"
+
+// Assume the UniversitySchema is already defined using aelastics-types library.
+const StudentType = t.entity(
+  {
+    id: t.string,
+    name: t.string,
+    tutor: t.optional(t.link(UniversitySchema, "Tutor", "TutorType")),
+  },
+  ["id"],
+  "Student",
+  UniversitySchema
+)
+
+const TutorType = t.entity(
+  {
+    id: t.string,
+    name: t.string,
+    tutee: t.optional(t.link(UniversitySchema, "Tutee", "StudentType")),
+  },
+  ["id"],
+  "Tutor",
+  UniversitySchema
+)
+
+// Define the inverse properties for the university domain
+t.inverseProps(StudentType, "tutor", TutorType, "tutee")
+
+// Define the interface types for the university domain
+type IStudentType = t.TypeOf<typeof StudentType> 
+type ITutorType = t.TypeOf<typeof TutorType>
+```
+
+### Creating state
+```ts
 import { ImmutableStore } from "aelastics-store"
 import { ImmutableObject, objectStatus } from "aelastics-types/common/CommonConstants"
 import { StatusValue } from "aelastics-types/common/Status"
 
-// Assume the schema and types are defined using aelastics-types library
 
 // Define initial state
-const initStudent = {
+const initStudent: IStudentType = {
   id: "1",
   name: "student1",
   tutor: undefined,
@@ -46,77 +79,34 @@ const initStudent = {
 // Create an ImmutableStore instance
 const immutableStore = new ImmutableStore(StudentType)
 const student = immutableStore.createRoot(initStudent, "1")
-const oldState = immutableStore.getState()
+```
 
-// Update the state
+### Simple updates
+```ts
 const newState = immutableStore.produce((draft) => {
   draft.name = "new student name"
 })
-
-// Check immutability
-console.assert(oldState !== newState)
-console.assert(oldState.name === "student1")
-console.assert(newState.name === "new student name")
 ```
 
-### Managing Nested State
+### Nested updates
 Updates to nested objects also produce new states, ensuring the entire state tree remains immutable.
 ```ts
-const tt = immutableStore.newObject(TutorType, { id: "2", name: "tutor1" }, "2")
-student.tutor = tt
-
-const oldState = immutableStore.getState()
-
 const newState = immutableStore.produce((draft) => {
+  const tt = immutableStore.newObject(TutorType, { id: "2", name: "tutor1" }, "2")
+  draft.tutor = tt
   draft.tutor.name = "new tutor name"
 })
-
-console.assert(oldState !== newState)
-console.assert(oldState.tutor.name === "tutor1")
-console.assert(oldState.tutor !== newState.tutor)
-console.assert(newState.tutor.name === "new tutor name")
 ```
 
 ### Handling cyclic relationships
-The library handles cyclic relationships between entities efficiently, ensuring that updates propagate correctly through the entire state graph.
+The library handles cyclic relationships between entities, ensuring that updates propagate correctly through the entire state graph.
 ```ts
-const student = immutableStore.createRoot(initStudent, "1")
-
-const oldState = immutableStore.getState()
-
-const tt = immutableStore.newObject(TutorType, { id: "2", name: "tutor1" }, "2")
 immutableStore.produce((draft) => {
-  draft.tutor = tt
+  draft.tutor.tutee.name = "new tutee name"
 })
-
-const zz = immutableStore.newObject(StudentType, { id: "3", name: "student2" }, "3")
-immutableStore.produce((draft) => {
-  draft.tutor.tutee2 = zz
-})
-
-const newState = immutableStore.getState()
-
-console.assert(newState.tutor !== oldState.tutor)
-console.assert(newState.tutor.tutee2 !== oldState.tutor.tutee2)
-console.assert(newState.tutor.tutee !== oldState.tutor.tutee)
-console.assert(newState !== oldState)
 ```
 
 ### Bi-Directional Relationship Consistency
 Updates to one side of a bi-directional relationship automatically reflect on the other side, maintaining consistency.
-```ts
-const student = immutableStore.createRoot(initStudent, "1")
-let tutor
-
-immutableStore.produce((draft) => {
-  tutor = immutableStore.newObject(TutorType, { id: "2", name: "tutor1", tutee: draft })
-})
-
-const updatedTutee = immutableStore.getState()
-const updatedTutor = updatedTutee.tutor
-
-console.assert(updatedTutee.tutor === tutor)
-console.assert(updatedTutor.tutee === updatedTutee)
-```
 
 The aelastics-store library provides a robust solution for managing immutable state in applications. By leveraging the power of immutability and efficient state updates, it ensures that application state remains consistent and easy to manage, even in complex scenarios involving nested and bi-directional relationships.
