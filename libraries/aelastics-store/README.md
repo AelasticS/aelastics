@@ -19,10 +19,10 @@ Immutability is a core principle in state management that ensures the state cann
 State updates are performed using a functional approach. When an update is needed, a new state is produced by applying a function to the current state. This function creates a draft of the current state, applies the necessary changes, and then returns a new state with those changes applied, leaving the original state unchanged.
 
 ### Managing Relationships
-The library efficiently manages bi-directional relationships between entities. When one side of the relationship is updated, the other side is automatically kept in sync. This is crucial for maintaining consistency in complex state models where entities are interconnected.
+The library provides bi-directional relationship management between entities. When one side of the relationship is updated, the other side is automatically kept in sync. This is crucial for maintaining consistency in complex state models where entities are interconnected.
 
 ## Defining State with aelastics-store
-The aelastics-store library relies on the type definitions documented in the aelastics-types library. Once you have your types defined, you can use aelastics-store to manage the immutable state of your application.
+The `aelastics-store` library relies on the type definitions documented in the `aelastics-types` library. Once you have your types defined, you can use aelastics-store to manage the immutable state of your application.
 
 
 ## Usage example
@@ -45,7 +45,7 @@ const initStudent = {
 
 // Create an ImmutableStore instance
 const immutableStore = new ImmutableStore(StudentType)
-const student = immutableStore.createRoot(initStudent, "1") as unknown as ImmutableObject
+const student = immutableStore.createRoot(initStudent, "1")
 const oldState = immutableStore.getState()
 
 // Update the state
@@ -64,8 +64,7 @@ Updates to nested objects also produce new states, ensuring the entire state tre
 ```ts
 const tt = immutableStore.newObject(TutorType, { id: "2", name: "tutor1" }, "2")
 student.tutor = tt
-student[objectStatus] = StatusValue.Unmodified
-tt[objectStatus] = StatusValue.Unmodified
+
 const oldState = immutableStore.getState()
 
 const newState = immutableStore.produce((draft) => {
@@ -81,8 +80,8 @@ console.assert(newState.tutor.name === "new tutor name")
 ### Handling cyclic relationships
 The library handles cyclic relationships between entities efficiently, ensuring that updates propagate correctly through the entire state graph.
 ```ts
-const student = immutableStore.createRoot(initStudent, "1") as unknown as ImmutableObject
-student[objectStatus] = StatusValue.Unmodified
+const student = immutableStore.createRoot(initStudent, "1")
+
 const oldState = immutableStore.getState()
 
 const tt = immutableStore.newObject(TutorType, { id: "2", name: "tutor1" }, "2")
@@ -106,7 +105,7 @@ console.assert(newState !== oldState)
 ### Bi-Directional Relationship Consistency
 Updates to one side of a bi-directional relationship automatically reflect on the other side, maintaining consistency.
 ```ts
-const student = immutableStore.createRoot(initStudent, "1") as unknown as ImmutableObject
+const student = immutableStore.createRoot(initStudent, "1")
 let tutor
 
 immutableStore.produce((draft) => {
