@@ -36,8 +36,8 @@ The `aelastics-types` library is a TypeScript library used for defining and mani
 #### Direct relationships
 When defining a type that includes a direct reference to another type, you typically use `entityReference` to define a property that holds a direct uni-directional reference to another object or entity. This is useful for creating one-to-one and one-to-many uni-directional relationships.
 
-#### Composed relationships
-The `link` method is used to defined relationships between entities(bi-directional). It creates a link or reference from one entity to another. This is particularly useful for defining relationships such as one-to-one, one-to-many, or many-to-many between different entities.
+#### Complex relationships
+The `link` method is used to define bi-directional relationships between entities. It creates a link or reference from one entity to another. This is particularly useful for defining relationships such as one-to-one, one-to-many, or many-to-many between different entities.
 
 The `inverseProps` method is used to define inverse properties in bi-directional relationships. This ensures that changes in one direction of the relationship are automatically reflected in the opposite direction, maintaining consistency between related entities.
 
@@ -45,10 +45,14 @@ The `inverseProps` method is used to define inverse properties in bi-directional
 ## Basic usage
 The example defines four different elements of an application state: `A` as an object type, and `B`, `C`, and `D` as entity types. The lines between entities represent the relationships between these.
 
-![alt text](./assets/image.png)
-Importing all exported methods from the library will give the developer access to all available methods for type definition:
+<div id="figure-1" style="text-align: center;">
+  <img src="./assets/graph-trees-docs.png" alt="Graph as trees decomposition" style="width: 500px;" />
+  <figcaption>Figure 1: 3-step graph decomposition into interconnected trees.</figcaption>
+</div>
+
 
 ### Import all available types
+Importing all available types/utils from the library:
 ```ts
 import * as t from "aelastics-types"
 ```
@@ -61,7 +65,7 @@ export const ExampleSchema = t.schema("ExampleSchema")
 
 ### Types and relationships definition
 #### Step 1 - Schema and type definition
-In this step, you define the schema and the types that represent the entities and their relationships within the application. Each entity is defined with its properties and the relationships it holds with other entities.
+In this step, you define the schema and the types that represent the entities and their relationships within the application. Each entity is defined with its properties and the relationships it holds with other entities. Corresponds to step 1 in [Figure 1](#figure-1).
 ```ts
 // Type definition
 const AType = t.object({
@@ -100,6 +104,8 @@ const DType = t.entity({
 ExampleSchema)
 
 // Inverse properties definition
+t.inverseProps(BType, "bToCRelation", CType, "cToBRelation")
+t.inverseProps(BType, "bToDRelation", DType, "dToCRelation")
 
 ```
 
@@ -112,7 +118,7 @@ export type IBType = t.TypeOf<typeof DType>
 ```
 
 #### Step 2 - Graph relationships decomposition
-The decomposition of graph relationships into interconnected trees is a core feature of the `aelastics-store` library, that needs to be used in conjunction with the `aelastics-types` library. This decomposition helps manage the state efficiently by breaking down complex graphs into simpler, manageable trees.
+The decomposition of graph relationships into interconnected trees is a core feature of the `aelastics-store` library, that needs to be used in conjunction with the `aelastics-types` library. This decomposition helps manage the state efficiently by breaking down complex graphs into simpler, manageable trees. Corresponds to step 2 in [Figure 1](#figure-1).
 
 For further references, the following files can be targeted in order to better understand this process:
 
@@ -126,6 +132,8 @@ For further references, the following files can be targeted in order to better u
 The interconnected trees state representation is the result of decomposing the graph relationships defined in the schema. By representing the state as a set of interconnected trees, the framework can efficiently manage and update the state, ensuring consistency and performance.
 
 The interconnected trees allow the framework to traverse and manipulate the state model in a structured manner, making it easier to apply updates, propagate changes, and maintain the integrity of the relationships between entities.
+
+Corresponds to step 3 in [Figure 1](#figure-1).
 
 
 ## AelasticS typescript-library-starter
