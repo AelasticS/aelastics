@@ -155,10 +155,10 @@ describe("ImmutableStore", () => {
       })
 
       // Assert
-      expect(true).toBe(true)
       expect(course).not.toBe(updatedCourse)
       expect(updatedCourse.program).toBeDefined()
       expect(updatedCourse?.program?.name).toEqual("program 1 updated")
+      expect(updatedCourse.program?.courses[0]).toBe(updatedCourse)
     })
 
     // TODO: uncomment this test when the one-to-many relationships are correctly implemented
