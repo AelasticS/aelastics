@@ -14,7 +14,7 @@ import { ServiceError } from 'aelastics-result';
 import * as t from 'aelastics-types';
 import { computed, extendObservable, IObservableArray, observe } from 'mobx';
 import * as types from 'aelastics-types';
-import { StatusValue } from './Status';
+import { StatusValue } from '../common/Status';
 import { ITransformer, Node, WhatToDo } from 'aelastics-types';
 import { prefixValue, objectStatus, objectSync, getUnderlyingType } from '../common/CommonConstants';
 

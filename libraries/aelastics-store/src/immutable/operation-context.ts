@@ -10,9 +10,8 @@
  */
 
 import { Any, AnyObjectType, ObjectLiteral } from "aelastics-types"
-import { capitalizeFirstLetter } from "../common/CommonConstants"
+import { capitalizeFirstLetter, getIDPropName } from "../common/CommonConstants"
 import { Class } from "./createClass"
-import { getIDPropName } from "./propCreatorsWithUndo"
 
 // export type Operation = {
 //     operationType: "add" | "remove" | "set";
@@ -73,12 +72,27 @@ export class ObjectNotFoundError extends Error {
   }
 }
 
-export class OperationContext {
+export type OperationMode = "mutable" | "immutable" | "frozen" 
+
+export class OperationContext<S> {
+  state: S = null as S
+  operationMode : OperationMode = "mutable"
   operationStack: Operation[] = []
   redoStack: Operation[] = []
   isUndoRedoOperation: boolean = false
-  idMap: Map<string, any> = new Map()
-  deletedMap: Map<string, any> = new Map()
+  idMap: Map<string, any>
+  deletedMap: Map<string, any>
+
+  constructor(state?: S, idMap?: Map<string, any>, deletedMap?: Map<string, any>) {
+    if (state) this.state = state
+    // init maps
+    this.idMap = new Map(idMap)
+    this.deletedMap = new Map(deletedMap)
+  }
+
+  setState(state:S) {
+    this.state = state
+  }
 
   startUndoRedoOperation() {
     this.isUndoRedoOperation = true
@@ -96,9 +110,14 @@ export class OperationContext {
     }
   }
 
-  createObject<P extends ObjectLiteral>(dynamicClass: Class<P>, initialProps: P, targetType: AnyObjectType): P {
+  createObject<P extends ObjectLiteral>(
+    dynamicClass: Class<any>,
+    initialProps: ObjectLiteral,
+    targetType: AnyObjectType,
+    ID?: string
+  ): P {
     // Create a new instance of the dynamic class
-    const instance = new dynamicClass(initialProps)
+    const instance = new dynamicClass(initialProps, this, ID)
     const IDName = getIDPropName(targetType)
     // Add the object to the idMap
     this.idMap.set(instance[IDName], instance)

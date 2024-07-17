@@ -11,16 +11,16 @@
 
 // Status of persistent objects
 export enum StatusValue {
-    Initializing, // object is stil under creation/deserialization/hydration
-    Unmodified, // object is unchanged. but can be changed
-    Created,    // object is new, can be changed
-    Updated,    // object is modified
-    Deleted     // object is deleted
+    Initializing,// 0- object is stil under creation/deserialization/hydration
+    Unmodified, //  1-object is unchanged. but can be changed
+    Created,    //  2- object is new, can be changed
+    Updated,    //  3- object is modified
+    Deleted     //  4- object is deleted
 }
 
 
 const statusOutcome: StatusValue [][] = [
-    [StatusValue.Initializing, StatusValue.Unmodified, StatusValue.Initializing, StatusValue.Initializing, StatusValue.Deleted],// old - initializing
+    [StatusValue.Initializing, StatusValue.Initializing, StatusValue.Initializing, StatusValue.Initializing, StatusValue.Deleted],// old - initializing
     [StatusValue.Unmodified, StatusValue.Unmodified, StatusValue.Unmodified, StatusValue.Updated, StatusValue.Deleted],// unmodified
     [StatusValue.Initializing/*changed*/, StatusValue.Created, StatusValue.Created, StatusValue.Created, StatusValue.Deleted/*brisem objekat*/],// created
     [StatusValue.Updated, StatusValue.Updated, StatusValue.Updated, StatusValue.Updated, StatusValue.Deleted],// updated
@@ -30,8 +30,11 @@ const statusOutcome: StatusValue [][] = [
 
 
 
-function setStatus(oldStatus: StatusValue, newStatus: StatusValue): StatusValue {
-    return statusOutcome[oldStatus][newStatus];
+export function setStatus(oldStatus: StatusValue, newStatus: StatusValue): StatusValue {
+    if(oldStatus && newStatus)
+        return statusOutcome[oldStatus][newStatus];
+    else 
+        return oldStatus
 }
 
 // Used by persistent objects to keep its status

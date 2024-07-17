@@ -11,8 +11,17 @@
 
 import { AnyObjectType } from "aelastics-types"
 
-import { immerable } from "immer"
-import { ImmerableObjectLiteral, capitalizeFirstLetter, getUnderlyingType, objectUUID } from "../common/CommonConstants"
+import {
+  ImmutableObject,
+  capitalizeFirstLetter,
+  getUnderlyingType,
+  objectStatus,
+  objectUUID,
+  objectType as OT,
+  isTypeEntity,
+  clone,
+  context,
+} from "../common/CommonConstants"
 import {
   defineSimpleValue,
   defineComplexObjectProp,
@@ -24,8 +33,10 @@ import {
 } from "./propCreatorsWithUndo"
 import { OperationContext } from "./operation-context"
 import { uuidv4Generator } from "./repository"
+import { StatusValue } from "../common/Status"
+import { ImmutableStore } from "./immutable-store"
 
-export type Class<P extends ImmerableObjectLiteral> = { new (init: P): P }
+export type Class<P extends ImmutableObject> = { new (init: P, ctx: OperationContext<unknown>, ID?: string): P }
 
 /**
  * Dynamically creates a class based on a given object type.
@@ -36,19 +47,37 @@ export type Class<P extends ImmerableObjectLiteral> = { new (init: P): P }
  * @param ctx - The operation context used for tracking changes.
  * @returns The dynamically created class based on the given object type.
  */
-export function createClass<P extends ImmerableObjectLiteral>(
+export function createClass<P extends ImmutableObject>(
   objectType: AnyObjectType,
-  ctx: OperationContext
+  store: ImmutableStore<unknown>
 ): Class<P> {
   const props = objectType.allProperties
   const inverses = objectType.allInverse
-
   class DynamicClass {
     [key: string]: any
-    [immerable] = true
-    constructor(init: P) {
-      this.isDeleted = false
-      this[objectUUID] = uuidv4Generator()
+
+    public get isDeleted(): boolean {
+      return this[objectStatus] === StatusValue.Deleted
+    }
+
+    public get isUpdated(): boolean {
+      return this[objectStatus] === StatusValue.Updated
+    }
+
+    constructor(init: P, ctx: OperationContext<any>, ID?: string) {
+      this[OT] = objectType.fullPathName
+      this[isTypeEntity] = objectType.isEntity
+      this[clone] = undefined
+      this[context] = ctx
+
+      if (ID) {
+        // allready existing objects
+        this[objectUUID] = ID
+        this[objectStatus] = StatusValue.Initializing
+      } else {
+        this[objectUUID] = uuidv4Generator()
+        this[objectStatus] = StatusValue.Created
+      }
       // Initialize private properties
       props.forEach((type, propName) => {
         // if init[propName] is an optional or link, we get the underlying type. here we need to figure out to be able to provide undefined if the value is not there
@@ -64,7 +93,7 @@ export function createClass<P extends ImmerableObjectLiteral>(
         const underlyingType = getUnderlyingType(type)
 
         if (underlyingType.typeCategory === "Array") {
-          this[privatePropName] = []
+          this[privatePropName] = createArray()
           if (init[propName] && init[propName].length > 0) {
             // for each element in the array of init[propName], we call the method this[`add${capitalizeFirstLetter(propName)}`](init[propName]) declared in the prototype for it
             init[propName].forEach((element: any) => {
@@ -79,8 +108,13 @@ export function createClass<P extends ImmerableObjectLiteral>(
           throw new Error(`Property "${propName}" is required!`)
         }
       })
+      if (ID) {
+        // allready existing objects
+        this[objectStatus] = StatusValue.Unmodified
+      }
     }
   }
+
   // Define properties
   props.forEach((propType, propName) => {
     if (inverses.has(propName)) {
@@ -101,7 +135,6 @@ export function createClass<P extends ImmerableObjectLiteral>(
           inversePropName,
           propObjectType,
           inverseObjectType,
-          ctx,
           isPropID,
           isInversePropID
         )
@@ -112,7 +145,6 @@ export function createClass<P extends ImmerableObjectLiteral>(
           inversePropName,
           propObjectType,
           inverseObjectType,
-          ctx,
           isPropID,
           isInversePropID
         )
@@ -123,7 +155,6 @@ export function createClass<P extends ImmerableObjectLiteral>(
           inversePropName,
           propObjectType,
           inverseObjectType,
-          ctx,
           isPropID,
           isInversePropID
         )
@@ -134,7 +165,6 @@ export function createClass<P extends ImmerableObjectLiteral>(
           inversePropName,
           propObjectType,
           inverseObjectType,
-          ctx,
           isPropID,
           isInversePropID
         )
@@ -143,14 +173,14 @@ export function createClass<P extends ImmerableObjectLiteral>(
       // Define the property without an inverse
       const realPropType = getUnderlyingType(propType)
       if (realPropType.isSimple()) {
-        defineSimpleValue(DynamicClass.prototype, propName, realPropType, ctx)
+        defineSimpleValue(DynamicClass.prototype, propName, realPropType)
       } else if (realPropType.typeCategory === "Object") {
         const invType = realPropType as AnyObjectType
 
-        defineComplexObjectProp(DynamicClass.prototype, propName, invType.isEntity, ctx, invType)
+        defineComplexObjectProp(DynamicClass.prototype, propName, invType.isEntity, invType)
       } else if (realPropType.typeCategory === "Array") {
         const invType = realPropType as AnyObjectType
-        defineComplexArrayProp(DynamicClass.prototype, propName, invType.isEntity, ctx, invType)
+        defineComplexArrayProp(DynamicClass.prototype, propName, invType.isEntity, invType)
       }
     }
   })
@@ -183,5 +213,10 @@ export function createClass<P extends ImmerableObjectLiteral>(
 
   // Return the dynamically created class with its own name
   Object.defineProperty(DynamicClass, "name", { value: objectType.name })
-  return DynamicClass as Class<P>
+  return DynamicClass as unknown as Class<P>
+}
+
+//TODO: create an observarable array
+function createArray(): any {
+  return []
 }
