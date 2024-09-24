@@ -24,7 +24,7 @@ export interface IVarOption {
 
 // method decorator
 // TODO: remove name parameter
-export const VarPoint = (name: string) => {
+export const VarPoint = (name?: string) => {
   return function (
     target: any,
     propertyKey: string,
