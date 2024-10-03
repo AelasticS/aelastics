@@ -11,7 +11,7 @@ import {
     SolitaryFeature,
 } from "../feature-model/fm-metamodel/fm-components";
 
-const domainFMDiagram: Element<fm.IFeatureDiagram> = (
+export const domainFMDiagram: Element<fm.IFeatureDiagram> = (
     <FeatureDiagram name="EER2Rel Domain FM">
         <RootFeature name="Domain_FM" minCardinality={1} maxCardinality={1}>
             <GroupFeature name="Infrastructure" minCardinality={1} maxCardinality={1}>

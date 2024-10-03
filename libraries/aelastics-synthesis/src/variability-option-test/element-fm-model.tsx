@@ -11,13 +11,13 @@ import {
     SolitaryFeature,
 } from "../feature-model/fm-metamodel/fm-components";
 
-const entityFMDiagram: Element<fm.IFeatureDiagram> = (
+export const entityFMDiagram: Element<fm.IFeatureDiagram> = (
     <FeatureDiagram name="EER2Rel Entity FM">
         <RootFeature name="EER2Rel Entity Root" minCardinality={1} maxCardinality={1}></RootFeature>
     </FeatureDiagram>
 );
 
-const attributeFMDiagram: Element<fm.IFeatureDiagram> = (
+export const attributeFMDiagram: Element<fm.IFeatureDiagram> = (
     <FeatureDiagram name="EER2Rel Attribute FM">
         <RootFeature name="EER2Rel Attr Root" minCardinality={1} maxCardinality={1}></RootFeature>
 
@@ -25,7 +25,7 @@ const attributeFMDiagram: Element<fm.IFeatureDiagram> = (
 );
 
 // if size smaller then 10, use given domain, otherwise text
-const domainFMDiagram: Element<fm.IFeatureDiagram> = (
+export const domainFMDiagram: Element<fm.IFeatureDiagram> = (
     <FeatureDiagram name="EER2Rel Domain FM">
         <RootFeature name="EER2Rel Domain Root" minCardinality={1} maxCardinality={1}>
             <Attribute name="size" type="number"></Attribute>
@@ -33,7 +33,7 @@ const domainFMDiagram: Element<fm.IFeatureDiagram> = (
     </FeatureDiagram>
 );
 
-const relationshipFMDiagram: Element<fm.IFeatureDiagram> = (
+export const relationshipFMDiagram: Element<fm.IFeatureDiagram> = (
     <FeatureDiagram name="EER2Rel Relationship FM">
         <RootFeature name="EER2Rel Relationship Root" minCardinality={1} maxCardinality={1}>
             <Attribute name="numberOfInstances" type="number"></Attribute>
