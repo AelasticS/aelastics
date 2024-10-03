@@ -18,7 +18,7 @@ export const Attribute = t.subtype(
   {
     name: t.string,
     value: t.string,
-    reference: FM_Attribute, // TODO It should refer to an Attribute or an IAttribute?
+    reference: FM_Attribute, // TODO It should refer to an Attribute or an IAttribute? It should be Attribute
   },
   "Attribute",
   FMConfigModel_TypeSchema

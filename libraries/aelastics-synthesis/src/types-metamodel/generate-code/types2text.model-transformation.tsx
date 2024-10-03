@@ -85,6 +85,10 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
+  @E2E({
+    input: tmm.TypeModel,
+    output: m2tmm.M2T_Item,
+  })
   initialImpors(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> {
     return [
       <P parentSection={<Sec $refByName="imports"></Sec>}>
@@ -96,6 +100,10 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
+  @E2E({
+    input: tmm.TypeModel,
+    output: m2tmm.M2T_Item,
+  })
   transformToModel(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> | null {
     return [
       <P parentSection={<Sec $refByName="typeDefinition"></Sec>}>
@@ -115,9 +123,14 @@ export class Types2TextModelTransformations extends abstractM2M<
   transformType(
     t: tmm.IType
   ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
-    if (this.context.resolveJSXElement(t)) {
-      return null;
-    }
+
+    // try {
+    //   if (this.context.resolveJSXElement(t)) {
+    //     return null;
+    //   }
+    // } catch (error: any) {
+    //   return null;
+    // }
 
     if (this.context.store.isTypeOf(t, tmm.SimpleType)) {
       // TODO How to map simple types
@@ -172,6 +185,10 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @SpecOption("transformObject", tmm.Object)
+  @E2E({
+    input: tmm.Object,
+    output: m2tmm.Section,
+  })
   public transformObj(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
       <Sec>
@@ -183,6 +200,10 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @SpecOption("transformObject", tmm.Subtype)
+  @E2E({
+    input: tmm.Subtype,
+    output: m2tmm.Section,
+  })
   transformSubtype(t: tmm.ISubtype): Element<m2tmm.ISection> {
     return (
       <Sec name={t.name + "_type_sec"}>
@@ -194,8 +215,8 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @E2E({
-    input: tmm.Object,
-    output: m2tmm.M2T_Item,
+    input: tmm.Property,
+    output: m2tmm.Paragraph,
   })
   transformProperty(p: tmm.IProperty): Element<m2tmm.IParagraph> {
     const domainText: string = this.context.store.isTypeOf(
