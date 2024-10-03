@@ -67,7 +67,7 @@ export class M2MContext extends Context {
    * @param ruleName string
    * @returns Element<IModelElement>
    */
-  public resolveJSXElement(input: IModelElement, ruleName?: string): Element<IModelElement> {
+  public resolveJSXElement(input: IModelElement, ruleName?: string): Element<IModelElement> | null {
     // return this.traceMap.get(input);
 
     const traceRecords = this.traceMap.get(input);
@@ -84,9 +84,10 @@ export class M2MContext extends Context {
 
     // TODO Should this be an Error or Null? The target JSXElement does not exist because of an error during the transformation or because the transformation rule is N/A
     if (!targetJSXElement) {
-      throw new Error(
-        `Target JSXElement for ${input} source model element does not exists!`
-      );
+      return null;
+      // throw new Error(
+      //   `Target JSXElement for ${input.name} source model element does not exists!`
+      // );
     }
 
     return targetJSXElement;
@@ -102,8 +103,7 @@ export interface IM2M<S extends IModel, D extends IModel> {
 }
 
 export abstract class abstractM2M<S extends IModel, D extends IModel>
-  implements IM2M<S, D>
-{
+  implements IM2M<S, D> {
   // transformation type
   public m2mTRansformation?: tm.IM2M_Transformation;
   public context: M2MContext = new M2MContext();

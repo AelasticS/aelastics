@@ -371,6 +371,13 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         // find JSXElement from source ModelElemet
         let targetJSXElement = m2mctx.resolveJSXElement(tempE.props.input as g.IModelElement, tempE.props.ruleName);
 
+        // TODO Should this be an Error or Null?
+        if (!targetJSXElement) {
+          throw new Error(
+            `JSXElement for ${tempE.props.input} source model element does not exists!`
+          );
+        }
+
         // find target ModelElement from resolveMap
         const targetModelElement = m2mctx.resolveMap.get(targetJSXElement);
 
