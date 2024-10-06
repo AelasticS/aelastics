@@ -5,25 +5,29 @@ export const EER2RelDomainFM_type_model_Model = t.subtype(Model, {}, "EER2RelDom
 
 export const Domain_FM_type = t.subtype(ModelElement,
     {
-        Infrastructure_prop_prop: t.link(EER2RelDomainFM_type_model_Schema, 'Infrastructure_type'),
+        Infrastructure_prop_prop: t.optional(t.link(EER2RelDomainFM_type_model_Schema, 'Infrastructure_type')),
+        name: t.string
     },
     "Domain_FM_type", EER2RelDomainFM_type_model_Schema);
 
 export const Entity_FM_type = t.subtype(ModelElement,
     {
-        Infrastructure_prop_prop: t.link(EER2RelDomainFM_type_model_Schema, 'Infrastructure_type'),
+        Infrastructure_prop_prop: t.optional(t.link(EER2RelDomainFM_type_model_Schema, 'Infrastructure_type')),
+        name: t.string
     },
     "Entity_FM_type", EER2RelDomainFM_type_model_Schema);
 
 export const Attribute_FM_type = t.subtype(ModelElement,
     {
-        Infrastructure_prop_prop: t.link(EER2RelDomainFM_type_model_Schema, 'Infrastructure_type'),
+        Infrastructure_prop_prop: t.optional(t.link(EER2RelDomainFM_type_model_Schema, 'Infrastructure_type')),
+        name: t.string
     },
     "Attribute_FM_type", EER2RelDomainFM_type_model_Schema);
 
 export const Relationship_FM_type = t.subtype(ModelElement,
     {
-        Infrastructure_prop_prop: t.link(EER2RelDomainFM_type_model_Schema, 'Infrastructure_type'),
+        Infrastructure_prop_prop: t.optional(t.link(EER2RelDomainFM_type_model_Schema, 'Infrastructure_type')),
+        name: t.string
     },
     "Relationship_FM_type", EER2RelDomainFM_type_model_Schema);
 

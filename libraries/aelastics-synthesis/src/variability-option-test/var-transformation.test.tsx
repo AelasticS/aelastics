@@ -15,6 +15,8 @@ import { abstractM2M } from "./../transformations/abstractM2M";
 import { Element, Resolve } from "../jsx/element";
 import { Context } from "../jsx/context";
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../index";
+import * as fmt from "./EER2RelDomainFM_type_model_textModel"
+import { IModelElement } from "generic-metamodel";
 
 const testStore = new ModelStore();
 
@@ -71,8 +73,11 @@ const s1: et.IEERSchema = eerSchema1.render(ctx);
 
 @M2M({ input: et.EERSchema, output: rt.RelSchema })
 class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
-  constructor(store: ModelStore) {
-    super(store);
+  constructor(store: ModelStore,
+    dfc?: fmt.IDomain_FM_type,
+    efc?: { [key: string]: fmt.IEntity_FM_type | fmt.IAttribute_FM_type | fmt.IRelationship_FM_type },
+  ) {
+    super(store, dfc, efc);
   }
 
   template(s: et.IEERSchema) {
@@ -204,7 +209,11 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     // return null as unknown as Element<rt.IForeignKey> | Element<rt.ITable>;
   }
 
-  @VarOption("RelationshipToElement", () => false)
+  @VarOption("RelationshipToElement", (dmf?: fmt.IDomain_FM_type, efm?: fmt.IRelationship_FM_type): boolean => {
+    console.log("dmf", dmf);
+    const res = dmf?.name === efm?.name;
+    return res;
+  })
   RelatioshipToFK(rel: et.IRelationship): Element<rt.IForeignKey> {
     // const aaa = this.context.resolve(rel.ordinaryMapping[0]);
 
@@ -215,7 +224,11 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @VarOption("RelationshipToElement", () => true)
+  @VarOption("RelationshipToElement", (dmf?: fmt.IDomain_FM_type, efm?: fmt.IRelationship_FM_type): boolean => {
+    console.log("dmf", dmf);
+    const res = dmf?.name !== efm?.name;
+    return res;
+  })
   RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
     const codomain = et.getCodomain(rel.ordinaryMapping[0]);
     const domain = et.getInverse(rel.ordinaryMapping[0]);
@@ -226,7 +239,9 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
 describe("Test spec decorators", () => {
   it("tests specialization of Entit2Table rule", () => {
-    let m = new EER2RelTransformation(testStore);
+    let m = new EER2RelTransformation(testStore, undefined, {
+      "worksIn": { name: "worksIn" } as fmt.IRelationship_FM_type,
+    });
     let r = m.transform(s1);
     // expect(r).toHaveProperty("name", "PersonsRelationalSchema");
     // expect(r.elements).toEqual(

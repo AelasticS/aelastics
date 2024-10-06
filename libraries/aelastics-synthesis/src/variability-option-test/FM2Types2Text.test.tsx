@@ -9,13 +9,9 @@ import * as fmt from "../feature-model/fm-metamodel/fm-meta.model.type";
 import { FM2TypesTransformations } from "../feature-model/fm2types-transformation/fm2types-transformation";
 import { ModelStore } from "../index";
 import { Context } from "../jsx/context";
-import { Element } from "../jsx/element";
-import { hm } from "../jsx/handle";
 import * as m2tmm from "../m2t/m2t-model/m2t.meta.model";
 import { generate } from "../m2t/text-generation/generate";
 import { Types2TextModelTransformations } from "../types-metamodel/generate-code/types2text.model-transformation";
-import { Property, PropertyDomain, TypeModel, TypeObject } from "../types-metamodel/types-components";
-import * as t from "../types-metamodel/types-meta.model";
 import { domainFMDiagram } from "./domain-fm-model";
 
 const generateText = async (

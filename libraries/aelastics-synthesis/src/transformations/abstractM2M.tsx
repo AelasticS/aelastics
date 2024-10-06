@@ -107,9 +107,14 @@ export abstract class abstractM2M<S extends IModel, D extends IModel>
   // transformation type
   public m2mTRansformation?: tm.IM2M_Transformation;
   public context: M2MContext = new M2MContext();
+  public domainConfiguration?: IModelElement;
+  public elementsConfiguration?: { [key: string]: IModelElement };
 
-  public constructor(store?: ModelStore) {
+  public constructor(store?: ModelStore, domainConfiguration?: IModelElement | undefined, elementsConfiguration?: { [key: string]: IModelElement } | undefined) {
     if (store) this.context.pushStore(store);
+
+    this.domainConfiguration = domainConfiguration;
+    this.elementsConfiguration = elementsConfiguration;
   }
 
   abstract template(props: S): Element<S, D>;
