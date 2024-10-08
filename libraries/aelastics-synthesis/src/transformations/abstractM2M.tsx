@@ -95,22 +95,30 @@ export class M2MContext extends Context {
   }
 }
 
-export interface IM2M<S extends IModel, D extends IModel> {
+export interface IM2M<S extends IModel, D extends IModel, MC extends Object = any, EC = any> {
   context: M2MContext;
   m2mTRansformation?: tm.IM2M_Transformation;
   template(props: S): Element<S, D>;
   transform(source: S): D;
 }
 
-export abstract class abstractM2M<S extends IModel, D extends IModel>
-  implements IM2M<S, D> {
+/**
+ * Abstract class for M2M transformation
+ * 
+ * @param S source model
+ * @param D domain model
+ * @param MC model configuration
+ * @param EC element configuration
+ */
+export abstract class abstractM2M<S extends IModel, D extends IModel, MC extends Object = any, EC = any>
+  implements IM2M<S, D, MC, EC> {
   // transformation type
   public m2mTRansformation?: tm.IM2M_Transformation;
   public context: M2MContext = new M2MContext();
-  public domainConfiguration?: IModelElement;
-  public elementsConfiguration?: { [key: string]: IModelElement };
+  public domainConfiguration?: MC;
+  public elementsConfiguration?: { [key: string]: EC };
 
-  public constructor(store?: ModelStore, domainConfiguration?: IModelElement | undefined, elementsConfiguration?: { [key: string]: IModelElement } | undefined) {
+  public constructor(store?: ModelStore, domainConfiguration?: MC, elementsConfiguration?: { [key: string]: EC }) {
     if (store) this.context.pushStore(store);
 
     this.domainConfiguration = domainConfiguration;

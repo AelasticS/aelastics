@@ -32,9 +32,9 @@ export const VarPoint = (name?: string) => {
   ) {
     descriptor.value = function (...args: any[]) {
       const options: IOption[] = descriptor.value[propertyKey];
-      const elementsConfig = (this as abstractM2M<any, any>).elementsConfiguration;
+      const elementsConfig = (this as abstractM2M<any, any, any, any>).elementsConfiguration;
       const option = options.find((option) => {
-        return option.evalCondition((this as abstractM2M<any, any>).domainConfiguration, elementsConfig ? elementsConfig[args[0].name] : undefined);
+        return option.evalCondition((this as abstractM2M<any, any, any, any>).domainConfiguration, elementsConfig ? elementsConfig[args[0].name] : undefined);
       });
       if (!option) {
         throw new Error(`No option condition evaluated to true`);
