@@ -328,18 +328,22 @@ describe("Test FM2Type transformations", () => {
   });
 
   it("test attribute to object property", () => {
+
+    const store = new ModelStore();
+    ctx.pushStore(store);
+
     const m1: Element<fm.IFeatureDiagram> = (
       <FeatureDiagram
-        name="Body Electronics System Feature Model7"
+        name="Body Electronics System Feature Model8"
         store={store}
       >
         <RootFeature
-          name="BodyElectronicsSystem7"
+          name="BodyElectronicsSystem8"
           minCardinality={1}
           maxCardinality={1}
         >
-          <SolitaryFeature name="Wiper7" minCardinality={1} maxCardinality={4}>
-            <Attribute name="numberOfLevels7" type="number"></Attribute>
+          <SolitaryFeature name="Wiper8" minCardinality={1} maxCardinality={4}>
+            <Attribute name="numberOfLevels8" type="number"></Attribute>
           </SolitaryFeature>
         </RootFeature>
       </FeatureDiagram>
@@ -349,27 +353,27 @@ describe("Test FM2Type transformations", () => {
 
     expect(model).toEqual(
       expect.objectContaining({
-        name: "BodyElectronicsSystemFeatureModel7_type_model",
+        name: "BodyElectronicsSystemFeatureModel8_type_model",
         elements: expect.arrayContaining([
           expect.objectContaining({
-            label: "BodyElectronicsSystem7_type",
+            label: "BodyElectronicsSystem8_type",
             properties: expect.arrayContaining([
               expect.objectContaining({ name: "Wiper7_prop" }),
             ]),
           }),
           expect.objectContaining({
-            label: "Wiper7_type",
+            label: "Wiper8_type",
             properties: expect.arrayContaining([
-              expect.objectContaining({ name: "numberOfLevels7_attr" }),
+              expect.objectContaining({ name: "numberOfLevels8_attr" }),
             ]),
           }),
-          expect.objectContaining({ label: "Wiper7_array" }),
+          expect.objectContaining({ label: "Wiper8_array" }),
         ]),
       })
     );
 
     let type = model.elements.find((e) => e.name == "number");
-    let attr = model.elements.find((e) => e.name == "numberOfLevels7_attr");
+    let attr = model.elements.find((e) => e.name == "numberOfLevels8_attr");
 
     expect((attr as t.IProperty).domain).toBe(type);
   });

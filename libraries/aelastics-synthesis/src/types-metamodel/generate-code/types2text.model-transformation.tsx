@@ -1,18 +1,17 @@
 /** @jsx hm */
+import { E2E, Element, M2M, ModelStore } from "./../../index";
 import { hm } from "./../../jsx/handle";
 import {
-  M2T,
-  Dir,
   Doc,
+  M2T,
   P,
   Sec,
-  SecParent,
+  SecParent
 } from "./../../m2t/m2t-model/m2t.jsx";
 import * as m2tmm from "./../../m2t/m2t-model/m2t.meta.model";
-import * as tmm from "./../types-meta.model";
-import { ModelStore, Context, Element, E2E, M2M } from "./../../index";
 import { abstractM2M } from "./../../transformations/abstractM2M";
-import { SpecPoint, SpecOption } from "./../../transformations/spec-decorators";
+import { SpecOption, SpecPoint } from "./../../transformations/spec-decorators";
+import * as tmm from "./../types-meta.model";
 
 @M2M({
   input: tmm.TypeModel,
@@ -29,8 +28,15 @@ export class Types2TextModelTransformations extends abstractM2M<
   sortTypes(m: tmm.ITypeModel): Array<tmm.IType> {
     let sortedTypes: Array<tmm.IType> = [] as Array<tmm.IType>;
 
+    let types = m.elements.filter((e) => {
+      console.log(e);
+
+      return this.context.store.isTypeOf(e, tmm.Type)
+    }
+    ) as Array<tmm.IType>;
+
     // create array with type dependencies
-    let types = m.types.map((e) => {
+    let depTypes = types.map((e) => {
       if (this.context.store.isTypeOf(e, tmm.Subtype)) {
         return { type: e, dependecy: (e as tmm.ISubtype).superType };
       }
@@ -38,15 +44,17 @@ export class Types2TextModelTransformations extends abstractM2M<
       return { type: e, dependecy: null };
     });
 
+
+
     let typeTransformed = true;
 
-    while (types.length > 0 && typeTransformed) {
+    while (depTypes.length > 0 && typeTransformed) {
       typeTransformed = false;
 
-      types.forEach((e, i) => {
+      depTypes.forEach((e, i) => {
         if (
           e.dependecy &&
-          types.find((element) => {
+          depTypes.find((element) => {
             let a = element.type.name == e.dependecy?.name;
             return a;
           })
@@ -54,13 +62,13 @@ export class Types2TextModelTransformations extends abstractM2M<
           return;
         }
 
-        types.splice(i, 1);
+        depTypes.splice(i, 1);
         sortedTypes.push(e.type);
         typeTransformed = true;
       });
     }
 
-    if (types.length > 0) {
+    if (depTypes.length > 0) {
       throw new Error("There are a circular dependencies!");
     }
 
@@ -124,13 +132,13 @@ export class Types2TextModelTransformations extends abstractM2M<
     t: tmm.IType
   ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
 
-    // try {
-    //   if (this.context.resolveJSXElement(t)) {
-    //     return null;
-    //   }
-    // } catch (error: any) {
-    //   return null;
-    // }
+    try {
+      if (this.context.resolveJSXElement(t)) {
+        return null;
+      }
+    } catch (error: any) {
+      return null;
+    }
 
     if (this.context.store.isTypeOf(t, tmm.SimpleType)) {
       // TODO How to map simple types
@@ -184,6 +192,7 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
+  // todo add varibility for object or subtype of ModelElement
   @SpecOption("transformObject", tmm.Object)
   @E2E({
     input: tmm.Object,
@@ -193,7 +202,7 @@ export class Types2TextModelTransformations extends abstractM2M<
     return (
       <Sec>
         <Sec $refByName={t.name + "_type_export_sec"}>
-          <P>{`export const ${t.name} = t.subtype(ModelElement,`}</P>
+          <P>{`export const ${t.name} = t.object(`}</P>
         </Sec>
       </Sec>
     );

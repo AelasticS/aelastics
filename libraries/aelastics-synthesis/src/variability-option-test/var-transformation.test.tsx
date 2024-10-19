@@ -5,18 +5,17 @@
 
 // const EER = getEER({} as IModel, null)
 
-import { hm } from "../jsx/handle";
-import { VarPoint, VarOption } from "./../variability/var-decorators";
-import * as et from "../test/eer-model/EER.meta.model.type";
-import * as rt from "../test/relational-model/REL.meta.model.type.v2";
-import * as e from "../test/eer-model/EER-components";
-import * as r from "../test/relational-model/REL-components.v2";
-import { abstractM2M } from "./../transformations/abstractM2M";
-import { Element, Resolve } from "../jsx/element";
+import { E2E, M2M, ModelStore, SpecOption, SpecPoint } from "../index";
 import { Context } from "../jsx/context";
-import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../index";
-import * as fmt from "./EER2RelDomainFM_type_model_textModel"
-import { IModelElement } from "generic-metamodel";
+import { Element, Resolve } from "../jsx/element";
+import { hm } from "../jsx/handle";
+import * as e from "../test/eer-model/EER-components";
+import * as et from "../test/eer-model/EER.meta.model.type";
+import * as r from "../test/relational-model/REL-components.v2";
+import * as rt from "../test/relational-model/REL.meta.model.type.v2";
+import { abstractM2M } from "./../transformations/abstractM2M";
+import { VarOption, VarPoint } from "./../variability/var-decorators";
+import * as fmt from "./EER2RelDomainFM_type_model_textModel";
 
 const testStore = new ModelStore();
 
@@ -72,13 +71,13 @@ const ctx = new Context();
 const s1: et.IEERSchema = eerSchema1.render(ctx);
 
 @M2M({ input: et.EERSchema, output: rt.RelSchema })
-class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
-  constructor(store: ModelStore,
-    dfc?: fmt.IDomain_FM_type,
-    efc?: { [key: string]: fmt.IEntity_FM_type | fmt.IAttribute_FM_type | fmt.IRelationship_FM_type },
-  ) {
-    super(store, dfc, efc);
-  }
+class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema, fmt.IDomain_FM_type, fmt.elementConfigurationUnion> {
+  // constructor(store: ModelStore,
+  //   dfc?: fmt.IDomain_FM_type,
+  //   efc?: { [key: string]: fmt.IEntity_FM_type | fmt.IAttribute_FM_type | fmt.IRelationship_FM_type },
+  // ) {
+  //   super(store, dfc, efc);
+  // }
 
   template(s: et.IEERSchema) {
     return (
@@ -211,7 +210,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
   @VarOption("RelationshipToElement", (dmf?: fmt.IDomain_FM_type, efm?: fmt.IRelationship_FM_type): boolean => {
     console.log("dmf", dmf);
-    const res = dmf?.name === efm?.name;
+    const res = efm!.numberOfInstances > 5;
     return res;
   })
   RelatioshipToFK(rel: et.IRelationship): Element<rt.IForeignKey> {
@@ -226,7 +225,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
   @VarOption("RelationshipToElement", (dmf?: fmt.IDomain_FM_type, efm?: fmt.IRelationship_FM_type): boolean => {
     console.log("dmf", dmf);
-    const res = dmf?.name !== efm?.name;
+    const res = efm!.numberOfInstances <= 5;
     return res;
   })
   RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
@@ -237,11 +236,18 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
   }
 }
 
+const elConfig1: fmt.elementConfiguraionSchema = {
+  "worksIn": { numberOfInstances: 5 }
+};
+
+const elConfig2: fmt.elementConfiguraionSchema = {
+  "worksIn": { numberOfInstances: 1 },
+  "livesIn": { numberOfInstances: 3 }
+};
+
 describe("Test spec decorators", () => {
   it("tests specialization of Entit2Table rule", () => {
-    let m = new EER2RelTransformation(testStore, undefined, {
-      "worksIn": { name: "worksIn" } as fmt.IRelationship_FM_type,
-    });
+    let m = new EER2RelTransformation(testStore, undefined, elConfig1);
     let r = m.transform(s1);
     // expect(r).toHaveProperty("name", "PersonsRelationalSchema");
     // expect(r.elements).toEqual(

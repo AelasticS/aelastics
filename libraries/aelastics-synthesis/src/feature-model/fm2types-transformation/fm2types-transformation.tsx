@@ -13,11 +13,18 @@ import {
   TypeModel,
   TypeObject,
   TypeOptional,
+  TypeUnion,
+  TypeInUnion
 } from "../../types-metamodel/types-components";
 import * as tmm from "../../types-metamodel/types-meta.model";
 
 import { importPredefinedTypes } from "../../types-metamodel/predefined-model";
+import { M2M, E2E } from "../../transformations/trace-decorators";
 
+@M2M({
+  input: fm.FeatureDiagram,
+  output: tmm.TypeModel,
+})
 export class FM2TypesTransformations extends abstractM2M<
   fm.IFeatureDiagram,
   tmm.ITypeModel
@@ -30,16 +37,20 @@ export class FM2TypesTransformations extends abstractM2M<
     return (
       <TypeModel name={fd.name + "_type_model"} MDA_level="M2">
         {importPredefinedTypes(`../${fd.name}_type_model`)}
-        {fd.rootFeatures.map((e) => this.Feature2Type(e as fm.IFeature))}
+        {this.Feature2Type(fd.rootFeature)}
       </TypeModel>
     );
   }
 
   Feature2Type(f: fm.IFeature): Element<tmm.IType> {
     let type = undefined;
-    if (
-      f.maxCardinality == 1 ||
-      this.context.store.isTypeOf(f, fm.GroupFeature)
+
+    if (f.maxCardinality === 1 && this.context.store.isTypeOf(f, fm.GroupFeature)) {
+      type = this.Feature2ExclusiveUnion(f);
+    } else if (f.maxCardinality > 1 && this.context.store.isTypeOf(f, fm.GroupFeature)) {
+      type = this.Feature2InclusiveUnion(f);
+    } else if (
+      (f.maxCardinality == 1 && this.context.store.isTypeOf(f, fm.SolitaryFeature))
     ) {
       type = this.Feature2Object(f);
     } else {
@@ -90,9 +101,41 @@ export class FM2TypesTransformations extends abstractM2M<
     return <TypeObject></TypeObject>;
   }
 
+  // todo Finish this method
+  // todo this can be VarOption (maxCardinality == 1)
+  Feature2ExclusiveUnion(f: fm.IGroupFeature): Element<tmm.IUnion> {
+
+    const types = f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature));
+
+    return (
+      <TypeUnion name={f.name + "_union"} unionTypes={types as []}/>
+    );
+  }
+
+  // todo this can be VarOption (maxCardinality > 1)
+  Feature2InclusiveUnion(f: fm.IGroupFeature): Element<tmm.IObject> {
+    return (
+      <TypeObject name={f.name + "_exUnionType"} >
+        {
+          f.subfeatures?.map((e) => {
+            // artificialy make all features optional
+            e.minCardinality = 0;
+            return (
+              <Property
+                name={e.name + "_prop"}
+                // @ts-ignore
+                domain={this.Feature2Type(e)}
+              ></Property>
+            );
+          })
+        }
+      </TypeObject>
+    );
+  }
+
   Attribute2Property(a: fm.IAttribute): Element<tmm.IProperty> {
     return (
-      <Property name={a.name + "_attr"}>
+      <Property name={a.name + "_attr"} >
         <PropertyDomain $refByName={a.type}></PropertyDomain>
       </Property>
     );

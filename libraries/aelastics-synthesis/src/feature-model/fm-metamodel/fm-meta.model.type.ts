@@ -47,7 +47,7 @@ export const GroupFeature = t.subtype(
 
 export const FeatureDiagram = t.subtype(
   Model,
-  { rootFeatures: t.arrayOf(Feature) },
+  { rootFeature: Feature },
   "FeatureDiagram",
   FMModel_TypeSchema
 );

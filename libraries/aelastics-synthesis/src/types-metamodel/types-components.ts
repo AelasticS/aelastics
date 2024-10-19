@@ -54,3 +54,7 @@ export const PropertyDomain: Template<t.IType> = (props) => {
 export const TypeOfOptional: Template<t.IType> = (props) => {
   return new Element(t.Type, props, "optionalType");
 };
+
+export const TypeInUnion: Template<t.IType> = (props) => {
+  return new Element(t.Type, props, "unionTypes");
+};

@@ -17,15 +17,6 @@ export const TypeModel = t.subtype(
   TypesMM_TypeSchema
 );
 
-export const Optional = t.subtype(
-  Type,
-  {
-    optionalType: Type,
-  },
-  "Optional",
-  TypesMM_TypeSchema
-);
-
 export const Property = t.subtype(
   ModelElement,
   {
@@ -41,6 +32,26 @@ export const Object = t.subtype(
     properties: t.arrayOf(Property),
   },
   "Object",
+  TypesMM_TypeSchema
+);
+
+export const Union = t.subtype(
+  Type,
+  {
+    descriminator: t.string,
+    unionTypes: t.arrayOf(Type),
+  },
+  "Union",
+  TypesMM_TypeSchema
+);
+
+
+export const Optional = t.subtype(
+  Type,
+  {
+    optionalType: Type,
+  },
+  "Optional",
   TypesMM_TypeSchema
 );
 
@@ -71,15 +82,7 @@ export const Array = t.subtype(
   TypesMM_TypeSchema
 );
 
-export const Union = t.subtype(
-  Type,
-  {
-    elements: t.arrayOf(Property),
-    descriminator: t.string,
-  },
-  "Union",
-  TypesMM_TypeSchema
-);
+
 
 // type ISimpleType = t.TypeOf<typeof SimpleType>;
 export const SimpleType = t.subtype(Type, {}, "SimpleType", TypesMM_TypeSchema);
