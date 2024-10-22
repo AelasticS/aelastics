@@ -110,7 +110,23 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let renderedProps = {};
 
     for (const [key, value] of Object.entries(props)) {
-      let tmp = value instanceof Element ? value.render(ctx, isImport) : value;
+
+      let tmp = undefined;
+
+      if (Array.isArray(value)) {
+        tmp = value.map((v) => {
+          if (v instanceof Element) {
+            return v.render(ctx, isImport);
+          } else {
+            return v;
+          }
+        });
+      } else if (value instanceof Element) {
+        tmp = value.render(ctx, isImport);
+      } else {
+        tmp = value;
+      }
+
       Object.defineProperty(renderedProps, key, {
         value: tmp,
         enumerable: true,
