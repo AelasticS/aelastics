@@ -40,7 +40,7 @@ export function findTypeCategory(fp: Any /*, type: ObjectType<any, any>, prop: s
   return fp.typeCategory
 }
 
-function findBaseType(fp: Any, type: ObjectType<any, any>, prop: string): ObjectType<any, any> {
+export function findBaseType(fp: Any, type: ObjectType<any, any>, prop: string): ObjectType<any, any> {
   // handle link types
   if (fp instanceof LinkType) {
     let linkedType = fp.resolveType()
