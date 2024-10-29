@@ -116,13 +116,23 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       if (Array.isArray(value)) {
         tmp = value.map((v) => {
           if (v instanceof Element) {
-            return v.render(ctx, isImport);
+            const modelElement = v.render(ctx, isImport);
+
+            if (ctx instanceof M2MContext) {
+              (ctx as M2MContext).resolveMap.set(v, modelElement);
+            }
+
+            return modelElement;
           } else {
             return v;
           }
         });
       } else if (value instanceof Element) {
         tmp = value.render(ctx, isImport);
+
+        if (ctx instanceof M2MContext) {
+          (ctx as M2MContext).resolveMap.set(value, tmp);
+        }
       } else {
         tmp = value;
       }
