@@ -10,9 +10,7 @@ export const Type = t.subtype(ModelElement, {}, "Type", TypesMM_TypeSchema);
 
 export const TypeModel = t.subtype(
   Model,
-  {
-    types: t.arrayOf(Type),
-  },
+  {},
   "TypeModel",
   TypesMM_TypeSchema
 );
@@ -104,3 +102,16 @@ export type ISimpleType = t.TypeOf<typeof SimpleType>;
 export type INumber = t.TypeOf<typeof Number>;
 export type IString = t.TypeOf<typeof String>;
 export type IBoolean = t.TypeOf<typeof Boolean>;
+
+export function findBaseType(type: IType): string {
+  if ('optionalType' in type) {
+    return findBaseType((type as IOptional).optionalType);
+  } else if ('elementType' in type) {
+    return findBaseType((type as IArray).elementType);
+  } else {
+    //@ts-ignore
+    const parts = type['@@aelastics/type'].split('/');
+    return parts[parts.length - 1];
+  }
+
+}
