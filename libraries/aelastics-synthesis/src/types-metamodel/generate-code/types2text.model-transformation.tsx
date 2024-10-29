@@ -13,10 +13,7 @@ import { abstractM2M } from "./../../transformations/abstractM2M";
 import { SpecOption, SpecPoint } from "./../../transformations/spec-decorators";
 import * as tmm from "./../types-meta.model";
 
-@M2M({
-  input: tmm.TypeModel,
-  output: m2tmm.M2T_Model,
-})
+
 export class Types2TextModelTransformations extends abstractM2M<
   tmm.ITypeModel,
   m2tmm.M2T_Model
@@ -29,8 +26,6 @@ export class Types2TextModelTransformations extends abstractM2M<
     let sortedTypes: Array<tmm.IType> = [] as Array<tmm.IType>;
 
     let types = m.elements.filter((e) => {
-      console.log(e);
-
       return this.context.store.isTypeOf(e, tmm.Type)
     }
     ) as Array<tmm.IType>;
@@ -93,10 +88,6 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
-  @E2E({
-    input: tmm.TypeModel,
-    output: m2tmm.M2T_Item,
-  })
   initialImpors(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> {
     return [
       <P parentSection={<Sec $refByName="imports"></Sec>}>
@@ -108,10 +99,6 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
-  @E2E({
-    input: tmm.TypeModel,
-    output: m2tmm.M2T_Item,
-  })
   transformToModel(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> | null {
     return [
       <P parentSection={<Sec $refByName="typeDefinition"></Sec>}>
@@ -124,10 +111,6 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
-  @E2E({
-    input: tmm.Type,
-    output: m2tmm.M2T_Item,
-  })
   transformType(
     t: tmm.IType
   ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
@@ -155,6 +138,9 @@ export class Types2TextModelTransformations extends abstractM2M<
       case tmm.Object.name:
       case tmm.Subtype.name:
         typeDefinitionSection = this.transformObject(t as tmm.IObject);
+        break
+      case tmm.Union.name:
+        typeDefinitionSection = this.transformUnion(t as tmm.IUnion);
         break;
       default:
         // other types are not entites
@@ -169,11 +155,19 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
+  transformUnion(t: tmm.IUnion): Element<m2tmm.ISection> {
+    return (
+      <Sec name={t.name + "_type_sec"}>
+        <SecParent $refByName="typeDefinition"></SecParent>
+        <Sec name={t.name + "_type_export_sec"}>
+          <P>{`export const ${t.name} = ` + this.returnTypeForUnion(t)}</P>
+        </Sec>
+        <P></P>
+      </Sec>
+    );
+  }
+
   @SpecPoint()
-  @E2E({
-    input: tmm.Object,
-    output: m2tmm.Section,
-  })
   transformObject(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
       <Sec name={t.name + "_type_sec"}>
@@ -194,10 +188,6 @@ export class Types2TextModelTransformations extends abstractM2M<
 
   // todo add varibility for object or subtype of ModelElement
   @SpecOption("transformObject", tmm.Object)
-  @E2E({
-    input: tmm.Object,
-    output: m2tmm.Section,
-  })
   public transformObj(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
       <Sec>
@@ -209,10 +199,6 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @SpecOption("transformObject", tmm.Subtype)
-  @E2E({
-    input: tmm.Subtype,
-    output: m2tmm.Section,
-  })
   transformSubtype(t: tmm.ISubtype): Element<m2tmm.ISection> {
     return (
       <Sec name={t.name + "_type_sec"}>
@@ -223,10 +209,6 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
-  @E2E({
-    input: tmm.Property,
-    output: m2tmm.Paragraph,
-  })
   transformProperty(p: tmm.IProperty): Element<m2tmm.IParagraph> {
     const domainText: string = this.context.store.isTypeOf(
       p.domain,
@@ -243,12 +225,11 @@ export class Types2TextModelTransformations extends abstractM2M<
 
     switch (typeOfElement.name) {
       case tmm.Optional.name:
-        return this.returnTypeForOptionalType(t as tmm.IOptional);
+        return this.returnOptionalTypeForType(t as tmm.IOptional);
       case tmm.Array.name:
         return this.returnTypeForArrayType(t as tmm.IArray);
       case tmm.Union.name:
-        // TODO Add transformUnion
-        return ``;
+        return this.returnTypeForUnion(t as tmm.IUnion);
       default:
         if (!this.context.resolveJSXElement(t)) {
           return `t.link(${t.parentModel.name}_Schema, '${t.name}')`;
@@ -258,7 +239,7 @@ export class Types2TextModelTransformations extends abstractM2M<
     }
   }
 
-  returnTypeForOptionalType(t: tmm.IOptional): string {
+  returnOptionalTypeForType(t: tmm.IOptional): string {
     let type = this.handleComplexType(t.optionalType);
 
     return `t.optional(${type})`;
@@ -268,6 +249,11 @@ export class Types2TextModelTransformations extends abstractM2M<
     let type = this.handleComplexType(t.elementType);
 
     return `t.arrayOf(${type})`;
+  }
+
+  returnTypeForUnion(t: tmm.IUnion): string {
+    let types = t.unionTypes.map((e) => `${e.name}: ` + this.handleComplexType(e));
+    return `t.taggedUnion({` + types.join(", ") + `}, '${t.descriminator}' , "${t.name}", ${t.parentModel.name}_Schema)`;
   }
 
   // @SpecOption("transformType", tmm.Union)
