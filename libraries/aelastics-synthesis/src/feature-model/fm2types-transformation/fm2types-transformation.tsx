@@ -4,8 +4,6 @@ import { Element, Resolve } from "../../jsx/element";
 import { hm } from "../../jsx/handle";
 import { ModelStore } from "../../model-store/ModelsStore";
 import { abstractM2M } from "../../transformations/abstractM2M";
-import * as fm from "../fm-metamodel/fm-meta.model.type";
-import { SpecPoint, SpecOption } from "../../transformations/spec-decorators";
 import {
   Property,
   PropertyDomain,
@@ -13,15 +11,13 @@ import {
   TypeModel,
   TypeObject,
   TypeOptional,
-  TypeUnion,
-  TypeInUnion,
+  TypeUnion
 } from "../../types-metamodel/types-components";
 import * as tmm from "../../types-metamodel/types-meta.model";
+import * as fm from "../fm-metamodel/fm-meta.model.type";
 
+import { E2E, M2M } from "../../transformations/trace-decorators";
 import { importPredefinedTypes } from "../../types-metamodel/predefined-model";
-import { M2M, E2E } from "../../transformations/trace-decorators";
-import { Any, ObjectType } from "aelastics-types";
-import { P } from "../../m2t";
 
 @M2M({
   input: fm.FeatureDiagram,
@@ -127,10 +123,10 @@ export class FM2TypesTransformations extends abstractM2M<
               return (
                 <TypeObject $refByName={resolvedType.name}>
                   <Property name={unionDescriminator}>
-                    <PropertyDomain $refByName="string"></PropertyDomain>
-                  </Property>
-                </TypeObject>
-              );
+            <PropertyDomain $refByName="string"></PropertyDomain>
+          </Property>
+        </TypeObject>
+      );
             } else if (this.context.store.isTypeOf(resolvedType, tmm.Array)) {
               return null;
             } else {
