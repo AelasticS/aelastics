@@ -1,6 +1,6 @@
 /** @jsx hm */
 
-import { Element } from "../../jsx/element";
+import { Element, Resolve } from "../../jsx/element";
 import { hm } from "../../jsx/handle";
 import { ModelStore } from "../../model-store/ModelsStore";
 import { abstractM2M } from "../../transformations/abstractM2M";
@@ -14,12 +14,14 @@ import {
   TypeObject,
   TypeOptional,
   TypeUnion,
-  TypeInUnion
+  TypeInUnion,
 } from "../../types-metamodel/types-components";
 import * as tmm from "../../types-metamodel/types-meta.model";
 
 import { importPredefinedTypes } from "../../types-metamodel/predefined-model";
 import { M2M, E2E } from "../../transformations/trace-decorators";
+import { Any, ObjectType } from "aelastics-types";
+import { P } from "../../m2t";
 
 @M2M({
   input: fm.FeatureDiagram,
@@ -42,7 +44,15 @@ export class FM2TypesTransformations extends abstractM2M<
     );
   }
 
+  @E2E({
+    input: fm.Feature,
+    output: tmm.Type,
+  })
   Feature2Type(f: fm.IFeature): Element<tmm.IType> {
+    if (!f) {
+      return null as any;
+    }
+
     let type = undefined;
 
     if (f.maxCardinality === 1 && this.context.store.isTypeOf(f, fm.GroupFeature)) {
@@ -52,7 +62,7 @@ export class FM2TypesTransformations extends abstractM2M<
     } else if (
       (f.maxCardinality == 1 && this.context.store.isTypeOf(f, fm.SolitaryFeature))
     ) {
-      type = this.Feature2Object(f);
+      type = this.Feature2Object(f as fm.ISolitaryFeature);
     } else {
       type = this.Feature2Array(f);
     }
@@ -70,10 +80,11 @@ export class FM2TypesTransformations extends abstractM2M<
     return type;
   }
 
-  @SpecPoint()
-  Feature2Object(f: fm.IFeature): Element<tmm.IType> {
+  // @SpecPoint()
+  Feature2Object(f: fm.ISolitaryFeature): Element<tmm.IType> {
     return (
       <TypeObject name={f.name + "_type"}>
+        {f.attributes?.map((e) => this.Attribute2Property(e as fm.IAttribute))}
         {f.subfeatures?.map((e) => {
           return (
             <Property
@@ -87,28 +98,66 @@ export class FM2TypesTransformations extends abstractM2M<
     );
   }
 
-  @SpecOption("Feature2Object", fm.SolitaryFeature)
-  Solitary2Object(f: fm.ISolitaryFeature): Element<tmm.IObject> {
-    return (
-      <TypeObject>
-        {f.attributes?.map((e) => this.Attribute2Property(e as fm.IAttribute))}
-      </TypeObject>
-    );
-  }
+  // @SpecOption("Feature2Object", fm.SolitaryFeature)
+  // Solitary2Object(f: fm.ISolitaryFeature): Element<tmm.IObject> {
+  //   return (
+  //     <TypeObject>
 
-  @SpecOption("Feature2Object", fm.GroupFeature)
-  Group2Object(f: fm.IGroupFeature): Element<tmm.IObject> {
-    return <TypeObject></TypeObject>;
-  }
+  //     </TypeObject>
+  //   );
+  // }
+
+  // @SpecOption("Feature2Object", fm.GroupFeature)
+  // Group2Object(f: fm.IGroupFeature): Element<tmm.IObject> {
+  //   return <TypeObject></TypeObject>;
+  // }
 
   // todo Finish this method
   // todo this can be VarOption (maxCardinality == 1)
   Feature2ExclusiveUnion(f: fm.IGroupFeature): Element<tmm.IUnion> {
 
-    const types = f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature));
+    const types: Array<Element<tmm.IType>> = f.subfeatures?.map((e) => this.Feature2Type(e as fm.IFeature));
+    const unionDescriminator = f.name + "_desc";
+
+    const descriminatorProperties = f.subfeatures?.map((feature) => {
+      return (
+        <Resolve input={feature}>
+          {(resolvedType: tmm.IType) => {
+            if (this.context.store.isTypeOf(resolvedType, tmm.Object)) {
+              return (
+                <TypeObject $refByName={resolvedType.name}>
+                  <Property name={unionDescriminator}>
+                    <PropertyDomain $refByName="string"></PropertyDomain>
+                  </Property>
+                </TypeObject>
+              );
+            } else if (this.context.store.isTypeOf(resolvedType, tmm.Array)) {
+              return null;
+            } else {
+              //@ts-ignore
+              if (tmm.findBaseType(resolvedType) === tmm.Object.name) {
+                return (
+                  <TypeObject $refByName={resolvedType.name}>
+                    <Property name={unionDescriminator}>
+                      <PropertyDomain $refByName="string"></PropertyDomain>
+                    </Property>
+                  </TypeObject>
+                );
+              }
+
+              return null;
+            }
+          }}
+        </Resolve>)
+
+    });
 
     return (
-      <TypeUnion name={f.name + "_union"} unionTypes={types as []}/>
+      // TODO desc name should be the same as the name of the property of types in union, but it is not possible to get the name of the property, because it is created during the transformation
+      // @ts-ignore
+      <TypeUnion name={f.name + "_union"} unionTypes={types} descriminator={unionDescriminator} >
+        {descriminatorProperties}
+      </TypeUnion>
     );
   }
 
@@ -133,6 +182,10 @@ export class FM2TypesTransformations extends abstractM2M<
     );
   }
 
+  @E2E({
+    input: fm.Attribute,
+    output: tmm.Property,
+  })
   Attribute2Property(a: fm.IAttribute): Element<tmm.IProperty> {
     return (
       <Property name={a.name + "_attr"} >

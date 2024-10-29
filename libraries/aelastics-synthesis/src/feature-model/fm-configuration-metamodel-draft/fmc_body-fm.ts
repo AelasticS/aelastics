@@ -175,6 +175,93 @@ const exp7 = (c: IbodyElectronicsSystem) => c.cruiseControl.inclusiveGroup2 = [
 
 
 
+// #################################
+// Example with discrimnator
+
+
+export const DoctorTypeSpecialization = t.string
+  .derive('Specialization')
+  .oneOf(['Surgeon', 'Cardiologist', 'Internist'])
+
+
+export const DoctorType = t.object(
+  {
+    profession: t.literal('Doctor'),
+    specialization: DoctorTypeSpecialization
+  },
+  'DoctorType'
+)
+
+
+export const TypeWorksAt = t.string.derive('').nonEmpty.maxLength(30)
+
+export const LawyerType = t.object(
+  {
+    profession: t.literal('Lawyer'),
+    masterDegree: t.boolean,
+    worksAt: TypeWorksAt
+  },
+  'lawyerObject'
+)
+
+
+export const EmployeeType = t.taggedUnion(
+  {
+    Doctor: DoctorType,
+    Lawyer: LawyerType,
+    ArrayOfDocktors: t.arrayOf(DoctorType),
+    NameOfDoctor: t.string
+  },
+  '',
+  'EmployeeType'
+)
+
+
+export type IEmployeeType = t.TypeOf<typeof EmployeeType>
+
+const employee: IEmployeeType = [{ profession: 'Doctor', specialization: 'Surgeon' }, { profession: 'Doctor', specialization: 'Internist' }];
+
+
+// #################################
+// Example withot discrimnator
+
+
+export const LawyerType2 = t.object(
+  {
+    masterDegree: t.boolean,
+    worksAt: TypeWorksAt
+  },
+  'lawyerObject'
+)
+
+export const DoctorType2 = t.object(
+  {
+    specialization: DoctorTypeSpecialization
+  },
+  'DoctorType'
+)
+
+export const EmployeeType2 = t.taggedUnion(
+  {
+    Doctor: DoctorType2,
+    Lawyer: LawyerType2,
+    ArrayOfDocktors: t.arrayOf(DoctorType2),
+    NameOfDoctor: t.string
+  },
+  '',
+  'EmployeeType'
+)
+
+
+
+export type IEmployeeType2 = t.TypeOf<typeof EmployeeType2>;
+
+const employee2: IEmployeeType2 = [{ specialization: "sdfdsff" }, { specialization: "sdfdsff" }];
+
+const employee3: IEmployeeType2 = { specialization: "sdfdsff", masterDegree: true, worksAt: "sdfdsff" };
+
+
+
 
 
 

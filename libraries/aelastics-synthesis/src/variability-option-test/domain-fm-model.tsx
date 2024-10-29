@@ -9,15 +9,14 @@ import {
     GroupFeature,
     RootFeature,
     SolitaryFeature,
+    GroupRootFeature,
 } from "../feature-model/fm-metamodel/fm-components";
 
 export const domainFMDiagram: Element<fm.IFeatureDiagram> = (
     <FeatureDiagram name="EER2Rel Domain FM">
-        <RootFeature name="Domain_FM" minCardinality={1} maxCardinality={1}>
-            <GroupFeature name="Infrastructure" minCardinality={1} maxCardinality={1}>
-                <SolitaryFeature name="Cloud" minCardinality={0} maxCardinality={1}></SolitaryFeature>
-                <SolitaryFeature name="OnPremise" minCardinality={0} maxCardinality={1}></SolitaryFeature>
-            </GroupFeature>
-        </RootFeature>
+        <GroupRootFeature name="Infrastructure" minCardinality={1} maxCardinality={1}>
+            <SolitaryFeature name="Cloud" minCardinality={1} maxCardinality={1}></SolitaryFeature>
+            <SolitaryFeature name="OnPremise" minCardinality={0} maxCardinality={1}></SolitaryFeature>
+        </GroupRootFeature>
     </FeatureDiagram>
 );
