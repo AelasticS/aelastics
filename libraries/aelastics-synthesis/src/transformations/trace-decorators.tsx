@@ -184,7 +184,9 @@ export const E2E = function ({ input, output, ruleName }: IE2EDecorator) {
 
       let sourceModelElement = args[0];
       let targetJSXElement = original.apply(this, args) as Element<any>;
-      targetJSXElement.rule = ruleName;
+      if (targetJSXElement) {
+        targetJSXElement.rule = ruleName;
+      }
 
       // this.context.makeTrace(a, {
       //   type: Array.isArray(r) ? Array : r?.type,
