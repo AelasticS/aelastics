@@ -130,6 +130,7 @@ public derive(name?: string, schema: TypeSchema = DefaultSchema): this {
    * @returns true if this type is or derives from the given type.
    */
 public isOfType(t: Type<any, any, any>): boolean {
+  // TODO: Reimplement this method to handle intersection types. (Iterate over elements of the intersection type)
   return t === this || (this.derivedFrom?.isOfType(t))?true:false
 }
 
