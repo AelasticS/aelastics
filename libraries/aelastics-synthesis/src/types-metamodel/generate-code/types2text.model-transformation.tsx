@@ -14,6 +14,10 @@ import { SpecOption, SpecPoint } from "./../../transformations/spec-decorators";
 import * as tmm from "./../types-meta.model";
 
 
+@M2M({
+  input: tmm.TypeModel,
+  output: m2tmm.M2T_Model,
+})
 export class Types2TextModelTransformations extends abstractM2M<
   tmm.ITypeModel,
   m2tmm.M2T_Model
@@ -31,39 +35,48 @@ export class Types2TextModelTransformations extends abstractM2M<
     ) as Array<tmm.IType>;
 
     // create array with type dependencies
-    let depTypes = types.map((e) => {
-      if (this.context.store.isTypeOf(e, tmm.Subtype)) {
-        return { type: e, dependecy: (e as tmm.ISubtype).superType };
+    const typesWithDependences: Map<tmm.IType, Array<tmm.IType>> = new Map();
+
+    types.forEach((e) => {
+      if (!typesWithDependences.has(e)) {
+        typesWithDependences.set(e, []);
       }
 
-      return { type: e, dependecy: null };
+      if (this.context.store.isTypeOf(e, tmm.Subtype)) {
+        typesWithDependences.get(e)?.push((e as tmm.ISubtype).superType);
+      } else if (this.context.store.isTypeOf(e, tmm.Union)) {
+        (e as tmm.IUnion).unionTypes.forEach((ut) => typesWithDependences.get(e)?.push(ut));
+      } else if (this.context.store.isTypeOf(e, tmm.Optional)) {
+        typesWithDependences.get(e)?.push((e as tmm.IOptional).optionalType);
+      } else if (this.context.store.isTypeOf(e, tmm.Array)) {
+        typesWithDependences.get(e)?.push((e as tmm.IArray).elementType);
+      }
     });
-
-
 
     let typeTransformed = true;
 
-    while (depTypes.length > 0 && typeTransformed) {
+    while (typesWithDependences.size > 0 && typeTransformed) {
       typeTransformed = false;
 
-      depTypes.forEach((e, i) => {
-        if (
-          e.dependecy &&
-          depTypes.find((element) => {
-            let a = element.type.name == e.dependecy?.name;
-            return a;
-          })
-        ) {
-          return;
+      typesWithDependences.forEach((deps, key) => {
+
+        for (let i = 0; i < deps.length; i++) {
+          if (sortedTypes.includes(deps[i])) {
+            deps.splice(i, 1);
+            i--;
+          }
         }
 
-        depTypes.splice(i, 1);
-        sortedTypes.push(e.type);
-        typeTransformed = true;
+        if (deps.length === 0) {
+          typesWithDependences.delete(key);
+          sortedTypes.push(key);
+          typeTransformed = true;
+        }
       });
     }
 
-    if (depTypes.length > 0) {
+
+    if (typesWithDependences.size > 0) {
       throw new Error("There are a circular dependencies!");
     }
 
@@ -111,6 +124,10 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
+  @E2E({
+    input: tmm.Type,
+    output: m2tmm.Paragraph,
+  })
   transformType(
     t: tmm.IType
   ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
@@ -157,7 +174,7 @@ export class Types2TextModelTransformations extends abstractM2M<
 
   transformUnion(t: tmm.IUnion): Element<m2tmm.ISection> {
     return (
-      <Sec name={t.name + "_type_sec"}>
+      <Sec name={t.name + "_type_sec"} >
         <SecParent $refByName="typeDefinition"></SecParent>
         <Sec name={t.name + "_type_export_sec"}>
           <P>{`export const ${t.name} = ` + this.returnTypeForUnion(t)}</P>
@@ -170,7 +187,7 @@ export class Types2TextModelTransformations extends abstractM2M<
   @SpecPoint()
   transformObject(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
-      <Sec name={t.name + "_type_sec"}>
+      <Sec name={t.name + "_type_sec"} >
         <SecParent $refByName="typeDefinition"></SecParent>
         <Sec name={t.name + "_type_export_sec"}></Sec>
         <Sec name={t.name + "_attr_sec"}>
@@ -194,14 +211,14 @@ export class Types2TextModelTransformations extends abstractM2M<
         <Sec $refByName={t.name + "_type_export_sec"}>
           <P>{`export const ${t.name} = t.object(`}</P>
         </Sec>
-      </Sec>
+      </Sec >
     );
   }
 
   @SpecOption("transformObject", tmm.Subtype)
   transformSubtype(t: tmm.ISubtype): Element<m2tmm.ISection> {
     return (
-      <Sec name={t.name + "_type_sec"}>
+      <Sec name={t.name + "_type_sec"} >
         <Sec $refByName={t.name + "_type_export_sec"}>
           <P>{`export const ${t.name} = t.subtype(${t.superType.name},`}</P>
         </Sec>
@@ -209,6 +226,10 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
+  @E2E({
+    input: tmm.Property,
+    output: m2tmm.Paragraph,
+  })
   transformProperty(p: tmm.IProperty): Element<m2tmm.IParagraph> {
     const domainText: string = this.context.store.isTypeOf(
       p.domain,
