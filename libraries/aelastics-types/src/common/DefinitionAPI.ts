@@ -112,8 +112,7 @@ export const entityRef = <T extends ObjectType<any, readonly string[]>>(
   t: T,
   name?: string,
   schema: TypeSchema = DefaultSchema
-) => 
-{
+) => {
   if (name === undefined || name === '') name = schema.generateName(`referenceTo${t.name}}>`);
   let obj = new EntityReference<T>(name, t, schema);
   return obj;
@@ -177,6 +176,17 @@ export function optional<RT extends Any>(
   owner: TypeSchema = DefaultSchema
 ): OptionalType<RT> {
   if (name === undefined) name = owner.generateName(`Optional_${type.name}`);
+
+  const optType = owner.getType(name);
+
+  if (optType instanceof OptionalType) {
+    return optType;
+  }
+
+  if (optType !== undefined) {
+    throw new ServiceError('ValidationError', `Type ${name} already exists in schema ${owner.name} which is not an OptionalType`);
+  }
+
   return new OptionalType(type, name, owner);
 }
 
