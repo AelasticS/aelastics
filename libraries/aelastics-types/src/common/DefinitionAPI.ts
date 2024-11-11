@@ -60,7 +60,7 @@ export const subtype = <P extends InterfaceDecl, S extends InterfaceDecl, I exte
   // @ts-ignore
   //  superProps: S = superType['interfaceDecl']
 ): Subtype<P, S, ObjectType<InterfaceDecl, I>> => {
-  if (name === undefined || name === '') name = schema.generateName(`SubtypeOf ${superType.fullPathName})`);
+  if (name === undefined || name === '') name = schema.generateName(`SubtypeOf_${superType.fullPathName})`);
   return new Subtype(name, extraProps, superType as ObjectType<InterfaceDecl, I>, schema);
 };
 
@@ -69,9 +69,19 @@ export const arrayOf = <T extends Any>(
   name?: string,
   schema: TypeSchema = DefaultSchema
 ): ArrayType<T> => {
-  if (name === undefined || name === '') name = schema.generateName(`Array<${element.name}>`);
-  let obj = new ArrayType<T>(name, element, schema);
-  return obj;
+  if (name === undefined || name === '') name = `ArrayOf_${element.name}`;
+
+  const arrType = schema.getType(name);
+
+  if (arrType instanceof ArrayType) {
+    return arrType;
+  }
+
+  if (arrType !== undefined) {
+    throw new ServiceError('ValidationError', `Type ${name} already exists in schema ${schema.name} which is not an ArrayType`);
+  }
+
+  return new ArrayType<T>(name, element, schema);
 };
 
 const getUnionName = <U extends InterfaceDecl>(elements: U): string => {
@@ -163,7 +173,18 @@ export const literal = <V extends LiteralValue>(
   value: V,
   schema: TypeSchema = DefaultSchema
 ): LiteralType<V> => {
-  const name: string = schema.generateName(value.toString()); // JSON.stringify(value)
+  const name: string = value.toString(); // JSON.stringify(value)
+
+  const litType = schema.getType(name);
+
+  if (litType instanceof LiteralType) {
+    return litType;
+  }
+
+  if (litType !== undefined) {
+    throw new ServiceError('ValidationError', `Type ${name} already exists in schema ${schema.name} which is not an LiteralType`);
+  }
+
   return new LiteralType<V>(name, 'Literal', schema, value);
 };
 
@@ -175,7 +196,7 @@ export function optional<RT extends Any>(
   name?: string,
   owner: TypeSchema = DefaultSchema
 ): OptionalType<RT> {
-  if (name === undefined) name = owner.generateName(`Optional_${type.name}`);
+  if (name === undefined) name = `OptionalOf_${type.name}`;
 
   const optType = owner.getType(name);
 
@@ -200,10 +221,21 @@ let coun;
 export const link = (
   schema: TypeSchema,
   path: string,
-  name: string = schema.generateName(`Link->${path}`),
+  name?: string,
   owner: TypeSchema = DefaultSchema
 ) => {
-  if (name == undefined) name = schema.generateName(`Link->${path}`);
+  if (name == undefined) name = `LinkTo_${path}`;
+
+  const linkType = owner.getType(name);
+
+  if (linkType instanceof LinkType) {
+    return linkType;
+  }
+
+  if (linkType !== undefined) {
+    throw new ServiceError('ValidationError', `Type ${name} already exists in schema ${owner.name} which is not an LinkType`);
+  }
+
   return new LinkType(name, schema, path, owner);
 };
 
