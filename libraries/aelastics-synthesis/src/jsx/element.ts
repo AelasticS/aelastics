@@ -373,6 +373,8 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
     function renderChild(childElement: Element<any, any>) {
 
+      if(childElement === null) return; // null prevents rendering
+
       // check if childElement is type of ResolveElement
       if (childElement instanceof ResolveElement) {
         const tempE: ResolveElement = childElement;
