@@ -69,9 +69,23 @@ export const arrayOf = <T extends Any>(
   name?: string,
   schema: TypeSchema = DefaultSchema
 ): ArrayType<T> => {
-  if (name === undefined || name === '') name = schema.generateName(`Array<${element.name}>`);
-  let obj = new ArrayType<T>(name, element, schema);
-  return obj;
+  if (name === undefined || name === '') name = `ArrayOf_${element.name}`;
+
+  const arrType = schema.getType(name);
+
+  if (arrType instanceof ArrayType && arrType.element === element) {
+    return arrType;
+  }
+
+  if (arrType instanceof ArrayType && arrType.element !== element) {
+    throw new ServiceError('ValidationError', `ArrayType ${name} already exists in schema ${schema.name} and has different element type`);
+  }
+
+  if (arrType !== undefined) {
+    throw new ServiceError('ValidationError', `Type ${name} already exists in schema ${schema.name} which is not an ArrayType`);
+  }
+
+  return new ArrayType<T>(name, element, schema);
 };
 
 const getUnionName = <U extends InterfaceDecl>(elements: U): string => {
@@ -176,7 +190,22 @@ export function optional<RT extends Any>(
   name?: string,
   owner: TypeSchema = DefaultSchema
 ): OptionalType<RT> {
-  if (name === undefined) name = owner.generateName(`Optional_${type.name}`);
+  if (name === undefined) name = `OptionalOf_${type.name}`;
+
+  const optType = owner.getType(name);
+
+  if (optType instanceof OptionalType && (optType as OptionalType<RT>).base === type) {
+    return optType;
+  }
+
+  if (optType instanceof OptionalType && (optType as OptionalType<RT>).base !== type) {
+    throw new ServiceError('ValidationError', `OptionalType ${name} already exists in schema ${owner.name} with different base type`);
+  }
+
+  if (optType !== undefined) {
+    throw new ServiceError('ValidationError', `Type ${name} already exists in schema ${owner.name} which is not an OptionalType`);
+  }
+
   return new OptionalType(type, name, owner);
 }
 
