@@ -73,8 +73,12 @@ export const arrayOf = <T extends Any>(
 
   const arrType = schema.getType(name);
 
-  if (arrType instanceof ArrayType) {
+  if (arrType instanceof ArrayType && arrType.element === element) {
     return arrType;
+  }
+
+  if (arrType instanceof ArrayType && arrType.element !== element) {
+    throw new ServiceError('ValidationError', `ArrayType ${name} already exists in schema ${schema.name} and has different element type`);
   }
 
   if (arrType !== undefined) {
@@ -200,8 +204,12 @@ export function optional<RT extends Any>(
 
   const optType = owner.getType(name);
 
-  if (optType instanceof OptionalType) {
+  if (optType instanceof OptionalType && (optType as OptionalType<RT>).base === type) {
     return optType;
+  }
+
+  if (optType instanceof OptionalType && (optType as OptionalType<RT>).base !== type) {
+    throw new ServiceError('ValidationError', `OptionalType ${name} already exists in schema ${owner.name} with different base type`);
   }
 
   if (optType !== undefined) {
