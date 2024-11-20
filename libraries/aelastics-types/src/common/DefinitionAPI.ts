@@ -20,6 +20,7 @@ import { LiteralType, LiteralValue } from '../simple-types/Literal';
 import { EntityReference } from '../special-types/EntityReference';
 import { ServiceError } from 'aelastics-result';
 import { TaggedUnionType } from '../complex-types/TaggedUnionType';
+import { IntersectionType } from '../complex-types/IntersectionType';
 
 export * from '../complex-types/EntityType';
 
@@ -101,6 +102,18 @@ export const taggedUnion = <P extends InterfaceDecl>(
   }
   return new TaggedUnionType(name, discr, elements, schema);
 };
+
+const getIntersectionName = <U extends Array<Any>>(elements: U): string => {
+  return `(${elements.map(baseType => baseType.name).join(' & ')})`;
+}
+
+export const intersectionOf = <P extends Array<Any>>(
+  elements: P,
+  name: string = getIntersectionName(elements),
+  schema: TypeSchema = DefaultSchema
+) => {
+  return new IntersectionType(name, elements, schema)
+}
 
 /**
  * Reference to an Entity (i.e. an object with an identifier)
