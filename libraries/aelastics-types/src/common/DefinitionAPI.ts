@@ -176,7 +176,22 @@ export function optional<RT extends Any>(
   name?: string,
   owner: TypeSchema = DefaultSchema
 ): OptionalType<RT> {
-  if (name === undefined) name = owner.generateName(`Optional_${type.name}`);
+  if (name === undefined) name = `OptionalOf_${type.name}`;
+
+  const optType = owner.getType(name);
+
+  if (optType instanceof OptionalType && (optType as OptionalType<RT>).base === type) {
+    return optType;
+  }
+
+  if (optType instanceof OptionalType && (optType as OptionalType<RT>).base !== type) {
+    throw new ServiceError('ValidationError', `OptionalType ${name} already exists in schema ${owner.name} with different base type`);
+  }
+
+  if (optType !== undefined) {
+    throw new ServiceError('ValidationError', `Type ${name} already exists in schema ${owner.name} which is not an OptionalType`);
+  }
+
   return new OptionalType(type, name, owner);
 }
 
