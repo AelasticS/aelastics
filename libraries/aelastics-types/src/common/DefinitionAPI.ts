@@ -221,20 +221,18 @@ export const link = (
   name?: string,
   owner: TypeSchema = DefaultSchema
 ) => {
-  if (name == undefined) name = `LinkTo_${path}`;
+  const absolutePathName = schema.absolutePathName + '/' + path;
+
+  if (name == undefined) name = `LinkTo_${absolutePathName}`;
 
   const linkType = owner.getType(name);
 
-  if (linkType instanceof LinkType && linkType.LinkSchema === schema && linkType.path === path) {
+  if (linkType instanceof LinkType && linkType.fullPathName === absolutePathName) {
     return linkType;
   }
 
-  if(linkType instanceof LinkType && linkType.LinkSchema !== schema) {
-    throw new ServiceError('ValidationError', `LinkType ${name} already exists in schema ${owner.name} and has different LinkSchema`);
-  }
-
-  if (linkType instanceof LinkType && linkType.path !== path) {
-    throw new ServiceError('ValidationError', `LinkType ${name} already exists in schema ${owner.name} and has different path`);
+  if (linkType instanceof LinkType && linkType.fullPathName !== absolutePathName) {
+    throw new ServiceError('ValidationError', `LinkType ${name} already exists in schema ${owner.name} pointing to different concept (${linkType.fullPathName})`);
   }
 
   if (linkType !== undefined) {
