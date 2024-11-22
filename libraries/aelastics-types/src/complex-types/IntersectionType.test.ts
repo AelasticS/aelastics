@@ -1,4 +1,5 @@
 
+import { isSuccess } from 'aelastics-result';
 import * as t from '../index'
 import { IntersectionType } from './IntersectionType';
 
@@ -119,4 +120,130 @@ describe('IntersectionType addChild and children methods tests', () => {
             });
         });
     });
+});
+
+
+
+describe('IntersectionType validation tests', () => {
+  it('should validate that a correct PersonCustomer is valid', () => {
+    const validPersonCustomer: IPersonCustomer = {
+      name: 'John Doe',
+      age: 35,
+      customerId: 123,
+      purchaseHistory: 'Books',
+    };
+
+    const result = PersonCustomer.validate(validPersonCustomer);
+    expect(isSuccess(result)).toBe(true);
+  });
+
+  it('should invalidate a PersonCustomer with missing properties', () => {
+    const invalidPersonCustomer = {
+      name: 'John Doe',
+      age: 35,
+    };
+
+    const result = PersonCustomer.validate(invalidPersonCustomer as any);
+    expect(isSuccess(result)).toBe(false);
+  });
+
+  it('should invalidate a PersonCustomer with incorrect types', () => {
+    const invalidPersonCustomer = {
+      name: 'John Doe',
+      age: '35', // age should be a number
+      customerId: 123,
+      purchaseHistory: 'Books',
+    };
+
+    const result = PersonCustomer.validate(invalidPersonCustomer as any);
+    expect(isSuccess(result)).toBe(false);
+  });
+
+  it('should validate nested IntersectionType objects', () => {
+    const NestedType = t.object(
+      {
+        personalInfo: PersonCustomer,
+        loyaltyPoints: t.number,
+      },
+      'NestedType'
+    );
+
+    const validNestedObject = {
+      personalInfo: {
+        name: 'Jane Doe',
+        age: 28,
+        customerId: 456,
+        purchaseHistory: 'Electronics',
+      },
+      loyaltyPoints: 120,
+    };
+
+    const result = NestedType.validate(validNestedObject);
+    expect(isSuccess(result)).toBe(true);
+  });
+
+  it('should invalidate nested IntersectionType objects with incorrect data', () => {
+    const NestedType = t.object(
+      {
+        personalInfo: PersonCustomer,
+        loyaltyPoints: t.number,
+      },
+      'NestedType'
+    );
+
+    const invalidNestedObject = {
+      personalInfo: {
+        name: 'Jane Doe',
+        age: 28,
+        purchaseHistory: 'Electronics', // Missing customerId
+      },
+      loyaltyPoints: '120', // loyaltyPoints should be a number
+    };
+
+    const result = NestedType.validate(invalidNestedObject as any);
+    expect(isSuccess(result)).toBe(false);
+  });
+
+  it('should validate arrays of IntersectionType objects', () => {
+    const ArrayOfPersonCustomers = t.arrayOf(PersonCustomer, 'ArrayOfPersonCustomers');
+
+    const validArray = [
+      {
+        name: 'John Doe',
+        age: 35,
+        customerId: 123,
+        purchaseHistory: 'Books',
+      },
+      {
+        name: 'Jane Doe',
+        age: 28,
+        customerId: 456,
+        purchaseHistory: 'Electronics',
+      },
+    ];
+
+    const result = ArrayOfPersonCustomers.validate(validArray);
+    expect(isSuccess(result)).toBe(true);
+  });
+
+  it('should invalidate arrays of IntersectionType objects with invalid data', () => {
+    const ArrayOfPersonCustomers = t.arrayOf(PersonCustomer, 'ArrayOfPersonCustomers');
+
+    const invalidArray = [
+      {
+        name: 'John Doe',
+        age: '35', // Incorrect type
+        customerId: 123,
+        purchaseHistory: 'Books',
+      },
+      {
+        name: 'Jane Doe',
+        age: 28,
+        purchaseHistory: 'Electronics', // Missing customerId
+      },
+    ];
+
+    const result = ArrayOfPersonCustomers.validate(invalidArray as any);
+    expect(isSuccess(result)).toBe(false);
+  });
 });
