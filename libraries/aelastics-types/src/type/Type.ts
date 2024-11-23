@@ -18,7 +18,8 @@ export type RoleType =
   | 'asProperty'
   | 'asArrayElement'
   | 'asIdentifierPart'
-  | 'asElementOfTaggedUnion';
+  | 'asElementOfTaggedUnion'
+  | 'asElementOfIntersection';
 
 
 /**
@@ -329,3 +330,5 @@ createInstance(input?: any) {
    *
    */
 }
+export { Any };
+
