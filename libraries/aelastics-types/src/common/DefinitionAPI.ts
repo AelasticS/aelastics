@@ -238,19 +238,24 @@ export function optional<RT extends Any>(
  * @param path
  * @param name
  */
-let coun;
 export const link = (
   schema: TypeSchema,
   path: string,
   name?: string,
   owner: TypeSchema = DefaultSchema
 ) => {
-  if (name == undefined) name = `LinkTo_${path}`;
+  const absolutePathName = schema.absolutePathName + '/' + path;
+
+  if (name == undefined) name = `LinkTo_${absolutePathName}`;
 
   const linkType = owner.getType(name);
 
-  if (linkType instanceof LinkType) {
+  if (linkType instanceof LinkType && linkType.fullPathName === absolutePathName) {
     return linkType;
+  }
+
+  if (linkType instanceof LinkType && linkType.fullPathName !== absolutePathName) {
+    throw new ServiceError('ValidationError', `LinkType ${name} already exists in schema ${owner.name} pointing to different concept (${linkType.fullPathName})`);
   }
 
   if (linkType !== undefined) {
