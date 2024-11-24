@@ -30,8 +30,6 @@ type DtoIntersectionType<P extends Array<Any>> = {
 // }
 
 
-
-// new version of IntersectionType
 export class IntersectionType<P extends Array<any>> extends ComplexType<
   UnionToIntersection<TypeOf<P[number]>>,
   DtoIntersectionType<P>,
@@ -68,7 +66,7 @@ export class IntersectionType<P extends Array<any>> extends ComplexType<
    * @param child - The child node, must be an object.
    * @param n - A node parameter (not used in the current implementation).
    */
-  addChild(parent: Record<string, any>, child: Record<string, any>, n: Node): void {
+  public addChild(parent: Record<string, any>, child: Record<string, any>, n: Node): void {
     if (typeof parent !== 'object' || parent === null) {
       throw new Error(
         `IntersectionType requires parent to be a valid object. Received: ${typeof parent}`
@@ -85,14 +83,14 @@ export class IntersectionType<P extends Array<any>> extends ComplexType<
     Object.assign(parent, child);
   }
 
-  init(n: Node): UnionToIntersection<TypeOf<P[number]>> {
+  public init(n: Node): UnionToIntersection<TypeOf<P[number]>> {
     return {} as any;
   }
 }
 
 
 /////////////////////////////////////////////////////////////
-// old version which allows for primitives
+// version which allows for primitives
 
 // export class IntersectionType1<P extends Array<Any>> extends ComplexType<
 
