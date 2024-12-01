@@ -78,7 +78,7 @@ export abstract class Type<V, G, T> {
      * @param validator Optional validator to apply to values of this type.
      */
   constructor(name: string, typeCategory: TypeCategory, schema: TypeSchema, validator?: Validator<V>) {
-    const sanitizedName = this.sanitizeName(name);
+    const sanitizedName = Type.sanitizeName(name);
     if (!this.isValidName(sanitizedName)) {
       throw new Error(`Invalid name: "${sanitizedName}". Please follow the naming rules.`);
     }
@@ -115,13 +115,13 @@ export abstract class Type<V, G, T> {
     return regex.test(name);
   }
 
-  // Private method to sanitize names
-  private sanitizeName(name: string): string {
-    return name
+// Public static method to sanitize names
+public static sanitizeName(name: string): string {
+  return name
       .replace(/\//g, '_')            // Replace "/" with "_"
       .trim()                         // Trim spaces from the beginning and end
       .replace(/\s{2,}/g, ' ');       // Replace two or more consecutive spaces with a single space
-  }
+}
 
   /**
    * Retrieves the path from the root schema, if applicable.
@@ -150,7 +150,7 @@ export abstract class Type<V, G, T> {
    */
   public derive(name?: string, schema: TypeSchema = DefaultSchema): this {
     if (name === undefined || name === '') {
-      name = schema.generateName(`derived from ${this.sanitizeName(this.fullPathName)}`);
+      name = schema.generateName(`derived from ${Type.sanitizeName(this.fullPathName)}`);
     }
     const derived = new (this.constructor as any)(name, this.typeCategory, schema);
     derived.derivedFrom = this;
