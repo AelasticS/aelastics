@@ -72,12 +72,15 @@ export abstract class Type<V, G, T> {
 
 /**
    * Constructs a new Type instance.
-   * @param name The name of the type, unique within its schema.
+   * @param name The name of the type, unique within its schema. See below naming rules. 
    * @param typeCategory The category of the type, which helps in defining its behavior and properties.
    * @param schema The schema to which this type belongs.
    * @param validator Optional validator to apply to values of this type.
    */
 constructor(name: string, typeCategory: TypeCategory, schema: TypeSchema, validator?: Validator<V>) {
+  if (!this.isValidName(name)) {
+    throw new Error(`Invalid name: "${name}". Please follow the naming rules.`);
+}
   this.name = name;
   this.ownerSchema = schema;
   this.typeCategory = typeCategory;
@@ -91,6 +94,25 @@ constructor(name: string, typeCategory: TypeCategory, schema: TypeSchema, valida
     schema.addType(this);
   }
 }
+
+
+   /**
+ * Validates a name according to the defined naming rules.
+ * 
+ * Rules:
+ * 1. A name must start with an underscore (`_`), a letter, or a dollar sign (`$`).
+ * 2. It must be followed by alphanumeric characters, with spaces allowed between words.
+ * 3. Underscores (`_`), hyphens (`-`), dollar signs (`$`), and digits are allowed but cannot be standalone.
+ * 4. Two or more consecutive spaces are not allowed.
+ * 5. The `/` character is not allowed.
+ * 
+ * @param name - The name to validate.
+ * @returns True if the name is valid, otherwise false.
+ */
+    private isValidName(name: string): boolean {
+      const regex = /^[_a-zA-Z\$][a-zA-Z0-9_\$-]*(?: [a-zA-Z0-9_\$-]+)*$/;
+      return regex.test(name);
+  }
 
 /**
  * Retrieves the path from the root schema, if applicable.
