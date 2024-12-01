@@ -2,7 +2,7 @@
 import * as t from '../index'
 import { intersectionOf } from '../index';
 
-// example how intersection type is deefined and used 
+// example how intersection type is defined and used 
 const Person = t.object(
     {
       name: t.string,
