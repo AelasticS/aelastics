@@ -191,7 +191,7 @@ export const literal = <V extends LiteralValue>(
   value: V,
   schema: TypeSchema = DefaultSchema
 ): LiteralType<V> => {
-  const name: string = schema.generateName(value.toString()); // JSON.stringify(value)
+  const name: string = schema.generateName(`Literal_${value.toString()}`); // JSON.stringify(value)
   return new LiteralType<V>(name, 'Literal', schema, value);
 };
 
