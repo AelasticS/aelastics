@@ -139,8 +139,7 @@ export const entityRef = <T extends ObjectType<any, readonly string[]>>(
   t: T,
   name?: string,
   schema: TypeSchema = DefaultSchema
-) => 
-{
+) => {
   if (name === undefined || name === '') name = schema.generateName(`referenceTo${t.name}}>`);
   let obj = new EntityReference<T>(name, t, schema);
   return obj;
@@ -191,7 +190,7 @@ export const literal = <V extends LiteralValue>(
   value: V,
   schema: TypeSchema = DefaultSchema
 ): LiteralType<V> => {
-  const name: string = schema.generateName(value.toString()); // JSON.stringify(value)
+  const name: string = schema.generateName(`Literal_${value.toString()}`); // JSON.stringify(value)
   return new LiteralType<V>(name, 'Literal', schema, value);
 };
 
@@ -232,19 +231,22 @@ export const link = (
   schema: TypeSchema,
   path: string,
   name?: string,
-  owner: TypeSchema = DefaultSchema
+  owner: TypeSchema = schema
 ) => {
   const absolutePathName = schema.absolutePathName + '/' + path;
+  const getAbsolutePathName = (l: LinkType) => `${l.LinkSchema.absolutePathName}/${l.path}`;
 
-  if (name == undefined) name = `LinkTo_${absolutePathName}`;
+  if (name == undefined) 
+    name = `LinkTo_${absolutePathName}`;
+  name = Type.sanitizeName(name);
 
   const linkType = owner.getType(name);
 
-  if (linkType instanceof LinkType && linkType.fullPathName === absolutePathName) {
+  if (linkType instanceof LinkType  && getAbsolutePathName(linkType) === absolutePathName) {
     return linkType;
   }
 
-  if (linkType instanceof LinkType && linkType.fullPathName !== absolutePathName) {
+  if (linkType instanceof LinkType && getAbsolutePathName(linkType) !== absolutePathName) {
     throw new ServiceError('ValidationError', `LinkType ${name} already exists in schema ${owner.name} pointing to different concept (${linkType.fullPathName})`);
   }
 

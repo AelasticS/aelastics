@@ -17,8 +17,8 @@ export const Process = t.subtype(Model, {
 export const Task = t.subtype(Node, {
     activity:t.string,
     worker:t.optional(Role),
-    inputs:t.arrayOf(t.link(BPM_Schema, "Document)")),
-    outputs:t.arrayOf(t.link(BPM_Schema, "Document)")),
+    inputs:t.arrayOf(t.link(BPM_Schema, "Document")),
+    outputs:t.arrayOf(t.link(BPM_Schema, "Document")),
 }, "Task", BPM_Schema);
 export const SubProcess = t.subtype(Task, {
     process:Process
