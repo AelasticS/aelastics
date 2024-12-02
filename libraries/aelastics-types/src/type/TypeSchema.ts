@@ -102,19 +102,23 @@ export class TypeSchema {
     let typeName: string | undefined = ''
     let startSchema: TypeSchema = this
     const segments = path.split('/')
+
     if (segments[0] !== undefined && segments[0] === '') {
       startSchema = System
       segments.shift()
     }
+
     if (segments.length >= 1) {
       typeName = segments.pop()
       schema = segments.reduce((schema: any, typeName: any) => {
         return typeof schema === 'undefined' ? schema : schema._subSchemas.get(typeName)
       }, startSchema)
     }
+
     if (!schema || !typeName) {
       return undefined
     }
+
     return schema._types.get(typeName)
   }
 
@@ -130,6 +134,7 @@ export class TypeSchema {
         errors.push(err)
       }
     })
+
     if (errors.length > 0) {
       this._validateStatus = ValidateStatusEnum.valid
       return success(true)
