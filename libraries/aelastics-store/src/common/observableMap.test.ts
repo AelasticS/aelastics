@@ -1,55 +1,117 @@
-/*
- * Project: aelastics-store
- * Created Date: Tuesday September 12th 2023
- * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
- * -----
- * Last Modified: Saturday, 16th September 2023
- * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
- * -----
- * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
- */
-
-import { createObservableMap } from './observableMap';
+import { createObservableMap, MapHandlers } from './observableMap';
 
 describe('createObservableMap', () => {
-    it('set: should add key-value pair if handler returns true and be called with correct arguments', () => {
-        const mockSetHandler = jest.fn((target, key, value) => true);
-        const map = createObservableMap<string, number>(new Map(), { set: mockSetHandler });
+    it('should call the set handler with extra parameter', () => {
+        const target = new Map<string, number>();
+        const extra = { context: 'test' };
+        const handlers: MapHandlers<string, number, typeof extra> = {
+            set: jest.fn().mockReturnValue(true),
+        };
 
-        map.set('one', 1);
+        const proxy = createObservableMap(target, handlers, true, extra);
+        proxy.set('a', 100);
 
-        expect(map.get('one')).toBe(1);
-        expect(mockSetHandler).toHaveBeenCalledWith(expect.any(Map), 'one', 1);
+        expect(handlers.set).toHaveBeenCalledWith(target, 'a', 100, extra);
+        expect(target.get('a')).toBe(100);
     });
 
-    it('delete: should delete key-value pair if handler returns true and be called with correct arguments', () => {
-        const mockDeleteHandler = jest.fn((target, key) => true);
-        const map = createObservableMap<string, number>(new Map([['one', 1]]), { delete: mockDeleteHandler });
+    it('should call the delete handler with extra parameter', () => {
+        const target = new Map<string, number>([['a', 1]]);
+        const extra = { context: 'test' };
+        const handlers: MapHandlers<string, number, typeof extra> = {
+            delete: jest.fn().mockReturnValue(true),
+        };
 
-        map.delete('one');
+        const proxy = createObservableMap(target, handlers, true, extra);
+        proxy.delete('a');
 
-        expect(map.get('one')).toBeUndefined();
-        expect(map.size).toBe(0);
-        expect(mockDeleteHandler).toHaveBeenCalledWith(expect.any(Map), 'one');
+        expect(handlers.delete).toHaveBeenCalledWith(target, 'a', extra);
+        expect(target.has('a')).toBe(false);
     });
 
-    it('clear: should clear the map if handler returns true and be called with correct arguments', () => {
-        const mockClearHandler = jest.fn((target) => true);
-        const map = createObservableMap<string, number>(new Map([['one', 1], ['two', 2]]), { clear: mockClearHandler });
+    it('should call the clear handler with extra parameter', () => {
+        const target = new Map<string, number>([['a', 1], ['b', 2]]);
+        const extra = { context: 'test' };
+        const handlers: MapHandlers<string, number, typeof extra> = {
+            clear: jest.fn().mockReturnValue(true),
+        };
 
-        map.clear();
+        const proxy = createObservableMap(target, handlers, true, extra);
+        proxy.clear();
 
-        expect(map.size).toBe(0);
-        expect(mockClearHandler).toHaveBeenCalledWith(expect.any(Map));
+        expect(handlers.clear).toHaveBeenCalledWith(target, extra);
+        expect(target.size).toBe(0);
     });
 
-    it('defaultAction: should be called when accessing an unknown property', () => {
-        const mockDefaultActionHandler = jest.fn((target, key) => true);
-        const map = createObservableMap<string, number>(new Map([['one', 1]]), { defaultAction: mockDefaultActionHandler });
+    it('should call the get handler with extra parameter', () => {
+        const target = new Map<string, number>([['a', 1]]);
+        const extra = { context: 'test' };
+        const handlers: MapHandlers<string, number, typeof extra> = {
+            get: jest.fn().mockReturnValue(true),
+        };
 
-        const value = map.size;
+        const proxy = createObservableMap(target, handlers, true, extra);
+        const value = proxy.get('a');
 
-        expect(mockDefaultActionHandler).toHaveBeenCalledWith(expect.any(Map), 'size');
-        expect(value).toBe(1)
+        expect(handlers.get).toHaveBeenCalledWith(target, 'a', extra);
+        expect(value).toBe(1);
+    });
+
+    it('should call the has handler with extra parameter', () => {
+        const target = new Map<string, number>([['a', 1]]);
+        const extra = { context: 'test' };
+        const handlers: MapHandlers<string, number, typeof extra> = {
+            has: jest.fn().mockReturnValue(true),
+        };
+
+        const proxy = createObservableMap(target, handlers, true, extra);
+        const result = proxy.has('a');
+
+        expect(handlers.has).toHaveBeenCalledWith(target, 'a', extra);
+        expect(result).toBe(true);
+    });
+
+    it('should call the forEach handler with extra parameter', () => {
+        const target = new Map<string, number>([['a', 1], ['b', 2]]);
+        const extra = { context: 'test' };
+        const handlers: MapHandlers<string, number, typeof extra> = {
+            forEach: jest.fn().mockReturnValue(true),
+        };
+
+        const proxy = createObservableMap(target, handlers, true, extra);
+        proxy.forEach((value, key) => {});
+
+        expect(handlers.forEach).toHaveBeenCalledWith(
+            target,
+            expect.any(Function),
+            extra
+        );
+    });
+
+    it('should call the defaultAction handler with extra parameter', () => {
+        const target = new Map<string, number>([['a', 1]]);
+        const extra = { context: 'test' };
+        const handlers: MapHandlers<string, number, typeof extra> = {
+            defaultAction: jest.fn().mockReturnValue(true),
+        };
+    
+        const proxy = createObservableMap(target, handlers, true, extra);
+        const size = proxy.size;
+    
+        expect(handlers.defaultAction).toHaveBeenCalledWith(target, 'size', [], extra);
+        expect(size).toBe(1);
+    });
+
+    it('should handle absence of extra parameter gracefully', () => {
+        const target = new Map<string, number>();
+        const handlers: MapHandlers<string, number> = {
+            set: jest.fn().mockReturnValue(true),
+        };
+
+        const proxy = createObservableMap(target, handlers);
+        proxy.set('a', 100);
+
+        expect(handlers.set).toHaveBeenCalledWith(target, 'a', 100, undefined);
+        expect(target.get('a')).toBe(100);
     });
 });
