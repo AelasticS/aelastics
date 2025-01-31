@@ -1,141 +1,170 @@
-/*
- * Project: aelastics-store
- * Created Date: Tuesday September 12th 2023
- * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
- * -----
- * Last Modified: Saturday, 16th September 2023
- * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
- * -----
- * Copyright (c) 2023 Aelastics (https://github.com/AelasticS)
- */
-
-import { createObservableArray } from './observableArray';
+import { createObservableArray, ArrayHandlers } from './observableArray';
 
 describe('createObservableArray', () => {
-    // Test the `set` handler.
-    it('set: should update the array if handler returns true and be called with correct arguments', () => {
-        const mockSetHandler = jest.fn((target, index, value) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { set: mockSetHandler });
+    it('should call the set handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            set: jest.fn().mockReturnValue(true),
+        };
 
-        arr[1] = 99;
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy[1] = 99;
 
-        expect(arr[1]).toBe(99);
-
-        // expect(mockSetHandler.mock.calls[0][0]).toMatchObject([1, 2, 3]); 
-        // array is tested after mutation
-        expect(mockSetHandler).toHaveBeenCalledWith(expect.arrayContaining([1, 99, 3]), 1, 99);
-
+        expect(handlers.set).toHaveBeenCalledWith(target, 1, 99, extra);
+        expect(target[1]).toBe(99);
     });
 
-    // Test the `delete` handler.
-    it('delete: should delete the element if handler returns true and be called with correct arguments', () => {
-        const mockDeleteHandler = jest.fn((target, index) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { delete: mockDeleteHandler });
+    it('should call the delete handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            delete: jest.fn().mockReturnValue(true),
+        };
 
-        delete arr[1];
+        const proxy = createObservableArray(target, handlers, true, extra);
+        delete proxy[1];
 
-        expect(arr[1]).toBeUndefined();
-        expect(mockDeleteHandler).toHaveBeenCalledWith(expect.arrayContaining([1, , 3]), 1);
+        expect(handlers.delete).toHaveBeenCalledWith(target, 1, extra);
+        expect(target[1]).toBeUndefined();
     });
 
-    // Test the `push` handler.
-    it('push: should add element if handler returns true and be called with correct arguments', () => {
-        const mockPushHandler = jest.fn((target, items) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { push: mockPushHandler });
+    it('should call the push handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            push: jest.fn().mockReturnValue(true),
+        };
 
-        arr.push(4);
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy.push(4, 5);
 
-        expect(arr[3]).toBe(4);
-        expect(mockPushHandler).toHaveBeenCalledWith(expect.arrayContaining([1, 2, 3]), expect.arrayContaining([4]));
+        expect(handlers.push).toHaveBeenCalledWith(target, [4, 5], extra);
+        expect(target).toEqual([1, 2, 3, 4, 5]);
     });
 
-    // Test the `pop` handler.
-    it('pop: should remove the last element if handler returns true and be called with correct arguments', () => {
-        const mockPopHandler = jest.fn((target) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { pop: mockPopHandler });
+    it('should call the pop handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            pop: jest.fn().mockReturnValue(true),
+        };
 
-        const popped = arr.pop();
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy.pop();
 
-        expect(popped).toBe(3);
-        expect(arr.length).toBe(2);
-        expect(mockPopHandler).toHaveBeenCalledWith(expect.arrayContaining([1, 2]));
+        expect(handlers.pop).toHaveBeenCalledWith(target, extra);
+        expect(target).toEqual([1, 2]);
     });
 
-    // Test the `shift` handler.
-    it('shift: should remove the first element if handler returns true and be called with correct arguments', () => {
-        const mockShiftHandler = jest.fn((target) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { shift: mockShiftHandler });
+    it('should call the shift handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            shift: jest.fn().mockReturnValue(true),
+        };
 
-        const shifted = arr.shift();
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy.shift();
 
-        expect(shifted).toBe(1);
-        expect(arr).toEqual([2, 3]);
-        expect(mockShiftHandler).toHaveBeenCalledWith(expect.arrayContaining([2, 3]));
+        expect(handlers.shift).toHaveBeenCalledWith(target, extra);
+        expect(target).toEqual([2, 3]);
     });
 
-    // Test the `unshift` handler.
-    it('unshift: should add elements to the start of the array if handler returns true and be called with correct arguments', () => {
-        const mockUnshiftHandler = jest.fn((target, items) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { unshift: mockUnshiftHandler });
+    it('should call the unshift handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            unshift: jest.fn().mockReturnValue(true),
+        };
 
-        arr.unshift(0);
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy.unshift(0);
 
-        expect(arr).toEqual([0, 1, 2, 3]);
-        expect(mockUnshiftHandler).toHaveBeenCalledWith(expect.arrayContaining([0, 1, 2, 3]), expect.arrayContaining([0]));
+        expect(handlers.unshift).toHaveBeenCalledWith(target, [0], extra);
+        expect(target).toEqual([0, 1, 2, 3]);
     });
 
-    // Test the `splice` handler.
-    it('splice: should modify the array correctly if handler returns true and be called with correct arguments', () => {
-        const mockSpliceHandler = jest.fn((target, start, deleteCount, items) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { splice: mockSpliceHandler });
+    it('should call the splice handler with extra parameter', () => {
+        const target = [1, 2, 3, 4];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            splice: jest.fn().mockReturnValue(true),
+        };
 
-        arr.splice(1, 1, 99);
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy.splice(1, 2, 99, 100);
 
-        expect(arr).toEqual([1, 99, 3]);
-        expect(mockSpliceHandler).toHaveBeenCalledWith(expect.arrayContaining([1, 99, 3]), 1, 1, expect.arrayContaining([99]));
+        expect(handlers.splice).toHaveBeenCalledWith(target, 1, 2, [99, 100], extra);
+        expect(target).toEqual([1, 99, 100, 4]);
     });
 
-    // Test the `reverse` handler.
-    it('reverse: should reverse the array if handler returns true and be called with correct arguments', () => {
-        const mockReverseHandler = jest.fn((target) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { reverse: mockReverseHandler });
+    it('should call the reverse handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            reverse: jest.fn().mockReturnValue(true),
+        };
 
-        arr.reverse();
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy.reverse();
 
-        expect(arr).toEqual([3, 2, 1]);
-        expect(mockReverseHandler).toHaveBeenCalledWith(expect.arrayContaining([3, 2, 1]));
+        expect(handlers.reverse).toHaveBeenCalledWith(target, extra);
+        expect(target).toEqual([3, 2, 1]);
     });
 
-    // Test the `sort` handler.
-    it('sort: should sort the array if handler returns true and be called with correct arguments', () => {
-        const mockSortHandler = jest.fn((target) => true);
-        const arr = createObservableArray<number>([3, 1, 2], { sort: mockSortHandler });
+    it('should call the sort handler with extra parameter', () => {
+        const target = [3, 1, 2];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            sort: jest.fn().mockReturnValue(true),
+        };
 
-        arr.sort();
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy.sort();
 
-        expect(arr).toEqual([1, 2, 3]);
-        expect(mockSortHandler).toHaveBeenCalledWith(expect.arrayContaining([1, 2, 3]));
+        expect(handlers.sort).toHaveBeenCalledWith(target, extra);
+        expect(target).toEqual([1, 2, 3]);
     });
 
-    // Test the `fill` handler.
-    it('fill: should fill the array with the specified value if handler returns true and be called with correct arguments', () => {
-        const mockFillHandler = jest.fn((target, value, start, end) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { fill: mockFillHandler });
+    it('should call the fill handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            fill: jest.fn().mockReturnValue(true),
+        };
 
-        arr.fill(0, 1, 3);
+        const proxy = createObservableArray(target, handlers, true, extra);
+        proxy.fill(0, 1, 3);
 
-        expect(arr).toEqual([1, 0, 0]);
-        expect(mockFillHandler).toHaveBeenCalledWith(expect.arrayContaining([1, 0, 0]), 0, 1, 3);
+        expect(handlers.fill).toHaveBeenCalledWith(target, 0, 1, 3, extra);
+        expect(target).toEqual([1, 0, 0]);
     });
 
-    // Test the `defaultAction` handler.
-    it('defaultAction: should be called when accessing an unknown property', () => {
-        const mockDefaultActionHandler = jest.fn((target, key) => true);
-        const arr = createObservableArray<number>([1, 2, 3], { defaultAction: mockDefaultActionHandler });
+    it('should call the defaultAction handler with extra parameter', () => {
+        const target = [1, 2, 3];
+        const extra = { context: 'test' };
+        const handlers: ArrayHandlers<number, typeof extra> = {
+            defaultAction: jest.fn().mockReturnValue(true),
+        };
 
-        const value = arr.length;
+        const proxy = createObservableArray(target, handlers, true, extra);
+        const length = proxy.length;
 
-        expect(mockDefaultActionHandler).toHaveBeenCalledWith(expect.arrayContaining([1, 2, 3]), 'length');
-        expect(value).toBe(3)
+        expect(handlers.defaultAction).toHaveBeenCalledWith(target, 'length', [], extra);
+        expect(length).toBe(3);
+    });
+
+    it('should handle absence of extra parameter gracefully', () => {
+        const target = [1, 2, 3];
+        const handlers: ArrayHandlers<number> = {
+            set: jest.fn().mockReturnValue(true),
+        };
+
+        const proxy = createObservableArray(target, handlers);
+        proxy[1] = 99;
+
+        expect(handlers.set).toHaveBeenCalledWith(target, 1, 99, undefined);
+        expect(target[1]).toBe(99);
     });
 });
