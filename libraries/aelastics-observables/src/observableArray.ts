@@ -118,4 +118,3 @@ export function createObservableArray<T, P extends {} = {}>(
         }
     });
 }
-

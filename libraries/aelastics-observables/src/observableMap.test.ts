@@ -115,4 +115,3 @@ describe('createObservableMap', () => {
         expect(target.get('a')).toBe(100);
     });
 });
-
