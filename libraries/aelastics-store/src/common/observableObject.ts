@@ -1,14 +1,3 @@
-/*
- * Project: aelastics-store
- * Created Date: Tuesday September 12th 2023
- * Author: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
- * -----
- * Last Modified: Saturday, 31 Janjuary 2025
- * Modified By: Sinisa Neskovic (https://github.com/Sinisa-Neskovic)
- * -----
- * Copyright (c) 2025 Aelastics (https://github.com/AelasticS)
- */
-
 export interface ObjectHandlers<T extends object, P extends {} = {}> {
     set?: (target: T, key: string | number | symbol, value: any, extra?: P) => boolean;
     delete?: (target: T, key: string | number | symbol, extra?: P) => boolean;
