@@ -1,6 +1,7 @@
 import { createObservableArray, ArrayHandlers } from './observableArray';
 
 describe('createObservableArray', () => {
+    
     it('should call the set handler with extra parameter', () => {
         const target = [1, 2, 3];
         const extra = { context: 'test' };

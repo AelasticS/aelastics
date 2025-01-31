@@ -432,6 +432,12 @@
       "tags": ["libraries", "web"]
     },
     {
+      "packageName": "@aelastics/observables",
+      "projectFolder": "libraries/aelastics-observables",
+      "reviewCategory": "production",
+      "tags": ["libraries", "web"]
+    },
+    {
       "packageName": "aelastics-types",
       "projectFolder": "libraries/aelastics-types",
       "reviewCategory": "production",
