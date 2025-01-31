@@ -1,54 +1,77 @@
-import { createObservableObject } from './observableObject';
+import { createObservableObject, ObjectHandlers } from './observableObject';
 
 describe('createObservableObject', () => {
-    it('set: should modify property if handler returns true and be called with correct arguments', () => {
-        const mockSetHandler = jest.fn((target, key, value) => true);
-        const obj = createObservableObject({ prop: 1 }, { set: mockSetHandler });
+    it('should call the set handler with extra parameter', () => {
+        const target: { a?: number } = { a: 1 };
+        const extra = { context: 'test' };
+        const handlers: ObjectHandlers<typeof target, typeof extra> = {
+            set: jest.fn().mockReturnValue(true),
+        };
 
-        obj.prop = 2;
+        const proxy = createObservableObject(target, handlers, true, extra);
+        proxy.a = 2;
 
-        expect(obj.prop).toBe(2);
-        expect(mockSetHandler).toHaveBeenCalledWith({ prop: 2 }, 'prop', 2);
+        expect(handlers.set).toHaveBeenCalledWith(target, 'a', 2, extra);
+        expect(target.a).toBe(2);
     });
 
-    it('set: should not modify property if handler returns false', () => {
-        const mockSetHandler = jest.fn((target, key, value) => false);
-        const obj = createObservableObject({ prop: 1 }, { set: mockSetHandler });
+    it('should call the delete handler with extra parameter', () => {
+        const target: { a?: number } = { a: 1 };
+        const extra = { context: 'test' };
+        const handlers: ObjectHandlers<typeof target, typeof extra> = {
+            delete: jest.fn().mockReturnValue(true),
+        };
 
-        obj.prop = 2;
+        const proxy = createObservableObject(target, handlers, true, extra);
+        delete proxy.a;
 
-        expect(obj.prop).toBe(1); // Property should remain unchanged
+        expect(handlers.delete).toHaveBeenCalledWith(target, 'a', extra);
+        expect('a' in target).toBe(false);
     });
 
-    it('delete: should delete property if handler returns true and be called with correct arguments', () => {
-        const mockDeleteHandler = jest.fn((target, key) => true);
-        const orgObj:{prop?:number} = { prop: 1 }
-        const obj = createObservableObject(orgObj, { delete: mockDeleteHandler });
+    it('should call the method handler with extra parameter', () => {
+        const target = {
+            greet(name: string) {
+                return `Hello, ${name}`;
+            },
+        };
+        const extra = { context: 'test' };
+        const handlers: ObjectHandlers<typeof target, typeof extra> = {
+            method: jest.fn().mockReturnValue(true),
+        };
 
-        delete obj.prop;
+        const proxy = createObservableObject(target, handlers, true, extra);
+        const result = proxy.greet('World');
 
-        expect(obj.prop).toBeUndefined();
-        expect(mockDeleteHandler).toHaveBeenCalledWith({ }, 'prop'); 
+        expect(handlers.method).toHaveBeenCalledWith(target, 'greet', ['World'], extra);
+        expect(result).toBe('Hello, World');
     });
 
-    it('method: should call method if handler returns true and be called with correct arguments', () => {
-        const mockMethodHandler = jest.fn((target, key, args) => true);
-        const obj = createObservableObject({ greet: (name: string) => `Hello, ${name}!` }, { method: mockMethodHandler });
+    it('should call the defaultAction handler with extra parameter', () => {
+        const target = { a: 1 };
+        const extra = { context: 'test' };
+        const handlers: ObjectHandlers<typeof target, typeof extra> = {
+            defaultAction: jest.fn().mockReturnValue(true),
+        };
 
-        const greeting = obj.greet("Alice");
+        const proxy = createObservableObject(target, handlers, true, extra);
+        const value = proxy.a;
 
-        expect(greeting).toBe("Hello, Alice!");
-        expect(mockMethodHandler).toHaveBeenCalledWith({ greet: expect.any(Function) }, 'greet', ['Alice']);
+        expect(handlers.defaultAction).toHaveBeenCalledWith(target, 'a', extra);
+        expect(value).toBe(1);
     });
 
-    it('defaultAction: should be called when accessing a property or method', () => {
-        const mockDefaultActionHandler = jest.fn((target, key) => true);
-        const obj = createObservableObject({ prop: 1, greet: (name: string) => `Hello, ${name}!` }, { defaultAction: mockDefaultActionHandler });
+    it('should handle absence of extra parameter gracefully', () => {
+        const target = { a: 1 };
+        const handlers: ObjectHandlers<typeof target> = {
+            set: jest.fn().mockReturnValue(true),
+        };
 
-        obj.greet("Bob");
-        const propValue = obj.prop;
+        const proxy = createObservableObject(target, handlers);
+        proxy.a = 2;
 
-        expect(mockDefaultActionHandler).toHaveBeenNthCalledWith(1, { prop: 1, greet: expect.any(Function) }, 'greet');
-        expect(mockDefaultActionHandler).toHaveBeenNthCalledWith(2, { prop: 1, greet: expect.any(Function) }, 'prop');
+        expect(handlers.set).toHaveBeenCalledWith(target, 'a', 2, undefined);
+        expect(target.a).toBe(2);
     });
 });
+
