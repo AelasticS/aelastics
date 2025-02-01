@@ -1,4 +1,8 @@
-// Placeholder for loadModuleFromText function
+/**
+ * Returns module source code from direct text input.
+ * @param sourceCode - The raw JavaScript/TypeScript source code.
+ * @returns The source code string (unchanged).
+ */
 export async function loadModuleFromText(sourceCode: string): Promise<string> {
-  throw new Error("Not implemented yet");
+  return sourceCode;
 }
