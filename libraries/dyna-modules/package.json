@@ -1,0 +1,26 @@
+{
+  "name": "@aelastics/dyna-modules",
+  "version": "0.1.0",
+  "description": "A modular dynamic module loader for JavaScript & TypeScript",
+  "keywords": ["dynamic-modules", "typescript", "javascript", "execution"],
+  "author": "Sinisa Neskovic",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "heft test",
+    "test:integration": "heft test --test-match \"src/__integration__/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "18.11.9",
+    "typescript": "^4.8.3",
+    "@types/heft-jest": "1.0.3",
+    "@rushstack/heft": "^0.48.7",
+    "@rushstack/eslint-config": "~3.1.1",
+    "eslint": "~7.15.0",
+    "tslib": "^1.10.0",
+    "@rushstack/heft-jest-plugin": "~0.3.44",
+    "node-fetch": "~3.3.2"
+  }
+}
