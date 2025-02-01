@@ -19,7 +19,7 @@
     "moduleResolution": "Node",
     "module": "commonjs",
     "target": "es2017",
-    "lib": ["es2017"]
+    "lib": ["es2017", "DOM"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "lib"]
