@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "heft test",
+    "test:integration": "heft test --test-match \"src/__integration__/**/*.test.ts\""
   },
   "dependencies": {},
   "devDependencies": {
