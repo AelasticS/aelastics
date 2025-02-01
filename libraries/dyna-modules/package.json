@@ -9,7 +9,6 @@
     "test": "heft test",
     "test:integration": "heft test --test-match \"src/__integration__/**/*.test.ts\""
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "18.11.9",
     "typescript": "^4.8.3",
@@ -18,6 +17,7 @@
     "@rushstack/eslint-config": "~3.1.1",
     "eslint": "~7.15.0",
     "tslib": "^1.10.0",
-    "@rushstack/heft-jest-plugin": "~0.3.44"
+    "@rushstack/heft-jest-plugin": "~0.3.44",
+    "node-fetch": "~3.3.2"
   }
 }
