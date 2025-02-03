@@ -1,12 +1,12 @@
-/**
- * Loads and parses a JSON module dynamically.
- * @param jsonCode - The JSON content as a string.
- * @returns The parsed JSON object.
- */
-export async function loadJsonModule<T>(jsonCode: string): Promise<T> {
-  try {
-      return JSON.parse(jsonCode);
-  } catch (error) {
-      throw new Error("Failed to parse JSON module");
-  }
+import { triggerModuleLoaded, triggerModuleError } from "./hookSystem";
+
+export function loadJsonModule(jsonString: string, moduleName: string) {
+    try {
+        const json = JSON.parse(jsonString);
+        triggerModuleLoaded(moduleName);
+        return json;
+    } catch (error) {
+        triggerModuleError(error as Error, moduleName);
+        throw error;
+    }
 }

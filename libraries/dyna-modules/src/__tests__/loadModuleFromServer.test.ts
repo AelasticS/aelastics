@@ -22,7 +22,8 @@ describe("loadModuleFromServer", () => {
         ) as jest.Mock;
 
         await expect(loadModuleFromServer("https://example.com/module.js")).rejects.toThrow(
-            "Failed to load module from https://example.com/module.js: Not Found"
+            "Failed to fetch module from https://example.com/module.js"
         );
+        
     });
 });

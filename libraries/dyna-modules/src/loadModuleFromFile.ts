@@ -1,13 +1,13 @@
-import { promises as fs } from "fs";
-import path from "path";
+import fs from 'fs/promises';
+import { triggerModuleLoaded, triggerModuleError } from "./hookSystem";
 
-/**
- * Loads a module's source code from a file.
- * @param filePath - The path to the file.
- * @returns The module source code as a string.
- */
-export async function loadModuleFromFile(filePath: string): Promise<string> {
-    const absolutePath = path.resolve(filePath);
-    return await fs.readFile(absolutePath, "utf8");
+export async function loadModuleFromFile(filePath: string) {
+    try {
+        const code = await fs.readFile(filePath, "utf-8");
+        triggerModuleLoaded(filePath);
+        return code;
+    } catch (error) {
+        triggerModuleError(error as Error, filePath);
+        throw error;
+    }
 }
-

@@ -1,17 +1,20 @@
-/**
- * Executes a dynamically loaded module in the browser.
- * @param sourceCode - The JavaScript module source code.
- * @param type - "js" or "ts" (TypeScript support planned).
- * @returns The exported object from the module.
- */
-export async function executeModuleBrowser<T>(sourceCode: string, type: "js" | "ts"): Promise<T> {
-  const blob = new Blob([sourceCode], { type: "application/javascript" });
-  const blobUrl = URL.createObjectURL(blob);
+import { triggerBeforeExecute, triggerAfterExecute, triggerModuleError } from "./hookSystem";
 
-  try {
-      const module = await import(blobUrl);
-      return module.default as T;
-  } finally {
-      URL.revokeObjectURL(blobUrl);
-  }
+export async function executeModuleBrowser(moduleCode: string, moduleName: string) {
+    try {
+        const startTime = performance.now();
+        const transformedCode = await triggerBeforeExecute(moduleCode);
+
+        const moduleFunction = new Function("exports", transformedCode);
+        const exports: any = {};
+        moduleFunction(exports);
+
+        const executionTime = performance.now() - startTime;
+        triggerAfterExecute(moduleName, executionTime);
+
+        return exports;
+    } catch (error) {
+        triggerModuleError(error as Error, moduleName);
+        throw error;
+    }
 }
