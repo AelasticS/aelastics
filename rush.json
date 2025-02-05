@@ -140,9 +140,9 @@
     "reviewCategories": [
       // Some example categories:
       "production", // projects that ship to production
-      "tools",      // non-shipping projects that are part of the developer toolchain
-      "prototypes"  // experiments that should mostly be ignored by the review process
-    ],
+      "tools", // non-shipping projects that are part of the developer toolchain
+      "prototypes" // experiments that should mostly be ignored by the review process
+    ]
 
     /**
      * A list of NPM package scopes that will be excluded from review.
@@ -169,10 +169,7 @@
      * IMPORTANT: Because these are regular expressions encoded as JSON string literals,
      * RegExp escapes need two backslashes, and ordinary periods should be "\\.".
      */
-    "allowedEmailRegExps": [
-      "[^@]+@users\\.noreply\\.github\\.com",
-      "rush-bot@example\\.org"
-    ],
+    "allowedEmailRegExps": ["[^@]+@users\\.noreply\\.github\\.com", "rush-bot@example\\.org"],
 
     /**
      * When Rush reports that the address is malformed, the notice can include an example
@@ -204,7 +201,7 @@
      *
      * If no commit message is set it will default to 'Rush change'
      */
-     "changefilesCommitMessage": "Rush change"
+    "changefilesCommitMessage": "Rush change"
   },
 
   "repository": {
@@ -223,7 +220,7 @@
      * your PR branch, and in this situation "rush change" will also automatically invoke "git fetch"
      * to retrieve the latest activity for the remote main branch.
      */
-     "url": "https://github.com/AelasticS/aelastics",
+    "url": "https://github.com/AelasticS/aelastics",
 
     /**
      * The default branch name. This tells "rush change" which remote branch to compare against.
@@ -298,7 +295,7 @@
     //    * The folder name for this variant.
     //    */
     //   "variantName": "old-sdk",
-    // 
+    //
     //   /**
     //    * An informative description
     //    */
@@ -324,13 +321,13 @@
   // "hotfixChangeEnabled": false,
 
   /**
-    * This is an optional, but recommended, list of allowed tags that can be applied to Rush projects
-    * using the "tags" setting in this file.  This list is useful for preventing mistakes such as misspelling,
-    * and it also provides a centralized place to document your tags.  If "allowedProjectTags" list is
-    * not specified, then any valid tag is allowed.  A tag name must be one or more words
-    * separated by hyphens or slashes, where a word may contain lowercase ASCII letters, digits,
-    * ".", and "@" characters.
-    */
+   * This is an optional, but recommended, list of allowed tags that can be applied to Rush projects
+   * using the "tags" setting in this file.  This list is useful for preventing mistakes such as misspelling,
+   * and it also provides a centralized place to document your tags.  If "allowedProjectTags" list is
+   * not specified, then any valid tag is allowed.  A tag name must be one or more words
+   * separated by hyphens or slashes, where a word may contain lowercase ASCII letters, digits,
+   * ".", and "@" characters.
+   */
   // "allowedProjectTags": [ "tools", "frontend-team", "1.0.0-release" ],
 
   /**
@@ -433,15 +430,32 @@
     },
     {
       "packageName": "@aelastics/observables",
-      "projectFolder": "libraries/aelastics-observables",
+      "projectFolder": "libraries/aelastics-observables", 
       "reviewCategory": "production",
-      "tags": ["libraries", "web"]
+      "tags": ["libraries", "utility", "observability", "reactive","typescript", "proxy"]
     },
     {
       "packageName": "@aelastics/dyna-modules",
       "projectFolder": "libraries/dyna-modules",
       "reviewCategory": "production",
       "tags": ["libraries", "web"]
+    },
+    {
+      "packageName": "@aelastics/eternal",
+      "projectFolder": "libraries/eternal",
+      "reviewCategory": "production",
+      "tags": [
+        "immutable",
+        "state-management",
+        "uuid",
+        "cyclic-structures",
+        "bidirectional-associations",
+        "typescript",
+        "proxy",
+        "change-tracking",
+        "serialization",
+        "lazy-loading"
+      ]
     },
     {
       "packageName": "aelastics-types",
