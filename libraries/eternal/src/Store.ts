@@ -1,3 +1,4 @@
+import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, JSONPatchOperation } from "./ChangeLog"
 import { addPropertyAccessors } from "./handlers/addPropertyAccessors"
 import { createObservableEntityArray } from "./handlers/ArrayHandlers"
 import { createObservableEntityMap, createObservableEntitySet } from "./handlers/MapSetHandlers"
@@ -6,10 +7,10 @@ import { State } from "./State"
 import { generateUUID } from "./utils"
 
 export class Store {
-  private stateHistory: State[] = []
-  private inProduceMode: boolean = false
-  private typeToClassMap: Map<string, any> = new Map()
-  private fetchFromExternalSource?: (type: string, uuid: string) => any
+  private stateHistory: State[] = [] // Stores the history of states
+  private inProduceMode: boolean = false  // Flag to indicate if the store is in produce mode
+  private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
+  private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
 
   constructor(metaInfo: Map<string, TypeMeta>, fetchFromExternalSource?: (type: string, uuid: string) => any) {
     this.fetchFromExternalSource = fetchFromExternalSource;
@@ -130,4 +131,16 @@ export class Store {
 
     return DynamicEntity
   }
+
+  public getChangeLog(): ChangeLogEntry[] {
+        return this.getState().getChangeLog();
+    }
+
+    public getConsolidatedChangeLog(): ChangeLogEntry[] {
+        return consolidateChangeLogs(this.stateHistory.map((state) => state.getChangeLog()));
+    }
+
+    public getJsonPatch(): JSONPatchOperation[] {
+        return generateJsonPatch(this.getConsolidatedChangeLog());
+    }
 }
