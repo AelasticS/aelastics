@@ -1,0 +1,60 @@
+## Description
+
+This package provides immutable objects with support for cyclic structures and bidirectional associations. It serves as a foundational library for state management, ensuring efficient updates, structural integrity, and consistent object references.
+
+The API for state modifications follows a functional approach inspired by immer.js, allowing developers to use produce(currentState, recipe) => nextState to update object state. Within the `recipe()` function, changes are tracked automatically, ensuring efficient updates while preserving cyclic dependencies and reference integrity.
+
+This package is intended to replace `Immutable-Store` in `AelasticS-Synthesis`, providing a scalable, feature-rich solution for immutable state management.
+
+---
+
+## Dependencies
+
+The package relies on `aelastics-types` to define the structure of immutable objects using data schemas, ensuring type safety and consistency. It also provides intuitive interfaces that allow developers to interact seamlessly with immutable objects.
+
+---
+
+## Scope & Core Features
+
+### 1. Immutable Objects
+
+- Objects are created as immutable instances.
+- State updates follow a functional pattern: `produce(currentState, recipe) => nextState`.
+- Structural sharing is leveraged to optimize memory usage.
+
+### 2. Cyclic Structure Support
+
+- Immutable objects can reference each other while maintaining consistency and efficiency.
+- Cycles are preserved without breaking references.
+
+### 3. Bidirectional Associations
+
+- Supports inverse relationships between objects.
+- Ensures referential integrity while maintaining immutability.
+
+### 4. Store & Object Management
+
+- Objects are managed in a store that efficiently handles state versions.
+- Provides object retrieval, lookups, and caching.
+- Offers an API for querying and traversing object graphs.
+
+### 5. Lazy Loading & External Object Integration
+
+Objects fetched from external sources can be integrated into the framework and converted into immutable structures.
+
+Support for lazy loading, allowing users to fetch and resolve missing objects on demand for efficient processing while minimizing memory usage and preserving reference integrity. Lazy loading is also available during updates within the recipe() function.
+
+
+
+### 6. Serialization & Validation
+
+- Supports serialization and deserialization of objects and state snapshots.
+- Deserialization includes validation and automatic conversion to immutable objects.
+- Provides explicit validation of objects based on data schemas.
+
+### 7. Change Tracking
+
+- Modifications to objects are recorded at the state level.
+- Supports history tracking and an efficient undo/redo mechanism.
+- Recorded changes can be retrieved to synchronize updates with external data sources, enabling seamless object persistence.
+
