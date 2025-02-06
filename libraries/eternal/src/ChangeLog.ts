@@ -1,8 +1,12 @@
-// import { JSONPatchOperation } from "fast-json-patch";
-
 import { State } from "./State";
 
-export type JSONPatchOperation = any
+export interface JSONPatchOperation {
+    op: "add" | "remove" | "replace" | "move" | "copy" | "test";
+    path: string;
+    value?: any;  // Required for add, replace, test; omitted for remove, move, copy
+    from?: string; // Required for move and copy; omitted otherwise
+  }
+  
 
 export interface ChangeLogEntry {
     uuid: string;
