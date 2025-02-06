@@ -32,5 +32,8 @@
     "eslint": "~7.15.0",
     "tslib": "^1.10.0",
     "@rushstack/heft-jest-plugin": "~0.3.44"
+  },
+  "dependencies": {
+    "@aelastics/observables": "workspace:*"
   }
 }

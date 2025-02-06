@@ -7,6 +7,7 @@ interface StateView {
 }
 
 export class State implements StateView {
+    private inProduceMode: boolean = false;
     private objectMap: Map<string, any>;
     private previousState?: State;
     private store: WeakRef<Store>;
@@ -17,6 +18,17 @@ export class State implements StateView {
         this.previousState = previousState;
         this.index = previousState ? previousState.index + 1 : 0;
         this.objectMap = new Map(previousState ? previousState.objectMap : []);
+    }
+    public enterProduceMode() {
+        this.inProduceMode = true;
+    }
+
+    public exitProduceMode() {
+        this.inProduceMode = false;
+    }
+
+    public isInProduceMode(): boolean {
+        return this.inProduceMode;
     }
 
        /** Retrieves an object from this specific state (returns a fixed-state object) */
@@ -52,4 +64,16 @@ export class State implements StateView {
         return fixedObject;
     }
     
+        /** Adds a newly created object to the current state */
+        public addObject<T extends { uuid: string }>(obj: T): void {
+            if (!obj || typeof obj !== "object" || !("uuid" in obj)) {
+                throw new Error("Invalid object. Objects must have a UUID.");
+            }
+    
+            if (this.objectMap.has(obj.uuid)) {
+                throw new Error(`Object with UUID ${obj.uuid} already exists in this state.`);
+            }
+    
+            this.objectMap.set(obj.uuid, obj);
+        }
 }
