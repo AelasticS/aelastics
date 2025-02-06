@@ -8,25 +8,25 @@ import { generateUUID } from "./utils"
 
 export class Store {
   private stateHistory: State[] = [] // Stores the history of states
-  private inProduceMode: boolean = false  // Flag to indicate if the store is in produce mode
+  private currentStateIndex: number // Track active state index
+  private inProduceMode: boolean = false // Flag to indicate if the store is in produce mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
   private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
 
   constructor(metaInfo: Map<string, TypeMeta>, fetchFromExternalSource?: (type: string, uuid: string) => any) {
-    this.fetchFromExternalSource = fetchFromExternalSource;
-
+    this.fetchFromExternalSource = fetchFromExternalSource
     // Create dynamic classes for each type
     for (const [type, typeMeta] of metaInfo.entries()) {
-        this.typeToClassMap.set(type, this.createDynamicClass(typeMeta));
+      this.typeToClassMap.set(type, this.createDynamicClass(typeMeta))
     }
-
     // Initialize first state
-    this.stateHistory.push(new State(this));
-}
+    this.stateHistory.push(new State(this))
+    this.currentStateIndex = 0
+  }
 
-  /** Returns the latest state */
+  /** Returns the latest (i.e. cuurent) state */
   public getState(): State {
-    return this.stateHistory[this.stateHistory.length - 1]
+    return this.stateHistory[this.currentStateIndex]
   }
 
   /** Checks if store is in produce mode */
@@ -36,8 +36,32 @@ export class Store {
 
   /** Creates a new state when entering produce mode */
   private makeNewState(): void {
+    // Clear future states if undo() was called before this change
+    if (this.currentStateIndex < this.stateHistory.length - 1) {
+      this.stateHistory = this.stateHistory.slice(0, this.currentStateIndex + 1)
+    }
     this.stateHistory.push(new State(this, this.getState()))
+    this.currentStateIndex++;
   }
+
+      /** Undo the last change */
+      public undo(): boolean {
+        if (this.currentStateIndex > 0) {
+            this.currentStateIndex--;
+            return true; // Undo successful
+        }
+        return false; // Cannot undo beyond initial state
+    }
+
+        /** Redo the last undone change */
+        public redo(): boolean {
+          if (this.currentStateIndex < this.stateHistory.length - 1) {
+              this.currentStateIndex++;
+              return true; // Redo successful
+          }
+          return false; // Cannot redo beyond latest state
+      }
+
 
   /** Creates an empty object of a given type */
   public createObject<T>(type: string): T {
@@ -88,7 +112,7 @@ export class Store {
 
     this.inProduceMode = true
     this.makeNewState()
-
+    
     try {
       recipe(obj)
     } finally {
@@ -100,7 +124,7 @@ export class Store {
 
   /** Creates a dynamic class for a given type */
   private createDynamicClass(typeMeta: TypeMeta) {
-    const state = this.getState(); // Get the current state
+    const state = this.getState() // Get the current state
 
     // Precompute template object before constructor
     const template: Record<string, any> = {}
@@ -133,14 +157,14 @@ export class Store {
   }
 
   public getChangeLog(): ChangeLogEntry[] {
-        return this.getState().getChangeLog();
-    }
+    return this.getState().getChangeLog()
+  }
 
-    public getConsolidatedChangeLog(): ChangeLogEntry[] {
-        return consolidateChangeLogs(this.stateHistory.map((state) => state.getChangeLog()));
-    }
+  public getConsolidatedChangeLog(): ChangeLogEntry[] {
+    return consolidateChangeLogs(this.stateHistory.map((state) => state.getChangeLog()))
+  }
 
-    public getJsonPatch(): JSONPatchOperation[] {
-        return generateJsonPatch(this.getConsolidatedChangeLog());
-    }
+  public getJsonPatch(): JSONPatchOperation[] {
+    return generateJsonPatch(this.getConsolidatedChangeLog())
+  }
 }

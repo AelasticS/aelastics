@@ -8,6 +8,7 @@ interface StateView {
 }
 
 export class State implements StateView {
+  public readonly timestamp: number // Track when this state was created
   private inProduceMode: boolean = false // Flag to indicate if the state is in produce mode
   private objectMap: Map<string, any> // Maps UUIDs to objects
   private previousState?: State // Reference to the previous state
@@ -16,6 +17,7 @@ export class State implements StateView {
   private changeLog: ChangeLogEntry[] = [] // Stores tracked changes
 
   constructor(store: Store, previousState?: State) {
+    this.timestamp = Date.now() // Assign a unique timestamp for each state
     this.store = new WeakRef(store)
     this.previousState = previousState
     this.index = previousState ? previousState.index + 1 : 0
@@ -35,16 +37,20 @@ export class State implements StateView {
 
   /** Retrieves an object from this specific state (returns a fixed-state object) */
   public getObject<T>(uuid: string): T | undefined {
-    const obj = this.objectMap.get(uuid)
+    const obj = this.getDynamicObject<T>(uuid)
     if (!obj) return undefined
-
     // Return a shallow copy with a reference to this fixed state
     return this.createFixedStateObject(obj)
   }
 
   /** Retrieves an object without fixing it to a state (used by Store) */
   public getDynamicObject<T>(uuid: string): T | undefined {
-    return this.objectMap.get(uuid) // Returns the raw object without fixing it
+    const object = this.objectMap.get(uuid)
+    // Ensure the object is not from a future state
+    if (object.createdAt > this.timestamp) {
+      throw new Error(`Cannot access object ${uuid} from a future state.`)
+    }
+    return object // Returns the object without fixing it
   }
 
   private createFixedStateObject<T>(obj: T): T {
@@ -67,31 +73,33 @@ export class State implements StateView {
   }
 
   /**
-     * Adds a new object to the state.
-     * - Assigns a UUID if missing.
-     * - Tracks insertion in the change log.
-     */
+   * Adds a new object to the state.
+   * - Assigns a UUID if missing.
+   * - Tracks insertion in the change log.
+   */
   public addObject<T extends { uuid: string }>(obj: T): T {
     if (!obj || typeof obj !== "object") {
-      throw new Error("Invalid object provided.");
+      throw new Error("Invalid object provided.")
     }
-
+    if (!("uuid" in obj) || !obj.uuid) {
+      throw new Error("Cannot add an object without a UUID.");
+  }
     if (this.objectMap.has(obj.uuid)) {
-        throw new Error(`Object with UUID ${obj.uuid} already exists in the state.`);
+      throw new Error(`Object with UUID ${obj.uuid} already exists in the state.`)
     }
 
     // Store the object in the state
-    this.objectMap.set(obj.uuid, obj);
+    this.objectMap.set(obj.uuid, obj)
 
     // Track insertion in the change log
     this.changeLog.push({
-        uuid: obj.uuid,
-        objectType: obj.constructor.name, // Assuming dynamic classes
-        change: "insert"
-    });
+      uuid: obj.uuid,
+      objectType: obj.constructor.name, // Assuming dynamic classes
+      change: "insert",
+    })
 
-    return obj;
-}
+    return obj
+  }
 
   /**
    * Deletes an object from the state.
