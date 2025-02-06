@@ -138,7 +138,7 @@ export function applyJsonPatch(state: State, patch: JSONPatchOperation[]): void 
             case "add":
                 if (segments.length === 2) {
                     // Adding a new object
-                    state.addObject(value.objectType, value);
+                    state.addObject(value);
                 } else {
                     const prop = segments[2];
                     if (Array.isArray(object[prop])) {
@@ -160,11 +160,11 @@ export function applyJsonPatch(state: State, patch: JSONPatchOperation[]): void 
 
             case "remove":
                 if (segments.length === 2) {
-                    state.removeObject(uuid);
+                    state.deleteObject(uuid);
                 } else {
                     const prop = segments[2];
                     if (Array.isArray(object[prop])) {
-                        object[prop] = object[prop].filter((item) => item.uuid !== value.uuid);
+                        object[prop] = object[prop].filter((item:any) => item.uuid !== value.uuid);
                     } else if (object[prop] instanceof Set) {
                         object[prop].delete(value);
                     } else if (object[prop] instanceof Map) {
