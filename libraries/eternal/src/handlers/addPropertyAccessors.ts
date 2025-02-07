@@ -11,39 +11,69 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: 
         const privateKey = `_${key}`;
 
         // Generate optimized getter
-        let getter: (this: any) => any; // 👈 Explicitly typing `this`
+        let getter: (this: any) => any;
         if (propertyMeta.type === "object") {
-            getter = function (this: any) { 
+            getter = function (this: any) {
                 return state.getObject(this[privateKey]); // Directly resolve UUIDs
             };
         } else {
-            getter = function (this: any) { 
+            getter = function (this: any) {
                 return this[privateKey]; // Directly return stored value
             };
         }
 
         // Generate optimized setter
-        let setter: (this: any, value: any) => void; 
+        let setter: (this: any, value: any) => void;
         if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
             setter = function () {
                 throw new Error(`Cannot directly assign to collection property "${key}". Use methods like .push(), .set(), or .add() instead.`);
             };
         } else if (propertyMeta.type === "object") {
-            setter = function (this: any, value: any) { 
+            setter = function (this: any, value: any) {
                 if (!state.isInProduceMode()) {
                     throw new Error(`Cannot modify property "${key}" outside of produce()`);
                 }
+
+                // Prevent modification of frozen objects
+                if (state.isFrozen(this)) {
+                    throw new Error(`Cannot modify frozen object ${this.uuid}`);
+                }
+
+                // Prevent redundant updates
+                if (this[privateKey] === value) {
+                    return;
+                }
+
                 this[privateKey] = isUUIDReference(value, propertyMeta.type) ? value.uuid : value;
+
+                // Track changes for versioning
+                state.trackVersionedObject(this);
+
+                // Ensure bidirectional relationships are updated correctly
                 if (propertyMeta.inverseType && propertyMeta.inverseProp) {
                     this[`_updateInverse_${key}`](value); // Call precomputed function
                 }
             };
         } else {
-            setter = function (this: any, value: any) { 
+            setter = function (this: any, value: any) {
                 if (!state.isInProduceMode()) {
                     throw new Error(`Cannot modify property "${key}" outside of produce()`);
                 }
+
+                // Prevent modification of frozen objects
+                if (state.isFrozen(this)) {
+                    throw new Error(`Cannot modify frozen object ${this.uuid}`);
+                }
+
+                // Prevent redundant updates
+                if (this[privateKey] === value) {
+                    return;
+                }
+
                 this[privateKey] = value;
+
+                // Track changes for versioning
+                state.trackVersionedObject(this);
             };
         }
 
@@ -52,26 +82,36 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: 
 
         // Initialize observable collections
         if (propertyMeta.type === "array") {
-            prototype[privateKey] = createObservableEntityArray([], state, typeMeta.properties);
+            Object.defineProperty(prototype, privateKey, {
+                value: createObservableEntityArray([], state, typeMeta.properties),
+                writable: true,
+                enumerable: false,
+            });
         } else if (propertyMeta.type === "set") {
-            prototype[privateKey] = createObservableEntitySet(new Set(), state, typeMeta.properties);
+            Object.defineProperty(prototype, privateKey, {
+                value: createObservableEntitySet(new Set(), state, typeMeta.properties),
+                writable: true,
+                enumerable: false,
+            });
         } else if (propertyMeta.type === "map") {
-            prototype[privateKey] = createObservableEntityMap(new Map(), state, typeMeta.properties);
+            Object.defineProperty(prototype, privateKey, {
+                value: createObservableEntityMap(new Map(), state, typeMeta.properties),
+                writable: true,
+                enumerable: false,
+            });
         }
 
         // Precompute and bind inverse relationship updater
         if (propertyMeta.inverseType && propertyMeta.inverseProp) {
             const inverseUpdater = generateInverseUpdater(propertyMeta);
-            prototype[`_updateInverse_${key}`] = function (this: any, value: any) { // 👈 Fix here
+            prototype[`_updateInverse_${key}`] = function (this: any, value: any) {
                 return inverseUpdater.call(this, value);
             };
         }
     }
 }
 
-
-
-function generateInverseUpdater(propertyMeta: PropertyMeta) {
+function generateInverseUpdater(propertyMeta: PropertyMeta) { 
     const inversePrivateKey = `_${propertyMeta.inverseProp}`;
 
     if (propertyMeta.type === "array") {
@@ -129,3 +169,4 @@ function generateInverseUpdater(propertyMeta: PropertyMeta) {
         }
     };
 }
+

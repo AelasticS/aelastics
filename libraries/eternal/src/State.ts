@@ -37,26 +37,33 @@ export class State implements StateView {
   // Create a new object version
   public createNewVersion<T extends InternalObjectProps>(obj: T, trackForNotification = true): T {
     // Ensure we get the latest version of the object in this state
-    let newObj = this.getObject<T>(obj.uuid) || obj;
+    let newObj = this.getObject<T>(obj.uuid) || obj
 
-   // Ensure we check both timestamp and actual modifications
-   if (newObj.createdAt < this.timestamp ) { // || hasChanges(this.changeLog, obj.uuid, )
-
-        const newInstance = Object.create(Object.getPrototypeOf(obj)); // Preserve prototype
-        Object.assign(newInstance, obj, { createdAt: this.timestamp }); // Copy properties
-
-        obj.nextVersion = new WeakRef(newInstance);
-        this.addObject(newInstance);
-        if (trackForNotification) {
-          this.store.deref()?.trackVersionedObject(newInstance); // Track for notifications
-      }
-        return newInstance;
+    if (this.isFrozen(newObj)) {
+      throw new Error(`Cannot modify frozen object ${obj.uuid}`)
     }
 
-    return newObj;
-}
+    // Ensure we check both timestamp and actual modifications
+    if (newObj.createdAt < this.timestamp) {
+      // || hasChanges(this.changeLog, obj.uuid, )
 
+      const newInstance = Object.create(Object.getPrototypeOf(obj)) // Preserve prototype
+      Object.assign(newInstance, obj, { createdAt: this.timestamp }) // Copy properties
 
+      obj.nextVersion = new WeakRef(newInstance)
+      this.addObject(newInstance)
+      if (trackForNotification) {
+        this.store.deref()?.trackVersionedObject(newInstance) // Track for notifications
+      }
+      return newInstance
+    }
+
+    return newObj
+  }
+  // Track an object for versioning
+  public trackVersionedObject(obj: InternalObjectProps): void {
+    this.store?.deref()?.trackVersionedObject(obj)
+  }
 
   /** Retrieves an object from this specific state (returns a fixed-state object) */
   public getObject<T>(uuid: string): T | undefined {
@@ -123,7 +130,7 @@ export class State implements StateView {
 
     return obj
   }
-  
+
   /** Removes an object from THIS state (but does not affect history) */
   public removeObject(uuid: string): void {
     this.objectMap.delete(uuid)
@@ -171,6 +178,14 @@ export class State implements StateView {
     // Remove the object itself
     this.objectMap.delete(uuid)
   }
+
+  // Check if an object is frozen in this state
+  public isFrozen(obj: InternalObjectProps): boolean {
+    // If object's timestamp is older than the current state, it's frozen.
+    return obj.createdAt < this.timestamp
+  }
+
+  // Track changed objects
   public trackChange(entry: ChangeLogEntry) {
     this.changeLog.push(entry)
   }
