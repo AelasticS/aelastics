@@ -37,7 +37,7 @@ export class State implements StateView {
   }
 
   // Create a new object version
-  public createNewVersion<T extends InternalObjectProps>(obj: T, , trackForNotification = true): T {
+  public createNewVersion<T extends InternalObjectProps>(obj: T, trackForNotification = true): T {
     // Ensure we get the latest version of the object in this state
     let newObj = this.getObject<T>(obj.uuid) || obj;
 
