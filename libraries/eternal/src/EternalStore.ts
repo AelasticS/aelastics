@@ -6,6 +6,7 @@ import { createObservableEntityMap, createObservableEntitySet } from "./handlers
 import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
+import { randomUUID } from 'crypto';
 
 export type InternalRecipe = (obj: InternalObjectProps) => void
 
@@ -180,7 +181,10 @@ public trackAccess(obj: InternalObjectProps): void {
     const state = this.getState() // Get the current state
 
     // Precompute template object before constructor
-    const template: Record<string, any> = {}
+    const template: InternalObjectProps = {
+      uuid:  randomUUID(),
+      createdAt: Date.now()
+    }
     for (const [key, propertyMeta] of typeMeta.properties) {
       const privateKey = `_${key}`
 
