@@ -13,6 +13,7 @@ export class Store {
   private inProduceMode: boolean = false // Flag to indicate if the store is in produce mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
   private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
+  private subscriptions = new WeakMap<object, Set<() => void>>() // Subscriptions for object changes
 
   constructor(metaInfo: Map<string, TypeMeta>, fetchFromExternalSource?: (type: string, uuid: string) => any) {
     this.fetchFromExternalSource = fetchFromExternalSource
@@ -42,27 +43,26 @@ export class Store {
       this.stateHistory = this.stateHistory.slice(0, this.currentStateIndex + 1)
     }
     this.stateHistory.push(new State(this, this.getState()))
-    this.currentStateIndex++;
+    this.currentStateIndex++
   }
 
-      /** Undo the last change */
-      public undo(): boolean {
-        if (this.currentStateIndex > 0) {
-            this.currentStateIndex--;
-            return true; // Undo successful
-        }
-        return false; // Cannot undo beyond initial state
+  /** Undo the last change */
+  public undo(): boolean {
+    if (this.currentStateIndex > 0) {
+      this.currentStateIndex--
+      return true // Undo successful
     }
+    return false // Cannot undo beyond initial state
+  }
 
-        /** Redo the last undone change */
-        public redo(): boolean {
-          if (this.currentStateIndex < this.stateHistory.length - 1) {
-              this.currentStateIndex++;
-              return true; // Redo successful
-          }
-          return false; // Cannot redo beyond latest state
-      }
-
+  /** Redo the last undone change */
+  public redo(): boolean {
+    if (this.currentStateIndex < this.stateHistory.length - 1) {
+      this.currentStateIndex++
+      return true // Redo successful
+    }
+    return false // Cannot redo beyond latest state
+  }
 
   /** Creates an empty object of a given type */
   public createObject<T>(type: string): T {
@@ -105,39 +105,51 @@ export class Store {
     return this.stateHistory[index]
   }
 
+  /** Subscribes a callback to changes in a specific object */
+  public subscribe(obj: object, callback: () => void): void {
+    if (!this.subscriptions.has(obj)) {
+      this.subscriptions.set(obj, new Set())
+    }
+    this.subscriptions.get(obj)!.add(callback)
+  }
+
+  /** Unsubscribes a callback from an object */
+  public unsubscribe(obj: object, callback: () => void): void {
+    this.subscriptions.get(obj)?.delete(callback)
+  }
+
+  /** Notifies all subscribers when an object changes */
+  private notifySubscribers(obj: object): void {
+    if (this.subscriptions.has(obj)) {
+      this.subscriptions.get(obj)!.forEach((callback) => callback())
+    }
+  }
+
   /** Produces a new state with modifications */
   public produce<T extends InternalObjectProps>(recipe: (obj: T) => void, obj: T): T {
     if (this.inProduceMode) {
-        throw new Error("Nested produce() calls are not allowed.");
+      throw new Error("Nested produce() calls are not allowed.")
     }
 
-    this.inProduceMode = true;
-    this.makeNewState();
-    const currentState = this.getState();
+    this.inProduceMode = true
+    this.makeNewState()
+    const currentState = this.getState()
 
     // Use State's method to create a new object version
-    let newObj = currentState.createNewVersion(obj);
-    
-    // Save original shallow copy for comparison
-    const originalSnapshot = { ...newObj };
+    let newObj = currentState.createNewVersion(obj)
+
 
     try {
-        recipe(newObj);
+      recipe(newObj) // Apply modifications
+      this.notifySubscribers(obj) // Notify subscribers of changes
     } finally {
-        this.inProduceMode = false;
+      this.inProduceMode = false
     }
+  
+    return obj
+  }
 
-    // If no changes, discard the new version
-    if (JSON.stringify(originalSnapshot) === JSON.stringify(newObj)) {
-        currentState.removeObject(newObj.uuid);
-        return obj;
-    }
-
-    return newObj;
-}
-
-
-   /** Creates a dynamic class for a given type */
+  /** Creates a dynamic class for a given type */
   private createDynamicClass(typeMeta: TypeMeta) {
     const state = this.getState() // Get the current state
 
