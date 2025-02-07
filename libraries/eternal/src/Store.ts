@@ -5,15 +5,15 @@ import { InternalObjectProps } from "./handlers/InternalTypes"
 import { createObservableEntityMap, createObservableEntitySet } from "./handlers/MapSetHandlers"
 import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
-import { generateUUID } from "./utils"
+import { SubscriptionManager } from "./SubscriptionManager";
 
 export class Store {
   private stateHistory: State[] = [] // Stores the history of states
+  private subscriptionManager = new SubscriptionManager(); // Create a subscription manager
   private currentStateIndex: number // Track active state index
   private inProduceMode: boolean = false // Flag to indicate if the store is in produce mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
   private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
-  private subscriptions = new WeakMap<object, Set<(obj:InternalObjectProps) => void>>() // Subscriptions for object changes
   private accessedObjects: Set<InternalObjectProps> = new Set(); // Track accessed object
   private versionedObjects: InternalObjectProps[] = []; // Track versioned objects
 
@@ -108,32 +108,6 @@ export class Store {
     return this.stateHistory[index]
   }
 
-  /** Subscribes a callback to changes in a specific object */
-  public subscribe(obj: object, callback: () => void): void {
-    if (!this.subscriptions.has(obj)) {
-      this.subscriptions.set(obj, new Set())
-    }
-    this.subscriptions.get(obj)!.add(callback)
-  }
-
-  /** Unsubscribes a callback from an object */
-  public unsubscribe(obj: object, callback: () => void): void {
-    this.subscriptions.get(obj)?.delete(callback)
-  }
-
-  /** Notifies all subscribers when an object changes */
-  private notifySubscribers(updatedObjects: InternalObjectProps[]): void {
-    for (const obj of updatedObjects) {
-        // 🔥 Notify only if this object has registered subscribers
-        const callbacks = this.subscriptions.get(obj);
-        if (callbacks) {
-            for (const callback of callbacks) {
-                callback(obj); // Send updated object
-            }
-        }
-    }
-}
-
 
   /** Produces a new state with modifications */
   public produce<T extends InternalObjectProps>(recipe: (obj: T) => void, obj: T): T {
@@ -157,7 +131,7 @@ export class Store {
       this.versionedObjects.push(...additionalVersionedObjects);
 
       if (this.versionedObjects.length > 0) {
-        this.notifySubscribers(this.versionedObjects); // ✅ Notify ALL updated objects
+        this.subscriptionManager.notifySubscribers(this.versionedObjects); // ✅ Notify ALL updated objects
 
         // ✅ If `obj` itself was versioned, return the latest version
         const updatedObj = this.versionedObjects.find(o => o.uuid === obj.uuid);
