@@ -1,5 +1,5 @@
 import { ChangeLogEntry, hasChanges } from "./ChangeLog"
-import { Store } from "./Store"
+import { EternalStore } from "./EternalStore"
 import { InternalObjectProps } from "./handlers/InternalTypes"
 
 /** Read-only interface for accessing immutable objects in a specific state */
@@ -12,11 +12,11 @@ export class State implements StateView {
   public readonly timestamp: number // Track when this state was created
   private inProduceMode: boolean = false // Flag to indicate if the state is in produce mode
   private objectMap: Map<string, any> // Maps UUIDs to objects
-  private store: WeakRef<Store> // Reference to the store that owns this state
+  private store: WeakRef<EternalStore> // Reference to the store that owns this state
   public index: number // Index of this state in the store's history
   private changeLog: ChangeLogEntry[] = [] // Stores tracked changes
 
-  constructor(store: Store, previousState?: State) {
+  constructor(store: EternalStore, previousState?: State) {
     this.timestamp = Date.now() // Assign a unique timestamp for each state
     this.store = new WeakRef(store)
     this.index = previousState ? previousState.index + 1 : 0

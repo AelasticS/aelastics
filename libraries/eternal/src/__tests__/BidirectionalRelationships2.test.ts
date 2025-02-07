@@ -1,10 +1,10 @@
-import { Store } from "../Store";
+import { EternalStore } from "../EternalStore";
 
 describe("Bidirectional Relationships & Cyclic References", () => {
-    let store: Store;
+    let store: EternalStore;
 
     beforeEach(() => {
-        store = new Store(new Map([
+        store = new EternalStore(new Map([
             ["Parent", {
                 name: "Parent",
                 properties: new Map([

@@ -1,11 +1,11 @@
 import { InternalObjectProps } from "../handlers/InternalTypes";
-import { Store } from "../Store";
+import { EternalStore } from "../EternalStore";
 
 describe("Undo/Redo Functionality", () => {
-    let store: Store;
+    let store: EternalStore;
 
     beforeEach(() => {
-        store = new Store(new Map([
+        store = new EternalStore(new Map([
             ["User", {
                 name: "User",
                 properties: new Map([

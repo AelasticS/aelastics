@@ -7,7 +7,9 @@ import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
 
-export class Store {
+export type InternalRecipe = (obj: InternalObjectProps) => void
+
+export class EternalStore {
   private stateHistory: State[] = [] // Stores the history of states
   private subscriptionManager = new SubscriptionManager(); // Create a subscription manager
   private currentStateIndex: number // Track active state index
@@ -110,7 +112,7 @@ export class Store {
 
 
   /** Produces a new state with modifications */
-  public produce<T extends InternalObjectProps>(recipe: (obj: T) => void, obj: T): T {
+  public produce<T extends object>(recipe: InternalRecipe, obj:T): T {
     if (this.inProduceMode) {
       throw new Error("Nested produce() calls are not allowed.")
     }
@@ -121,7 +123,7 @@ export class Store {
     const currentState = this.getState()
 
     // Use State's method to create a new object version
-    let newObj = obj
+    let newObj = obj as InternalObjectProps
 
 
     try {
@@ -131,12 +133,12 @@ export class Store {
       this.versionedObjects.push(...additionalVersionedObjects);
 
       if (this.versionedObjects.length > 0) {
-        this.subscriptionManager.notifySubscribers(this.versionedObjects); // ✅ Notify ALL updated objects
+        this.subscriptionManager.notifySubscribers(this.versionedObjects); // Notify all updated objects
 
         // ✅ If `obj` itself was versioned, return the latest version
-        const updatedObj = this.versionedObjects.find(o => o.uuid === obj.uuid);
+        const updatedObj = this.versionedObjects.find(o => o.uuid === newObj.uuid);
         if (updatedObj) {
-            newObj = updatedObj as unknown as T;
+            newObj = updatedObj;
         }
     }
     } finally {
@@ -144,7 +146,7 @@ export class Store {
       this.accessedObjects.clear(); // Stop tracking
     }
   
-    return newObj
+    return newObj as T
   }
 
   // Track changed objects

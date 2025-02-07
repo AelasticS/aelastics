@@ -1,6 +1,6 @@
-import { Store } from "../Store";
+import { EternalStore } from "../EternalStore";
 
-const store = new Store(new Map([
+const store = new EternalStore(new Map([
     ["User", {
         name: "User",
         properties: new Map([
