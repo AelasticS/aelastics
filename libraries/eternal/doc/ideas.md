@@ -1,4 +1,7 @@
 
+ENable differnet.type schemas to be registerd in store, to suport connection betwen objects defined in different schemas, (model trasnformations)
+All rgistartin of static classes and extractiin meta imfiormation onto a schema
+
 Ok, now I would like to discuss how to implement createObject in store using dynamic class. Do not generate any code yet, I just want to discuss. Do you have access to chat session about immutable object based on the first idea, when we used getters and setter to enable bidirecinal associations?OK, no
 
 
