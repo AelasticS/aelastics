@@ -1,3 +1,4 @@
+import { InternalObjectProps } from "../handlers/InternalTypes";
 import { Store } from "../Store";
 
 describe("Undo/Redo Functionality", () => {
@@ -16,7 +17,7 @@ describe("Undo/Redo Functionality", () => {
         ]));
     });
 
-    interface Person { uuid: string; name: string; age: number; id: string }
+    interface Person extends InternalObjectProps { uuid: string; name: string; age: number; id: string }
 
     test("Undo should revert to the previous state", () => {
         const userAlice: Person = store.createObject<Person>("User");

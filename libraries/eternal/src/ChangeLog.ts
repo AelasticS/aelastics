@@ -22,6 +22,10 @@ interface CollectionChange {
     values: { uuid: string; objectType: string }[];
 }
 
+export function  hasChanges(changeLog: ChangeLogEntry[], uuid: string): boolean {
+    return changeLog.some(entry => entry.uuid === uuid);
+}
+
 /**
  * Consolidates the change logs across multiple states while preserving history.
  * Ensures valid ordering and removes redundant operations.

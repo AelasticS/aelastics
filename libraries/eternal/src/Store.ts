@@ -1,4 +1,4 @@
-import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, JSONPatchOperation } from "./ChangeLog"
+import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, hasChanges, JSONPatchOperation } from "./ChangeLog"
 import { addPropertyAccessors } from "./handlers/addPropertyAccessors"
 import { createObservableEntityArray } from "./handlers/ArrayHandlers"
 import { InternalObjectProps } from "./handlers/InternalTypes"
@@ -13,7 +13,10 @@ export class Store {
   private inProduceMode: boolean = false // Flag to indicate if the store is in produce mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
   private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
-  private subscriptions = new WeakMap<object, Set<() => void>>() // Subscriptions for object changes
+  private subscriptions = new WeakMap<object, Set<(obj:InternalObjectProps) => void>>() // Subscriptions for object changes
+  private accessedObjects: Set<InternalObjectProps> = new Set(); // Track accessed object
+  private versionedObjects: InternalObjectProps[] = []; // Track versioned objects
+
 
   constructor(metaInfo: Map<string, TypeMeta>, fetchFromExternalSource?: (type: string, uuid: string) => any) {
     this.fetchFromExternalSource = fetchFromExternalSource
@@ -119,35 +122,82 @@ export class Store {
   }
 
   /** Notifies all subscribers when an object changes */
-  private notifySubscribers(obj: object): void {
-    if (this.subscriptions.has(obj)) {
-      this.subscriptions.get(obj)!.forEach((callback) => callback())
+  private notifySubscribers(updatedObjects: InternalObjectProps[]): void {
+    for (const obj of updatedObjects) {
+        // 🔥 Notify only if this object has registered subscribers
+        const callbacks = this.subscriptions.get(obj);
+        if (callbacks) {
+            for (const callback of callbacks) {
+                callback(obj); // Send updated object
+            }
+        }
     }
-  }
+}
+
 
   /** Produces a new state with modifications */
   public produce<T extends InternalObjectProps>(recipe: (obj: T) => void, obj: T): T {
     if (this.inProduceMode) {
       throw new Error("Nested produce() calls are not allowed.")
     }
-
     this.inProduceMode = true
+    this.accessedObjects.clear(); // Start tracking 
+    this.versionedObjects = []; // Reset list at start
     this.makeNewState()
     const currentState = this.getState()
 
     // Use State's method to create a new object version
-    let newObj = currentState.createNewVersion(obj)
+    let newObj = obj
 
 
     try {
       recipe(newObj) // Apply modifications
-      this.notifySubscribers(obj) // Notify subscribers of changes
+      // 
+      const additionalVersionedObjects = this.markVersionedObjects();
+      this.versionedObjects.push(...additionalVersionedObjects);
+
+      if (this.versionedObjects.length > 0) {
+        this.notifySubscribers(this.versionedObjects); // ✅ Notify ALL updated objects
+
+        // ✅ If `obj` itself was versioned, return the latest version
+        const updatedObj = this.versionedObjects.find(o => o.uuid === obj.uuid);
+        if (updatedObj) {
+            newObj = updatedObj as unknown as T;
+        }
+    }
     } finally {
       this.inProduceMode = false
+      this.accessedObjects.clear(); // Stop tracking
     }
   
-    return obj
+    return newObj
   }
+
+  // Track changed objects
+  public trackVersionedObject(obj: InternalObjectProps): void {
+    if (!this.versionedObjects.includes(obj)) {
+        this.versionedObjects.push(obj);
+    }
+}
+  private markVersionedObjects(): InternalObjectProps[] {
+    const versionedObjects: InternalObjectProps[] = [];
+
+    for (const obj of this.accessedObjects) {
+        if (hasChanges( this.getChangeLog(), obj["uuid"])) {
+            const newVersion = this.getState().createNewVersion(obj);
+            versionedObjects.push(newVersion);
+        }
+    }
+
+    return versionedObjects;
+}
+
+
+public trackAccess(obj: InternalObjectProps): void {
+    if (this.inProduceMode) {
+        this.accessedObjects.add(obj);
+    }
+}
 
   /** Creates a dynamic class for a given type */
   private createDynamicClass(typeMeta: TypeMeta) {

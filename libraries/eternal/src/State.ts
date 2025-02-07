@@ -1,4 +1,4 @@
-import { ChangeLogEntry } from "./ChangeLog"
+import { ChangeLogEntry, hasChanges } from "./ChangeLog"
 import { Store } from "./Store"
 import { InternalObjectProps } from "./handlers/InternalTypes"
 
@@ -37,17 +37,28 @@ export class State implements StateView {
   }
 
   // Create a new object version
-  public createNewVersion<T extends InternalObjectProps>(obj: T): T {
+  public createNewVersion<T extends InternalObjectProps>(obj: T, , trackForNotification = true): T {
     // Ensure we get the latest version of the object in this state
-    let newObj = this.getObject<T>(obj.uuid) || obj
-    // Create a new version in this state with correct properties
-    if (newObj.createdAt < this.timestamp) {
-      newObj = { ...obj, createdAt: this.timestamp } as T
-      obj.nextVersion = new WeakRef(newObj)
-      this.addObject(newObj)
+    let newObj = this.getObject<T>(obj.uuid) || obj;
+
+   // Ensure we check both timestamp and actual modifications
+   if (newObj.createdAt < this.timestamp || hasChanges(this.changeLog, obj.uuid, )) {
+
+        const newInstance = Object.create(Object.getPrototypeOf(obj)); // Preserve prototype
+        Object.assign(newInstance, obj, { createdAt: this.timestamp }); // Copy properties
+
+        obj.nextVersion = new WeakRef(newInstance);
+        this.addObject(newInstance);
+        if (trackForNotification) {
+          this.store.deref()?.trackVersionedObject(newInstance); // Track for notifications
+      }
+        return newInstance;
     }
-    return newObj
-  }
+
+    return newObj;
+}
+
+
 
   /** Retrieves an object from this specific state (returns a fixed-state object) */
   public getObject<T>(uuid: string): T | undefined {
