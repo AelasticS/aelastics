@@ -1,6 +1,7 @@
 import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, JSONPatchOperation } from "./ChangeLog"
 import { addPropertyAccessors } from "./handlers/addPropertyAccessors"
 import { createObservableEntityArray } from "./handlers/ArrayHandlers"
+import { InternalObjectProps } from "./handlers/InternalTypes"
 import { createObservableEntityMap, createObservableEntitySet } from "./handlers/MapSetHandlers"
 import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
@@ -105,24 +106,38 @@ export class Store {
   }
 
   /** Produces a new state with modifications */
-  public produce<T>(recipe: (obj: T) => void, obj: T): T {
+  public produce<T extends InternalObjectProps>(recipe: (obj: T) => void, obj: T): T {
     if (this.inProduceMode) {
-      throw new Error("Nested produce() calls are not allowed.")
+        throw new Error("Nested produce() calls are not allowed.");
     }
 
-    this.inProduceMode = true
-    this.makeNewState()
+    this.inProduceMode = true;
+    this.makeNewState();
+    const currentState = this.getState();
+
+    // Use State's method to create a new object version
+    let newObj = currentState.createNewVersion(obj);
     
+    // Save original shallow copy for comparison
+    const originalSnapshot = { ...newObj };
+
     try {
-      recipe(obj)
+        recipe(newObj);
     } finally {
-      this.inProduceMode = false
+        this.inProduceMode = false;
     }
 
-    return obj
-  }
+    // If no changes, discard the new version
+    if (JSON.stringify(originalSnapshot) === JSON.stringify(newObj)) {
+        currentState.removeObject(newObj.uuid);
+        return obj;
+    }
 
-  /** Creates a dynamic class for a given type */
+    return newObj;
+}
+
+
+   /** Creates a dynamic class for a given type */
   private createDynamicClass(typeMeta: TypeMeta) {
     const state = this.getState() // Get the current state
 

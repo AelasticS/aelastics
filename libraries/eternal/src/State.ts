@@ -1,5 +1,6 @@
 import { ChangeLogEntry } from "./ChangeLog"
 import { Store } from "./Store"
+import { InternalObjectProps } from "./handlers/InternalTypes"
 
 /** Read-only interface for accessing immutable objects in a specific state */
 interface StateView {
@@ -33,6 +34,19 @@ export class State implements StateView {
 
   public isInProduceMode(): boolean {
     return this.inProduceMode
+  }
+
+  // Create a new object version
+  public createNewVersion<T extends InternalObjectProps>(obj: T): T {
+    // Ensure we get the latest version of the object in this state
+    let newObj = this.getObject<T>(obj.uuid) || obj
+    // Create a new version in this state with correct properties
+    if (newObj.createdAt < this.timestamp) {
+      newObj = { ...obj, createdAt: this.timestamp } as T
+      obj.nextVersion = new WeakRef(newObj)
+      this.addObject(newObj)
+    }
+    return newObj
   }
 
   /** Retrieves an object from this specific state (returns a fixed-state object) */
@@ -77,13 +91,13 @@ export class State implements StateView {
    * - Assigns a UUID if missing.
    * - Tracks insertion in the change log.
    */
-  public addObject<T extends { uuid: string }>(obj: T): T {
+  public addObject<T extends InternalObjectProps>(obj: T): T {
     if (!obj || typeof obj !== "object") {
       throw new Error("Invalid object provided.")
     }
     if (!("uuid" in obj) || !obj.uuid) {
-      throw new Error("Cannot add an object without a UUID.");
-  }
+      throw new Error("Cannot add an object without a UUID.")
+    }
     if (this.objectMap.has(obj.uuid)) {
       throw new Error(`Object with UUID ${obj.uuid} already exists in the state.`)
     }
@@ -99,6 +113,11 @@ export class State implements StateView {
     })
 
     return obj
+  }
+  
+  /** Removes an object from THIS state (but does not affect history) */
+  public removeObject(uuid: string): void {
+    this.objectMap.delete(uuid)
   }
 
   /**

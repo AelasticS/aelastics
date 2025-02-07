@@ -2,6 +2,8 @@ import { ObjectHandlers, createObservableObject } from "@aelastics/observables";
 import { State } from "../State";
 import { PropertyMeta } from "./MetaDefinitions";
 import { isUUIDReference } from "../utils"; // Import the utility function
+import { InternalObjectProps } from "./InternalTypes";
+import { Store } from "../Store";
 
 /** Creates typed object handlers to track UUID references and enforce immutability */
 export const createObjectHandlers = <T extends object>(
@@ -44,4 +46,19 @@ export function createObservableEntity<T extends object>(
     propertyMeta: Map<string, PropertyMeta>
 ): T {
     return createObservableObject(obj, createObjectHandlers<T>(state, propertyMeta));
+}
+
+export function createVersionedProxy<T extends InternalObjectProps>(store: Store, uuid: string): T {
+    return new Proxy({} as T, {
+        get(target, prop, receiver) {
+            const latestObject = store.getState().getObject<T>(uuid);
+            if (!latestObject) {
+                throw new Error(`Object ${uuid} not found in current state`);
+            }
+            return Reflect.get(latestObject, prop, receiver);
+        },
+        set(target, prop, value) {
+            throw new Error(`Cannot modify object properties directly. Use produce() instead.`);
+        }
+    });
 }
