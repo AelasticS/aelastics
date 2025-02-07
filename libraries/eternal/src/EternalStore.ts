@@ -1,5 +1,5 @@
 import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, hasChanges, JSONPatchOperation } from "./ChangeLog"
-import { addPropertyAccessors } from "./handlers/addPropertyAccessors"
+import { addPropertyAccessors } from "./PropertyAccessors"
 import { createObservableEntityArray } from "./handlers/ArrayHandlers"
 import { InternalObjectProps } from "./handlers/InternalTypes"
 import { createObservableEntityMap, createObservableEntitySet } from "./handlers/MapSetHandlers"

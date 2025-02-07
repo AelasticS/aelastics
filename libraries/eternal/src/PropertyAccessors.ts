@@ -1,9 +1,9 @@
-import { State } from "../State";
-import { PropertyMeta, TypeMeta } from "../handlers/MetaDefinitions";
-import { isUUIDReference } from "../utils";
-import { createObservableEntityArray } from "../handlers/ArrayHandlers";
-import { createObservableEntitySet } from "../handlers/MapSetHandlers";
-import { createObservableEntityMap } from "../handlers/MapSetHandlers";
+import { State } from "./State";
+import { PropertyMeta, TypeMeta } from "./handlers/MetaDefinitions";
+import { isUUIDReference } from "./utils";
+import { createObservableEntityArray } from "./handlers/ArrayHandlers";
+import { createObservableEntitySet } from "./handlers/MapSetHandlers";
+import { createObservableEntityMap } from "./handlers/MapSetHandlers";
 
 /** Adds optimized property accessors to a dynamically generated class prototype */
 export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: State) {
