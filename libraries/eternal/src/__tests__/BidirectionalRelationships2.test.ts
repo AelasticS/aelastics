@@ -1,4 +1,5 @@
 import { EternalStore } from "../EternalStore";
+import { InternalObjectProps } from "../handlers/InternalTypes";
 
 describe("Bidirectional Relationships & Cyclic References", () => {
     let store: EternalStore;
@@ -46,9 +47,10 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const child2 = store.createObject<Child>("Child") as Child;
         child2.name = "Child 2";
 
-        store.produce((p: Parent) => {
-            p.children.push(child1);
-            p.children.push(child2);
+        store.produce((p: InternalObjectProps) => {
+            const p1 = p as unknown as Parent;
+            p1.children.push(child1);
+            p1.children.push(child2);
         }, parent);
 
         expect(parent.children).toHaveLength(2);
@@ -63,8 +65,9 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const child = store.createObject<Child>("Child") as Child;
         child.name = "Child 1";
 
-        store.produce((p: Parent) => {
-            p.children.push(child);
+        store.produce((p: InternalObjectProps) => {
+            const p1 = p as unknown as Parent;
+            p1.children.push(child);
         }, parent);
 
         expect(parent.children).toContain(child);
@@ -74,8 +77,9 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const newParent = store.createObject<Parent>("Parent") as Parent;
         newParent.name = "New Root";
 
-        store.produce((c: Child) => {
-            c.parent = newParent;
+        store.produce((c: InternalObjectProps) => {
+            const c1 = c as unknown as Child;
+            c1.parent = newParent;
         }, child);
 
         expect(child.parent).toBe(newParent);
@@ -91,10 +95,11 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         child.name = "Child 1";
 
         // Introduce a cycle: child becomes its own grandparent
-        store.produce((p: Parent, c: Child) => {
-            p.children.push(c);
-            c.parent = p;
-        }, parent, child);
+        store.produce((p: InternalObjectProps) => {
+            const p1 = p as unknown as Parent;
+            p1.children.push(child);
+            child.parent = p1;
+        }, parent);
 
         expect(parent.children).toContain(child);
         expect(child.parent).toBe(parent);

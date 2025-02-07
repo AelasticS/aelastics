@@ -23,8 +23,9 @@ describe("Undo/Redo Functionality", () => {
         const userAlice: Person = store.createObject<Person>("User");
         userAlice.name = "Alice";
 
-        store.produce((user: Person) => {
-            user.name = "Bob";
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Bob";
         }, userAlice);
 
         expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Bob");
@@ -38,8 +39,9 @@ describe("Undo/Redo Functionality", () => {
         const user: Person = store.createObject<Person>("User");
         user.name = "Alice";
 
-        store.produce((user: Person) => {
-            user.name = "Bob";
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Bob";
         }, user);
 
         store.undo();
@@ -53,15 +55,17 @@ describe("Undo/Redo Functionality", () => {
         const user: Person = store.createObject<Person>("User");
         user.name = "Alice";
 
-        store.produce((user: Person) => {
-            user.name = "Bob";
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Bob";
         }, user);
 
         store.undo();
         expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Alice");
 
-        store.produce((user: Person) => {
-            user.name = "Charlie";
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Charlie";
         }, user);
 
         expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Charlie");
@@ -77,8 +81,9 @@ describe("Undo/Redo Functionality", () => {
         const user: Person = store.createObject<Person>("User");
         user.name = "Alice";
 
-        store.produce((user: Person) => {
-            user.name = "Bob";
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Bob";
         }, user);
 
         expect(store.redo()).toBe(false); // Already at latest state
