@@ -12,7 +12,6 @@ export class State implements StateView {
   public readonly timestamp: number // Track when this state was created
   private inProduceMode: boolean = false // Flag to indicate if the state is in produce mode
   private objectMap: Map<string, any> // Maps UUIDs to objects
-  private previousState?: State // Reference to the previous state
   private store: WeakRef<Store> // Reference to the store that owns this state
   public index: number // Index of this state in the store's history
   private changeLog: ChangeLogEntry[] = [] // Stores tracked changes
@@ -20,7 +19,6 @@ export class State implements StateView {
   constructor(store: Store, previousState?: State) {
     this.timestamp = Date.now() // Assign a unique timestamp for each state
     this.store = new WeakRef(store)
-    this.previousState = previousState
     this.index = previousState ? previousState.index + 1 : 0
     this.objectMap = new Map(previousState ? previousState.objectMap : [])
   }
@@ -42,7 +40,7 @@ export class State implements StateView {
     let newObj = this.getObject<T>(obj.uuid) || obj;
 
    // Ensure we check both timestamp and actual modifications
-   if (newObj.createdAt < this.timestamp || hasChanges(this.changeLog, obj.uuid, )) {
+   if (newObj.createdAt < this.timestamp ) { // || hasChanges(this.changeLog, obj.uuid, )
 
         const newInstance = Object.create(Object.getPrototypeOf(obj)); // Preserve prototype
         Object.assign(newInstance, obj, { createdAt: this.timestamp }); // Copy properties
