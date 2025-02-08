@@ -1,7 +1,7 @@
 import { TypeSchema } from "../handlers/MetaDefinitions";
 
-const mySchema: TypeSchema = {
-    name: "MyAppSchema",
+export const UserSchema: TypeSchema = {
+    name: "UserSchema",
     types: new Map([
         [
             "User",
