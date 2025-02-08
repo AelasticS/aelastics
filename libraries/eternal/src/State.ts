@@ -22,18 +22,7 @@ export class State implements StateView {
     this.index = previousState ? previousState.index + 1 : 0
     this.objectMap = new Map(previousState ? previousState.objectMap : [])
   }
-  public enterProduceMode() {
-    this.inProduceMode = true
-  }
-
-  public exitProduceMode() {
-    this.inProduceMode = false
-  }
-
-  public isInProduceMode(): boolean {
-    return this.inProduceMode
-  }
-
+ 
   // Create a new object version
   public createNewVersion<T extends InternalObjectProps>(obj: T, trackForNotification = true): T {
     // Ensure we get the latest version of the object in this state

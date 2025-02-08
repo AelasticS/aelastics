@@ -4,9 +4,10 @@ import { isUUIDReference } from "./utils";
 import { createObservableEntityArray } from "./handlers/ArrayHandlers";
 import { createObservableEntitySet } from "./handlers/MapSetHandlers";
 import { createObservableEntityMap } from "./handlers/MapSetHandlers";
+import { EternalStore } from "./EternalStore";
 
 /** Adds optimized property accessors to a dynamically generated class prototype */
-export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: State) {
+export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
     for (const [key, propertyMeta] of typeMeta.properties) {
         const privateKey = `_${key}`;
 
@@ -14,7 +15,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: 
         let getter: (this: any) => any;
         if (propertyMeta.type === "object") {
             getter = function (this: any) {
-                return state.getObject(this[privateKey]); // Directly resolve UUIDs
+                return store.getObject(this[privateKey]); // Directly resolve UUIDs
             };
         } else {
             getter = function (this: any) {
@@ -30,12 +31,12 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: 
             };
         } else if (propertyMeta.type === "object") {
             setter = function (this: any, value: any) {
-                if (!state.isInProduceMode()) {
+                if (!store.isInProduceMode()) {
                     throw new Error(`Cannot modify property "${key}" outside of produce()`);
                 }
 
                 // Prevent modification of frozen objects
-                if (state.isFrozen(this)) {
+                if (store.getState().isFrozen(this)) {
                     throw new Error(`Cannot modify frozen object ${this.uuid}`);
                 }
 
@@ -47,7 +48,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: 
                 this[privateKey] = isUUIDReference(value, propertyMeta.type) ? value.uuid : value;
 
                 // Track changes for versioning
-                state.trackVersionedObject(this);
+                store.getState().trackVersionedObject(this);
 
                 // Ensure bidirectional relationships are updated correctly
                 if (propertyMeta.inverseType && propertyMeta.inverseProp) {
@@ -56,12 +57,12 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: 
             };
         } else {
             setter = function (this: any, value: any) {
-                if (!state.isInProduceMode()) {
+                if (!store.isInProduceMode()) {
                     throw new Error(`Cannot modify property "${key}" outside of produce()`);
                 }
 
                 // Prevent modification of frozen objects
-                if (state.isFrozen(this)) {
+                if (store.getState().isFrozen(this)) {
                     throw new Error(`Cannot modify frozen object ${this.uuid}`);
                 }
 
@@ -73,7 +74,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: 
                 this[privateKey] = value;
 
                 // Track changes for versioning
-                state.trackVersionedObject(this);
+                store.getState().trackVersionedObject(this);
             };
         }
 
@@ -83,19 +84,19 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, state: 
         // Initialize observable collections
         if (propertyMeta.type === "array") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityArray([], state, typeMeta.properties),
+                value: createObservableEntityArray([], store.getState(), typeMeta.properties),
                 writable: true,
                 enumerable: false,
             });
         } else if (propertyMeta.type === "set") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntitySet(new Set(), state, typeMeta.properties),
+                value: createObservableEntitySet(new Set(), store.getState(), typeMeta.properties),
                 writable: true,
                 enumerable: false,
             });
         } else if (propertyMeta.type === "map") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityMap(new Map(), state, typeMeta.properties),
+                value: createObservableEntityMap(new Map(), store.getState(), typeMeta.properties),
                 writable: true,
                 enumerable: false,
             });
