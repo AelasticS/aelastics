@@ -20,10 +20,11 @@ describe("Bidirectional Relationships Tracking", () => {
         const user1:any = store.createObject("User");
         const user2:any = store.createObject("User");
 
-        user1.name = "Alice";
-        user2.name = "Bob";
+
 
         store.produce(() => {
+            user1.name = "Alice";
+            user2.name = "Bob";
             user1.friends.add(user2);
         }, user1);
 

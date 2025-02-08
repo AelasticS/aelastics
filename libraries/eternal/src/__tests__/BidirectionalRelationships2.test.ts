@@ -39,15 +39,18 @@ describe("Bidirectional Relationships & Cyclic References", () => {
 
     test("Bidirectional relationships should be correctly maintained", () => {
         const parent = store.createObject<Parent>("Parent") as Parent;
-        parent.name = "Root";
+ 
 
         const child1 = store.createObject<Child>("Child") as Child;
-        child1.name = "Child 1";
+
 
         const child2 = store.createObject<Child>("Child") as Child;
-        child2.name = "Child 2";
+
 
         store.produce((p: InternalObjectProps) => {
+            parent.name = "Root";
+            child1.name = "Child 1";
+            child2.name = "Child 2";
             const p1 = p as unknown as Parent;
             p1.children.push(child1);
             p1.children.push(child2);
@@ -60,12 +63,14 @@ describe("Bidirectional Relationships & Cyclic References", () => {
 
     test("Updating parent-child relationship should not cause infinite loops", () => {
         const parent = store.createObject<Parent>("Parent") as Parent;
-        parent.name = "Root";
+ 
 
         const child = store.createObject<Child>("Child") as Child;
-        child.name = "Child 1";
+
 
         store.produce((p: InternalObjectProps) => {
+            parent.name = "Root";
+            child.name = "Child 1";
             const p1 = p as unknown as Parent;
             p1.children.push(child);
         }, parent);
@@ -75,9 +80,9 @@ describe("Bidirectional Relationships & Cyclic References", () => {
 
         // Update child's parent to a new parent
         const newParent = store.createObject<Parent>("Parent") as Parent;
-        newParent.name = "New Root";
 
         store.produce((c: InternalObjectProps) => {
+            newParent.name = "New Root";
             const c1 = c as unknown as Child;
             c1.parent = newParent;
         }, child);
@@ -89,13 +94,13 @@ describe("Bidirectional Relationships & Cyclic References", () => {
 
     test("Cyclic relationships should not cause errors", () => {
         const parent = store.createObject<Parent>("Parent") as Parent;
-        parent.name = "Root";
 
         const child = store.createObject<Child>("Child") as Child;
-        child.name = "Child 1";
 
         // Introduce a cycle: child becomes its own grandparent
         store.produce((p: InternalObjectProps) => {
+            parent.name = "Root";
+            child.name = "Child 1";
             const p1 = p as unknown as Parent;
             p1.children.push(child);
             child.parent = p1;

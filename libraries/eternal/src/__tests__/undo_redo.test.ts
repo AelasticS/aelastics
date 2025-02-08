@@ -21,7 +21,11 @@ describe("Undo/Redo Functionality", () => {
 
     test("Undo should revert to the previous state", () => {
         const userAlice: Person = store.createObject<Person>("User");
-        userAlice.name = "Alice";
+
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Alice";
+        }, userAlice);
 
         store.produce((user: InternalObjectProps) => {
             const person = user as Person;
@@ -37,7 +41,11 @@ describe("Undo/Redo Functionality", () => {
 
     test("Redo should reapply a reverted state", () => {
         const user: Person = store.createObject<Person>("User");
-        user.name = "Alice";
+
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Alice";
+        }, user);
 
         store.produce((user: InternalObjectProps) => {
             const person = user as Person;
@@ -53,7 +61,11 @@ describe("Undo/Redo Functionality", () => {
 
     test("New changes after undo should clear redo history", () => {
         const user: Person = store.createObject<Person>("User");
-        user.name = "Alice";
+
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Alice";
+        }, user);
 
         store.produce((user: InternalObjectProps) => {
             const person = user as Person;
@@ -79,7 +91,11 @@ describe("Undo/Redo Functionality", () => {
 
     test("Redo at latest state should do nothing", () => {
         const user: Person = store.createObject<Person>("User");
-        user.name = "Alice";
+
+        store.produce((user: InternalObjectProps) => {
+            const person = user as Person;
+            person.name = "Alice";
+        }, user);
 
         store.produce((user: InternalObjectProps) => {
             const person = user as Person;
