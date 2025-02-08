@@ -178,36 +178,40 @@ public trackAccess(obj: InternalObjectProps): void {
 }
 
   /** Creates a dynamic class for a given type */
-  private createDynamicClass(typeMeta: TypeMeta, store:EternalStore) {
+  private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
     const state = this.getState() // Get the current state
 
-    class DynamicEntity {
-      public uuid!: string
-      public createdAt!: number
-      [key: string]: any
+    const className = typeMeta.name; // Use the type name as the class name
 
-      constructor() {
-        const currentMode= store.inProduceMode;
-        
-        // Generate unique values for each instance
-        this.uuid = randomUUID()
-        this.createdAt = Date.now()
+    const DynamicEntity = {
+      [className]: class {
+        public uuid!: string
+        public createdAt!: number
+        [key: string]: any
 
-        // Initialize properties based on type
-        for (const [key, propertyMeta] of typeMeta.properties) {
-          const privateKey = `_${key}`
+        constructor() {
+          const currentMode = store.inProduceMode;
 
-          this[privateKey] =
-            propertyMeta.type === "set"
-              ? createObservableEntitySet(new Set(), state, typeMeta.properties)
-              : propertyMeta.type === "array"
-              ? createObservableEntityArray([], state, typeMeta.properties)
-              : propertyMeta.type === "map"
-              ? createObservableEntityMap(new Map(), state, typeMeta.properties)
-              : undefined
+          // Generate unique values for each instance
+          this.uuid = randomUUID()
+          this.createdAt = Date.now()
+
+          // Initialize properties based on type
+          for (const [key, propertyMeta] of typeMeta.properties) {
+            const privateKey = `_${key}`
+
+            this[privateKey] =
+              propertyMeta.type === "set"
+                ? createObservableEntitySet(new Set(), state, typeMeta.properties)
+                : propertyMeta.type === "array"
+                ? createObservableEntityArray([], state, typeMeta.properties)
+                : propertyMeta.type === "map"
+                ? createObservableEntityMap(new Map(), state, typeMeta.properties)
+                : undefined
+          }
         }
       }
-    }
+    }[className];
 
     // Property accessors (shared across instances) will handle access logic
     addPropertyAccessors(DynamicEntity.prototype, typeMeta, this)
