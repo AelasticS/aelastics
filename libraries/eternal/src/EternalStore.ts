@@ -7,6 +7,7 @@ import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
 import { randomUUID } from 'crypto';
+import { EntryType } from "perf_hooks"
 
 export type InternalRecipe = (obj: InternalObjectProps) => void
 
@@ -25,7 +26,7 @@ export class EternalStore {
     this.fetchFromExternalSource = fetchFromExternalSource
     // Create dynamic classes for each type
     for (const [type, typeMeta] of metaInfo.entries()) {
-      this.typeToClassMap.set(type, this.createDynamicClass(typeMeta))
+      this.typeToClassMap.set(type, this.createDynamicClass(typeMeta,this))
     }
     // Initialize first state
     this.stateHistory.push(new State(this))
@@ -177,38 +178,39 @@ public trackAccess(obj: InternalObjectProps): void {
 }
 
   /** Creates a dynamic class for a given type */
-  private createDynamicClass(typeMeta: TypeMeta) {
+  private createDynamicClass(typeMeta: TypeMeta, store:EternalStore) {
     const state = this.getState() // Get the current state
-
-    // Precompute template object before constructor
-    const template: InternalObjectProps = {
-      uuid:  randomUUID(),
-      createdAt: Date.now()
-    }
-    for (const [key, propertyMeta] of typeMeta.properties) {
-      const privateKey = `_${key}`
-
-      template[privateKey] =
-        propertyMeta.type === "set"
-          ? createObservableEntitySet(new Set(), state, typeMeta.properties)
-          : propertyMeta.type === "array"
-          ? createObservableEntityArray([], state, typeMeta.properties)
-          : propertyMeta.type === "map"
-          ? createObservableEntityMap(new Map(), state, typeMeta.properties)
-          : undefined
-    }
 
     class DynamicEntity {
       public uuid!: string
+      public createdAt!: number
+      [key: string]: any
 
       constructor() {
-        // Use template to initialize instance properties efficiently
-        Object.assign(this, template)
+        const currentMode= store.inProduceMode;
+        
+        // Generate unique values for each instance
+        this.uuid = randomUUID()
+        this.createdAt = Date.now()
+
+        // Initialize properties based on type
+        for (const [key, propertyMeta] of typeMeta.properties) {
+          const privateKey = `_${key}`
+
+          this[privateKey] =
+            propertyMeta.type === "set"
+              ? createObservableEntitySet(new Set(), state, typeMeta.properties)
+              : propertyMeta.type === "array"
+              ? createObservableEntityArray([], state, typeMeta.properties)
+              : propertyMeta.type === "map"
+              ? createObservableEntityMap(new Map(), state, typeMeta.properties)
+              : undefined
+        }
       }
     }
 
     // Property accessors (shared across instances) will handle access logic
-    addPropertyAccessors(DynamicEntity.prototype, typeMeta, this.getState())
+    addPropertyAccessors(DynamicEntity.prototype, typeMeta, this)
 
     return DynamicEntity
   }
