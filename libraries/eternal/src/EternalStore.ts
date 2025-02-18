@@ -33,7 +33,7 @@ export class EternalStore {
     this.currentStateIndex = 0
   }
 
-  /** Returns the latest (i.e. cuurent) state */
+  /** Returns the latest (i.e. current) state */
   public getState(): State {
     return this.stateHistory[this.currentStateIndex]
   }

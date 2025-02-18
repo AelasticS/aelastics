@@ -29,6 +29,7 @@ export type recipe<T> = (obj: T) => void
 
 export function createStore(
   metaInfo: Map<string, TypeMeta>,
+  initialState: any = {},
   options: {
     freeze?: boolean
     fetchFromExternalSource?: (type: string, uuid: string) => any
