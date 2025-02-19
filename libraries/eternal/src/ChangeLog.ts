@@ -146,7 +146,7 @@ export function applyJsonPatch(state: State, patch: JSONPatchOperation[]): void 
             case "add":
                 if (segments.length === 2) {
                     // Adding a new object
-                    state.addObject(value);
+                    state.addObject(value, 'created');
                 } else {
                     const prop = segments[2];
                     if (Array.isArray(object[prop])) {

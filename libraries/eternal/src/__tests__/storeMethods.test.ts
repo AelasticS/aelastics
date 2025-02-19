@@ -24,10 +24,13 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
     }
 
     test("Undo should revert to the previous state", () => {
-        const user = store.createObject<User>("User");
-        user.name = "Alice";
-
-        store.produce((u) => {
+        const user = store.updateState(() => {
+            const obj = store.createObject<User>("User");
+            obj.name = "Alice";
+            return obj;
+        }
+        );
+        store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 
@@ -41,7 +44,7 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
         const user = store.createObject<User>("User");
         user.name = "Alice";
 
-        store.produce((u) => {
+        store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 
@@ -56,14 +59,14 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
         const user = store.createObject<User>("User");
         user.name = "Alice";
 
-        store.produce((u) => {
+        store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 
         store.undo();
         expect(store.getObject<User>(user.uuid)?.name).toBe("Alice");
 
-        store.produce((u) => {
+        store.updateObject((u) => {
             u.name = "Charlie";
         }, user);
 
@@ -76,7 +79,7 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
         const user = store.createObject<User>("User");
         user.name = "Alice";
 
-        store.produce((u) => {
+        store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 
@@ -91,13 +94,13 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
         const user = store.createObject<User>("User");
         let produceStatusDuringExecution = false;
 
-        store.produce((u) => {
-            produceStatusDuringExecution = store.isInProduceMode();
+        store.updateObject((u) => {
+            produceStatusDuringExecution = store.isInUpdateMode();
             u.name = "Updated Name";
         }, user);
 
         expect(produceStatusDuringExecution).toBe(true);
-        expect(store.isInProduceMode()).toBe(false);
+        expect(store.isInUpdateMode()).toBe(false);
     });
 
     test("Undo at initial state should return false", () => {
@@ -108,7 +111,7 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
         const user = store.createObject<User>("User");
         user.name = "Alice";
 
-        store.produce((u) => {
+        store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 

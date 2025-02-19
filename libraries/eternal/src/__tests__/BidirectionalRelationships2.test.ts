@@ -1,5 +1,5 @@
 import { EternalStore } from "../EternalStore";
-import { InternalObjectProps } from "../handlers/InternalTypes";
+import { EternalObject } from "../handlers/InternalTypes";
 
 describe("Bidirectional Relationships & Cyclic References", () => {
     let store: EternalStore;
@@ -47,7 +47,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const child2 = store.createObject<Child>("Child") as Child;
 
 
-        store.produce((p: InternalObjectProps) => {
+        store.produce((p: EternalObject) => {
             parent.name = "Root";
             child1.name = "Child 1";
             child2.name = "Child 2";
@@ -68,7 +68,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const child = store.createObject<Child>("Child") as Child;
 
 
-        store.produce((p: InternalObjectProps) => {
+        store.produce((p: EternalObject) => {
             parent.name = "Root";
             child.name = "Child 1";
             const p1 = p as unknown as Parent;
@@ -81,7 +81,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         // Update child's parent to a new parent
         const newParent = store.createObject<Parent>("Parent") as Parent;
 
-        store.produce((c: InternalObjectProps) => {
+        store.produce((c: EternalObject) => {
             newParent.name = "New Root";
             const c1 = c as unknown as Child;
             c1.parent = newParent;
@@ -98,7 +98,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const child = store.createObject<Child>("Child") as Child;
 
         // Introduce a cycle: child becomes its own grandparent
-        store.produce((p: InternalObjectProps) => {
+        store.produce((p: EternalObject) => {
             parent.name = "Root";
             child.name = "Child 1";
             const p1 = p as unknown as Parent;

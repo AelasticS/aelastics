@@ -5,7 +5,6 @@ import { createObservableMap, createObservableSet, MapHandlers, SetHandlers } fr
 
 /** Creates handlers for observable maps */
 export const createMapHandlers = <K, V>(
-    state: State,
     propertyMeta: Map<string, PropertyMeta>
 ): MapHandlers<K, V, { key: string }> => ({
     /** Ensure values stored in the map are UUIDs if applicable */
@@ -30,7 +29,6 @@ export const createMapHandlers = <K, V>(
 
 /** Creates handlers for observable sets */
 export const createSetHandlers = <V>(
-    state: State,
     propertyMeta: Map<string, PropertyMeta>
 ): SetHandlers<V, { key: string }> => ({
     /** Ensure values stored in the set are UUIDs if applicable */
@@ -56,17 +54,15 @@ export const createSetHandlers = <V>(
 /** Helper function to create observable maps */
 export function createObservableEntityMap<K, V>(
     map: Map<K, V>,
-    state: State,
     propertyMeta: Map<string, PropertyMeta>
 ): Map<K, V> {
-    return createObservableMap(map, createMapHandlers<K, V>(state, propertyMeta));
+    return createObservableMap(map, createMapHandlers<K, V>(propertyMeta));
 }
 
 /** Helper function to create observable sets */
 export function createObservableEntitySet<V>(
     set: Set<V>,
-    state: State,
     propertyMeta: Map<string, PropertyMeta>
 ): Set<V> {
-    return createObservableSet(set, createSetHandlers<V>(state, propertyMeta));
+    return createObservableSet(set, createSetHandlers<V>(propertyMeta));
 }

@@ -27,12 +27,12 @@ describe("Store API: Produce Mode Detection", () => {
         const user = store.createObject<User>("User");
         let produceStatusDuringExecution = false;
 
-        store.produce((u) => {
-            produceStatusDuringExecution = store.isInProduceMode();
+        store.updateObject((u) => {
+            produceStatusDuringExecution = store.isInUpdateMode();
             u.name = "Updated Name";
         }, user);
 
         expect(produceStatusDuringExecution).toBe(true);
-        expect(store.isInProduceMode()).toBe(false);
+        expect(store.isInUpdateMode()).toBe(false);
     });
 });

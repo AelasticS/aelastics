@@ -29,7 +29,7 @@ describe("Store API: Undo/Redo Functionality", () => {
   test("Undo should revert to the previous state", () => {
     const user = store.createObject<User>("User")
 
-    store.produce((u) => {
+    store.updateObject((u) => {
       user.uuid = "1"
       user.name = "Alice"
       user.age = 30
@@ -45,7 +45,7 @@ describe("Store API: Undo/Redo Functionality", () => {
   test("Redo should reapply the last undone change", () => {
     const user = store.createObject<User>("User")
 
-    store.produce((u) => {
+    store.updateObject((u) => {
       user.uuid = "1"
       user.name = "Alice"
       user.age = 30
@@ -62,7 +62,7 @@ describe("Store API: Undo/Redo Functionality", () => {
   test("New changes after undo should clear redo history", () => {
     const user = store.createObject<User>("User")
 
-    store.produce((u) => {
+    store.updateObject((u) => {
       user.name = "Alice"
       u.name = "Bob"
     }, user)
@@ -70,7 +70,7 @@ describe("Store API: Undo/Redo Functionality", () => {
     store.undo()
     expect(store.getObject<User>(user.uuid)?.name).toBe("Alice")
 
-    store.produce((u) => {
+    store.updateObject((u) => {
       u.name = "Charlie"
     }, user)
 
@@ -86,7 +86,7 @@ describe("Store API: Undo/Redo Functionality", () => {
   test("Redo at latest state should return false", () => {
     const user = store.createObject<User>("User")
 
-    store.produce((u) => {
+    store.updateObject((u) => {
     user.name = "Alice"
       u.name = "Bob"
     }, user)

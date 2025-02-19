@@ -1,49 +1,50 @@
 import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, hasChanges, JSONPatchOperation } from "./ChangeLog"
 import { addPropertyAccessors } from "./PropertyAccessors"
 import { createObservableEntityArray } from "./handlers/ArrayHandlers"
-import { InternalObjectProps } from "./handlers/InternalTypes"
+import { EternalObject } from "./handlers/InternalTypes"
 import { createObservableEntityMap, createObservableEntitySet } from "./handlers/MapSetHandlers"
 import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
 import { randomUUID } from 'crypto';
-import { EntryType } from "perf_hooks"
 
-export type InternalRecipe = (obj: InternalObjectProps) => void
+export type InternalRecipe = ((obj: EternalObject) => void) | (() => any)
 
 export class EternalStore {
   private stateHistory: State[] = [] // Stores the history of states
   private subscriptionManager = new SubscriptionManager(); // Create a subscription manager
-  private currentStateIndex: number // Track active state index
-  private inProduceMode: boolean = false // Flag to indicate if the store is in produce mode
+  private currentStateIndex: number = -1// Track active state index
+  private inUpdateMode: boolean = false // Flag to indicate if the store is in update mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
   private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
-  private accessedObjects: Set<InternalObjectProps> = new Set(); // Track accessed object
-  private versionedObjects: InternalObjectProps[] = []; // Track versioned objects
+  private accessedObjects: Set<EternalObject> = new Set(); // Track accessed object
+  private versionedObjects: EternalObject[] = []; // Track versioned objects
 
 
   constructor(metaInfo: Map<string, TypeMeta>, fetchFromExternalSource?: (type: string, uuid: string) => any) {
     this.fetchFromExternalSource = fetchFromExternalSource
     // Create dynamic classes for each type
     for (const [type, typeMeta] of metaInfo.entries()) {
-      this.typeToClassMap.set(type, this.createDynamicClass(typeMeta,this))
+      this.typeToClassMap.set(type, this.createDynamicClass(typeMeta, this))
     }
-    // Initialize first state
-    this.stateHistory.push(new State(this))
-    this.currentStateIndex = 0
   }
 
   /** Returns the latest (i.e. current) state */
   public getState(): State {
+    if (this.stateHistory.length === 0) {
+      // Initialize first state
+      this.stateHistory.push(new State(this))
+      this.currentStateIndex = 0
+    }
     return this.stateHistory[this.currentStateIndex]
   }
 
-  /** Checks if store is in produce mode */
-  public isInProduceMode(): boolean {
-    return this.inProduceMode
+  /** Checks if store is in update mode */
+  public isInUpdateMode(): boolean {
+    return this.inUpdateMode
   }
 
-  /** Creates a new state when entering produce mode */
+  /** Creates a new state before entering update mode */
   private makeNewState(): void {
     // Clear future states if undo() was called before this change
     if (this.currentStateIndex < this.stateHistory.length - 1) {
@@ -55,6 +56,7 @@ export class EternalStore {
 
   /** Undo the last change */
   public undo(): boolean {
+    // TODO: check if is in update mode
     if (this.currentStateIndex > 0) {
       this.currentStateIndex--
       return true // Undo successful
@@ -64,6 +66,7 @@ export class EternalStore {
 
   /** Redo the last undone change */
   public redo(): boolean {
+    // TODO: check if is in update mode
     if (this.currentStateIndex < this.stateHistory.length - 1) {
       this.currentStateIndex++
       return true // Redo successful
@@ -73,6 +76,7 @@ export class EternalStore {
 
   /** Creates an empty object of a given type */
   public createObject<T>(type: string): T {
+    // TODO: check if is in update mode
     if (!this.typeToClassMap.has(type)) {
       throw new Error(`Unknown type: ${type}. Cannot create object.`)
     }
@@ -81,7 +85,7 @@ export class EternalStore {
     const newObject = new DynamicClass()
 
     // Immediately add to the latest state
-    this.getState().addObject(newObject)
+    this.getState().addObject(newObject, 'created')
 
     return newObject
   }
@@ -94,88 +98,105 @@ export class EternalStore {
   /** Returns an object fixed to a specific state */
   public fromState<T>(stateIndex: number, target: string | T): T | undefined {
     const state = this.getStateByIndex(stateIndex)
-    if (!state) return undefined
-
+    if (!state) {
+      throw new Error(`State at index ${stateIndex} does not exist.`);
+    }
+    // If target is a UUID string
     if (typeof target === "string") {
-      return state.getObject(target)
+      return state.getObject(target, true)
     }
-
+    // If target is an object with a UUID
     if (target && typeof target === "object" && "uuid" in target) {
-      return state.getObject((target as { uuid: string }).uuid)
+      return state.getObject((target as { uuid: string }).uuid, true)
     }
-
-    return undefined
+    // If target is not a string or object with a UUID
+    throw new Error("Invalid target object.")
   }
 
   /** Retrieves a specific historical state */
-  public getStateByIndex(index: number): State | undefined {
+  public getStateByIndex(index: number): State {
+    if (index < 0 || index >= this.stateHistory.length) {
+      throw new Error(`State at index ${index} does not exist.`);
+    }
     return this.stateHistory[index]
   }
 
 
   /** Produces a new state with modifications */
-  public produce<T extends object>(recipe: InternalRecipe, obj:T): T {
-    if (this.inProduceMode) {
+  public produce<T extends object>(recipe: InternalRecipe, obj?: T): T | void {
+    if (this.inUpdateMode) {
       throw new Error("Nested produce() calls are not allowed.")
     }
-    this.inProduceMode = true
+    this.inUpdateMode = true
     this.accessedObjects.clear(); // Start tracking 
     this.versionedObjects = []; // Reset list at start
     this.makeNewState()
     const currentState = this.getState()
 
-    // Use State's method to create a new object version
-    let newObj = obj as InternalObjectProps
+    if (obj) {  // Versioning logic when an object is passed
+      // Use State's method to create a new object version
+      let newObj = obj as EternalObject
+      try {
+        recipe(newObj) // Apply modifications
+        // Track changed objects
+        const additionalVersionedObjects = this.markVersionedObjects();
+        this.versionedObjects.push(...additionalVersionedObjects);
 
+        if (this.versionedObjects.length > 0) {
+          this.subscriptionManager.notifySubscribers(this.versionedObjects); // Notify all updated objects
 
-    try {
-      recipe(newObj) // Apply modifications
-      // 
-      const additionalVersionedObjects = this.markVersionedObjects();
-      this.versionedObjects.push(...additionalVersionedObjects);
-
-      if (this.versionedObjects.length > 0) {
-        this.subscriptionManager.notifySubscribers(this.versionedObjects); // Notify all updated objects
-
-        // ✅ If `obj` itself was versioned, return the latest version
-        const updatedObj = this.versionedObjects.find(o => o.uuid === newObj.uuid);
-        if (updatedObj) {
+          // If `obj` itself was versioned, return the latest version
+          const updatedObj = this.versionedObjects.find(o => o.uuid === newObj.uuid);
+          if (updatedObj) {
             newObj = updatedObj;
+          }
         }
+      }
+      finally {
+        this.inUpdateMode = false
+        this.accessedObjects.clear(); // Stop tracking
+      }
+      return newObj as T
     }
-    } finally {
-      this.inProduceMode = false
-      this.accessedObjects.clear(); // Stop tracking
+    else {
+      try {
+        const result = (recipe as () => T)(); // Capture return value
+        this.markVersionedObjects();
+        this.subscriptionManager.notifySubscribers(this.versionedObjects); // Notify global changes
+        return result; // Return the result from recipe()
+
+      } finally {
+        this.inUpdateMode = false
+        this.accessedObjects.clear(); // Stop tracking
+      }
     }
-  
-    return newObj as T
   }
 
   // Track changed objects
-  public trackVersionedObject(obj: InternalObjectProps): void {
+  public trackVersionedObject(obj: EternalObject): void {
     if (!this.versionedObjects.includes(obj)) {
-        this.versionedObjects.push(obj);
+      this.versionedObjects.push(obj);
     }
-}
-  private markVersionedObjects(): InternalObjectProps[] {
-    const versionedObjects: InternalObjectProps[] = [];
+  }
+  private markVersionedObjects(): EternalObject[] {
+    const versionedObjects: EternalObject[] = [];
 
     for (const obj of this.accessedObjects) {
-        if (hasChanges( this.getChangeLog(), obj["uuid"])) {
-            const newVersion = this.getState().createNewVersion(obj);
-            versionedObjects.push(newVersion);
-        }
+      if (hasChanges(this.getChangeLog(), obj["uuid"])) {
+        const newVersion = this.getState().createNewVersion(obj);
+        versionedObjects.push(newVersion);
+      }
     }
 
     return versionedObjects;
-}
+  }
 
 
-public trackAccess(obj: InternalObjectProps): void {
-    if (this.inProduceMode) {
-        this.accessedObjects.add(obj);
+  public trackAccess(obj: EternalObject): void {
+    if (this.inUpdateMode) {
+      this.accessedObjects.add(obj);
     }
-}
+  }
 
   /** Creates a dynamic class for a given type */
   private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
@@ -190,7 +211,7 @@ public trackAccess(obj: InternalObjectProps): void {
         [key: string]: any
 
         constructor() {
-          const currentMode = store.inProduceMode;
+          const currentMode = store.inUpdateMode;
 
           // Generate unique values for each instance
           this.uuid = randomUUID()
@@ -202,12 +223,12 @@ public trackAccess(obj: InternalObjectProps): void {
 
             this[privateKey] =
               propertyMeta.type === "set"
-                ? createObservableEntitySet(new Set(), state, typeMeta.properties)
+                ? createObservableEntitySet(new Set(), typeMeta.properties)
                 : propertyMeta.type === "array"
-                ? createObservableEntityArray([], state, typeMeta.properties)
-                : propertyMeta.type === "map"
-                ? createObservableEntityMap(new Map(), state, typeMeta.properties)
-                : undefined
+                  ? createObservableEntityArray([], typeMeta.properties)
+                  : propertyMeta.type === "map"
+                    ? createObservableEntityMap(new Map(), typeMeta.properties)
+                    : undefined
           }
         }
       }

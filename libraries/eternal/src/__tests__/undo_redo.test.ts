@@ -1,4 +1,4 @@
-import { InternalObjectProps } from "../handlers/InternalTypes";
+import { EternalObject } from "../handlers/InternalTypes";
 import { EternalStore } from "../EternalStore";
 
 describe("Undo/Redo Functionality", () => {
@@ -17,17 +17,17 @@ describe("Undo/Redo Functionality", () => {
         ]));
     });
 
-    interface Person extends InternalObjectProps { uuid: string; name: string; age: number; id: string }
+    interface Person extends EternalObject { uuid: string; name: string; age: number; id: string }
 
     test("Undo should revert to the previous state", () => {
         const userAlice: Person = store.createObject<Person>("User");
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Alice";
         }, userAlice);
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Bob";
         }, userAlice);
@@ -42,12 +42,12 @@ describe("Undo/Redo Functionality", () => {
     test("Redo should reapply a reverted state", () => {
         const user: Person = store.createObject<Person>("User");
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Alice";
         }, user);
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Bob";
         }, user);
@@ -62,12 +62,12 @@ describe("Undo/Redo Functionality", () => {
     test("New changes after undo should clear redo history", () => {
         const user: Person = store.createObject<Person>("User");
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Alice";
         }, user);
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Bob";
         }, user);
@@ -75,7 +75,7 @@ describe("Undo/Redo Functionality", () => {
         store.undo();
         expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Alice");
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Charlie";
         }, user);
@@ -92,12 +92,12 @@ describe("Undo/Redo Functionality", () => {
     test("Redo at latest state should do nothing", () => {
         const user: Person = store.createObject<Person>("User");
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Alice";
         }, user);
 
-        store.produce((user: InternalObjectProps) => {
+        store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Bob";
         }, user);

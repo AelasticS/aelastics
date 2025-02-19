@@ -57,7 +57,7 @@ describe("Immutable Collections (Arrays, Sets, Maps)", () => {
         const person = store.createObject<Person>("Person");
         const friend = store.createObject<Person>("Person");
 
-        store.produce((p) => {
+        store.updateObject((p) => {
             p.friends.push(friend);
         }, person);
 
@@ -68,7 +68,7 @@ describe("Immutable Collections (Arrays, Sets, Maps)", () => {
     test("Set: Adding an item should be tracked and cause versioning", () => {
         const person = store.createObject<Person>("Person");
 
-        store.produce((p) => {
+        store.updateObject((p) => {
             p.tags.add("developer");
         }, person);
 
@@ -78,7 +78,7 @@ describe("Immutable Collections (Arrays, Sets, Maps)", () => {
     test("Map: Adding an item should be tracked and cause versioning", () => {
         const person = store.createObject<Person>("Person");
 
-        store.produce((p) => {
+        store.updateObject((p) => {
             p.properties.set("role", "admin");
         }, person);
 
@@ -89,7 +89,7 @@ describe("Immutable Collections (Arrays, Sets, Maps)", () => {
         const person = store.createObject<Person>("Person");
         const friend = store.createObject<Person>("Person");
 
-        store.produce((p) => {
+        store.updateObject((p) => {
             p.friends.push(friend);
             p.tags.add("developer");
             p.properties.set("role", "admin");
@@ -106,7 +106,7 @@ describe("Immutable Collections (Arrays, Sets, Maps)", () => {
         const person = store.createObject<Person>("Person");
         const friend = store.createObject<Person>("Person");
 
-        store.produce((p) => {
+        store.updateObject((p) => {
             p.friends.push(friend);
             p.tags.add("developer");
             p.properties.set("role", "admin");
@@ -124,7 +124,7 @@ describe("Immutable Collections (Arrays, Sets, Maps)", () => {
         const personA = store.createObject<Person>("Person");
         const personB = store.createObject<Person>("Person");
 
-        store.produce((p) => {
+        store.updateObject((p) => {
             p.friends.push(personB);
         }, personA);
 

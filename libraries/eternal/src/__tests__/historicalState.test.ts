@@ -26,11 +26,11 @@ describe("Store API: Historical State Access", () => {
     test("fromState() should retrieve object from a previous state", () => {
         const user = store.createObject<User>("User");
 
-        store.produce((u) => {
+        store.updateObject((u) => {
             u.name = "Alice";
         }, user);
 
-        store.produce((u) => {
+        store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 

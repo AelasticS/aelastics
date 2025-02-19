@@ -1,4 +1,4 @@
-import { InternalObjectProps } from "./handlers/InternalTypes";
+import { EternalObject } from "./handlers/InternalTypes";
 
 export class SubscriptionManager {
     private subscriptions: WeakMap<object, Set<(updatedObj: object) => void>> = new WeakMap();
@@ -23,7 +23,7 @@ export class SubscriptionManager {
     }
 
     /** Notifies all subscribers of updated objects */
-    public notifySubscribers(updatedObjects: InternalObjectProps[]): void {
+    public notifySubscribers(updatedObjects: EternalObject[]): void {
         for (const obj of updatedObjects) {
             // ✅ Retrieve subscribers for this specific object
             const callbacks = this.subscriptions.get(obj);

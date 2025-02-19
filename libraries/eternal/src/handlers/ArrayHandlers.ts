@@ -5,7 +5,6 @@ import { isUUIDReference } from "../utils"; // Import the utility function
 
 /** Creates typed array handlers to track UUIDs and object references */
 export const createArrayHandlers = <T>(
-    state: State,
     propertyMeta: Map<string, PropertyMeta>
 ): ArrayHandlers<T, { key: string }> => ({
     /** Ensure object references are stored as UUIDs if applicable */
@@ -92,8 +91,7 @@ export const createArrayHandlers = <T>(
 /** Helper function to create observable arrays */
 export function createObservableEntityArray<T>(
     arr: T[],
-    state: State,
     propertyMeta: Map<string, PropertyMeta>
 ): T[] {
-    return createObservableArray(arr, createArrayHandlers<T>(state, propertyMeta));
+    return createObservableArray(arr, createArrayHandlers<T>(propertyMeta));
 }

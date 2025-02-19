@@ -5,6 +5,43 @@ import { createObservableEntityArray } from "./handlers/ArrayHandlers";
 import { createObservableEntitySet } from "./handlers/MapSetHandlers";
 import { createObservableEntityMap } from "./handlers/MapSetHandlers";
 import { EternalStore } from "./EternalStore";
+import { EternalObject } from "./handlers/InternalTypes";
+
+/** Checks if the object is outdated and return if it is */
+function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
+    if (store.isInUpdateMode() && obj.nextVersion
+        && !store.getState().isObjectFixed(obj)) {
+        return obj.nextVersion.deref();
+    }
+    else {
+        return obj;
+    }
+}
+
+function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string): EternalObject {
+
+    // if not allowed update throw error
+    if (store.getState().isObjectFixed(obj)) {
+        throw new Error(`Cannot modify property "${key}" of the fixed object with uuid "${obj.uuid}"`);
+    }
+    // if not in update mode throw error
+    if (!store.isInUpdateMode()) {
+        throw new Error(`Cannot modify property "${key}" of the object with uuid "${obj.uuid} outside of update mode`);
+    }
+
+    // if obj is from old state 
+    if (store.getState().isFromOldState(obj)) {
+        if (!obj.nextVersion) { // has no new version, create and return new version
+            return store.getState().createNewVersion(obj);
+        }
+        else { // has new version, return new version
+            return obj.nextVersion.deref();
+        }
+    }
+    // obj is from current state
+    return obj;
+}
+
 
 /** Adds optimized property accessors to a dynamically generated class prototype */
 export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
@@ -12,69 +49,50 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         const privateKey = `_${key}`;
 
         // Generate optimized getter
-        let getter: (this: any) => any;
+        let getter: (this: EternalObject) => any;
         if (propertyMeta.type === "object") {
-            getter = function (this: any) {
-                return store.getObject(this[privateKey]); // Directly resolve UUIDs
+            getter = function (this: EternalObject) {
+                let obj = checkReadAccess(this, store);
+                return store.getObject(obj[privateKey]); // Directly resolve UUIDs
             };
         } else {
             getter = function (this: any) {
-                return this[privateKey]; // Directly return stored value
+                let obj = checkReadAccess(this, store);
+                return obj[privateKey]; // Directly return stored value
             };
         }
 
         // Generate optimized setter
-        let setter: (this: any, value: any) => void;
+        // TODO add to changelog
+        let setter: (this: EternalObject, value: any) => void;
         if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
             setter = function () {
-                throw new Error(`Cannot directly assign to collection property "${key}". Use methods like .push(), .set(), or .add() instead.`);
+                throw new Error(`Cannot directly assign to collection property "${key}" of the object with uuid "${this.uuid}"`);
             };
         } else if (propertyMeta.type === "object") {
-            setter = function (this: any, value: any) {
-                if (!store.isInProduceMode()) {
-                    throw new Error(`Cannot modify property "${key}" outside of produce()`);
-                }
-
-                // Prevent modification of frozen objects
-                if (store.getState().isFrozen(this)) {
-                    throw new Error(`Cannot modify frozen object ${this.uuid}`);
-                }
-
+            setter = function (this: EternalObject, value: EternalObject) {
                 // Prevent redundant updates
-                if (this[privateKey] === value) {
+                if (this[privateKey] === value.uuid && store.isInUpdateMode()) {
                     return;
                 }
-
-                this[privateKey] = isUUIDReference(value, propertyMeta.type) ? value.uuid : value;
-
-                // Track changes for versioning
-                store.getState().trackVersionedObject(this);
+                // check if allowed to update and return new version if allowed
+                const obj = checkWriteAccess(this, store, key);
+                obj[privateKey] = value.uuid;
 
                 // Ensure bidirectional relationships are updated correctly
                 if (propertyMeta.inverseType && propertyMeta.inverseProp) {
-                    this[`_updateInverse_${key}`](value); // Call precomputed function
+                    obj[`_updateInverse_${key}`](value); // Call precomputed function
                 }
             };
         } else {
-            setter = function (this: any, value: any) {
-                if (!store.isInProduceMode()) {
-                    throw new Error(`Cannot modify property "${key}" outside of produce()`);
-                }
-
-                // Prevent modification of frozen objects
-                if (store.getState().isFrozen(this)) {
-                    throw new Error(`Cannot modify frozen object ${this.uuid}`);
-                }
-
+            setter = function (this: EternalObject, value: any) {
                 // Prevent redundant updates
-                if (this[privateKey] === value) {
+                if (this[privateKey] === value && store.isInUpdateMode()) {
                     return;
                 }
-
-                this[privateKey] = value;
-
-                // Track changes for versioning
-                store.getState().trackVersionedObject(this);
+                // check if allowed to update and return new version if allowed
+                const obj = checkWriteAccess(this, store, key);
+                obj[privateKey] = value;
             };
         }
 
@@ -84,19 +102,19 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         // Initialize observable collections
         if (propertyMeta.type === "array") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityArray([], store.getState(), typeMeta.properties),
+                value: createObservableEntityArray([], typeMeta.properties),
                 writable: true,
                 enumerable: false,
             });
         } else if (propertyMeta.type === "set") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntitySet(new Set(), store.getState(), typeMeta.properties),
+                value: createObservableEntitySet(new Set(),typeMeta.properties),
                 writable: true,
                 enumerable: false,
             });
         } else if (propertyMeta.type === "map") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityMap(new Map(), store.getState(), typeMeta.properties),
+                value: createObservableEntityMap(new Map(),typeMeta.properties),
                 writable: true,
                 enumerable: false,
             });
@@ -112,7 +130,10 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     }
 }
 
-function generateInverseUpdater(propertyMeta: PropertyMeta) { 
+function generateInverseUpdater(propertyMeta: PropertyMeta) {
+
+    // TODO: check versioning
+
     const inversePrivateKey = `_${propertyMeta.inverseProp}`;
 
     if (propertyMeta.type === "array") {

@@ -1,6 +1,6 @@
 import { ChangeLogEntry, hasChanges } from "./ChangeLog"
 import { EternalStore } from "./EternalStore"
-import { InternalObjectProps } from "./handlers/InternalTypes"
+import { EternalObject } from "./handlers/InternalTypes"
 
 /** Read-only interface for accessing immutable objects in a specific state */
 interface StateView {
@@ -10,7 +10,6 @@ interface StateView {
 
 export class State implements StateView {
   public readonly timestamp: number // Track when this state was created
-  private inProduceMode: boolean = false // Flag to indicate if the state is in produce mode
   private objectMap: Map<string, any> // Maps UUIDs to objects
   private store: WeakRef<EternalStore> // Reference to the store that owns this state
   public index: number // Index of this state in the store's history
@@ -22,25 +21,36 @@ export class State implements StateView {
     this.index = previousState ? previousState.index + 1 : 0
     this.objectMap = new Map(previousState ? previousState.objectMap : [])
   }
- 
+
   // Create a new object version
-  public createNewVersion<T extends InternalObjectProps>(obj: T, trackForNotification = true): T {
+  public createNewVersion<T extends EternalObject>(obj: T, trackForNotification = true): T {
     // Ensure we get the latest version of the object in this state
+    // TODO: Check if the object is already fixed to this state
     let newObj = this.getObject<T>(obj.uuid) || obj
 
-    if (this.isFrozen(newObj)) {
-      throw new Error(`Cannot modify frozen object ${obj.uuid}`)
+    if (this.isObjectFixed(newObj)) {
+      throw new Error(`Cannot make a new version from a fixed object that has UUID: "${obj.uuid}"`)
     }
 
     // Ensure we check both timestamp and actual modifications
     if (newObj.createdAt < this.timestamp) {
       // || hasChanges(this.changeLog, obj.uuid, )
 
+      // TODO copy observables as well !!!
       const newInstance = Object.create(Object.getPrototypeOf(obj)) // Preserve prototype
-      Object.assign(newInstance, obj, { createdAt: this.timestamp }) // Copy properties
+
+
+      // Object.assign(newInstance, obj, { createdAt: this.timestamp }) // Copy properties
+      // Copy properties, including private properties
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          newInstance[key] = obj[key];
+        }
+      }
 
       obj.nextVersion = new WeakRef(newInstance)
-      this.addObject(newInstance)
+      this.addObject(newInstance, 'versioned')
+      // TODO check subscriptions - track for notifications !!!
       if (trackForNotification) {
         this.store.deref()?.trackVersionedObject(newInstance) // Track for notifications
       }
@@ -50,16 +60,26 @@ export class State implements StateView {
     return newObj
   }
   // Track an object for versioning
-  public trackVersionedObject(obj: InternalObjectProps): void {
+  public trackVersionedObject(obj: EternalObject): void {
     this.store?.deref()?.trackVersionedObject(obj)
   }
 
   /** Retrieves an object from this specific state (returns a fixed-state object) */
-  public getObject<T>(uuid: string): T | undefined {
+  public getObject<T>(uuid: string, fixed = false): T | undefined {
     const obj = this.getDynamicObject<T>(uuid)
     if (!obj) return undefined
-    // Return a shallow copy with a reference to this fixed state
-    return this.createFixedStateObject(obj)
+    // If fixed state is requested, return a fixed object
+    if (fixed) {
+      return this.createFixedStateObject(obj)
+    }
+    // if is in update mode, return dynamic object
+    if (this.store?.deref()?.isInUpdateMode()) {
+      return obj
+    }
+    else {
+      // Return a fixed object
+      return this.createFixedStateObject(obj)
+    }
   }
 
   /** Retrieves an object without fixing it to a state (used by Store) */
@@ -91,32 +111,43 @@ export class State implements StateView {
     return fixedObject
   }
 
+  public isObjectFixedToState(obj: any): boolean {
+    return obj.state === this
+  }
+  public isObjectFixed(obj: any): boolean {
+    return obj.state !== undefined
+  }
+
   /**
    * Adds a new object to the state.
    * - Assigns a UUID if missing.
    * - Tracks insertion in the change log.
    */
-  public addObject<T extends InternalObjectProps>(obj: T): T {
+  public addObject<T extends EternalObject>(obj: T, reason: 'created' | 'imported' | 'versioned'): T {
     if (!obj || typeof obj !== "object") {
       throw new Error("Invalid object provided.")
     }
     if (!("uuid" in obj) || !obj.uuid) {
       throw new Error("Cannot add an object without a UUID.")
     }
-    if (this.objectMap.has(obj.uuid)) {
+
+    // Check if the object already exists in the state
+    if (this.objectMap.has(obj.uuid) && (reason === 'created' || reason === 'imported')) {
       throw new Error(`Object with UUID ${obj.uuid} already exists in the state.`)
     }
 
     // Store the object in the state
     this.objectMap.set(obj.uuid, obj)
 
+    // TODO check if needed changelog for other reasons
     // Track insertion in the change log
-    this.changeLog.push({
-      uuid: obj.uuid,
-      objectType: obj.constructor.name, // Assuming dynamic classes
-      change: "insert",
-    })
-
+    if (reason === 'created') {
+      this.changeLog.push({
+        uuid: obj.uuid,
+        objectType: obj.constructor.name, // Assuming dynamic classes
+        change: "insert",
+      })
+    }
     return obj
   }
 
@@ -168,8 +199,8 @@ export class State implements StateView {
     this.objectMap.delete(uuid)
   }
 
-  // Check if an object is frozen in this state
-  public isFrozen(obj: InternalObjectProps): boolean {
+  // Check if an object is old in this state
+  public isFromOldState(obj: EternalObject): boolean {
     // If object's timestamp is older than the current state, it's frozen.
     return obj.createdAt < this.timestamp
   }
