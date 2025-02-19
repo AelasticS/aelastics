@@ -76,14 +76,18 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
     });
 
     test("fromState() should retrieve object from a previous state", () => {
+
         const user = store.createObject<User>("User");
-        user.name = "Alice";
+
+        store.updateObject((u) => {
+            u.name = "Alice";
+        }, user);
 
         store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 
-        const oldUser = store.fromState<User>(0, user.uuid);
+        const oldUser = store.fromState<User>(1, user.uuid);
         expect(oldUser?.name).toBe("Alice");
 
         const newUser = store.getObject<User>(user.uuid);
@@ -108,12 +112,12 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
     });
 
     test("Redo at latest state should return false", () => {
-        const user = store.createObject<User>("User");
-        user.name = "Alice";
 
-        store.updateObject((u) => {
-            u.name = "Bob";
-        }, user);
+        store.updateState(() => {
+            const user = store.createObject<User>("User");
+            user.name = "Alice";
+            return user;
+        });
 
         expect(store.redo()).toBe(false); // Already at latest state
     });

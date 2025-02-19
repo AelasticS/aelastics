@@ -37,16 +37,18 @@ export class State implements StateView {
       // || hasChanges(this.changeLog, obj.uuid, )
 
       // TODO copy observables as well !!!
-      const newInstance = Object.create(Object.getPrototypeOf(obj)) // Preserve prototype
+      // const newInstance = Object.create(Object.getPrototypeOf(obj)) // Preserve prototype
+      const newInstance:EternalObject = new (Object.getPrototypeOf(obj).constructor)(); // Instantiate the class
 
-
-      // Object.assign(newInstance, obj, { createdAt: this.timestamp }) // Copy properties
+      newInstance.uuid = obj.uuid // Copy UUID
+      newInstance.createdAt = this.timestamp // Copy timestamp from state
+      // Object.assign(newInstance, obj, {  createdAt: this.timestamp }) // Copy properties
       // Copy properties, including private properties
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          newInstance[key] = obj[key];
-        }
-      }
+      // for (const key in obj) {
+      //   if (obj.hasOwnProperty(key)) {
+      //     newInstance[key] = obj[key];
+      //   }
+      // }
 
       obj.nextVersion = new WeakRef(newInstance)
       this.addObject(newInstance, 'versioned')
@@ -54,7 +56,7 @@ export class State implements StateView {
       if (trackForNotification) {
         this.store.deref()?.trackVersionedObject(newInstance) // Track for notifications
       }
-      return newInstance
+      return newInstance as T
     }
 
     return newObj

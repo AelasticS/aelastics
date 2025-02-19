@@ -30,9 +30,10 @@ describe("Store API: Undo/Redo Functionality", () => {
     const user = store.createObject<User>("User")
 
     store.updateObject((u) => {
-      user.uuid = "1"
       user.name = "Alice"
-      user.age = 30
+    }, user)
+
+    store.updateObject((u) => {
       u.name = "Bob"
     }, user)
 
@@ -46,9 +47,10 @@ describe("Store API: Undo/Redo Functionality", () => {
     const user = store.createObject<User>("User")
 
     store.updateObject((u) => {
-      user.uuid = "1"
       user.name = "Alice"
-      user.age = 30
+    }, user)
+
+    store.updateObject((u) => {
       u.name = "Bob"
     }, user)
 

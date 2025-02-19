@@ -34,7 +34,7 @@ describe("Store API: Historical State Access", () => {
             u.name = "Bob";
         }, user);
 
-        const oldUser = store.fromState<User>(0, user.uuid);
+        const oldUser = store.fromState<User>(1, user.uuid);
         expect(oldUser?.name).toBe("Alice");
 
         const newUser = store.getObject<User>(user.uuid);
