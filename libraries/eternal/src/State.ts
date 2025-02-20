@@ -1,6 +1,7 @@
 import { ChangeLogEntry, hasChanges } from "./ChangeLog"
 import { EternalStore } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
+import { shallowCopyWithObservables } from "./utils"
 
 /** Read-only interface for accessing immutable objects in a specific state */
 interface StateView {
@@ -21,12 +22,27 @@ export class State implements StateView {
     this.index = previousState ? previousState.index + 1 : 0
     this.objectMap = new Map(previousState ? previousState.objectMap : [])
   }
+  private copyProperties(target: any, source: any) {
+    // Copy own properties
+    Object.getOwnPropertyNames(source).forEach((key) => {
+      target[key] = source[key];
+    });
+  
+    // Get the prototype of the source object
+    const proto = Object.getPrototypeOf(source);
+  
+    // If the prototype is not null, recursively copy properties from the prototype
+    if (proto !== null) {
+      this.copyProperties(target, proto);
+    }
+  }
 
   // Create a new object version
   public createNewVersion<T extends EternalObject>(obj: T, trackForNotification = true): T {
     // Ensure we get the latest version of the object in this state
     // TODO: Check if the object is already fixed to this state
-    let newObj = this.getObject<T>(obj.uuid) || obj
+    //let newObj = this.getObject<T>(obj.uuid) || obj
+    let newObj =  obj
 
     if (this.isObjectFixed(newObj)) {
       throw new Error(`Cannot make a new version from a fixed object that has UUID: "${obj.uuid}"`)
@@ -36,20 +52,10 @@ export class State implements StateView {
     if (newObj.createdAt < this.timestamp) {
       // || hasChanges(this.changeLog, obj.uuid, )
 
-      // TODO copy observables as well !!!
-      // const newInstance = Object.create(Object.getPrototypeOf(obj)) // Preserve prototype
-      const newInstance:EternalObject = new (Object.getPrototypeOf(obj).constructor)(); // Instantiate the class
-
-      newInstance.uuid = obj.uuid // Copy UUID
+       // newInstance.uuid = obj.uuid // Copy UUID
+      const newInstance:EternalObject = shallowCopyWithObservables(newObj)
       newInstance.createdAt = this.timestamp // Copy timestamp from state
-      // Object.assign(newInstance, obj, {  createdAt: this.timestamp }) // Copy properties
-      // Copy properties, including private properties
-      // for (const key in obj) {
-      //   if (obj.hasOwnProperty(key)) {
-      //     newInstance[key] = obj[key];
-      //   }
-      // }
-
+      // Track the new version
       obj.nextVersion = new WeakRef(newInstance)
       this.addObject(newInstance, 'versioned')
       // TODO check subscriptions - track for notifications !!!

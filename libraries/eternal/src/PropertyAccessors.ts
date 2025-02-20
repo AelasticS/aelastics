@@ -11,6 +11,7 @@ import { EternalObject } from "./handlers/InternalTypes";
 function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
     if (store.isInUpdateMode() && obj.nextVersion
         && !store.getState().isObjectFixed(obj)) {
+            // TODO return only if new version belongs to the current state which in update mode
         return obj.nextVersion.deref();
     }
     else {
@@ -35,6 +36,7 @@ function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string):
             return store.getState().createNewVersion(obj);
         }
         else { // has new version, return new version
+            // TODO return only if new version belongs to the current state which in update mode
             return obj.nextVersion.deref();
         }
     }
@@ -97,7 +99,8 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         }
 
         // Define property on prototype
-        Object.defineProperty(prototype, key, { get: getter, set: setter });
+        // TODO remove this extra function calls layer
+        Object.defineProperty(prototype, key, { get() { return getter.call(this); }, set(v) { setter.call(this, v); } });
 
         // Initialize observable collections
         if (propertyMeta.type === "array") {

@@ -12,3 +12,60 @@ export function isUUIDReference(value: any, expectedType?: string): value is { u
         typeof value.uuid === "string"
     );
 }
+
+/**
+ * Copies properties from the source object to the target object, including properties from the prototype chain.
+ */
+export function copyProperties(target: any, source: any) {
+    // Copy own properties
+    Object.getOwnPropertyNames(source).forEach((key) => {
+        target[key] = source[key];
+    });
+
+    // Get the prototype of the source object
+    const proto = Object.getPrototypeOf(source);
+
+    // If the prototype is not null, recursively copy properties from the prototype
+    if (proto !== null) {
+        copyProperties(target, proto);
+    }
+}
+
+import { createObservableEntityArray } from "./handlers/ArrayHandlers";
+import { PropertyMeta } from "./handlers/MetaDefinitions";
+
+
+// Shallow copy an object with observables, skipping getters and setters
+export function shallowCopyWithObservables<T>(obj: T): T {
+
+    // Create an empty object with the same prototype as the original object
+    const copy = Object.create(Object.getPrototypeOf(obj));
+
+    let currentObj: any = obj;
+    while (currentObj !== null) {
+        for (const key of Object.getOwnPropertyNames(currentObj)) {
+            if (!copy.hasOwnProperty(key)) {
+                const descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
+                if (descriptor && (descriptor.get || descriptor.set)) {
+                    // Skip getters and setters
+                    continue;
+                }
+
+                const value = currentObj[key];
+
+                if (Array.isArray(value)) {
+                    // Create a new observable array
+                    // TODO  copy of observables of arrays and maps and set as well
+
+                    // copy[key] = createObservableEntityArray(value, propertyMeta);
+                } else {
+                    // Shallow copy other properties
+                    copy[key] = value;
+                }
+            }
+        }
+        currentObj = Object.getPrototypeOf(currentObj);
+    }
+
+    return copy as T;
+}
