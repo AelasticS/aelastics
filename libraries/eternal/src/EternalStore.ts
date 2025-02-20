@@ -16,6 +16,9 @@ export class EternalStore {
   private currentStateIndex: number = -1// Track active state index
   private inUpdateMode: boolean = false // Flag to indicate if the store is in update mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
+
+
+
   private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
   private accessedObjects: Set<EternalObject> = new Set(); // Track accessed object
   private versionedObjects: EternalObject[] = []; // Track versioned objects
@@ -45,12 +48,13 @@ export class EternalStore {
   }
 
   /** Creates a new state before entering update mode */
-  private makeNewState(): void {
+  // TODO return private after testing
+  public makeNewState(): void {
     // Clear future states if undo() was called before this change
     if (this.currentStateIndex < this.stateHistory.length - 1) {
       this.stateHistory = this.stateHistory.slice(0, this.currentStateIndex + 1)
     }
-    this.stateHistory.push(new State(this, this.getState()))
+    this.stateHistory.push(new State(this, this.stateHistory.length > 0 ? this.getState() : undefined))
     this.currentStateIndex++
   }
 
@@ -200,8 +204,6 @@ export class EternalStore {
 
   /** Creates a dynamic class for a given type */
   private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
-    const state = this.getState() // Get the current state
-
     const className = typeMeta.name; // Use the type name as the class name
 
     const DynamicEntity = {
@@ -238,6 +240,10 @@ export class EternalStore {
     addPropertyAccessors(DynamicEntity.prototype, typeMeta, this)
 
     return DynamicEntity
+  }
+  /** Returns the dynamic class for a given type name */
+  public getClassByName(type: string): any {
+    return this.typeToClassMap.get(type);
   }
 
   public getChangeLog(): ChangeLogEntry[] {
