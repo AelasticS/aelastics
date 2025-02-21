@@ -1,6 +1,6 @@
 export interface ArrayHandlers<T, P extends {} = {}> {
-    set?: (target: T[], index: number, value: T, extra?: P) => [boolean, void?];
-    delete?: (target: T[], index: number, extra?: P) => [boolean, void?];
+    set?: (target: T[], index: number, value: T, extra?: P) => [boolean, T];
+    delete?: (target: T[], index: number, extra?: P) => [boolean, boolean];
     push?: (target: T[], items: T[], extra?: P) => [boolean, number?];
     pop?: (target: T[], extra?: P) => [boolean, T?];
     shift?: (target: T[], extra?: P) => [boolean, T?];
@@ -12,12 +12,12 @@ export interface ArrayHandlers<T, P extends {} = {}> {
     length?: (target: T[], length: number, extra?: P) => [boolean, number?];
     size?: (target: T[], size: number, extra?: P) => [boolean, number?];
     includes?: (target: T[], value: T, extra?: P) => [boolean, boolean?];
-    indexOf?: (target: T[], value: T, fromIndex: number, extra?: P) => [boolean, number?];
-    lastIndexOf?: (target: T[], value: T, fromIndex: number, extra?: P) => [boolean, number?];
+    indexOf?: (target: T[], value: T, fromIndex: number, extra?: P) => [boolean, number];
+    lastIndexOf?: (target: T[], value: T, fromIndex: number, extra?: P) => [boolean, number];
     find?: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: P) => [boolean, T?];
     findIndex?: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: P) => [boolean, number?];
-    concat?: (target: T[], items: ConcatArray<T>[], extra?: P) => [boolean, T[]?];
-    slice?: (target: T[], start?: number, end?: number, extra?: P) => [boolean, T[]?];
+    concat?: (target: T[], items: T[], extra?: P) => [boolean, T[]];
+    slice?: (target: T[], start?: number, end?: number, extra?: P) => [boolean, T[]];
     map?: (target: T[], callback: (value: T, index: number, array: T[]) => any, thisArg: any, extra?: P) => [boolean, any[]?];
     filter?: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: P) => [boolean, T[]?];
     reduce?: (target: T[], callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue: any, extra?: P) => [boolean, any?];
@@ -32,8 +32,8 @@ export interface ArrayHandlers<T, P extends {} = {}> {
     keys?: (target: T[], extra?: P) => [boolean, IterableIterator<number>?];
     values?: (target: T[], extra?: P) => [boolean, IterableIterator<T>?];
     join?: (target: T[], separator: string, extra?: P) => [boolean, string?];
-    toString?: (target: T[], extra?: P) => [boolean, string?];
-    toLocaleString?: (target: T[], extra?: P) => [boolean, string?];
+    // toString?: (target: T[], extra?: P) => [boolean, string?];
+    // toLocaleString?: (target: T[], extra?: P) => [boolean, string?];
     defaultAction?: (target: T[], key: PropertyKey, args?: any[], extra?: P) => [boolean, any?];
 }
 
@@ -44,23 +44,23 @@ export function createObservableArray<T, P extends {} = {}>(
     extra?: P
 ): T[] {
     return new Proxy(arr, {
-        set(target: T[], key: string | number | symbol, value: any, receiver: any): boolean {
+        set(target: T[], key: string | number | symbol, value: any, receiver: any): any {
             if (typeof key === 'number' || !isNaN(Number(key))) {
                 const index = Number(key);
                 if (handlers.set) {
                     const [continueOperation, result] = handlers.set(target, index, value, extra);
                     if (!continueOperation) {
-                        return result !== undefined ? result : false;
+                        return result;
                     }
                 }
                 Reflect.set(target, index, value, receiver);
             } else if (handlers.defaultAction) {
                 const [continueOperation, result] = handlers.defaultAction(target, key, [], extra);
                 if (!continueOperation) {
-                    return result !== undefined ? result : false;
+                    return result;
                 }
             }
-            return true;
+            return value;
         },
 
         deleteProperty(target: T[], key: string | number | symbol): boolean {
@@ -69,10 +69,10 @@ export function createObservableArray<T, P extends {} = {}>(
                 if (handlers.delete) {
                     const [continueOperation, result] = handlers.delete(target, index, extra);
                     if (!continueOperation) {
-                        return result !== undefined ? result : false;
+                        return result;
                     }
                 }
-                Reflect.deleteProperty(target, index);
+                return Reflect.deleteProperty(target, index);
             } else if (handlers.defaultAction) {
                 const [continueOperation, result] = handlers.defaultAction(target, key, [], extra);
                 if (!continueOperation) {
