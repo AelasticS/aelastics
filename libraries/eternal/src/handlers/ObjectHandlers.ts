@@ -15,7 +15,7 @@ export const createObjectHandlers = <T extends object>(
         const meta = propertyMeta.get(key.toString());
 
         // Convert object reference to UUID if necessary
-        (target as any)[key] = isUUIDReference(value, meta?.type) ? value.uuid : value;
+        (target as any)[key] = isUUIDReference(value) ? value.uuid : value;
 
         return true;
     },

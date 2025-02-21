@@ -10,7 +10,7 @@ export const createMapHandlers = <K, V>(
     /** Ensure values stored in the map are UUIDs if applicable */
     set: (target: Map<K, V>, key: K, value: V, extra?: { key: string }) => {
         const meta = propertyMeta.get(extra?.key || "");
-        target.set(key, isUUIDReference(value, meta?.type) ? (value.uuid as unknown as V) : value);
+        target.set(key, isUUIDReference(value) ? (value.uuid as unknown as V) : value);
         return true;
     },
 
@@ -34,7 +34,7 @@ export const createSetHandlers = <V>(
     /** Ensure values stored in the set are UUIDs if applicable */
     add: (target: Set<V>, value: V, extra?: { key: string }) => {
         const meta = propertyMeta.get(extra?.key || "");
-        target.add(isUUIDReference(value, meta?.type) ? (value.uuid as unknown as V) : value);
+        target.add(isUUIDReference(value) ? (value.uuid as unknown as V) : value);
         return true;
     },
 

@@ -19,17 +19,25 @@ export class EternalStore {
 
 
 
+  // TODO Remove fetchFromExternalSource
   private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
   private accessedObjects: Set<EternalObject> = new Set(); // Track accessed object
   private versionedObjects: EternalObject[] = []; // Track versioned objects
 
 
+  private metaInfo: Map<string, TypeMeta>;
+
   constructor(metaInfo: Map<string, TypeMeta>, fetchFromExternalSource?: (type: string, uuid: string) => any) {
-    this.fetchFromExternalSource = fetchFromExternalSource
+    this.metaInfo = metaInfo;
+    this.fetchFromExternalSource = fetchFromExternalSource;
     // Create dynamic classes for each type
     for (const [type, typeMeta] of metaInfo.entries()) {
       this.typeToClassMap.set(type, this.createDynamicClass(typeMeta, this))
     }
+  }
+
+  public getMeta(type: string): TypeMeta {
+    return this.typeToClassMap.get(type)
   }
 
   /** Returns the latest (i.e. current) state */
@@ -229,7 +237,7 @@ export class EternalStore {
               propertyMeta.type === "set"
                 ? createObservableEntitySet(new Set(), typeMeta.properties)
                 : propertyMeta.type === "array"
-                  ? createObservableEntityArray([], typeMeta.properties)
+                  ? createObservableEntityArray([], true, {frozen:false} ) // typeMeta.properties)
                   : propertyMeta.type === "map"
                     ? createObservableEntityMap(new Map(), typeMeta.properties)
                     : undefined

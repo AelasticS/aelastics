@@ -1,6 +1,4 @@
-import { State } from "./State";
 import { PropertyMeta, TypeMeta } from "./handlers/MetaDefinitions";
-import { isUUIDReference } from "./utils";
 import { createObservableEntityArray } from "./handlers/ArrayHandlers";
 import { createObservableEntitySet } from "./handlers/MapSetHandlers";
 import { createObservableEntityMap } from "./handlers/MapSetHandlers";
@@ -127,7 +125,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         // Initialize observable collections
         if (propertyMeta.type === "array") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityArray([], typeMeta.properties),
+                value: createObservableEntityArray([], true, { frozen: false }),
                 writable: true,
                 enumerable: false,
             });

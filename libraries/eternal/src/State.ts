@@ -22,21 +22,7 @@ export class State implements StateView {
     this.index = previousState ? previousState.index + 1 : 0
     this.objectMap = new Map(previousState ? previousState.objectMap : [])
   }
-  private copyProperties(target: any, source: any) {
-    // Copy own properties
-    Object.getOwnPropertyNames(source).forEach((key) => {
-      target[key] = source[key];
-    });
-
-    // Get the prototype of the source object
-    const proto = Object.getPrototypeOf(source);
-
-    // If the prototype is not null, recursively copy properties from the prototype
-    if (proto !== null) {
-      this.copyProperties(target, proto);
-    }
-  }
-
+  
   // Create a new object version
   public createNewVersion<T extends EternalObject>(obj: T, trackForNotification = true): T {
     // Check if the object is fixed
@@ -45,7 +31,7 @@ export class State implements StateView {
     }
     // check if object is from old state, then make a new version
     if (obj.createdAt < this.timestamp) {
-      const newInstance: EternalObject = shallowCopyWithObservables(obj)
+      const newInstance: EternalObject = shallowCopyWithObservables(obj) as T
       newInstance.createdAt = this.timestamp // Copy timestamp from state
       // Track the new version
       obj.nextVersion = new WeakRef(newInstance)
