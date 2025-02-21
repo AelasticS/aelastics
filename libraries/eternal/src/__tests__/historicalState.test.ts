@@ -24,13 +24,13 @@ describe("Store API: Historical State Access", () => {
     }
 
     test("fromState() should retrieve object from a previous state", () => {
-        const user = store.createObject<User>("User");
+        let user = store.createObject<User>("User");
 
-        store.updateObject((u) => {
+        user = store.updateObject((u) => {
             u.name = "Alice";
         }, user);
 
-        store.updateObject((u) => {
+        user = store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 
@@ -40,4 +40,19 @@ describe("Store API: Historical State Access", () => {
         const newUser = store.getObject<User>(user.uuid);
         expect(newUser?.name).toBe("Bob");
     });
+
+       test("Accessing an object from old state should throw an error", () => {
+            let user = store.createObject<User>("User");
+    
+            store.updateObject((u) => {
+                u.name = "Alice";
+            }, user);  
+    
+            // userAlice is from an old state (state 0)
+            expect(() => {
+                store.updateObject((u) => {
+                    u.name = "Bob";  // not allowed to access userAlice here!
+                }, user);
+            }).toThrow();
+        });
 });

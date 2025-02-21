@@ -32,29 +32,12 @@ describe("Undo/Redo Functionality", () => {
             const person = user as Person;
             person.name = "Bob";
         }, userAlice);
-        
+
         expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Bob");
-        
+
         store.undo();
-        
+
         expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Alice");
-    });
-
-    test("Accessing an object from old state should throw an error", () => {
-        const userAlice: Person = store.createObject<Person>("User");
-
-        store.produce((user: EternalObject) => {
-            const person = user as Person;
-            person.name = "Alice";
-        }, userAlice);  
-
-        // userAlice is from an old state (state 0)
-        expect(() => {
-            store.produce((user: EternalObject) => {
-                const person = user as Person;
-                person.name = "Bob";  // not allowed to access userAlice here!
-            }, userAlice);
-        }).toThrow();
     });
 
     test("Redo should reapply a reverted state", () => {
