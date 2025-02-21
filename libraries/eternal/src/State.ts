@@ -39,21 +39,13 @@ export class State implements StateView {
 
   // Create a new object version
   public createNewVersion<T extends EternalObject>(obj: T, trackForNotification = true): T {
-    // Ensure we get the latest version of the object in this state
-    // TODO: Check if the object is already fixed to this state
-    //let newObj = this.getObject<T>(obj.uuid) || obj
-    let newObj =  obj
-
-    if (this.isObjectFixed(newObj)) {
-      throw new Error(`Cannot make a new version from a fixed object that has UUID: "${obj.uuid}"`)
+    // Check if the object is fixed
+    if (this.isObjectFixed(obj)) {
+      throw new Error(`Cannot make a new version from a frozen object.`)
     }
-
-    // Ensure we check both timestamp and actual modifications
-    if (newObj.createdAt < this.timestamp) {
-      // || hasChanges(this.changeLog, obj.uuid, )
-
-       // newInstance.uuid = obj.uuid // Copy UUID
-      const newInstance:EternalObject = shallowCopyWithObservables(newObj)
+    // check if object is from old state, then make a new version
+    if (obj.createdAt < this.timestamp) {
+      const newInstance:EternalObject = shallowCopyWithObservables(obj)
       newInstance.createdAt = this.timestamp // Copy timestamp from state
       // Track the new version
       obj.nextVersion = new WeakRef(newInstance)
@@ -64,8 +56,8 @@ export class State implements StateView {
       }
       return newInstance as T
     }
-
-    return newObj
+     // If object is already from this state, return the object itself
+    return obj
   }
   // Track an object for versioning
   public trackVersionedObject(obj: EternalObject): void {
