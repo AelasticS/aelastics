@@ -10,7 +10,7 @@ import { EternalObject } from "./handlers/InternalTypes";
 // check access and return correct version of object
 function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
     const state = store.getState();
-    const isFrozen = state.isObjectFixed(obj);
+    const isFrozen = state.isObjectFrozen(obj);
     const isInUpdateMode = store.isInUpdateMode();
 
     if (isInUpdateMode) {
@@ -25,7 +25,7 @@ function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject
         }
         return obj;
     }
-    if (!isFrozen && obj.nextVersion) {
+    if (!isFrozen && obj.nextVersion && !state.isMemberOfState(obj)) {
         throw new Error(
             `Invalid reference to object ${obj.uuid} from a past state.\n` +
             `Use 'store.getObject(uuid)' to get the current version or 'store.getFromState(uuid)' to get the frozen object.`
@@ -37,7 +37,7 @@ function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject
 function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string): EternalObject {
 
     // if not allowed update throw error
-    if (store.getState().isObjectFixed(obj)) {
+    if (store.getState().isObjectFrozen(obj)) {
         throw new Error(`Cannot modify property "${key}" of the fixed object with uuid "${obj.uuid}"`);
     }
     // if not in update mode throw error
@@ -46,7 +46,7 @@ function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string):
     }
 
     // if obj is from old state 
-    if (store.getState().isFromOldState(obj)) {
+    if (store.getState().isFromOlderState(obj)) {
         if (!obj.nextVersion) { // has no new version, create and return new version
             return store.getState().createNewVersion(obj);
         }

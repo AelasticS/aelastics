@@ -27,10 +27,10 @@ export class State implements StateView {
     Object.getOwnPropertyNames(source).forEach((key) => {
       target[key] = source[key];
     });
-  
+
     // Get the prototype of the source object
     const proto = Object.getPrototypeOf(source);
-  
+
     // If the prototype is not null, recursively copy properties from the prototype
     if (proto !== null) {
       this.copyProperties(target, proto);
@@ -40,12 +40,12 @@ export class State implements StateView {
   // Create a new object version
   public createNewVersion<T extends EternalObject>(obj: T, trackForNotification = true): T {
     // Check if the object is fixed
-    if (this.isObjectFixed(obj)) {
+    if (this.isObjectFrozen(obj)) {
       throw new Error(`Cannot make a new version from a frozen object.`)
     }
     // check if object is from old state, then make a new version
     if (obj.createdAt < this.timestamp) {
-      const newInstance:EternalObject = shallowCopyWithObservables(obj)
+      const newInstance: EternalObject = shallowCopyWithObservables(obj)
       newInstance.createdAt = this.timestamp // Copy timestamp from state
       // Track the new version
       obj.nextVersion = new WeakRef(newInstance)
@@ -56,7 +56,7 @@ export class State implements StateView {
       }
       return newInstance as T
     }
-     // If object is already from this state, return the object itself
+    // If object is already from this state, return the object itself
     return obj
   }
   // Track an object for versioning
@@ -64,25 +64,18 @@ export class State implements StateView {
     this.store?.deref()?.trackVersionedObject(obj)
   }
 
-  /** Retrieves an object from this specific state (returns a fixed-state object) */
-  public getObject<T>(uuid: string, fixed = false): T | undefined {
-    const obj = this.getDynamicObject<T>(uuid)
+  /** Retrieves an object from this specific state */
+  public getObject<T>(uuid: string, frozen = false): T | undefined {
+    const obj = this.getDynamicObject<EternalObject>(uuid)
     if (!obj) return undefined
-    // If fixed state is requested, return a fixed object
-    if (fixed) {
-      return this.createFixedStateObject(obj)
+    // If requested, return a frozen object
+    if (frozen) {
+      return this.createFrozenStateObject(obj) as T // copy which cannot be changed
     }
-    // if is in update mode, return dynamic object
-    if (this.store?.deref()?.isInUpdateMode()) {
-      return obj
-    }
-    else {
-      // Return a fixed object
-      return this.createFixedStateObject(obj)
-    }
+    return obj as T
   }
 
-  /** Retrieves an object without fixing it to a state (used by Store) */
+  /** Retrieves an object which can be changed */
   public getDynamicObject<T>(uuid: string): T | undefined {
     const object = this.objectMap.get(uuid)
     // Ensure the object is not from a future state
@@ -92,29 +85,22 @@ export class State implements StateView {
     return object // Returns the object without fixing it
   }
 
-  private createFixedStateObject<T>(obj: T): T {
-    if (!obj || typeof obj !== "object") return obj
-
-    // Create a new object that retains the original prototype
-    const fixedObject = Object.create(Object.getPrototypeOf(obj))
-
-    // Copy all properties from the original object
-    Object.assign(fixedObject, obj)
-
+  private createFrozenStateObject<T extends EternalObject>(obj: T): T {
+    // Create a shallow copy of the object
+    const frozenObject = shallowCopyWithObservables(obj) as T
     // Attach a fixed state reference
-    Object.defineProperty(fixedObject, "state", {
+    Object.defineProperty(frozenObject, "state", {
       value: this,
       writable: false, // Ensure it cannot be changed
       enumerable: false, // Hide it from object iteration
     })
-
-    return fixedObject
+    return frozenObject
   }
 
   public isObjectFixedToState(obj: any): boolean {
     return obj.state === this
   }
-  public isObjectFixed(obj: any): boolean {
+  public isObjectFrozen(obj: any): boolean {
     return obj.state !== undefined
   }
 
@@ -199,15 +185,21 @@ export class State implements StateView {
     this.objectMap.delete(uuid)
   }
 
-  // Check if an object is old in this state
-  public isFromOldState(obj: EternalObject): boolean {
-    // If object's timestamp is older than the current state, it's frozen.
+  // Check if an object is older then this state
+  public isFromOlderState(obj: EternalObject): boolean {
+    // If object's timestamp is older than the current state
     return obj.createdAt < this.timestamp
   }
 
   public isCreatedInState(obj: EternalObject): boolean {
-    // If object's timestamp is older than the current state, it's frozen.
+    // If object's timestamp is equal the current state
     return obj.createdAt === this.timestamp
+  }
+
+  // Check if an object is member of this state
+  public isMemberOfState(obj: EternalObject): boolean {
+    const member = this.objectMap.get(obj.uuid)
+    return member === obj
   }
 
   // Track changed objects
