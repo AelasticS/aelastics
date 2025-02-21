@@ -1,7 +1,7 @@
 import { ChangeLogEntry, hasChanges } from "./ChangeLog"
 import { EternalStore } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { shallowCopyWithObservables } from "./utils"
+import { shallowCopyWithObservables, uniqueTimestamp } from "./utils"
 
 /** Read-only interface for accessing immutable objects in a specific state */
 interface StateView {
@@ -17,7 +17,7 @@ export class State implements StateView {
   private changeLog: ChangeLogEntry[] = [] // Stores tracked changes
 
   constructor(store: EternalStore, previousState?: State) {
-    this.timestamp = Date.now() // Assign a unique timestamp for each state
+    this.timestamp = uniqueTimestamp() // Assign a unique timestamp for each state
     this.store = new WeakRef(store)
     this.index = previousState ? previousState.index + 1 : 0
     this.objectMap = new Map(previousState ? previousState.objectMap : [])
@@ -126,8 +126,11 @@ export class State implements StateView {
     this.objectMap.set(obj.uuid, obj)
 
     // TODO check if needed changelog for other reasons
-    // Track insertion in the change log
     if (reason === 'created') {
+      // add timestamp to object, to know the state it is created in
+      obj.createdAt = this.timestamp
+
+      // Track insertion in the change log
       this.changeLog.push({
         uuid: obj.uuid,
         objectType: obj.constructor.name, // Assuming dynamic classes

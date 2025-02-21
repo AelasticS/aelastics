@@ -69,3 +69,19 @@ export function shallowCopyWithObservables<T>(obj: T): T {
 
     return copy as T;
 }
+
+// Generate a unique timestamp
+export function uniqueTimestamp() {
+    var date = Date.now();
+
+    // If created at same millisecond as previous
+    if (date <= uniqueTimestamp.previous) {
+        date = ++uniqueTimestamp.previous;
+    } else {
+        uniqueTimestamp.previous = date;
+    }
+
+    return date;
+}
+// Initialize the previous timestamp
+uniqueTimestamp.previous = 0;

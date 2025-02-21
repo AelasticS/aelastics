@@ -120,7 +120,9 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // Define property on prototype
         // TODO remove this extra function calls layer
-        Object.defineProperty(prototype, key, { get() { return getter.call(this); }, set(v) { setter.call(this, v); } });
+        Object.defineProperty(prototype, key,
+            { get() { return getter.call(this); }, set(v) { setter.call(this, v); } }); 
+            // { get: getter, set: setter } );
 
         // Initialize observable collections
         if (propertyMeta.type === "array") {
