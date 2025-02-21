@@ -125,7 +125,7 @@ export class State implements StateView {
     // Store the object in the state
     this.objectMap.set(obj.uuid, obj)
 
-    // TODO check if needed changelog for other reasons
+    // TODO check if needed changelog and timestamp for other reasons
     if (reason === 'created') {
       // add timestamp to object, to know the state it is created in
       obj.createdAt = this.timestamp
