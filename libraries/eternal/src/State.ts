@@ -213,6 +213,11 @@ export class State implements StateView {
     return obj.createdAt < this.timestamp
   }
 
+  public isCreatedInState(obj: EternalObject): boolean {
+    // If object's timestamp is older than the current state, it's frozen.
+    return obj.createdAt === this.timestamp
+  }
+
   // Track changed objects
   public trackChange(entry: ChangeLogEntry) {
     this.changeLog.push(entry)

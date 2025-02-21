@@ -156,6 +156,8 @@ export class EternalStore {
           }
         }
       }
+        // TODO: handle errors
+
       finally {
         this.inUpdateMode = false
         this.accessedObjects.clear(); // Stop tracking

@@ -7,16 +7,31 @@ import { createObservableEntityMap } from "./handlers/MapSetHandlers";
 import { EternalStore } from "./EternalStore";
 import { EternalObject } from "./handlers/InternalTypes";
 
-/** Checks if the object is outdated and return if it is */
+// check access and return correct version of object
 function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
-    if (store.isInUpdateMode() && obj.nextVersion
-        && !store.getState().isObjectFixed(obj)) {
-            // TODO return only if new version belongs to the current state which in update mode
-        return obj.nextVersion.deref();
-    }
-    else {
+    const state = store.getState();
+    const isFrozen = state.isObjectFixed(obj);
+    const isInUpdateMode = store.isInUpdateMode();
+
+    if (isInUpdateMode) {
+        if (obj.nextVersion) {
+            const nextVersion = obj.nextVersion.deref();
+            if (!isFrozen && state.isCreatedInState(nextVersion)) {
+                return nextVersion;
+            }
+            if (!isFrozen) {
+                throw new Error(`Reference to an object ${obj.uuid} not from the current state.`);
+            }
+        }
         return obj;
     }
+    if (!isFrozen && obj.nextVersion) {
+        throw new Error(
+            `Invalid reference to object ${obj.uuid} from a past state.\n` +
+            `Use 'store.getObject(uuid)' to get the current version or 'store.getFromState(uuid)' to get the frozen object.`
+        );
+    }
+    return obj;
 }
 
 function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string): EternalObject {
@@ -27,7 +42,7 @@ function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string):
     }
     // if not in update mode throw error
     if (!store.isInUpdateMode()) {
-        throw new Error(`Cannot modify property "${key}" of the object with uuid "${obj.uuid} outside of update mode`);
+        throw new Error(`Cannot modify the object with uuid "${obj.uuid} outside of update mode`);
     }
 
     // if obj is from old state 
@@ -36,14 +51,19 @@ function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string):
             return store.getState().createNewVersion(obj);
         }
         else { // has new version, return new version
-            // TODO return only if new version belongs to the current state which in update mode
-            return obj.nextVersion.deref();
+            const nextVersion = obj.nextVersion.deref();
+            // return only if new version belongs to the current state
+            if (store.getState().isCreatedInState(nextVersion)) {
+                return nextVersion;
+            }
+            else {
+                throw new Error(`Reference to an object ${obj.uuid} not from the current state.`);
+            }
         }
     }
     // obj is from current state
     return obj;
 }
-
 
 /** Adds optimized property accessors to a dynamically generated class prototype */
 export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
@@ -111,13 +131,13 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
             });
         } else if (propertyMeta.type === "set") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntitySet(new Set(),typeMeta.properties),
+                value: createObservableEntitySet(new Set(), typeMeta.properties),
                 writable: true,
                 enumerable: false,
             });
         } else if (propertyMeta.type === "map") {
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityMap(new Map(),typeMeta.properties),
+                value: createObservableEntityMap(new Map(), typeMeta.properties),
                 writable: true,
                 enumerable: false,
             });

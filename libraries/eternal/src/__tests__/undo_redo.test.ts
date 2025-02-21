@@ -19,38 +19,56 @@ describe("Undo/Redo Functionality", () => {
 
     interface Person extends EternalObject { uuid: string; name: string; age: number; id: string }
 
+
     test("Undo should revert to the previous state", () => {
+        let userAlice: Person = store.createObject<Person>("User");
+
+        userAlice = store.produce((user: EternalObject) => {
+            const person = user as Person;
+            person.name = "Alice";
+        }, userAlice)!;
+
+        store.produce((user: EternalObject) => {
+            const person = user as Person;
+            person.name = "Bob";
+        }, userAlice);
+        
+        expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Bob");
+        
+        store.undo();
+        
+        expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Alice");
+    });
+
+    test("Accessing an object from old state should throw an error", () => {
         const userAlice: Person = store.createObject<Person>("User");
 
         store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Alice";
-        }, userAlice);
+        }, userAlice);  
 
-        store.produce((user: EternalObject) => {
-            const person = user as Person;
-            person.name = "Bob";
-        }, userAlice);
-
-        expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Bob");
-
-        store.undo();
-
-        expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Alice");
+        // userAlice is from an old state (state 0)
+        expect(() => {
+            store.produce((user: EternalObject) => {
+                const person = user as Person;
+                person.name = "Bob";  // not allowed to access userAlice here!
+            }, userAlice);
+        }).toThrow();
     });
 
     test("Redo should reapply a reverted state", () => {
-        const user: Person = store.createObject<Person>("User");
+        let user: Person = store.createObject<Person>("User");
 
-        store.produce((user: EternalObject) => {
+        user = store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Alice";
-        }, user);
+        }, user)!;
 
-        store.produce((user: EternalObject) => {
+        user = store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Bob";
-        }, user);
+        }, user)!;
 
         store.undo();
         expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Alice");
@@ -60,25 +78,25 @@ describe("Undo/Redo Functionality", () => {
     });
 
     test("New changes after undo should clear redo history", () => {
-        const user: Person = store.createObject<Person>("User");
+        let user: Person = store.createObject<Person>("User");
 
-        store.produce((user: EternalObject) => {
+        user = store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Alice";
-        }, user);
+        }, user)!;
 
-        store.produce((user: EternalObject) => {
+        user = store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Bob";
-        }, user);
+        }, user)!;
 
         store.undo();
         expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Alice");
 
-        store.produce((user: EternalObject) => {
+        user = store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Charlie";
-        }, user);
+        }, user)!;
 
         expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Charlie");
 
@@ -90,17 +108,17 @@ describe("Undo/Redo Functionality", () => {
     });
 
     test("Redo at latest state should do nothing", () => {
-        const user: Person = store.createObject<Person>("User");
+        let user: Person = store.createObject<Person>("User");
 
-        store.produce((user: EternalObject) => {
+        user = store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Alice";
-        }, user);
+        }, user)!;
 
-        store.produce((user: EternalObject) => {
+        user = store.produce((user: EternalObject) => {
             const person = user as Person;
             person.name = "Bob";
-        }, user);
+        }, user)!;
 
         expect(store.redo()).toBe(false); // Already at latest state
     });
