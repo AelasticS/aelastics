@@ -9,6 +9,13 @@ export interface ArrayHandlers<T, P extends {} = {}> {
     reverse?: (target: T[], extra?: P) => boolean;
     sort?: (target: T[], extra?: P) => boolean;
     fill?: (target: T[], value: T, start: number, end: number, extra?: P) => boolean;
+    length?: (target: T[], length: number, extra?: P) => boolean;
+    size?: (target: T[], size: number, extra?: P) => boolean;
+    includes?: (target: T[], value: T, extra?: P) => boolean;
+    indexOf?: (target: T[], value: T, fromIndex: number, extra?: P) => boolean;
+    lastIndexOf?: (target: T[], value: T, fromIndex: number, extra?: P) => boolean;
+    find?: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: P) => boolean;
+    findIndex?: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: P) => boolean;
     defaultAction?: (target: T[], key: PropertyKey, args?: any[], extra?: P) => boolean;
 }
 
@@ -104,6 +111,32 @@ export function createObservableArray<T, P extends {} = {}>(
                             const allowFill = handlers.fill?.(target, value, start, end ?? target.length, extra) ?? defaultMutation;
                             return allowFill ? Reflect.apply(Array.prototype.fill, target, [value, start, end]) : target;
                         };
+                    case 'length':
+                        const allow = handlers.length?.(target, target.length, extra) ?? defaultMutation;
+                        return allow ? Reflect.get(target, 'length') : target.length;
+                    case 'size':
+                        const allowSize = handlers.size?.(target, target.length, extra) ?? defaultMutation;
+                        return  allowSize ? Reflect.get(target, 'size') : target.length;
+                    case 'includes':
+                        return (value: T) => {
+                            return handlers.includes?.(target, value, extra) ?? target.includes(value);
+                        }
+                    case 'indexOf':
+                        return (value: T, fromIndex: number = 0) => {
+                            return handlers.indexOf?.(target, value, fromIndex, extra) ?? target.indexOf(value, fromIndex);
+                        }
+                    case 'lastIndexOf':
+                        return (value: T, fromIndex: number = target.length - 1) => {
+                            return handlers.lastIndexOf?.(target, value, fromIndex, extra) ?? target.lastIndexOf(value, fromIndex);
+                        }
+                    case 'find':
+                        return (callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any) => {
+                            return handlers.find?.(target, callback, thisArg, extra) ?? target.find(callback, thisArg);
+                        }
+                    case 'findIndex':
+                        return (callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any) => {
+                            return handlers.findIndex?.(target, callback, thisArg, extra) ?? target.findIndex(callback, thisArg);
+                        }           
                 }
             }
 
