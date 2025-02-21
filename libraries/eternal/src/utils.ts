@@ -3,9 +3,8 @@ export function generateUUID(): string {
 }
 
 /** Utility function to check if a value is an object with a UUID */
-export function isUUIDReference(value: any, expectedType?: string): value is { uuid: string } {
+export function isUUIDReference(value: any): value is { uuid: string } {
     return (
-        expectedType === "object" &&
         value !== null &&
         typeof value === "object" &&
         "uuid" in value &&
@@ -32,15 +31,14 @@ export function copyProperties(target: any, source: any) {
 }
 
 import { createObservableEntityArray } from "./handlers/ArrayHandlers";
-import { PropertyMeta } from "./handlers/MetaDefinitions";
+import { EternalObject } from "./handlers/InternalTypes";
 
 
 // Shallow copy an object with observables, skipping getters and setters
-export function shallowCopyWithObservables<T>(obj: T): T {
+export function shallowCopyWithObservables<T extends EternalObject>(obj: T): T {
 
     // Create an empty object with the same prototype as the original object
     const copy = Object.create(Object.getPrototypeOf(obj));
-
     let currentObj: any = obj;
     while (currentObj !== null) {
         for (const key of Object.getOwnPropertyNames(currentObj)) {
@@ -51,9 +49,11 @@ export function shallowCopyWithObservables<T>(obj: T): T {
                     continue;
                 }
 
-                const value = currentObj[key];
+                let value = currentObj[key];
 
                 if (Array.isArray(value)) {
+                    const oldArray = value;
+                    value = createObservableEntityArray([...oldArray], true, {frozen: false});
                     // Create a new observable array
                     // TODO  copy of observables of arrays and maps and set as well
 
