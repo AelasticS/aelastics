@@ -4,11 +4,12 @@ import { createObservableEntitySet } from "./handlers/MapSetHandlers";
 import { createObservableEntityMap } from "./handlers/MapSetHandlers";
 import { EternalStore } from "./EternalStore";
 import { EternalObject } from "./handlers/InternalTypes";
+import { isObjectFrozen } from "./utils";
 
 // check access and return correct version of object
 function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
     const state = store.getState();
-    const isFrozen = state.isObjectFrozen(obj);
+    const isFrozen = isObjectFrozen(obj);
     const isInUpdateMode = store.isInUpdateMode();
 
     if (isInUpdateMode) {
@@ -35,7 +36,7 @@ function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject
 function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string): EternalObject {
 
     // if not allowed update throw error
-    if (store.getState().isObjectFrozen(obj)) {
+    if (isObjectFrozen(obj)) {
         throw new Error(`Cannot modify property "${key}" of the fixed object with uuid "${obj.uuid}"`);
     }
     // if not in update mode throw error
@@ -83,11 +84,13 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         }
 
         // Generate optimized setter
-        // TODO add to changelog
         let setter: (this: EternalObject, value: any) => void;
+
+        // TODO add to changelog
+
         if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
             setter = function () {
-                throw new Error(`Cannot directly assign to collection property "${key}" of the object with uuid "${this.uuid}"`);
+                throw new Error(`Cannot directly assign to collection property "${key}" of an object"`);
             };
         } else if (propertyMeta.type === "object") {
             setter = function (this: EternalObject, value: EternalObject) {
@@ -124,8 +127,9 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // Initialize observable collections
         if (propertyMeta.type === "array") {
+            const isFrozen = isObjectFrozen(this);
             Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityArray([], true, { frozen: false }),
+                value: createObservableEntityArray([], true, { frozen: isFrozen }),
                 writable: true,
                 enumerable: false,
             });
@@ -145,10 +149,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // Precompute and bind inverse relationship updater
         if (propertyMeta.inverseType && propertyMeta.inverseProp) {
-            const inverseUpdater = generateInverseUpdater(propertyMeta);
-            prototype[`_updateInverse_${key}`] = function (this: any, value: any) {
-                return inverseUpdater.call(this, value);
-            };
+            prototype[`_updateInverse_${key}`] = generateInverseUpdater(propertyMeta);
         }
     }
 }

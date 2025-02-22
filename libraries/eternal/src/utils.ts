@@ -70,6 +70,11 @@ export function shallowCopyWithObservables<T extends EternalObject>(obj: T): T {
     return copy as T;
 }
 
+
+export const isObjectFrozen = (obj: EternalObject)=>{
+    return obj.state !== undefined
+}
+
 // Generate a unique timestamp
 export function uniqueTimestamp() {
     var date = Date.now();

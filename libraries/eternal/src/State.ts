@@ -1,7 +1,7 @@
 import { ChangeLogEntry, hasChanges } from "./ChangeLog"
 import { EternalStore } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { shallowCopyWithObservables, uniqueTimestamp } from "./utils"
+import { isObjectFrozen, shallowCopyWithObservables, uniqueTimestamp } from "./utils"
 
 /** Read-only interface for accessing immutable objects in a specific state */
 interface StateView {
@@ -26,7 +26,7 @@ export class State implements StateView {
   // Create a new object version
   public createNewVersion<T extends EternalObject>(obj: T, trackForNotification = true): T {
     // Check if the object is fixed
-    if (this.isObjectFrozen(obj)) {
+    if (isObjectFrozen(obj)) {
       throw new Error(`Cannot make a new version from a frozen object.`)
     }
     // check if object is from old state, then make a new version
@@ -85,9 +85,6 @@ export class State implements StateView {
 
   public isObjectFixedToState(obj: any): boolean {
     return obj.state === this
-  }
-  public isObjectFrozen(obj: any): boolean {
-    return obj.state !== undefined
   }
 
   /**
