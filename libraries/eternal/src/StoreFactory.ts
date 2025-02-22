@@ -83,6 +83,18 @@ redo(): boolean
 
 /** Retrieve an object from a specific historical state */
 fromState<T>(stateIndex: number, target: string | T): T | undefined
+
+// 
+/**
+ * Converts a given object into an eternal object under control of EternalStore.
+ */
+makeEternal<T>(obj:T): T
+
+/**
+ * Converts an eternal object back to a regular (mutable) object, removing it from the control of EternalStore.
+ */
+makeRegular<T>(obj:T): T
+
 }
 
 export type recipe<T> = (obj: T) => void
@@ -105,7 +117,9 @@ export function createStore(
     isInUpdateMode: () => store.isInUpdateMode(),
     undo: () => store.undo(),
     redo: () => store.redo(),
-    fromState: (stateIndex, target) => store.fromState(stateIndex, target)
+    fromState: (stateIndex, target) => store.fromState(stateIndex, target),
+    makeEternal: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
+    makeRegular: <T>(obj: T) => store.isInUpdateMode() as T  // TODO dummy implementation
   }
 
   return options.freeze ? Object.freeze(publicAPI) : publicAPI
