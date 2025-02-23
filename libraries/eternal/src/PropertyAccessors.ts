@@ -1,10 +1,8 @@
-import { PropertyMeta, TypeMeta } from "./handlers/MetaDefinitions";
-import { createObservableEntityArray } from "./handlers/ArrayHandlers";
-import { createObservableEntitySet } from "./handlers/MapSetHandlers";
-import { createObservableEntityMap } from "./handlers/MapSetHandlers";
+import { TypeMeta } from "./handlers/MetaDefinitions";
 import { EternalStore } from "./EternalStore";
 import { EternalObject } from "./handlers/InternalTypes";
-import { isObjectFrozen } from "./utils";
+import { isObjectFrozen, makePrivatePropertyKey, makeUpdateInverseKey, removeElement } from "./utils";
+
 
 // check access and return correct version of object
 function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
@@ -37,7 +35,7 @@ function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string):
 
     // if not allowed update throw error
     if (isObjectFrozen(obj)) {
-        throw new Error(`Cannot modify property "${key}" of the fixed object with uuid "${obj.uuid}"`);
+        throw new Error(`Cannot modify property "${key}" of the frozen object with uuid "${obj.uuid}"`);
     }
     // if not in update mode throw error
     if (!store.isInUpdateMode()) {
@@ -64,10 +62,18 @@ function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string):
     return obj;
 }
 
+
+
 /** Adds optimized property accessors to a dynamically generated class prototype */
 export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
+
+    // type for inverse relationship updater
+    type inverseUpdater = (obj: EternalObject, oldUUID: string, value?: EternalObject) => void;
+
     for (const [key, propertyMeta] of typeMeta.properties) {
-        const privateKey = `_${key}`;
+        const privateKey = makePrivatePropertyKey(key);
+        const inverseUpdaterKey = makeUpdateInverseKey(key);
+        const privateInverseKey = propertyMeta.inverseProp?makePrivatePropertyKey(propertyMeta.inverseProp):"";
 
         // Generate optimized getter
         let getter: (this: EternalObject) => any;
@@ -93,21 +99,27 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
                 throw new Error(`Cannot directly assign to collection property "${key}" of an object"`);
             };
         } else if (propertyMeta.type === "object") {
-            setter = function (this: EternalObject, value: EternalObject) {
+            setter = function (this: EternalObject, value: EternalObject | undefined) {
                 // Prevent redundant updates
-                if (this[privateKey] === value.uuid && store.isInUpdateMode()) {
+                if (this[privateKey] === value?.uuid && store.isInUpdateMode()) {
                     return;
                 }
                 // check if allowed to update and return new version if allowed
                 const obj = checkWriteAccess(this, store, key);
-                obj[privateKey] = value.uuid;
-
+                const oldUUID = obj[privateKey] // get old value
+                obj[key] = value?.uuid; // update value
                 // Ensure bidirectional relationships are updated correctly
-                if (propertyMeta.inverseType && propertyMeta.inverseProp) {
-                    obj[`_updateInverse_${key}`](value); // Call precomputed function
+                if (propertyMeta.inverseType && propertyMeta.inverseProp && (oldUUID || value)) {
+                    // Get precomputed inverse updater function
+
+                    const updater: inverseUpdater | undefined = obj[inverseUpdaterKey];
+                    if (!updater) {
+                        throw new Error(`Inverse updater function for property "${key}" is undefined.`);
+                    }
+                    updater(obj, oldUUID, value); // Call precomputed function
                 }
             };
-        } else {
+        } else { // primitive type
             setter = function (this: EternalObject, value: any) {
                 // Prevent redundant updates
                 if (this[privateKey] === value && store.isInUpdateMode()) {
@@ -118,101 +130,105 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
                 obj[privateKey] = value;
             };
         }
-
         // Define property on prototype
-        // TODO remove this extra function calls layer
-        Object.defineProperty(prototype, key,
-            // { get() { return getter.call(this); }, set(v) { setter.call(this, v); } }); 
-             { get: getter, set: setter } );
-
-        // Initialize observable collections
-        if (propertyMeta.type === "array") {
-            const isFrozen = isObjectFrozen(this);
-            Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityArray([], true, { frozen: isFrozen }),
-                writable: true,
-                enumerable: false,
-            });
-        } else if (propertyMeta.type === "set") {
-            Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntitySet(new Set(), typeMeta.properties),
-                writable: true,
-                enumerable: false,
-            });
-        } else if (propertyMeta.type === "map") {
-            Object.defineProperty(prototype, privateKey, {
-                value: createObservableEntityMap(new Map(), typeMeta.properties),
-                writable: true,
-                enumerable: false,
-            });
-        }
-
+        Object.defineProperty(prototype, key, { get: getter, set: setter });
         // Precompute and bind inverse relationship updater
         if (propertyMeta.inverseType && propertyMeta.inverseProp) {
-            prototype[`_updateInverse_${key}`] = generateInverseUpdater(propertyMeta);
+            switch (propertyMeta.inverseType) {
+                case "object":
+                    prototype[inverseUpdaterKey] = one2one(store, key, privateInverseKey);
+                    break;
+                case "array":
+                    prototype[inverseUpdaterKey] = one2Array(store, key, privateInverseKey);
+                    break;
+                case "map":
+                    prototype[inverseUpdaterKey] = one2Map(store, key, privateInverseKey);
+                    break;
+                case "set":
+                    prototype[inverseUpdaterKey] = one2Set(store, key, privateInverseKey);
+                    break;
+            }
+        }
+    }
+
+
+    function one2one(store: EternalStore, key: string, privateInverseKey: string): inverseUpdater {
+
+        return function (obj: EternalObject, oldUUID: string, value?: EternalObject) {
+            let oldObj: EternalObject | undefined;
+            //  check if old value is present and get the correct version of it  
+            if (oldUUID && (oldObj = store.getObject(oldUUID))) {
+                oldObj = checkWriteAccess(oldObj, store, key);
+                oldObj[privateInverseKey] = undefined; // remove inverse relationship
+            }
+            let newObj: EternalObject | undefined;
+            //  check if new value is present and get the correct version of it
+            if (value) {
+                newObj = checkWriteAccess(value, store, key);
+                const oldUUID = newObj[privateInverseKey]; // get old value
+
+                if (oldUUID && (oldObj = store.getObject(oldUUID))) {
+                    oldObj = checkWriteAccess(oldObj, store, key); // get the correct version of it
+                    oldObj[privateInverseKey] = undefined; // remove inverse relationship
+                }
+                newObj[privateInverseKey] = obj.uuid;
+            }
+        }
+    }
+
+    function one2Array(store: EternalStore, key: string, privateInverseKey: string): inverseUpdater {
+        return function (obj: EternalObject, oldUUID: string, value?: EternalObject) {
+            let oldObj: EternalObject | undefined;
+
+            //  check if old value is present and get the correct version of it  
+            if (oldUUID && (oldObj = store.getObject(oldUUID))) {
+                oldObj = checkWriteAccess(oldObj, store, key);
+                removeElement(oldObj[privateInverseKey], obj.uuid) // remove inverse relationship
+            }
+            //  check if new value is present and get the correct version of it
+            if (value) {
+                const newObj = checkWriteAccess(value, store, key);
+                newObj[privateInverseKey].push(obj.uuid);
+            }
+        }
+    }
+
+    function one2Map(store: EternalStore, key: string, privateInverseKey: string): inverseUpdater {
+        return function (obj: EternalObject, oldUUID: string, value?: EternalObject) {
+            let oldObj: EternalObject | undefined;
+
+            //  check if old value is present and get the correct version of it  
+            if (oldUUID && (oldObj = store.getObject(oldUUID))) {
+                oldObj = checkWriteAccess(oldObj, store, key);
+                const mapObj: Map<String, EternalObject> = oldObj[privateInverseKey]
+                mapObj.delete(obj.uuid) // remove inverse relationship
+            }
+            //  check if new value is present and get the correct version of it
+            if (value) {
+                const newObj = checkWriteAccess(value, store, key);
+                const map: Map<string, string> = newObj[privateInverseKey]
+                map.set(obj.uuid, obj.uuid);
+            }
+        }
+    }
+
+    function one2Set(store: EternalStore, key: string, privateInverseKey: string): inverseUpdater {
+        return function (obj: EternalObject, oldUUID: string, value?: EternalObject) {
+            let oldObj: EternalObject | undefined;
+
+            //  check if old value is present and get the correct version of it
+            // ue is present and get the correct version of it  
+            if (oldUUID && (oldObj = store.getObject(oldUUID))) {
+                oldObj = checkWriteAccess(oldObj, store, key);
+                const setObj: Set<String> = oldObj[privateInverseKey]
+                setObj.delete(obj.uuid) // remove inverse relationship
+            }
+            //  check if new value is present and get the correct version of it
+            if (value) {
+                const newObj = checkWriteAccess(value, store, key);
+                const setObj: Set<string> = newObj[privateInverseKey]
+                setObj.add(obj.uuid);
+            }
         }
     }
 }
-
-function generateInverseUpdater(propertyMeta: PropertyMeta) {
-
-    // TODO: check versioning
-
-    const inversePrivateKey = `_${propertyMeta.inverseProp}`;
-
-    if (propertyMeta.type === "array") {
-        return function (this: any, newValue: any) {
-            const oldRelatedObject = this[inversePrivateKey];
-            if (oldRelatedObject) {
-                oldRelatedObject[inversePrivateKey] = oldRelatedObject[inversePrivateKey].filter(
-                    (obj: any) => obj.uuid !== this.uuid
-                );
-            }
-
-            const newRelatedObject = newValue ? newValue[inversePrivateKey] : undefined;
-            if (newRelatedObject) {
-                newRelatedObject[inversePrivateKey].push(this);
-            }
-        };
-    }
-
-    if (propertyMeta.type === "set") {
-        return function (this: any, newValue: any) {
-            const oldRelatedObject = this[inversePrivateKey];
-            if (oldRelatedObject) {
-                oldRelatedObject[inversePrivateKey].delete(this);
-            }
-
-            const newRelatedObject = newValue ? newValue[inversePrivateKey] : undefined;
-            if (newRelatedObject) {
-                newRelatedObject[inversePrivateKey].add(this);
-            }
-        };
-    }
-
-    if (propertyMeta.type === "map") {
-        return function (this: any, newValue: any) {
-            const oldRelatedObject = this[inversePrivateKey];
-            if (oldRelatedObject) {
-                oldRelatedObject[inversePrivateKey].delete(this.uuid);
-            }
-
-            const newRelatedObject = newValue ? newValue[inversePrivateKey] : undefined;
-            if (newRelatedObject) {
-                newRelatedObject[inversePrivateKey].set(this.uuid, this);
-            }
-        };
-    }
-
-    // Default case: one-to-one relationship
-    return function (this: any, newValue: any) {
-        const oldRelatedObject = this[inversePrivateKey];
-        if (oldRelatedObject === this) {
-            this[inversePrivateKey] = undefined;
-        }
-        if (newValue) {
-            newValue[inversePrivateKey] = this;
-        }
-    };
-}
-
