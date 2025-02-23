@@ -7,6 +7,7 @@ import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
 import { randomUUID } from 'crypto';
+import { makePrivatePropertyKey } from "./utils"
 
 export type InternalRecipe = ((obj: EternalObject) => void) | (() => any)
 
@@ -164,7 +165,7 @@ export class EternalStore {
           }
         }
       }
-        // TODO: handle errors
+      // TODO: handle errors
 
       finally {
         this.inUpdateMode = false
@@ -231,16 +232,26 @@ export class EternalStore {
 
           // Initialize properties based on type
           for (const [key, propertyMeta] of typeMeta.properties) {
-            const privateKey = `_${key}`
+            const privateKey = makePrivatePropertyKey(key);
 
-            this[privateKey] =
-              propertyMeta.type === "set"
-                ? createObservableEntitySet(new Set(), typeMeta.properties)
-                : propertyMeta.type === "array"
-                  ? createObservableEntityArray([], true, {frozen:false} ) // typeMeta.properties)
-                  : propertyMeta.type === "map"
-                    ? createObservableEntityMap(new Map(), typeMeta.properties)
-                    : undefined
+            switch (propertyMeta.type) {
+              case "array":
+                this[key] = createObservableEntityArray([], true, { frozen: false });
+                this[privateKey] = [];
+                break;
+
+              case "map":
+                this[privateKey] = new Map();
+                this[key] = createObservableEntityMap(new Map(), typeMeta.properties);
+                break;
+              case "set":
+                this[key] = new Set();
+                this[privateKey] = createObservableEntitySet(new Set(), typeMeta.properties);
+                break;
+              default:
+                this[privateKey] = undefined;
+                break;
+            }
           }
         }
       }
