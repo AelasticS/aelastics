@@ -90,3 +90,22 @@ export function uniqueTimestamp() {
 }
 // Initialize the previous timestamp
 uniqueTimestamp.previous = 0;
+
+/**
+ * Removes an element from an array using splice.
+ */
+export function removeElement<T>(array: T[], valueToRemove: T): void {
+    const index = array.indexOf(valueToRemove);
+    if (index !== -1) {
+        array.splice(index, 1);
+    }
+}
+
+export function makePrivatePropertyKey(propertyName: string) {
+   // return Symbol.for(propertyName);
+   return `_${propertyName}`;
+}
+
+export function makeUpdateInverseKey(key: string): string {
+    return `_updateInverse_${key}`;
+}
