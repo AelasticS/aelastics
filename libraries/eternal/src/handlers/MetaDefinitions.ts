@@ -1,5 +1,6 @@
 /** Defines allowed property types */
-export type PropertyType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'map' | 'set';
+export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
+export type PropertyType = 'string' | 'number' | 'boolean' | ComplexPropType;
 
 /** Metadata for an individual property */
 export interface PropertyMeta {
