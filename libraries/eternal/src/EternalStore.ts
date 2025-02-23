@@ -233,20 +233,21 @@ export class EternalStore {
           // Initialize properties based on type
           for (const [key, propertyMeta] of typeMeta.properties) {
             const privateKey = makePrivatePropertyKey(key);
+            const proxyKey = makePrivatePropertyKey(key);
 
             switch (propertyMeta.type) {
               case "array":
-                this[key] = createObservableEntityArray([], true, { frozen: false });
                 this[privateKey] = [];
+                this[proxyKey] = createObservableEntityArray(this[privateKey], true, { frozen: false });
                 break;
 
               case "map":
                 this[privateKey] = new Map();
-                this[key] = createObservableEntityMap(new Map(), typeMeta.properties);
+                this[proxyKey] = createObservableEntityMap(this[privateKey], typeMeta.properties);
                 break;
               case "set":
                 this[key] = new Set();
-                this[privateKey] = createObservableEntitySet(new Set(), typeMeta.properties);
+                this[proxyKey] = createObservableEntitySet(this[privateKey], typeMeta.properties);
                 break;
               default:
                 this[privateKey] = undefined;

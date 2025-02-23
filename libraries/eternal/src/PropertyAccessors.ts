@@ -1,7 +1,7 @@
 import { TypeMeta } from "./handlers/MetaDefinitions";
 import { EternalStore } from "./EternalStore";
 import { EternalObject } from "./handlers/InternalTypes";
-import { isObjectFrozen, makePrivatePropertyKey, makeUpdateInverseKey, removeElement } from "./utils";
+import { isObjectFrozen, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, removeElement } from "./utils";
 
 
 // check access and return correct version of object
@@ -72,6 +72,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     for (const [key, propertyMeta] of typeMeta.properties) {
         const privateKey = makePrivatePropertyKey(key);
+        const proxyKey = makePrivateProxyKey(key);
         const inverseUpdaterKey = makeUpdateInverseKey(key);
         const privateInverseKey = propertyMeta.inverseProp?makePrivatePropertyKey(propertyMeta.inverseProp):"";
 
@@ -95,6 +96,8 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         // TODO add to changelog
 
         if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
+            getter = function () { return this[proxyKey]; }; // Use proxy for collection properties
+            // Prevent direct assignment to collection properties
             setter = function () {
                 throw new Error(`Cannot directly assign to collection property "${key}" of an object"`);
             };

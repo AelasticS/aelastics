@@ -109,3 +109,8 @@ export function makePrivatePropertyKey(propertyName: string) {
 export function makeUpdateInverseKey(key: string): string {
     return `_updateInverse_${key}`;
 }
+
+export function makePrivateProxyKey(propertyName: string) {
+    // return Symbol.for(propertyName);
+    return `_proxy_${propertyName}`;
+ }
