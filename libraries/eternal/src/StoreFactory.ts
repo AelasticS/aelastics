@@ -107,7 +107,7 @@ export function createStore(
     fetchFromExternalSource?: (type: string, uuid: string) => any
   } = { freeze: true }
 ): Store {
-  const store = new EternalStore(metaInfo, options.fetchFromExternalSource)
+  const store = new EternalStore(metaInfo)
 
   const publicAPI: Store = {
     createObject: (type) => store.createObject(type),

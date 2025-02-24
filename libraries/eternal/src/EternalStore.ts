@@ -1,5 +1,5 @@
 import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, hasChanges, JSONPatchOperation } from "./ChangeLog"
-import { addPropertyAccessors } from "./PropertyAccessors"
+import { addCloneMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createObservableEntityArray } from "./handlers/ArrayHandlers"
 import { EternalObject } from "./handlers/InternalTypes"
 import { createObservableEntityMap, createObservableEntitySet } from "./handlers/MapSetHandlers"
@@ -7,7 +7,7 @@ import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
 import { randomUUID } from 'crypto';
-import { makePrivatePropertyKey } from "./utils"
+import { makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 
 export type InternalRecipe = ((obj: EternalObject) => void) | (() => any)
 
@@ -21,19 +21,19 @@ export class EternalStore {
 
 
   // TODO Remove fetchFromExternalSource
-  private fetchFromExternalSource?: (type: string, uuid: string) => any // Function to fetch objects from external sources
   private accessedObjects: Set<EternalObject> = new Set(); // Track accessed object
   private versionedObjects: EternalObject[] = []; // Track versioned objects
 
 
   private metaInfo: Map<string, TypeMeta>;
 
-  constructor(metaInfo: Map<string, TypeMeta>, fetchFromExternalSource?: (type: string, uuid: string) => any) {
+  constructor(metaInfo: Map<string, TypeMeta>) {
     this.metaInfo = metaInfo;
-    this.fetchFromExternalSource = fetchFromExternalSource;
     // Create dynamic classes for each type
     for (const [type, typeMeta] of metaInfo.entries()) {
-      this.typeToClassMap.set(type, this.createDynamicClass(typeMeta, this))
+      if (!this.typeToClassMap.has(type)) {
+        this.createDynamicClass(typeMeta, this)
+      }
     }
   }
 
@@ -96,6 +96,9 @@ export class EternalStore {
 
     const DynamicClass = this.typeToClassMap.get(type)
     const newObject = new DynamicClass()
+    // Generate unique values for each instance
+    newObject.uuid = randomUUID();
+    newObject.createdAt = Date.now(); // TODO check is this done by state
 
     // Immediately add to the latest state
     this.getState().addObject(newObject, 'created')
@@ -212,28 +215,26 @@ export class EternalStore {
       this.accessedObjects.add(obj);
     }
   }
-
-  /** Creates a dynamic class for a given type */
   private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
+    const typeSchema = this.metaInfo;
     const className = typeMeta.name; // Use the type name as the class name
+    const baseTypeMeta = typeMeta.name ? typeSchema.get(typeMeta.name) : undefined;
+    const BaseClass: any = baseTypeMeta ? this.createDynamicClass(baseTypeMeta, store) : Object;
 
-    const DynamicEntity = {
-      [className]: class {
-        public uuid!: string
-        public createdAt!: number
-        [key: string]: any
+    const DynamicClass = {
+      [className]: class extends BaseClass {
+        public uuid!: string;
+        public createdAt!: number;
+        [key: string]: any;
 
         constructor() {
-          const currentMode = store.inUpdateMode;
-
-          // Generate unique values for each instance
-          this.uuid = randomUUID()
-          this.createdAt = Date.now()
+          super(); // Call the constructor of the superclass
 
           // Initialize properties based on type
           for (const [key, propertyMeta] of typeMeta.properties) {
             const privateKey = makePrivatePropertyKey(key);
-            const proxyKey = makePrivatePropertyKey(key);
+            const proxyKey = makePrivateProxyKey(key);
+
 
             switch (propertyMeta.type) {
               case "array":
@@ -245,10 +246,12 @@ export class EternalStore {
                 this[privateKey] = new Map();
                 this[proxyKey] = createObservableEntityMap(this[privateKey], typeMeta.properties);
                 break;
+
               case "set":
-                this[key] = new Set();
+                this[privateKey] = new Set();
                 this[proxyKey] = createObservableEntitySet(this[privateKey], typeMeta.properties);
                 break;
+
               default:
                 this[privateKey] = undefined;
                 break;
@@ -259,10 +262,16 @@ export class EternalStore {
     }[className];
 
     // Property accessors (shared across instances) will handle access logic
-    addPropertyAccessors(DynamicEntity.prototype, typeMeta, this)
-
-    return DynamicEntity
+    addPropertyAccessors(DynamicClass.prototype, typeMeta, store);
+    // Add a clone method to the class
+    addCloneMethod(DynamicClass.prototype, typeMeta, store, typeSchema);
+    // Store the class in the map
+    this.typeToClassMap.set(className, DynamicClass)
+    return DynamicClass;
   }
+
+  
+
   /** Returns the dynamic class for a given type name */
   public getClassByName(type: string): any {
     return this.typeToClassMap.get(type);

@@ -235,3 +235,50 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         }
     }
 }
+
+export function addCloneMethod(prototype: any, typeMeta: TypeMeta, store: EternalStore, typeSchema: Map<string, TypeMeta>) {
+    prototype.clone = function () {
+        // Create a new object with the same prototype as the current object
+        const newObj = Object.create(Object.getPrototypeOf(this));
+
+        // Call the clone method of the superclass if it exists
+        const superClass = Object.getPrototypeOf(Object.getPrototypeOf(this));
+        if (superClass && typeof superClass.clone === 'function') {
+            const superClone = superClass.clone.call(this);
+            Object.assign(newObj, superClone);
+        }
+
+        // Clone the properties of the current type
+        for (const [key, propertyMeta] of typeMeta.properties) {
+            const privateKey = makePrivatePropertyKey(key);
+            if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
+        //        newObj[privateKey] = createObservableArray([...this[privateKey]], propertyMeta, store);
+            } else {
+                newObj[privateKey] = this[privateKey];
+            }
+        }
+
+        return newObj;
+    };
+}
+
+export function addCloneMethod1(prototype: any, typeMeta: TypeMeta, store: EternalStore, typeSchema: Map<string, TypeMeta>) {
+    prototype.clone = function () {
+        const newObj = Object.create(Object.getPrototypeOf(this));
+        let currentTypeMeta: TypeMeta | undefined = typeMeta;
+
+        while (currentTypeMeta) {
+            for (const [key, propertyMeta] of currentTypeMeta.properties) {
+                const privateKey = `_${key}`;
+                if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
+     //              newObj[privateKey] = createObservableArray([...this[privateKey]], propertyMeta, store);
+                } else {
+                    newObj[privateKey] = this[privateKey];
+                }
+            }
+            currentTypeMeta = currentTypeMeta.name ? typeSchema.get(currentTypeMeta.name) : undefined;
+        }
+
+        return newObj;
+    };
+}
