@@ -9,7 +9,6 @@ describe("Bidirectional Relationships & Cyclic References", () => {
             ["Parent", {
                 name: "Parent",
                 properties: new Map([
-                    ["uuid", { name: "uuid", type: "string" }],
                     ["name", { name: "name", type: "string" }],
                     ["children", { name: "children", type: "array", inverseType: "Child", inverseProp: "parent" }]
                 ])
@@ -17,7 +16,6 @@ describe("Bidirectional Relationships & Cyclic References", () => {
             ["Child", {
                 name: "Child",
                 properties: new Map([
-                    ["uuid", { name: "uuid", type: "string" }],
                     ["name", { name: "name", type: "string" }],
                     ["parent", { name: "parent", type: "object", inverseType: "Parent", inverseProp: "children" }]
                 ])
@@ -26,13 +24,11 @@ describe("Bidirectional Relationships & Cyclic References", () => {
     });
 
     interface Parent {
-        uuid: string;
         name: string;
         children: Child[];
     }
 
     interface Child {
-        uuid: string;
         name: string;
         parent: Parent;
     }
