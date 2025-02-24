@@ -64,7 +64,7 @@ describe('EternalStore Dynamic Class Creation', () => {
   it('should clone objects correctly in a hierarchy of classes', () => {
     // Create an object of type 'TypeC'
     let objC = store.createObject<EternalObject>('TypeC');
-    objC = store.produce((o)=> {
+    objC = store.produce((o) => {
       o.propA = 'valueA';
       o.propB = 42;
       o.propC = true;
@@ -82,7 +82,9 @@ describe('EternalStore Dynamic Class Creation', () => {
     expect(clonedObjC).toHaveProperty('propB', 42);
     expect(clonedObjC).toHaveProperty('propC', true);
 
-    // Check if the cloned object has a different UUID
+    // Check if the cloned object has same UUID
     expect(clonedObjC.uuid).toBe(objC.uuid);
+    // Check if the cloned object if different
+    expect(clonedObjC).not.toBe(objC);
   });
 });

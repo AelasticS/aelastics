@@ -1,6 +1,6 @@
 import { TypeMeta } from "./handlers/MetaDefinitions";
 import { EternalStore } from "./EternalStore";
-import { EternalObject } from "./handlers/InternalTypes";
+import { EternalClass, EternalObject } from "./handlers/InternalTypes";
 import { isObjectFrozen, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, removeElement } from "./utils";
 
 
@@ -246,23 +246,13 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     }
 }
 
-
-export function addCloneMethod(prototype: any, typeMeta: TypeMeta, store: EternalStore, typeSchema: Map<string, TypeMeta>) {
-    prototype.clone = function () {
-        // Create a new object with the same prototype as the current object
-        const newObj = Object.create(Object.getPrototypeOf(this));
-        // Copy the UUID property
-        newObj.uuid = this.uuid;
-        // Copy property values from the current object to the new object
-        this.copyPropValues(newObj, Object.getPrototypeOf(this));
-        return newObj;
-    };
-
-    prototype.copyPropValues = function (newObj: any, currentPrototype: any) {
+// add dynamically method to shallow copy props (including observables) from one instance to another
+export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
+    prototype.copyProps = function (newObj: any, currentPrototype: any) {
         // Recursively copy properties from the superclass
         const superClass = Object.getPrototypeOf(currentPrototype);
-        if (superClass && typeof superClass.copyPropValues === 'function') {
-            superClass.copyPropValues.call(this, newObj, superClass); // Use this as the context
+        if (superClass !== EternalClass.prototype && typeof superClass.copyProps === 'function') {
+            superClass.copyProps.call(this, newObj, superClass); // Use this as the context
         }
         // Copy properties of the current type
         for (const [key, propertyMeta] of typeMeta.properties) {

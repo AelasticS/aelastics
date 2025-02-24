@@ -73,17 +73,11 @@ export class State implements StateView {
 
   private createFrozenStateObject<T extends EternalObject>(obj: T): T {
     // Create a shallow copy of the object
-    const frozenObject = obj.clone()  
-    // Attach a fixed state reference
-    Object.defineProperty(frozenObject, "state", {
-      value: this,
-      writable: false, // Ensure it cannot be changed
-      enumerable: false, // Hide it from object iteration
-    })
-    return frozenObject
+    const frozenObject = obj.clone(this)  
+    return frozenObject as T
   }
 
-  public isObjectFixedToState(obj: any): boolean {
+  public isObjectFrozenInState(obj: EternalObject): boolean {
     return obj.state === this
   }
 

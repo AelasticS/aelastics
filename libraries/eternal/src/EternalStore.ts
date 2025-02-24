@@ -1,7 +1,7 @@
 import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, hasChanges, JSONPatchOperation } from "./ChangeLog"
-import { addCloneMethod, addPropertyAccessors } from "./PropertyAccessors"
+import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createObservableEntityArray } from "./handlers/ArrayHandlers"
-import { EternalObject } from "./handlers/InternalTypes"
+import { EternalClass, EternalObject } from "./handlers/InternalTypes"
 import { createObservableEntityMap, createObservableEntitySet } from "./handlers/MapSetHandlers"
 import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
@@ -216,28 +216,21 @@ export class EternalStore {
     }
   }
   private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
-    const typeSchema = this.metaInfo;
     const className = typeMeta.name; // Use the type name as the class name
     const superClass = typeMeta.extends ? this.getClassByName(typeMeta.extends) : undefined;
     let BaseClass: any;
     BaseClass = superClass ? superClass
-              : (typeMeta.extends ? this.createDynamicClass(this.metaInfo.get(typeMeta.extends)!, store) : Object);
+      : (typeMeta.extends ? this.createDynamicClass(this.metaInfo.get(typeMeta.extends)!, store) : EternalClass);
 
     const DynamicClass = {
       [className]: class extends BaseClass {
-        public uuid!: string;
-        public createdAt!: number;
-        [key: string]: any;
-
         constructor() {
           super(); // Call the constructor of the superclass
-
           // Initialize properties based on type
           for (const [key, propertyMeta] of typeMeta.properties) {
             const privateKey = makePrivatePropertyKey(key);
             const proxyKey = makePrivateProxyKey(key);
-
-
+            // Initialize the property based on type
             switch (propertyMeta.type) {
               case "array":
                 this[privateKey] = [];
@@ -265,8 +258,8 @@ export class EternalStore {
 
     // Property accessors (shared across instances) will handle access logic
     addPropertyAccessors(DynamicClass.prototype, typeMeta, store);
-    // Add a clone method to the class
-    addCloneMethod(DynamicClass.prototype, typeMeta, store, typeSchema);
+    // Add the copyProps method to the prototype  
+    addCopyPropsMethod(DynamicClass.prototype, typeMeta);
     // Store the class in the map
     this.typeToClassMap.set(className, DynamicClass)
     return DynamicClass;
