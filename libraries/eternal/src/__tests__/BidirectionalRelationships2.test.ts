@@ -1,11 +1,11 @@
-import { EternalStore } from "../EternalStore";
 import { EternalObject } from "../handlers/InternalTypes";
+import { createStore } from "../StoreFactory";
 
 describe("Bidirectional Relationships & Cyclic References", () => {
-    let store: EternalStore;
+    let store:  ReturnType<typeof createStore>;
 
     beforeEach(() => {
-        store = new EternalStore(new Map([
+        store = createStore(new Map([
             ["Parent", {
                 name: "Parent",
                 properties: new Map([
@@ -43,14 +43,13 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const child2 = store.createObject<Child>("Child") as Child;
 
 
-        store.produce((p: EternalObject) => {
+        store.updateState(() => {
             parent.name = "Root";
             child1.name = "Child 1";
             child2.name = "Child 2";
-            const p1 = p as unknown as Parent;
-            p1.children.push(child1);
-            p1.children.push(child2);
-        }, parent);
+            parent.children.push(child1);
+            parent.children.push(child2);
+        });
 
         expect(parent.children).toHaveLength(2);
         expect(child1.parent).toBe(parent);
@@ -64,12 +63,11 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const child = store.createObject<Child>("Child") as Child;
 
 
-        store.produce((p: EternalObject) => {
+        store.updateState(() => {
             parent.name = "Root";
             child.name = "Child 1";
-            const p1 = p as unknown as Parent;
-            p1.children.push(child);
-        }, parent);
+            parent.children.push(child);
+        });
 
         expect(parent.children).toContain(child);
         expect(child.parent).toBe(parent);
@@ -77,11 +75,10 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         // Update child's parent to a new parent
         const newParent = store.createObject<Parent>("Parent") as Parent;
 
-        store.produce((c: EternalObject) => {
+        store.updateState(() => {
             newParent.name = "New Root";
-            const c1 = c as unknown as Child;
-            c1.parent = newParent;
-        }, child);
+            child.parent = newParent;
+        });
 
         expect(child.parent).toBe(newParent);
         expect(newParent.children).toContain(child);
@@ -94,13 +91,12 @@ describe("Bidirectional Relationships & Cyclic References", () => {
         const child = store.createObject<Child>("Child") as Child;
 
         // Introduce a cycle: child becomes its own grandparent
-        store.produce((p: EternalObject) => {
+        store.updateState(() => {
             parent.name = "Root";
             child.name = "Child 1";
-            const p1 = p as unknown as Parent;
-            p1.children.push(child);
-            child.parent = p1;
-        }, parent);
+            parent.children.push(child);
+            child.parent = parent;
+        });
 
         expect(parent.children).toContain(child);
         expect(child.parent).toBe(parent);
