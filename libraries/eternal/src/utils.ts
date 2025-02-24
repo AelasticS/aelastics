@@ -35,40 +35,40 @@ import { EternalObject } from "./handlers/InternalTypes";
 
 
 // Shallow copy an object with observables, skipping getters and setters
-export function shallowCopyWithObservables<T extends EternalObject>(obj: T): T {
+// export function shallowCopyWithObservables<T extends EternalObject>(obj: T): T {
 
-    // Create an empty object with the same prototype as the original object
-    const copy = Object.create(Object.getPrototypeOf(obj));
-    let currentObj: any = obj;
-    while (currentObj !== null) {
-        for (const key of Object.getOwnPropertyNames(currentObj)) {
-            if (!copy.hasOwnProperty(key)) {
-                const descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
-                if (descriptor && (descriptor.get || descriptor.set)) {
-                    // Skip getters and setters
-                    continue;
-                }
+//     // Create an empty object with the same prototype as the original object
+//     const copy = Object.create(Object.getPrototypeOf(obj));
+//     let currentObj: any = obj;
+//     while (currentObj !== null) {
+//         for (const key of Object.getOwnPropertyNames(currentObj)) {
+//             if (!copy.hasOwnProperty(key)) {
+//                 const descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
+//                 if (descriptor && (descriptor.get || descriptor.set)) {
+//                     // Skip getters and setters
+//                     continue;
+//                 }
 
-                let value = currentObj[key];
+//                 let value = currentObj[key];
 
-                if (Array.isArray(value)) {
-                    const oldArray = value;
-                    value = createObservableEntityArray([...oldArray], true, {frozen: false});
-                    // Create a new observable array
-                    // TODO  copy of observables of arrays and maps and set as well
+//                 if (Array.isArray(value)) {
+//                     const oldArray = value;
+//                     value = createObservableEntityArray([...oldArray], true, {frozen: false});
+//                     // Create a new observable array
+//                     // TODO  copy of observables of arrays and maps and set as well
 
-                    // copy[key] = createObservableEntityArray(value, propertyMeta);
-                } else {
-                    // Shallow copy other properties
-                    copy[key] = value;
-                }
-            }
-        }
-        currentObj = Object.getPrototypeOf(currentObj);
-    }
+//                     // copy[key] = createObservableEntityArray(value, propertyMeta);
+//                 } else {
+//                     // Shallow copy other properties
+//                     copy[key] = value;
+//                 }
+//             }
+//         }
+//         currentObj = Object.getPrototypeOf(currentObj);
+//     }
 
-    return copy as T;
-}
+//     return copy as T;
+// }
 
 
 export const isObjectFrozen = (obj: EternalObject)=>{

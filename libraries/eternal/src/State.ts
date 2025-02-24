@@ -1,7 +1,7 @@
 import { ChangeLogEntry, hasChanges } from "./ChangeLog"
 import { EternalStore } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { isObjectFrozen, shallowCopyWithObservables, uniqueTimestamp } from "./utils"
+import { isObjectFrozen, uniqueTimestamp } from "./utils"
 
 /** Read-only interface for accessing immutable objects in a specific state */
 interface StateView {
@@ -31,7 +31,7 @@ export class State implements StateView {
     }
     // check if object is from old state, then make a new version
     if (obj.createdAt < this.timestamp) {
-      const newInstance: EternalObject = shallowCopyWithObservables(obj) as T
+      const newInstance: EternalObject = obj.clone()
       newInstance.createdAt = this.timestamp // Copy timestamp from state
       // Track the new version
       obj.nextVersion = new WeakRef(newInstance)
@@ -73,7 +73,7 @@ export class State implements StateView {
 
   private createFrozenStateObject<T extends EternalObject>(obj: T): T {
     // Create a shallow copy of the object
-    const frozenObject = shallowCopyWithObservables(obj) as T
+    const frozenObject = obj.clone()  
     // Attach a fixed state reference
     Object.defineProperty(frozenObject, "state", {
       value: this,

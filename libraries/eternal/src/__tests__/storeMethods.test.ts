@@ -77,13 +77,13 @@ describe("Store API: Undo, Redo, and Historical State Access", () => {
 
     test("fromState() should retrieve object from a previous state", () => {
 
-        const user = store.createObject<User>("User");
+        let user = store.createObject<User>("User");
 
-        store.updateObject((u) => {
+        user = store.updateObject((u) => {
             u.name = "Alice";
         }, user);
 
-        store.updateObject((u) => {
+        user = store.updateObject((u) => {
             u.name = "Bob";
         }, user);
 
