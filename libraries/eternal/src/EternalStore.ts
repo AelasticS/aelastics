@@ -218,8 +218,8 @@ export class EternalStore {
   private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
     const typeSchema = this.metaInfo;
     const className = typeMeta.name; // Use the type name as the class name
-    const baseTypeMeta = typeMeta.name ? typeSchema.get(typeMeta.name) : undefined;
-    const BaseClass: any = baseTypeMeta ? this.createDynamicClass(baseTypeMeta, store) : Object;
+    const superClass =  typeMeta.extends? this.getClassByName(typeMeta.extends) : undefined;
+    const BaseClass: any = superClass ? this.createDynamicClass(superClass, store) : Object;
 
     const DynamicClass = {
       [className]: class extends BaseClass {
