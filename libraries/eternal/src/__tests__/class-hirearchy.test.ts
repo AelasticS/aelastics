@@ -2,42 +2,46 @@ import { EternalStore } from '../EternalStore';
 import { TypeMeta } from '../handlers/MetaDefinitions';
 import { EternalObject } from '../handlers/InternalTypes';
 
+// Define type metadata for the hierarchy
+const typeMetaA: TypeMeta = {
+  name: 'TypeA',
+  properties: new Map([
+    ['propA', { name: 'propA', type: 'string' }]
+  ])
+};
+
+const typeMetaB: TypeMeta = {
+  name: 'TypeB',
+  extends: 'TypeA',
+  properties: new Map([
+    ['propB', { name: 'propB', type: 'number' }]
+  ])
+};
+
+const typeMetaC: TypeMeta = {
+  name: 'TypeC',
+  extends: 'TypeB',
+  properties: new Map([
+    ['propC', { name: 'propC', type: 'boolean' }]
+  ])
+};
+
+// Create metaInfo map
+const metaInfo = new Map<string, TypeMeta>([
+  ['TypeA', typeMetaA],
+  ['TypeB', typeMetaB],
+  ['TypeC', typeMetaC]
+]);
+
 describe('EternalStore Dynamic Class Creation', () => {
-  it('should dynamically create a hierarchy of classes', () => {
-    // Define type metadata for the hierarchy
-    const typeMetaA: TypeMeta = {
-      name: 'TypeA',
-      properties: new Map([
-        ['propA', { name: 'propA', type: 'string' }]
-      ])
-    };
+  let store: EternalStore;
 
-    const typeMetaB: TypeMeta = {
-      name: 'TypeB',
-      extends: 'TypeA',
-      properties: new Map([
-        ['propB', { name: 'propB', type: 'number' }]
-      ])
-    };
-
-    const typeMetaC: TypeMeta = {
-      name: 'TypeC',
-      extends: 'TypeB',
-      properties: new Map([
-        ['propC', { name: 'propC', type: 'boolean' }]
-      ])
-    };
-
-    // Create metaInfo map
-    const metaInfo = new Map<string, TypeMeta>([
-      ['TypeA', typeMetaA],
-      ['TypeB', typeMetaB],
-      ['TypeC', typeMetaC]
-    ]);
-
+  beforeAll(() => {
     // Initialize EternalStore with metaInfo
-    const store = new EternalStore(metaInfo);
+    store = new EternalStore(metaInfo);
+  });
 
+  it('should dynamically create a hierarchy of classes', () => {
     // Create objects of each type
     const objA = store.createObject<EternalObject>('TypeA');
     const objB = store.createObject<EternalObject>('TypeB');
@@ -55,5 +59,30 @@ describe('EternalStore Dynamic Class Creation', () => {
     expect(objC).toHaveProperty('propA');
     expect(objC).toHaveProperty('propB');
     expect(objC).toHaveProperty('propC');
+  });
+
+  it('should clone objects correctly in a hierarchy of classes', () => {
+    // Create an object of type 'TypeC'
+    let objC = store.createObject<EternalObject>('TypeC');
+    objC = store.produce((o)=> {
+      o.propA = 'valueA';
+      o.propB = 42;
+      o.propC = true;
+    }, objC)!
+
+
+    // Clone the object
+    const clonedObjC = objC.clone();
+
+    // Check if the cloned object is an instance of the correct class
+    expect(clonedObjC).toBeInstanceOf(store.getClassByName('TypeC'));
+
+    // Check if the cloned object has the same properties as the original
+    expect(clonedObjC).toHaveProperty('propA', 'valueA');
+    expect(clonedObjC).toHaveProperty('propB', 42);
+    expect(clonedObjC).toHaveProperty('propC', true);
+
+    // Check if the cloned object has a different UUID
+    expect(clonedObjC.uuid).toBe(objC.uuid);
   });
 });

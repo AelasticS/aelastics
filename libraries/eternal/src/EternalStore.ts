@@ -220,13 +220,8 @@ export class EternalStore {
     const className = typeMeta.name; // Use the type name as the class name
     const superClass = typeMeta.extends ? this.getClassByName(typeMeta.extends) : undefined;
     let BaseClass: any;
-    if (superClass) {
-      BaseClass = superClass;
-    } else if (typeMeta.extends) {
-      BaseClass = this.createDynamicClass(this.metaInfo.get(typeMeta.extends)!, store);
-    } else {
-      BaseClass = Object;
-    }
+    BaseClass = superClass ? superClass
+              : (typeMeta.extends ? this.createDynamicClass(this.metaInfo.get(typeMeta.extends)!, store) : Object);
 
     const DynamicClass = {
       [className]: class extends BaseClass {

@@ -70,17 +70,17 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     // type for inverse relationship updater
     type inverseUpdater = (obj: EternalObject, oldUUID: string, value?: EternalObject) => void;
 
-        // Check if typeMeta.properties is defined and is a Map
-        if (!typeMeta.properties || !(typeMeta.properties instanceof Map)) {
-            throw new Error(`Invalid properties for typeMeta: ${typeMeta.name}`);
-        }
+    // Check if typeMeta.properties is defined and is a Map
+    if (!typeMeta.properties || !(typeMeta.properties instanceof Map)) {
+        throw new Error(`Invalid properties for typeMeta: ${typeMeta.name}`);
+    }
 
 
     for (const [key, propertyMeta] of typeMeta.properties) {
         const privateKey = makePrivatePropertyKey(key);
         const proxyKey = makePrivateProxyKey(key);
         const inverseUpdaterKey = makeUpdateInverseKey(key);
-        const privateInverseKey = propertyMeta.inverseProp?makePrivatePropertyKey(propertyMeta.inverseProp):"";
+        const privateInverseKey = propertyMeta.inverseProp ? makePrivatePropertyKey(propertyMeta.inverseProp) : "";
 
         if (!propertyMeta) {
             throw new Error(`Property metadata for key "${key}" is undefined in typeMeta: ${typeMeta.name}`);
@@ -246,49 +246,40 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     }
 }
 
+
 export function addCloneMethod(prototype: any, typeMeta: TypeMeta, store: EternalStore, typeSchema: Map<string, TypeMeta>) {
     prototype.clone = function () {
         // Create a new object with the same prototype as the current object
         const newObj = Object.create(Object.getPrototypeOf(this));
+        // Copy the UUID property
+        newObj.uuid = this.uuid;
+        // Copy property values from the current object to the new object
+        this.copyPropValues(newObj, Object.getPrototypeOf(this));
+        return newObj;
+    };
 
-        // Call the clone method of the superclass if it exists
-        const superClass = Object.getPrototypeOf(Object.getPrototypeOf(this));
-        if (superClass && typeof superClass.clone === 'function') {
-            const superClone = superClass.clone.call(this);
-            Object.assign(newObj, superClone);
+    prototype.copyPropValues = function (newObj: any, currentPrototype: any) {
+        // Recursively copy properties from the superclass
+        const superClass = Object.getPrototypeOf(currentPrototype);
+        if (superClass && typeof superClass.copyPropValues === 'function') {
+            superClass.copyPropValues.call(this, newObj, superClass); // Use this as the context
         }
-
-        // Clone the properties of the current type
+        // Copy properties of the current type
         for (const [key, propertyMeta] of typeMeta.properties) {
             const privateKey = makePrivatePropertyKey(key);
-            if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
-        //        newObj[privateKey] = createObservableArray([...this[privateKey]], propertyMeta, store);
+            if (propertyMeta.type === "array") {
+                newObj[privateKey] = [...this[privateKey]];
+            } else if (propertyMeta.type === "set") {
+                newObj[privateKey] = new Set(this[privateKey]);
+            } else if (propertyMeta.type === "map") {
+                newObj[privateKey] = new Map(this[privateKey]);
             } else {
                 newObj[privateKey] = this[privateKey];
             }
-        }
 
-        return newObj;
-    };
+
+        };
+    }
 }
 
-export function addCloneMethod1(prototype: any, typeMeta: TypeMeta, store: EternalStore, typeSchema: Map<string, TypeMeta>) {
-    prototype.clone = function () {
-        const newObj = Object.create(Object.getPrototypeOf(this));
-        let currentTypeMeta: TypeMeta | undefined = typeMeta;
 
-        while (currentTypeMeta) {
-            for (const [key, propertyMeta] of currentTypeMeta.properties) {
-                const privateKey = `_${key}`;
-                if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
-     //              newObj[privateKey] = createObservableArray([...this[privateKey]], propertyMeta, store);
-                } else {
-                    newObj[privateKey] = this[privateKey];
-                }
-            }
-            currentTypeMeta = currentTypeMeta.name ? typeSchema.get(currentTypeMeta.name) : undefined;
-        }
-
-        return newObj;
-    };
-}
