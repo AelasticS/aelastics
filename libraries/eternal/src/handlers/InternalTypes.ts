@@ -1,4 +1,5 @@
 import { State } from "../State";
+import { isObjectFrozen } from "../utils";
 
 // src/handlers/InternalTypes.ts (or MetaDefinitions.ts)
 export interface EternalObject {
@@ -20,10 +21,12 @@ export abstract class EternalClass implements EternalObject {
 
     public clone(frozenToState?:State): EternalObject {
 
-        // TODO check if object is frozen
+        // check if object is frozen
+        if (isObjectFrozen(this))
+            throw new Error("Cannot clone a frozen object");
         // TODO check is store in update mode
         // Create a new object with the same prototype as the current object
-        const newObj = Object.create(Object.getPrototypeOf(this));
+        const newObj = new (Object.getPrototypeOf(this).constructor)();
         // Copy the UUID property
         newObj.uuid = this.uuid;
         //

@@ -106,7 +106,10 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         // TODO add to changelog
 
         if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
-            getter = function () { return this[proxyKey]; }; // Use proxy for collection properties
+            getter = function () { 
+                let obj = checkReadAccess(this, store);
+                return obj[proxyKey] // Use proxy for collection properties
+            }; 
             // Prevent direct assignment to collection properties
             setter = function () {
                 throw new Error(`Cannot directly assign to collection property "${key}" of an object"`);
@@ -166,7 +169,6 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
 
     function one2one(store: EternalStore, key: string, privateInverseKey: string): inverseUpdater {
-
         return function (obj: EternalObject, oldUUID: string, value?: EternalObject) {
             let oldObj: EternalObject | undefined;
             //  check if old value is present and get the correct version of it  

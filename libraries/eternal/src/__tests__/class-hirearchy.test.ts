@@ -6,7 +6,8 @@ import { EternalObject } from '../handlers/InternalTypes';
 const typeMetaA: TypeMeta = {
   name: 'TypeA',
   properties: new Map([
-    ['propA', { name: 'propA', type: 'string' }]
+    ['propA', { name: 'propA', type: 'string' }],
+    ['propArray', { name: 'propArray', type: 'array' }]
   ])
 };
 
@@ -54,9 +55,14 @@ describe('EternalStore Dynamic Class Creation', () => {
 
     // Check if objects have the correct properties
     expect(objA).toHaveProperty('propA');
+    expect(objA).toHaveProperty('propArray');
+    
     expect(objB).toHaveProperty('propA');
+    expect(objB).toHaveProperty('propArray');
     expect(objB).toHaveProperty('propB');
+
     expect(objC).toHaveProperty('propA');
+    expect(objC).toHaveProperty('propArray');
     expect(objC).toHaveProperty('propB');
     expect(objC).toHaveProperty('propC');
   });
@@ -68,6 +74,7 @@ describe('EternalStore Dynamic Class Creation', () => {
       o.propA = 'valueA';
       o.propB = 42;
       o.propC = true;
+      o.propArray.push(1, 2, 3);
     }, objC)!
 
 
@@ -81,10 +88,15 @@ describe('EternalStore Dynamic Class Creation', () => {
     expect(clonedObjC).toHaveProperty('propA', 'valueA');
     expect(clonedObjC).toHaveProperty('propB', 42);
     expect(clonedObjC).toHaveProperty('propC', true);
+    expect(clonedObjC).toHaveProperty('propArray', [1, 2, 3]);
+    
+    // Check if the array property has the same size
+    expect(clonedObjC.propArray.length).toBe(objC.propArray.length);
 
     // Check if the cloned object has same UUID
     expect(clonedObjC.uuid).toBe(objC.uuid);
     // Check if the cloned object if different
     expect(clonedObjC).not.toBe(objC);
+
   });
 });
