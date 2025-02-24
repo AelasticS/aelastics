@@ -70,11 +70,21 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     // type for inverse relationship updater
     type inverseUpdater = (obj: EternalObject, oldUUID: string, value?: EternalObject) => void;
 
+        // Check if typeMeta.properties is defined and is a Map
+        if (!typeMeta.properties || !(typeMeta.properties instanceof Map)) {
+            throw new Error(`Invalid properties for typeMeta: ${typeMeta.name}`);
+        }
+
+
     for (const [key, propertyMeta] of typeMeta.properties) {
         const privateKey = makePrivatePropertyKey(key);
         const proxyKey = makePrivateProxyKey(key);
         const inverseUpdaterKey = makeUpdateInverseKey(key);
         const privateInverseKey = propertyMeta.inverseProp?makePrivatePropertyKey(propertyMeta.inverseProp):"";
+
+        if (!propertyMeta) {
+            throw new Error(`Property metadata for key "${key}" is undefined in typeMeta: ${typeMeta.name}`);
+        }
 
         // Generate optimized getter
         let getter: (this: EternalObject) => any;

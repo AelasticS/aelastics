@@ -30,7 +30,7 @@ export class EternalStore {
   constructor(metaInfo: Map<string, TypeMeta>) {
     this.metaInfo = metaInfo;
     // Create dynamic classes for each type
-    for (const [type, typeMeta] of metaInfo.entries()) {
+    for (const [type, typeMeta] of metaInfo) {
       if (!this.typeToClassMap.has(type)) {
         this.createDynamicClass(typeMeta, this)
       }
@@ -218,8 +218,15 @@ export class EternalStore {
   private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
     const typeSchema = this.metaInfo;
     const className = typeMeta.name; // Use the type name as the class name
-    const superClass =  typeMeta.extends? this.getClassByName(typeMeta.extends) : undefined;
-    const BaseClass: any = superClass ? this.createDynamicClass(superClass, store) : Object;
+    const superClass = typeMeta.extends ? this.getClassByName(typeMeta.extends) : undefined;
+    let BaseClass: any;
+    if (superClass) {
+      BaseClass = superClass;
+    } else if (typeMeta.extends) {
+      BaseClass = this.createDynamicClass(this.metaInfo.get(typeMeta.extends)!, store);
+    } else {
+      BaseClass = Object;
+    }
 
     const DynamicClass = {
       [className]: class extends BaseClass {
@@ -270,7 +277,7 @@ export class EternalStore {
     return DynamicClass;
   }
 
-  
+
 
   /** Returns the dynamic class for a given type name */
   public getClassByName(type: string): any {
