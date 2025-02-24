@@ -268,16 +268,18 @@ export function addCloneMethod(prototype: any, typeMeta: TypeMeta, store: Eterna
         for (const [key, propertyMeta] of typeMeta.properties) {
             const privateKey = makePrivatePropertyKey(key);
             if (propertyMeta.type === "array") {
-                newObj[privateKey] = [...this[privateKey]];
+               (newObj[privateKey] as [any]).push(...this[privateKey]);  
             } else if (propertyMeta.type === "set") {
-                newObj[privateKey] = new Set(this[privateKey]);
+                (this[privateKey] as Set<any>).forEach(value => {
+                    (newObj[privateKey] as Set<any>).add(value);
+                  });
             } else if (propertyMeta.type === "map") {
-                newObj[privateKey] = new Map(this[privateKey]);
+                (this[privateKey] as Map<any, any>).forEach((value, key) => {
+                    (newObj[privateKey] as Map<any, any>).set(key, value);
+                  });
             } else {
                 newObj[privateKey] = this[privateKey];
             }
-
-
         };
     }
 }
