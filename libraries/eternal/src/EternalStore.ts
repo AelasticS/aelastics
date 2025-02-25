@@ -60,6 +60,7 @@ export class EternalStore {
   // TODO return private after testing
   public makeNewState(): void {
     // Clear future states if undo() was called before this change
+    // TODO check if objects from previous state which has nextVersion objects will be hanging
     if (this.currentStateIndex < this.stateHistory.length - 1) {
       this.stateHistory = this.stateHistory.slice(0, this.currentStateIndex + 1)
     }

@@ -95,6 +95,11 @@ makeEternal<T>(obj:T): T
  */
 makeRegular<T>(obj:T): T
 
+  /**
+   * Retrieves the internal EternalStore instance.
+   * @returns The internal EternalStore instance.
+   */
+  getEternalStore(): EternalStore;
 }
 
 export type recipe<T> = (obj: T) => void
@@ -110,16 +115,17 @@ export function createStore(
   const store = new EternalStore(metaInfo)
 
   const publicAPI: Store = {
-    createObject: (type) => store.createObject(type),
+    createObject: (type) => store.createObject(type),// TODO check if new state is always created
     updateObject: <T>(recipe: (obj: T) => void, obj: T) => store.produce(recipe as InternalRecipe, obj as EternalObject) as any,
     updateState: <R>(recipe:()=>R) => store.produce(recipe as InternalRecipe) as any,
     getObject: (uuid) => store.getObject(uuid),
     isInUpdateMode: () => store.isInUpdateMode(),
+    makeRegular: <T>(obj: T) => store.isInUpdateMode() as T,  // TODO dummy implementation
     undo: () => store.undo(),
     redo: () => store.redo(),
     fromState: (stateIndex, target) => store.fromState(stateIndex, target),
     makeEternal: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
-    makeRegular: <T>(obj: T) => store.isInUpdateMode() as T  // TODO dummy implementation
+    getEternalStore: () => store
   }
 
   return options.freeze ? Object.freeze(publicAPI) : publicAPI

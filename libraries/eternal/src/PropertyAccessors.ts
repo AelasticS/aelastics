@@ -5,7 +5,7 @@ import { isObjectFrozen, makePrivatePropertyKey, makePrivateProxyKey, makeUpdate
 
 
 // check access and return correct version of object
-function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
+export function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
     const state = store.getState();
     const isFrozen = isObjectFrozen(obj);
     const isInUpdateMode = store.isInUpdateMode();
