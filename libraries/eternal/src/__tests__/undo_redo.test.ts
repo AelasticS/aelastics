@@ -106,12 +106,15 @@ describe("Undo/Redo Functionality", () => {
         expect(store.redo()).toBe(false); // Already at latest state
     });
     test("Undo/Redo on array push operation", () => {
-        let user: Person = store.createObject<Person>("User");
+        let user: Person = store.produce((obj: EternalObject) => {
+            obj = store.createObject<Person>("User");
+            obj.name = "Alice";
+            return obj;
+        })!;
 
-        user = store.produce((user: EternalObject) => {
-            const person = user as Person;
-            person.tags.push("tag1");
-        }, user)!;
+        store.produce(() => {
+            user.tags.push("tag1");
+        })!;
 
         expect(store.getState().getObject<Person>(user.uuid)?.tags.length).toBe(1);
         expect(store.getState().getObject<Person>(user.uuid)?.tags).toContain("tag1");
