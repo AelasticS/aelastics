@@ -15,9 +15,9 @@ export interface ObservableExtra {
     propDes: PropertyMeta
 }
 
-export const createArrayHandlers = <T extends EternalObject>({ store, object, propDes }: ObservableExtra): ArrayHandlers<T, ObservableExtra> => ({
+export const createArrayHandlers = <T extends EternalObject>({ store, object, propDes }: ObservableExtra): ArrayHandlers<T> => ({
     // Get element by index, if it is a UUID reference, return the object
-    getByIndex: (target: T[], index: number, value: T) => {
+    getByIndex: (target: T[], index: number) => {
         const key = makePrivatePropertyKey(propDes.name);
         const newValue = object[key][index]
         const res = isUUIDReference(newValue) ? store.getObject(newValue.uuid) : newValue;
@@ -37,7 +37,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
     },
 
     /** Handle push (convert objects to UUIDs if needed) */
-    push: (target: T[], items: T[], ) => {
+    push: (target: T[], items: T[]) => {
         const obj = checkWriteAccess(object, store, propDes.name);
         items = items.map((item) => (isUUIDReference(item) ? (item.uuid as unknown as T) : item));
         const key = makePrivatePropertyKey(propDes.name);
@@ -46,188 +46,188 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
     },
 
     /** Handle pop */
-    pop: (target: T[], extra?: ObservableExtra) => {
+    pop: (target: T[]) => {
         const poppedItem = target.pop();
         return [false, poppedItem];
     },
 
     /** Handle shift */
-    shift: (target: T[], extra?: ObservableExtra) => {
+    shift: (target: T[]) => {
         const shiftedItem = target.shift();
         return [false, shiftedItem];
     },
 
     /** Handle unshift (convert objects to UUIDs if needed) */
-    unshift: (target: T[], items: T[], extra?: ObservableExtra) => {
+    unshift: (target: T[], items: T[]) => {
         items = items.map((item) => (isUUIDReference(item) ? (item.uuid as unknown as T) : item));
         const result = target.unshift(...items);
         return [false, result];
     },
 
     /** Handle splice (convert objects to UUIDs if needed) */
-    splice: (target: T[], start: number, deleteCount: number, items: T[], extra?: ObservableExtra) => {
+    splice: (target: T[], start: number, deleteCount: number, items: T[]) => {
         items = items.map((item) => (isUUIDReference(item) ? (item.uuid as unknown as T) : item));
         const deletedItems = target.splice(start, deleteCount, ...items);
         return [false, deletedItems];
     },
 
     /** Handle reverse */
-    reverse: (target: T[], extra?: ObservableExtra) => {
+    reverse: (target: T[]) => {
         target.reverse();
         return [false, target];
     },
 
     /** Handle sort */
-    sort: (target: T[], extra?: ObservableExtra) => {
+    sort: (target: T[]) => {
         target.sort();
         return [false, target];
     },
 
     /** Handle fill */
-    fill: (target: T[], value: T, start: number, end: number, extra?: ObservableExtra) => {
+    fill: (target: T[], value: T, start: number, end: number) => {
         const newValue = isUUIDReference(value) ? (value.uuid as unknown as T) : value;
         target.fill(newValue, start, end);
         return [false, target];
     },
     /** Handle concat */
-    concat: (target: T[], items: T[], extra?: ObservableExtra) => {
+    concat: (target: T[], items: T[]) => {
         items = items.map((item) => (isUUIDReference(item) ? (item.uuid as unknown as T) : item));
         const result = target.concat(items);
         return [true, result];
     },
 
     /** Handle includes */
-    includes: (target: T[], value: T, extra?: ObservableExtra) => {
+    includes: (target: T[], value: T) => {
         const result = target.includes(value);
         return [true, result];
     },
 
     /** Handle indexOf */
-    indexOf: (target: T[], value: T, fromIndex: number, extra?: ObservableExtra) => {
+    indexOf: (target: T[], value: T, fromIndex: number) => {
         const result = target.indexOf(value, fromIndex);
         return [true, result];
     },
 
     /** Handle join */
-    join: (target: T[], separator: string, extra?: ObservableExtra) => {
+    join: (target: T[], separator: string) => {
         const result = target.join(separator);
         return [true, result];
     },
 
     /** Handle lastIndexOf */
-    lastIndexOf: (target: T[], value: T, fromIndex: number, extra?: ObservableExtra) => {
+    lastIndexOf: (target: T[], value: T, fromIndex: number) => {
         const result = target.lastIndexOf(value, fromIndex);
         return [true, result];
     },
 
     /** Handle slice */
-    slice: (target: T[], start?: number, end?: number, extra?: ObservableExtra) => {
+    slice: (target: T[], start?: number, end?: number) => {
         const result = target.slice(start, end);
         return [true, result];
     },
     /** Handle length */
-    length: (target: T[], length: number, extra?: ObservableExtra) => {
+    length: (target: T[], length: number) => {
         target.length = length;
         return [true, length];
     },
 
     /** Handle size */
-    size: (target: T[], size: number, extra?: ObservableExtra) => {
+    size: (target: T[], size: number) => {
         target.length = size;
         return [true, size];
     },
 
     /** Handle find */
-    find: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: ObservableExtra) => {
+    find: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
         const result = target.find(callback, thisArg);
         return [true, result];
     },
 
     /** Handle findIndex */
-    findIndex: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: ObservableExtra) => {
+    findIndex: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
         const result = target.findIndex(callback, thisArg);
         return [true, result];
     },
 
     /** Handle map */
-    map: (target: T[], callback: (value: T, index: number, array: T[]) => any, thisArg: any, extra?: ObservableExtra) => {
+    map: (target: T[], callback: (value: T, index: number, array: T[]) => any, thisArg: any) => {
         const result = target.map(callback, thisArg);
         return [true, result];
     },
 
     /** Handle filter */
-    filter: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: ObservableExtra) => {
+    filter: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
         const result = target.filter(callback, thisArg);
         return [true, result];
     },
 
     /** Handle reduce */
-    reduce: (target: T[], callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue: any, extra?: ObservableExtra) => {
+    reduce: (target: T[], callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue: any) => {
         const result = target.reduce(callback, initialValue);
         return [true, result];
     },
 
     /** Handle reduceRight */
-    reduceRight: (target: T[], callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue: any, extra?: ObservableExtra) => {
+    reduceRight: (target: T[], callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue: any) => {
         const result = target.reduceRight(callback, initialValue);
         return [true, result];
     },
 
     /** Handle every */
-    every: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: ObservableExtra) => {
+    every: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
         const result = target.every(callback, thisArg);
         return [true, result];
     },
 
     /** Handle some */
-    some: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any, extra?: ObservableExtra) => {
+    some: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
         const result = target.some(callback, thisArg);
         return [true, result];
     },
 
     /** Handle forEach */
-    forEach: (target: T[], callback: (value: T, index: number, array: T[]) => void, thisArg: any, extra?: ObservableExtra) => {
+    forEach: (target: T[], callback: (value: T, index: number, array: T[]) => void, thisArg: any) => {
         target.forEach(callback, thisArg);
         return [true, undefined];
     },
 
     /** Handle flatMap */
-    flatMap: (target: T[], callback: (value: T, index: number, array: T[]) => any, thisArg: any, extra?: ObservableExtra) => {
+    flatMap: (target: T[], callback: (value: T, index: number, array: T[]) => any, thisArg: any) => {
         const result = target.flatMap(callback, thisArg);
         return [true, result];
     },
 
     /** Handle flat */
-    flat: (target: T[], depth: number, extra?: ObservableExtra) => {
+    flat: (target: T[], depth: number) => {
         const result = target.flat(depth);
         return [true, result];
     },
 
     /** Handle copyWithin */
-    copyWithin: (target: T[], targetIndex: number, start: number, end: number, extra?: ObservableExtra) => {
+    copyWithin: (target: T[], targetIndex: number, start: number, end: number) => {
         const result = target.copyWithin(targetIndex, start, end);
         return [true, result];
     },
 
     /** Handle entries */
-    entries: (target: T[], extra?: ObservableExtra) => {
+    entries: (target: T[]) => {
         const result = target.entries();
         return [true, result];
     },
 
     /** Handle keys */
-    keys: (target: T[], extra?: ObservableExtra) => {
+    keys: (target: T[]) => {
         const result = target.keys();
         return [true, result];
     },
 
     /** Handle values */
-    values: (target: T[], extra?: ObservableExtra) => {
+    values: (target: T[]) => {
         const result = target.values();
         return [true, result];
     },
     /** Default action */
-    defaultAction: (target: T[], key: PropertyKey, args?: any[], extra?: ObservableExtra) => {
+    defaultAction: (target: T[], key: PropertyKey, args?: any[]) => {
         console.warn(`Unhandled array method: ${String(key)}`);
         return [true, undefined];
     },
