@@ -1,5 +1,6 @@
 export interface ArrayHandlers<T, P extends {} = {}> {
-    set?: (target: T[], index: number, value: T, extra: P) => [boolean, T];
+    getByIndex?:(target: T[], index: any, value: T, extra: P) => [boolean, T];
+    setByIndex?: (target: T[], index: number, value: T, extra: P) => [boolean, T];
     delete?: (target: T[], index: number, extra: P) => [boolean, boolean];
     push?: (target: T[], items: T[], extra: P) => [boolean, number?];
     pop?: (target: T[], extra: P) => [boolean, T?];
@@ -32,8 +33,8 @@ export interface ArrayHandlers<T, P extends {} = {}> {
     keys?: (target: T[], extra: P) => [boolean, IterableIterator<number>?];
     values?: (target: T[], extra: P) => [boolean, IterableIterator<T>?];
     join?: (target: T[], separator: string, extra: P) => [boolean, string?];
-    // toString?: (target: T[], extra: P) => [boolean, string?];
-    // toLocaleString?: (target: T[], extra: P) => [boolean, string?];
+    toStringA?: (target: T[], extra: P) => [boolean, string?];
+    toLocaleStringA?: (target: T[], extra: P) => [boolean, string?];
     defaultAction?: (target: T[], key: PropertyKey, args?: any[], extra?: P) => [boolean, any?];
 }
 
@@ -47,8 +48,8 @@ export function createObservableArray<T, P extends {} = {}>(
         set(target: T[], key: string | number | symbol, value: any, receiver: any): any {
             if (typeof key === 'number' || !isNaN(Number(key))) {
                 const index = Number(key);
-                if (handlers.set) {
-                    const [continueOperation, result] = handlers.set(target, index, value, extra);
+                if (handlers.setByIndex) {
+                    const [continueOperation, result] = handlers.setByIndex(target, index, value, extra);
                     if (!continueOperation) {
                         return result;
                     }
@@ -83,7 +84,6 @@ export function createObservableArray<T, P extends {} = {}>(
         },
 
         get(target: T[], key: string | number | symbol, receiver: any): any {
-            const origProp = Reflect.get(target, key, receiver);
 
             if (typeof key === 'string') {
                 switch (key) {
@@ -152,8 +152,8 @@ export function createObservableArray<T, P extends {} = {}>(
                             return Reflect.apply(Array.prototype.fill, target, [value, start, end]);
                         };
                     case 'length':
-                        const [continueOperationLength, lengthResult] = handlers.length?.(target, target.length, extra) ?? [allowMutations, undefined];
-                        if (!continueOperationLength) {
+                        const [continueOperation, lengthResult] = handlers.length?.(target, target.length, extra) ?? [allowMutations, undefined];
+                        if (!continueOperation) {
                             return lengthResult;
                         }
                         return Reflect.get(target, 'length');
@@ -165,188 +165,194 @@ export function createObservableArray<T, P extends {} = {}>(
                         return Reflect.get(target, 'size');
                     case 'includes':
                         return (value: T) => {
-                            const [continueOperationIncludes, includesResult] = handlers.includes?.(target, value, extra) ?? [allowMutations, undefined];
-                            if (!continueOperationIncludes) {
+                            const [continueOperation, includesResult] = handlers.includes?.(target, value, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return includesResult;
                             }
                             return target.includes(value);
                         }
                     case 'indexOf':
                         return (value: T, fromIndex: number = 0) => {
-                            const [continueOperationIndexOf, indexOfResult] = handlers.indexOf?.(target, value, fromIndex, extra) ?? [allowMutations, undefined];
-                            if (!continueOperationIndexOf) {
+                            const [continueOperation, indexOfResult] = handlers.indexOf?.(target, value, fromIndex, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return indexOfResult;
                             }
                             return target.indexOf(value, fromIndex);
                         }
                     case 'lastIndexOf':
                         return (value: T, fromIndex: number = target.length - 1) => {
-                            const [continueOperationLastIndexOf, lastIndexOfResult] = handlers.lastIndexOf?.(target, value, fromIndex, extra) ?? [allowMutations, undefined];
-                            if (!continueOperationLastIndexOf) {
+                            const [continueOperation, lastIndexOfResult] = handlers.lastIndexOf?.(target, value, fromIndex, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return lastIndexOfResult;
                             }
                             return target.lastIndexOf(value, fromIndex);
                         }
                     case 'find':
                         return (callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any) => {
-                            const [continueOperationFind, findResult] = handlers.find?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
-                            if (!continueOperationFind) {
+                            const [continueOperation, findResult] = handlers.find?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return findResult;
                             }
                             return target.find(callback, thisArg);
                         }
                     case 'findIndex':
                         return (callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any) => {
-                            const [continueOperationFindIndex, findIndexResult] = handlers.findIndex?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
-                            if (!continueOperationFindIndex) {
+                            const [continueOperation, findIndexResult] = handlers.findIndex?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return findIndexResult;
                             }
                             return target.findIndex(callback, thisArg);
                         }
                     case 'concat':
                         return (...items: [T]) => {
-                            const [continueOperationConcat, concatResult] = handlers.concat?.(target, items, extra) ?? [allowMutations, undefined];
-                            if (!continueOperationConcat) {
+                            const [continueOperation, concatResult] = handlers.concat?.(target, items, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return concatResult;
                             }
                             return Reflect.apply(Array.prototype.concat, target, items);
                         }
                     case 'slice':
                         return (start?: number, end?: number) => {
-                            const [continueOperationSlice, sliceResult] = handlers.defaultAction?.(target, key, [start, end], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationSlice) {
+                            const [continueOperation, sliceResult] = handlers.slice?.(target, start, end, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return sliceResult;
                             }
                             return Reflect.apply(Array.prototype.slice, target, [start, end]);
                         }
                     case 'map':
                         return (callback: (value: T, index: number, array: T[]) => any, thisArg?: any) => {
-                            const [continueOperationMap, mapResult] = handlers.defaultAction?.(target, key, [callback, thisArg], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationMap) {
+                            const [continueOperation, mapResult] = handlers.map?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return mapResult;
                             }
                             return Reflect.apply(Array.prototype.map, target, [callback, thisArg]);
                         }
                     case 'filter':
                         return (callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any) => {
-                            const [continueOperationFilter, filterResult] = handlers.defaultAction?.(target, key, [callback, thisArg], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationFilter) {
+                            const [continueOperation, filterResult] = handlers.filter?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return filterResult;
                             }
                             return Reflect.apply(Array.prototype.filter, target, [callback, thisArg]);
                         }
                     case 'reduce':
                         return (callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue?: any) => {
-                            const [continueOperationReduce, reduceResult] = handlers.defaultAction?.(target, key, [callback, initialValue], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationReduce) {
+                            const [continueOperation, reduceResult] = handlers.reduce?.(target, callback, initialValue, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return reduceResult;
                             }
                             return Reflect.apply(Array.prototype.reduce, target, [callback, initialValue]);
                         }
                     case 'reduceRight':
                         return (callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue?: any) => {
-                            const [continueOperationReduceRight, reduceRightResult] = handlers.defaultAction?.(target, key, [callback, initialValue], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationReduceRight) {
+                            const [continueOperation, reduceRightResult] = handlers.reduceRight?.(target, callback, initialValue, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return reduceRightResult;
                             }
                             return Reflect.apply(Array.prototype.reduceRight, target, [callback, initialValue]);
                         }
                     case 'every':
                         return (callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any) => {
-                            const [continueOperationEvery, everyResult] = handlers.defaultAction?.(target, key, [callback, thisArg], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationEvery) {
+                            const [continueOperation, everyResult] = handlers.every?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return everyResult;
                             }
                             return Reflect.apply(Array.prototype.every, target, [callback, thisArg]);
                         }
                     case 'some':
                         return (callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any) => {
-                            const [continueOperationSome, someResult] = handlers.defaultAction?.(target, key, [callback, thisArg], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationSome) {
+                            const [continueOperation, someResult] = handlers.some?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return someResult;
                             }
                             return Reflect.apply(Array.prototype.some, target, [callback, thisArg]);
                         }
                     case 'forEach':
                         return (callback: (value: T, index: number, array: T[]) => void, thisArg?: any) => {
-                            const [continueOperationForEach, forEachResult] = handlers.defaultAction?.(target, key, [callback, thisArg], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationForEach) {
+                            const [continueOperation, forEachResult] = handlers.forEach?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return forEachResult;
                             }
                             return Reflect.apply(Array.prototype.forEach, target, [callback, thisArg]);
                         }
                     case 'flatMap':
                         return (callback: (value: T, index: number, array: T[]) => any, thisArg?: any) => {
-                            const [continueOperationFlatMap, flatMapResult] = handlers.defaultAction?.(target, key, [callback, thisArg], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationFlatMap) {
+                            const [continueOperation, flatMapResult] = handlers.flatMap?.(target, callback, thisArg, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return flatMapResult;
                             }
                             return Reflect.apply(Array.prototype.flatMap, target, [callback, thisArg]);
                         }
                     case 'flat':
-                        return (depth?: number) => {
-                            const [continueOperationFlat, flatResult] = handlers.defaultAction?.(target, key, [depth], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationFlat) {
+                        return (depth: number) => {
+                            const [continueOperation, flatResult] = handlers.flat?.(target, depth, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return flatResult;
                             }
                             return Reflect.apply(Array.prototype.flat, target, [depth]);
                         }
                     case 'copyWithin':
-                        return (targetIndex: number, start: number, end?: number) => {
-                            const [continueOperationCopyWithin, copyWithinResult] = handlers.defaultAction?.(target, key, [targetIndex, start, end], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationCopyWithin) {
+                        return (targetIndex: number, start: number, end: number) => {
+                            const [continueOperation, copyWithinResult] = handlers.copyWithin?.(target, targetIndex, start, end, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return copyWithinResult;
                             }
                             return Reflect.apply(Array.prototype.copyWithin, target, [targetIndex, start, end]);
                         }
                     case 'entries':
                         return () => {
-                            const [continueOperationEntries, entriesResult] = handlers.defaultAction?.(target, key, [], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationEntries) {
+                            const [continueOperation, entriesResult] = handlers.entries?.(target, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return entriesResult;
                             }
                             return Reflect.apply(Array.prototype.entries, target, []);
                         }
                     case 'keys':
                         return () => {
-                            const [continueOperationKeys, keysResult] = handlers.defaultAction?.(target, key, [], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationKeys) {
+                            const [continueOperation, keysResult] = handlers.keys?.(target, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return keysResult;
                             }
                             return Reflect.apply(Array.prototype.keys, target, []);
                         }
                     case 'values':
                         return () => {
-                            const [continueOperationValues, valuesResult] = handlers.defaultAction?.(target, key, [], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationValues) {
+                            const [continueOperation, valuesResult] = handlers.values?.(target, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return valuesResult;
                             }
                             return Reflect.apply(Array.prototype.values, target, []);
                         }
                     case 'join':
-                        return (separator?: string) => {
-                            const [continueOperationJoin, joinResult] = handlers.defaultAction?.(target, key, [separator], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationJoin) {
+                        return (separator: string) => {
+                            const [continueOperation, joinResult] = handlers.join?.(target, separator, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return joinResult;
                             }
                             return Reflect.apply(Array.prototype.join, target, [separator]);
                         }
                     case 'toString':
                         return () => {
-                            const [continueOperationToString, toStringResult] = handlers.defaultAction?.(target, key, [], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationToString) {
+                            const [continueOperation, toStringResult] = handlers.toStringA?.(target,extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return toStringResult;
                             }
                             return Reflect.apply(Array.prototype.toString, target, []);
                         }
                     case 'toLocaleString':
                         return () => {
-                            const [continueOperationToLocaleString, toLocaleStringResult] = handlers.defaultAction?.(target, key, [], extra) ?? [allowMutations, undefined];
-                            if (!continueOperationToLocaleString) {
+                            const [continueOperation, toLocaleStringResult] = handlers.toLocaleStringA?.(target, extra) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
                                 return toLocaleStringResult;
                             }
                             return Reflect.apply(Array.prototype.toLocaleString, target, []);
                         }
+                    default:
+                        const [cont, getResult] = handlers.getByIndex?.(target, key, receiver, extra) ?? [allowMutations, undefined];
+                        if (!cont) {
+                            return getResult;
+                        }
+                        return Reflect.get(target, key, receiver);
                 }
             }
 
@@ -356,8 +362,6 @@ export function createObservableArray<T, P extends {} = {}>(
                     return defaultResult;
                 }
             }
-
-            return origProp;
         }
     });
 }
