@@ -11,8 +11,8 @@ describe("Undo/Redo Functionality", () => {
                 properties: new Map([
                     ["id", { name: "id", type: "string" }],
                     ["name", { name: "name", type: "string" }],
-                    ["age", { name: "age", type: "number" }]
-                ])
+                    ["age", { name: "age", type: "number" }],
+                    ["tags", { name: "tags", type: "array" }]                ])
             }]
         ]));
     });
@@ -104,5 +104,23 @@ describe("Undo/Redo Functionality", () => {
         }, user)!;
 
         expect(store.redo()).toBe(false); // Already at latest state
+    });
+    test("Undo/Redo on array push operation", () => {
+        let user: Person = store.createObject<Person>("User");
+
+        user = store.produce((user: EternalObject) => {
+            const person = user as Person;
+            person.tags.push("tag1");
+        }, user)!;
+
+        expect(store.getState().getObject<Person>(user.uuid)?.tags.length).toBe(1);
+        expect(store.getState().getObject<Person>(user.uuid)?.tags).toContain("tag1");
+
+        store.undo();
+        expect(store.getState().getObject<Person>(user.uuid)?.tags.length).toBe(0);
+
+        store.redo();
+        expect(store.getState().getObject<Person>(user.uuid)?.tags.length).toBe(1);
+        expect(store.getState().getObject<Person>(user.uuid)?.tags).toContain("tag1");
     });
 });

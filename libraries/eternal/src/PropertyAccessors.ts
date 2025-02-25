@@ -31,15 +31,15 @@ function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject
     return obj;
 }
 
-function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string): EternalObject {
+export function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string): EternalObject {
 
     // if not allowed update throw error
     if (isObjectFrozen(obj)) {
-        throw new Error(`Cannot modify property "${key}" of the frozen object with uuid "${obj.uuid}"`);
+        throw new Error(`Cannot modify property "${key}" of the frozen object"`);
     }
     // if not in update mode throw error
     if (!store.isInUpdateMode()) {
-        throw new Error(`Cannot modify the object with uuid "${obj.uuid} outside of update mode`);
+        throw new Error(`Cannot modify the object outside of update mode`);
     }
 
     // if obj is from old state 
@@ -52,9 +52,8 @@ function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string):
             // return only if new version belongs to the current state
             if (store.getState().isCreatedInState(nextVersion)) {
                 return nextVersion;
-            }
-            else {
-                throw new Error(`Reference to an object ${obj.uuid} not from the current state.`);
+            } else {
+                throw new Error(`Illegal reference to an object not from the current state.`);
             }
         }
     }
@@ -112,6 +111,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
             }; 
             // Prevent direct assignment to collection properties
             setter = function () {
+                // TODO in future: create proxy, disconnect old and connect new elements
                 throw new Error(`Cannot directly assign to collection property "${key}" of an object"`);
             };
         } else if (propertyMeta.type === "object") {

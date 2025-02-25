@@ -14,13 +14,11 @@ export interface EternalObject {
 
 export abstract class EternalClass implements EternalObject {
     [key: string]: any;
-
     uuid: string = "";
     createdAt: number = 0;
     nextVersion?: WeakRef<any> | undefined;
-
+    
     public clone(frozenToState?:State): EternalObject {
-
         // check if object is frozen
         if (isObjectFrozen(this))
             throw new Error("Cannot clone a frozen object");

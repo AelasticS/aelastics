@@ -1,33 +1,47 @@
 import { ArrayHandlers, createObservableArray } from "@aelastics/observables";
 import { PropertyMeta } from "./MetaDefinitions";
-import { isUUIDReference } from "../utils"; // Import the utility function
+import { isObjectFrozen, isUUIDReference, makePrivatePropertyKey } from "../utils"; // Import the utility function
+import { EternalStore } from "../EternalStore";
+import { checkWriteAccess } from "../PropertyAccessors";
+import { EternalClass, EternalObject } from "./InternalTypes";
 
 /** Creates typed array handlers to track UUIDs and object references */
 
 // TODO: observable should be also frozen when parent is frozen  
 
 export interface ObservableExtra {
-    frozen: boolean
+    store: EternalStore,
+    object: EternalObject,
+    propDes: PropertyMeta
 }
 
-export const createArrayHandlers = <T>(extra:ObservableExtra): ArrayHandlers<T, ObservableExtra> => ({
-    /** Ensure object references are stored as UUIDs if applicable */
-    set: (target: T[], index: number, value: T, extra: ObservableExtra) => {
+export const createArrayHandlers = <T extends EternalObject>({ store, object, propDes }: ObservableExtra): ArrayHandlers<T, ObservableExtra> => ({
+    // Get element by index, if it is a UUID reference, return the object
+    getByIndex: (target: T[], index: number, value: T) => {
+        const key = makePrivatePropertyKey(propDes.name);
+        const newValue = object[key][index]
+        const res = isUUIDReference(newValue) ? store.getObject(newValue.uuid) : newValue;
+        return [false, res];
+    },
+    // Set item by index, convert object to UUID if needed
+    setByIndex: (target: T[], index: number, value: T) => {
         const newValue = isUUIDReference(value) ? (value.uuid as unknown as T) : value;
+        const key = makePrivatePropertyKey(propDes.name);
         target[index] = newValue;
         return [false, newValue];
     },
-
     /** Remove item from array */
-    delete: (target: T[], index: number, extra?: ObservableExtra) => {
-        const deletedItem = Reflect.deleteProperty(target, index)  // target.splice(index, 1)[0];
+    delete: (target: T[], index: number) => {
+        const deletedItem = Reflect.deleteProperty(target, index)  
         return [false, deletedItem];
     },
 
     /** Handle push (convert objects to UUIDs if needed) */
-    push: (target: T[], items: T[], extra?: ObservableExtra) => {
+    push: (target: T[], items: T[], ) => {
+        const obj = checkWriteAccess(object, store, propDes.name);
         items = items.map((item) => (isUUIDReference(item) ? (item.uuid as unknown as T) : item));
-        const result = target.push(...items);
+        const key = makePrivatePropertyKey(propDes.name);
+        const result = obj[key].push(...items);
         return [false, result];
     },
 
@@ -222,7 +236,6 @@ export const createArrayHandlers = <T>(extra:ObservableExtra): ArrayHandlers<T, 
 
 
 /** Helper function to create observable arrays */
-export function createObservableEntityArray<T>(arr: T[], allowMutations: boolean, 
-    extra: ObservableExtra): T[] {
+export function createObservableEntityArray<T extends EternalObject>(arr: T[], extra: ObservableExtra): T[] {
     return createObservableArray(arr, createArrayHandlers<T>(extra));
 }

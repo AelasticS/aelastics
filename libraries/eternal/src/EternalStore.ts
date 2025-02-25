@@ -234,7 +234,7 @@ export class EternalStore {
             switch (propertyMeta.type) {
               case "array":
                 this[privateKey] = [];
-                this[proxyKey] = createObservableEntityArray(this[privateKey], true, { frozen: false });
+                this[proxyKey] = createObservableEntityArray(this[privateKey], { store, object: this as any, propDes: propertyMeta });
                 break;
 
               case "map":
