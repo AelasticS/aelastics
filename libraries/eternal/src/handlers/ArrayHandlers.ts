@@ -1,9 +1,9 @@
 import { ArrayHandlers, createObservableArray } from "@aelastics/observables";
 import { PropertyMeta } from "./MetaDefinitions";
-import { isObjectFrozen, isUUIDReference, makePrivatePropertyKey } from "../utils"; // Import the utility function
+import { isUUIDReference, makePrivatePropertyKey } from "../utils"; // Import the utility function
 import { EternalStore } from "../EternalStore";
 import { checkWriteAccess } from "../PropertyAccessors";
-import { EternalClass, EternalObject } from "./InternalTypes";
+import { EternalObject } from "./InternalTypes";
 
 /** Creates typed array handlers to track UUIDs and object references */
 
