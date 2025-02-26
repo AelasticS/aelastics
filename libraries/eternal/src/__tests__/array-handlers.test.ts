@@ -352,7 +352,7 @@ test("array indexOf operation", () => {
     // initialize object
     user = store.updateObject((obj: Person) => {
         obj.name = "Alice";
-        obj.tags.push("tag1", " tag2", "tag3");
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
