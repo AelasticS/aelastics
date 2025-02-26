@@ -2,7 +2,9 @@
 export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
 export type PropertyType = 'string' | 'number' | 'boolean' | ComplexPropType;
 
+
 /** Metadata for an individual property */
+
 export interface PropertyMeta {
     name: string; // Property name
     optional?: boolean; // Whether the property is optional,
@@ -23,6 +25,14 @@ export interface TypeSchema {
     name: string; // Schema name
     types: Map<string, TypeMeta>; // Type name -> TypeMeta mapping
 }
+
+/** Registry of schemas */
+export interface SchemaRegistry {
+    schemas: Map<string, TypeSchema>;
+}
+
+// TODO  enhance schema registry with more methods
+
 
 /**
  * Function to get the type of a property for a given type
