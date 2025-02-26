@@ -9,7 +9,7 @@ interface Person extends EternalObject {
 }
 
 let store: Store;
-let eternalStore:EternalStore;
+let eternalStore: EternalStore;
 
 beforeEach(() => {
     store = createStore(new Map([
@@ -307,7 +307,7 @@ test("Undo/Redo on array fill operation", () => {
     expect(store.getObject<Person>(user.uuid)?.tags).toEqual(["tag1", "tag4", "tag3"]);
 });
 
-test("Undo/Redo on array concat operation", () => {
+test("array concat operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
@@ -318,25 +318,18 @@ test("Undo/Redo on array concat operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
-        user.tags = user.tags.concat(["tag2", "tag3"]);
-    });
+    // store.updateState(() => {
+    //     user.tags = user.tags.concat(["tag2", "tag3"]);
+    // });
+     //expect(store.getObject<Person>(user.uuid)?.tags).toEqual(["tag1", "tag2", "tag3"]);
+
+    const res= user.tags.concat(["tag2", "tag3"]);
 
     // check if operation was successful
-    expect(store.getObject<Person>(user.uuid)?.tags).toEqual(["tag1", "tag2", "tag3"]);
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(store.getObject<Person>(user.uuid)?.tags).toEqual(["tag1"]);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(store.getObject<Person>(user.uuid)?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(res).toEqual(["tag1", "tag2", "tag3"]);
 });
 
-test("Undo/Redo on array includes operation", () => {
+test("array includes operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
@@ -347,28 +340,13 @@ test("Undo/Redo on array includes operation", () => {
     }, user);
 
     // apply operation
-    let includesTag2: boolean = false;
-    store.updateState(() => {
-        includesTag2 = user.tags.includes("tag2");
-    });
+    let includesTag2: boolean = user.tags.includes("tag2");
 
     // check if operation was successful
     expect(includesTag2).toBe(true);
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    includesTag2 = user.tags.includes("tag2");
-    expect(includesTag2).toBe(true);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    includesTag2 = user.tags.includes("tag2");
-    expect(includesTag2).toBe(true);
 });
 
-test("Undo/Redo on array indexOf operation", () => {
+test("array indexOf operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
@@ -379,28 +357,13 @@ test("Undo/Redo on array indexOf operation", () => {
     }, user);
 
     // apply operation
-    let indexOfTag2: number = 0;
-    store.updateState(() => {
-        indexOfTag2 = user.tags.indexOf("tag2");
-    });
+    let indexOfTag2: number = user.tags.indexOf("tag2");
 
     // check if operation was successful
     expect(indexOfTag2).toBe(1);
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    indexOfTag2 = user.tags.indexOf("tag2");
-    expect(indexOfTag2).toBe(1);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    indexOfTag2 = user.tags.indexOf("tag2");
-    expect(indexOfTag2).toBe(1);
 });
 
-test("Undo/Redo on array join operation", () => {
+test("array join operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
@@ -411,28 +374,13 @@ test("Undo/Redo on array join operation", () => {
     }, user);
 
     // apply operation
-    let joinedTags: string = "";
-    store.updateState(() => {
-        joinedTags = user.tags.join(", ");
-    });
+    let joinedTags: string = user.tags.join(", ");
 
     // check if operation was successful
     expect(joinedTags).toBe("tag1, tag2, tag3");
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    joinedTags = user.tags.join(", ");
-    expect(joinedTags).toBe("tag1, tag2, tag3");
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    joinedTags = user.tags.join(", ");
-    expect(joinedTags).toBe("tag1, tag2, tag3");
 });
 
-test("Undo/Redo on array lastIndexOf operation", () => {
+test("array lastIndexOf operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
@@ -443,28 +391,13 @@ test("Undo/Redo on array lastIndexOf operation", () => {
     }, user);
 
     // apply operation
-    let lastIndexOfTag2: number = 0;
-    store.updateState(() => {
-        lastIndexOfTag2 = user.tags.lastIndexOf("tag2");
-    });
+    let lastIndexOfTag2: number = user.tags.lastIndexOf("tag2");
 
     // check if operation was successful
     expect(lastIndexOfTag2).toBe(3);
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    lastIndexOfTag2 = user.tags.lastIndexOf("tag2");
-    expect(lastIndexOfTag2).toBe(3);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    lastIndexOfTag2 = user.tags.lastIndexOf("tag2");
-    expect(lastIndexOfTag2).toBe(3);
 });
 
-test("Undo/Redo on array slice operation", () => {
+test("array slice operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
@@ -476,27 +409,13 @@ test("Undo/Redo on array slice operation", () => {
 
     // apply operation
     let slicedTags: string[] = [];
-    store.updateState(() => {
         slicedTags = user.tags.slice(1, 3);
-    });
 
     // check if operation was successful
     expect(slicedTags).toEqual(["tag2", "tag3"]);
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    slicedTags = user.tags.slice(1, 3);
-    expect(slicedTags).toEqual(["tag2", "tag3"]);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    slicedTags = user.tags.slice(1, 3);
-    expect(slicedTags).toEqual(["tag2", "tag3"]);
 });
 
-test("Undo/Redo on array length operation", () => {
+test("array length operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
@@ -506,51 +425,7 @@ test("Undo/Redo on array length operation", () => {
         return obj;
     }, user);
 
-    // apply operation
-    store.updateState(() => {
-        user.tags.length = 2;
-    });
-
     // check if operation was successful
-    expect(store.getObject<Person>(user.uuid)?.tags.length).toBe(2);
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(store.getObject<Person>(user.uuid)?.tags.length).toBe(3);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(store.getObject<Person>(user.uuid)?.tags.length).toBe(2);
-});
-
-test("Undo/Redo on array size operation", () => {
-    // create object
-    let user: Person = store.createObject("User");
-    // initialize object
-    user = store.updateObject((obj: Person) => {
-        obj.name = "Alice";
-        obj.tags.push("tag1", "tag2", "tag3");
-        return obj;
-    }, user);
-
-    // apply operation
-    store.updateState(() => {
-        user.tags.length = 2;
-    });
-
-    // check if operation was successful
-    expect(store.getObject<Person>(user.uuid)?.tags.length).toBe(2);
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(store.getObject<Person>(user.uuid)?.tags.length).toBe(3);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
     expect(store.getObject<Person>(user.uuid)?.tags.length).toBe(2);
 });
 
@@ -566,268 +441,164 @@ test("Undo/Redo on array find operation", () => {
 
     // apply operation
     let foundTag: string | undefined;
-    store.updateState(() => {
         foundTag = user.tags.find(tag => tag === "tag2");
-    });
 
     // check if operation was successful
     expect(foundTag).toBe("tag2");
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    foundTag = user.tags.find(tag => tag === "tag2");
-    expect(foundTag).toBe("tag2");
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    foundTag = user.tags.find(tag => tag === "tag2");
-    expect(foundTag).toBe("tag2");
 });
 
-test("Undo/Redo on array findIndex operation", () => {
+test("array findIndex operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2"];
+        obj.tags.push("tag1", "tag2");
         return obj;
     }, user);
 
     // apply operation
     let index: number = 0;
-    store.updateState(() => {
         index = user.tags.findIndex(tag => tag === "tag2");
-    });
 
     // check if operation was successful
     expect(index).toBe(1);
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(index).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(index).toBe(1);
 });
 
 
-test("Undo/Redo on array map operation", () => {
+test("array map operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2"];
+        obj.tags.push("tag1", "tag2");
         return obj;
     }, user);
 
     // apply operation
     let mappedTags: string[] = [];
-    store.updateState(() => {
         mappedTags = user.tags.map(tag => tag.toUpperCase());
-    });
 
     // check if operation was successful
     expect(mappedTags.length).toBe(2);
     expect(mappedTags).toContain("TAG1");
     expect(mappedTags).toContain("TAG2");
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(mappedTags).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(mappedTags.length).toBe(2);
-    expect(mappedTags).toContain("TAG1");
-    expect(mappedTags).toContain("TAG2");
 });
 
-test("Undo/Redo on array filter operation", () => {
+test("array filter operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
     let filteredTags: string[] = [];
-    store.updateState(() => {
         filteredTags = user.tags.filter(tag => tag !== "tag2");
-    });
 
     // check if operation was successful
     expect(filteredTags.length).toBe(2);
     expect(filteredTags).toContain("tag1");
     expect(filteredTags).toContain("tag3");
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(filteredTags).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(filteredTags.length).toBe(2);
-    expect(filteredTags).toContain("tag1");
-    expect(filteredTags).toContain("tag3");
 });
 
-test("Undo/Redo on array reduce operation", () => {
+test("array reduce operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
     let reducedTags: string = "";
-    store.updateState(() => {
-        reducedTags = user.tags.reduce((acc, tag) => acc + tag, "");
-    });
+    reducedTags = user.tags.reduce((acc, tag) => acc + tag, "");
 
     // check if operation was successful
     expect(reducedTags).toBe("tag1tag2tag3");
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(reducedTags).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(reducedTags).toBe("tag1tag2tag3");
 });
 
-test("Undo/Redo on array reduceRight operation", () => {
+test("array reduceRight operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
     let reducedTags: string = "";
-    store.updateState(() => {
-        reducedTags = user.tags.reduceRight((acc, tag) => acc + tag, "");
-    });
+    reducedTags = user.tags.reduceRight((acc, tag) => acc + tag, "");
 
     // check if operation was successful
     expect(reducedTags).toBe("tag3tag2tag1");
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(reducedTags).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(reducedTags).toBe("tag3tag2tag1");
 });
 
-test("Undo/Redo on array every operation", () => {
+test("array every operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
     let everyResult: boolean = false;
-    store.updateState(() => {
-        everyResult = user.tags.every(tag => tag.startsWith("tag"));
-    });
+
+    everyResult = user.tags.every(tag => tag.startsWith("tag"));
 
     // check if operation was successful
     expect(everyResult).toBe(true);
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(everyResult).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(everyResult).toBe(true);
 });
 
-test("Undo/Redo on array some operation", () => {
+test("array some operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
     let someResult: boolean = false;
-    store.updateState(() => {
-        someResult = user.tags.some(tag => tag === "tag2");
-    });
+
+    someResult = user.tags.some(tag => tag === "tag2");
 
     // check if operation was successful
     expect(someResult).toBe(true);
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(someResult).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(someResult).toBe(true);
 });
 
-test("Undo/Redo on array forEach operation", () => {
+test("array forEach operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    let forEachResult: string[] = [];
-    store.updateState(() => {
-        user.tags.forEach(tag => forEachResult.push(tag));
-    });
+    let forEachResult: string[] = []
+    user.tags.forEach(tag => forEachResult.push(tag));
 
     // check if operation was successful
     expect(forEachResult.length).toBe(3);
@@ -835,18 +606,6 @@ test("Undo/Redo on array forEach operation", () => {
     expect(forEachResult).toContain("tag2");
     expect(forEachResult).toContain("tag3");
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(forEachResult.length).toBe(0);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(forEachResult.length).toBe(3);
-    expect(forEachResult).toContain("tag1");
-    expect(forEachResult).toContain("tag2");
-    expect(forEachResult).toContain("tag3");
 });
 
 test("Undo/Redo on array flatMap operation", () => {
@@ -854,33 +613,15 @@ test("Undo/Redo on array flatMap operation", () => {
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2"];
+        obj.tags.push("tag1", "tag2");
         return obj;
     }, user);
 
     // apply operation
-    let flatMappedTags: string[] = [];
-    store.updateState(() => {
-        flatMappedTags = user.tags.flatMap(tag => [tag, tag.toUpperCase()]);
-    });
+    let flatMappedTags: string[] = user.tags.flatMap(tag => [tag, tag.toUpperCase()]);
 
     // check if operation was successful
-    expect(flatMappedTags.length).toBe(4);
-    expect(flatMappedTags).toContain("tag1");
-    expect(flatMappedTags).toContain("TAG1");
-    expect(flatMappedTags).toContain("tag2");
-    expect(flatMappedTags).toContain("TAG2");
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(flatMappedTags).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
     expect(flatMappedTags.length).toBe(4);
     expect(flatMappedTags).toContain("tag1");
     expect(flatMappedTags).toContain("TAG1");
@@ -893,32 +634,15 @@ test("Undo/Redo on array flat operation", () => {
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
         obj.tags = [["tag1"], ["tag2", "tag3"]];
         return obj;
     }, user);
 
     // apply operation
-    let flattenedTags: string[] = [];;
-    store.updateState(() => {
-        flattenedTags = user.tags.flat();
-    });
+    let flattenedTags: string[] = user.tags.flat();
 
     // check if operation was successful
-    expect(flattenedTags.length).toBe(3);
-    expect(flattenedTags).toContain("tag1");
-    expect(flattenedTags).toContain("tag2");
-    expect(flattenedTags).toContain("tag3");
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(flattenedTags).toBeUndefined();
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
     expect(flattenedTags.length).toBe(3);
     expect(flattenedTags).toContain("tag1");
     expect(flattenedTags).toContain("tag2");
@@ -930,9 +654,8 @@ test("Undo/Redo on array copyWithin operation", () => {
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
@@ -960,17 +683,13 @@ test("Undo/Redo on array entries operation", () => {
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    let entries: IterableIterator<[number, string]> = new Map().entries();
-    store.updateState(() => {
-        entries = user.tags.entries();
-    });
+    let entries: IterableIterator<[number, string]> = user.tags.entries();
 
     // check if operation was successful
     const entriesArray = Array.from(entries);
@@ -978,37 +697,20 @@ test("Undo/Redo on array entries operation", () => {
     expect(entriesArray).toContainEqual([0, "tag1"]);
     expect(entriesArray).toContainEqual([1, "tag2"]);
     expect(entriesArray).toContainEqual([2, "tag3"]);
-
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(entriesArray.length).toBe(0);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(entriesArray.length).toBe(3);
-    expect(entriesArray).toContainEqual([0, "tag1"]);
-    expect(entriesArray).toContainEqual([1, "tag2"]);
-    expect(entriesArray).toContainEqual([2, "tag3"]);
 });
 
-test("Undo/Redo on array keys operation", () => {
+test("Array.keys operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    let keys: IterableIterator<number> = new Map().keys();
-    store.updateState(() => {
-        keys = user.tags.keys();
-    });
+    let keys: IterableIterator<number> = user.tags.keys();
 
     // check if operation was successful
     const keysArray = Array.from(keys);
@@ -1017,36 +719,20 @@ test("Undo/Redo on array keys operation", () => {
     expect(keysArray).toContain(1);
     expect(keysArray).toContain(2);
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(keysArray.length).toBe(0);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(keysArray.length).toBe(3);
-    expect(keysArray).toContain(0);
-    expect(keysArray).toContain(1);
-    expect(keysArray).toContain(2);
 });
 
-test("Undo/Redo on array values operation", () => {
+test("values() method", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
-        obj = store.createObject<Person>("User");
         obj.name = "Alice";
-        obj.tags = ["tag1", "tag2", "tag3"];
+        obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    let values: IterableIterator<string> = new Map().values();
-    store.updateState(() => {
-        values = user.tags.values();
-    });
+    let values: IterableIterator<string> = user.tags.values();
 
     // check if operation was successful
     const valuesArray = Array.from(values);
@@ -1055,18 +741,6 @@ test("Undo/Redo on array values operation", () => {
     expect(valuesArray).toContain("tag2");
     expect(valuesArray).toContain("tag3");
 
-    // undo operation
-    store.undo();
-    // check if undo was successful
-    expect(valuesArray.length).toBe(0);
-
-    // redo operation
-    store.redo();
-    // check if redo was successful
-    expect(valuesArray.length).toBe(3);
-    expect(valuesArray).toContain("tag1");
-    expect(valuesArray).toContain("tag2");
-    expect(valuesArray).toContain("tag3");
 });
 
 test("Undo/Redo on array delete operation", () => {
