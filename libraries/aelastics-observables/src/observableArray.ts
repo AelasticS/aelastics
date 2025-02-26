@@ -155,12 +155,6 @@ export function createObservableArray<T>(
                             return lengthResult;
                         }
                         return Reflect.get(target, 'length');
-                    case 'size':
-                        const [continueOperationSize, sizeResult] = handlers.size?.(target, target.length) ?? [allowMutations, undefined];
-                        if (!continueOperationSize) {
-                            return sizeResult;
-                        }
-                        return Reflect.get(target, 'size');
                     case 'includes':
                         return (value: T) => {
                             const [continueOperation, includesResult] = handlers.includes?.(target, value) ?? [allowMutations, undefined];
