@@ -11,7 +11,6 @@ export interface ArrayHandlers<T> {
     sort?: (target: T[]) => [boolean, T[]?];
     fill?: (target: T[], value: T, start: number, end: number) => [boolean, T[]?];
     length?: (target: T[], length: number) => [boolean, number?];
-    size?: (target: T[], size: number) => [boolean, number?];
     includes?: (target: T[], value: T) => [boolean, boolean?];
     indexOf?: (target: T[], value: T, fromIndex: number) => [boolean, number];
     lastIndexOf?: (target: T[], value: T, fromIndex: number) => [boolean, number];
