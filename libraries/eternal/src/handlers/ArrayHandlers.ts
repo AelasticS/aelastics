@@ -23,6 +23,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         return (propDes.type === 'object') ? store.getObject(item) : item;
     }
     /** Map UUIDs to Objects */
+    //TODO find type of array elements
     function mapToObjects(items: any[]): T[] {
         return (propDes.type === 'object') ? items.map((item) => store.getObject(item.uuid)) : items;
     }
@@ -138,7 +139,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             items = mapToUUIDs(items);
             const result = obj[key].concat(items);
-            return [true, mapToObjects(result)];
+            return [false, mapToObjects(result)];
         },
 
         /** Handle includes */
@@ -147,7 +148,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const newValue = toUUID(value);
             const result = obj[key].includes(newValue);  // check is based on UUIDs, not timestamps
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle indexOf */
@@ -156,7 +157,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const newValue = isUUIDReference(value) ? (value.uuid as unknown as T) : value;
             const result = obj[key].indexOf(newValue, fromIndex);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle join */
@@ -164,7 +165,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
             const result = obj[key].join(separator);  // in case of objects, join based on UUIDs
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle lastIndexOf */
@@ -172,7 +173,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
             const result = obj[key].lastIndexOf(value, fromIndex);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle slice */
@@ -180,13 +181,13 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
             const result = obj[key].slice(start, end);
-            return [true, mapToObjects(result)];
+            return [false, mapToObjects(result)];
         },
         /** Handle length */
         length: (target: T[]) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
-            return [true, obj[key].length];
+            return [false, obj[key].length];
         },
 
         /** Handle find */
@@ -195,7 +196,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.find(callback, thisArg)
-            return [true, toObject(result)];
+            return [false, toObject(result)];
         },
 
         /** Handle findIndex */
@@ -204,7 +205,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.findIndex(callback, thisArg);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle map */
@@ -213,7 +214,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.map(callback, thisArg);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle filter */
@@ -222,7 +223,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.filter(callback, thisArg);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle reduce */
@@ -231,7 +232,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.reduce(callback, initialValue);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle reduceRight */
@@ -240,7 +241,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.reduceRight(callback, initialValue);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle every */
@@ -249,7 +250,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.every(callback, thisArg);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle some */
@@ -258,7 +259,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.some(callback, thisArg);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle forEach */
@@ -267,7 +268,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             items.forEach(callback, thisArg);
-            return [true, undefined];
+            return [false, undefined];
         },
 
         /** Handle flatMap */
@@ -276,7 +277,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.flatMap(callback, thisArg);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle flat */
@@ -285,7 +286,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             const result = items.flat(depth);
-            return [true, result];
+            return [false, result];
         },
 
         /** Handle copyWithin */
@@ -293,7 +294,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkWriteAccess(object, store, propDes.name);
             const key = makePrivatePropertyKey(propDes.name);
             const result = obj[key].copyWithin(targetIndex, start, end);
-            return [true, mapToObjects(result)];
+            return [false, mapToObjects(result)];
         },
 
         /** Handle entries */
@@ -305,7 +306,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
                     yield [index, toObject(value)];
                 }
             };
-            return [true, result()];
+            return [false, result()];
         },
 
         /** Handle keys */
@@ -317,7 +318,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
                     yield index;
                 }
             };
-            return [true, result()];
+            return [false, result()];
         },
 
         /** Handle values */
@@ -329,7 +330,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
                     yield toObject(value);
                 }
             };
-            return [true, result()];
+            return [false, result()];
         },
         /** Handle Symbol.iterator */
         // [Symbol.iterator]: (target: T[]) => {
