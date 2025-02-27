@@ -20,7 +20,6 @@ export class EternalStore {
 
 
 
-  // TODO Remove fetchFromExternalSource
   private accessedObjects: Set<EternalObject> = new Set(); // Track accessed object
   private versionedObjects: EternalObject[] = []; // Track versioned objects
 
@@ -70,7 +69,9 @@ export class EternalStore {
 
   /** Undo the last change */
   public undo(): boolean {
-    // TODO: check if is in update mode
+    if(this.inUpdateMode){
+      throw new Error("Cannot undo while in update mode.")
+    }
     if (this.currentStateIndex > 0) {
       this.currentStateIndex--
       return true // Undo successful
@@ -80,7 +81,9 @@ export class EternalStore {
 
   /** Redo the last undone change */
   public redo(): boolean {
-    // TODO: check if is in update mode
+    if(this.inUpdateMode){
+      throw new Error("Cannot redo while in update mode.")
+    }
     if (this.currentStateIndex < this.stateHistory.length - 1) {
       this.currentStateIndex++
       return true // Redo successful
