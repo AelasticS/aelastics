@@ -1,5 +1,5 @@
 export interface ArrayHandlers<T> {
-    getByIndex?:(target: T[], index: any, value: T) => [boolean, T];
+    getByIndex?: (target: T[], index: any, value: T) => [boolean, T];
     setByIndex?: (target: T[], index: number, value: T) => [boolean, T];
     delete?: (target: T[], index: number) => [boolean, boolean];
     push?: (target: T[], items: T[]) => [boolean, number?];
@@ -28,6 +28,7 @@ export interface ArrayHandlers<T> {
     flatMap?: (target: T[], callback: (value: T, index: number, array: T[]) => any, thisArg: any) => [boolean, any[]?];
     flat?: (target: T[], depth: number) => [boolean, any[]?];
     copyWithin?: (target: T[], targetIndex: number, start: number, end: number) => [boolean, T[]?];
+    [Symbol.iterator]: (target: T[]) => IterableIterator<T>;
     entries?: (target: T[]) => [boolean, IterableIterator<[number, T]>?];
     keys?: (target: T[]) => [boolean, IterableIterator<number>?];
     values?: (target: T[]) => [boolean, IterableIterator<T>?];
@@ -81,7 +82,7 @@ export function createObservableArray<T>(
             return true;
         },
 
-        get(target: T[], key: string | number | symbol, receiver: any): any {
+        get(target: T[], key: any | number | symbol, receiver: any): any {
 
             if (typeof key === 'string') {
                 switch (key) {
@@ -339,6 +340,7 @@ export function createObservableArray<T>(
                             }
                             return Reflect.apply(Array.prototype.toLocaleString, target, []);
                         }
+
                     default:
                         const [cont, getResult] = handlers.getByIndex?.(target, key, receiver) ?? [allowMutations, undefined];
                         if (!cont) {
@@ -347,7 +349,23 @@ export function createObservableArray<T>(
                         return Reflect.get(target, key, receiver);
                 }
             }
+            else if (typeof key === 'symbol') {
+                switch (key) {
+                    case Symbol.iterator:
+                        return () => {
+                            handlers[Symbol.iterator](target);
+                            const [continueOperation, result] = handlers[Symbol.iterator]?.(target) ?? [allowMutations, undefined];
+                            if (!continueOperation) {
+                                return result;
+                            }
+                            return Reflect.apply(Array.prototype[Symbol.iterator], target, receiver);
 
+                        }
+                    default:
+                        return Reflect.get(target, key, receiver);
+                }
+
+            }
             if (handlers.defaultAction) {
                 const [continueOperationDefault, defaultResult] = handlers.defaultAction(target, key, []);
                 if (!continueOperationDefault) {

@@ -334,16 +334,16 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             return [false, result()];
         },
         /** Handle Symbol.iterator */
-        // [Symbol.iterator]: (target: T[]) => {
-        //     const obj = checkReadAccess(object, store);
-        //     const key = makePrivatePropertyKey(propDes.name);
-        //     const items = mapToObjects(obj[key]);
-        //     return function* (): IterableIterator<T> {
-        //         for (let item of items) {
-        //             yield item;
-        //         }
-        //     }();
-        // },
+        [Symbol.iterator]: (target: T[]) => {
+            const obj = checkReadAccess(object, store);
+            const key = makePrivatePropertyKey(propDes.name);
+            const items = mapToObjects(obj[key]);
+            return function* (): IterableIterator<T> {
+                for (let item of items) {
+                    yield item;
+                }
+            }();
+        },
 
         /** Default action */
         defaultAction: (target: T[], key: PropertyKey, args?: any[]) => {
