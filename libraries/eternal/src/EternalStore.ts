@@ -102,7 +102,6 @@ export class EternalStore {
     const newObject = new DynamicClass()
     // Generate unique values for each instance
     newObject.uuid = randomUUID();
-    newObject.createdAt = Date.now(); // TODO check is this done by state
 
     // Immediately add to the latest state
     this.getState().addObject(newObject, 'created')
