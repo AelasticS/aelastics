@@ -138,7 +138,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
             items = mapToUUIDs(items);
-            const result = obj[key].concat(items);
+            const result = obj[key].concat(...items);
             return [false, mapToObjects(result)];
         },
 
