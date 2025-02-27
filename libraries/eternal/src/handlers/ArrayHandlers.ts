@@ -303,8 +303,9 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
             const result = function* (): IterableIterator<[number, T]> {
-                for (let [index, value] of obj[key].entries()) {
-                    yield [index, toObject(value)];
+                const size = obj[key].length;
+                for (let i = 0; i < size; i++) {
+                    yield [i, toObject(obj[key][i])];
                 }
             };
             return [false, result()];
@@ -315,8 +316,9 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
             const result = function* (): IterableIterator<number> {
-                for (let index of obj[key].keys()) {
-                    yield index;
+                const size = obj[key].length;
+                for (let i = 0; i < size; i++) {
+                    yield i;
                 }
             };
             return [false, result()];
@@ -327,8 +329,9 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
             const result = function* (): IterableIterator<T> {
-                for (let value of obj[key].values()) {
-                    yield toObject(value);
+                const values = obj[key];
+                for (let i = 0; i < values.length; i++) {
+                    yield toObject(values[i]);
                 }
             };
             return [false, result()];
@@ -339,8 +342,8 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.name);
             const items = mapToObjects(obj[key]);
             return function* (): IterableIterator<T> {
-                for (let item of items) {
-                    yield item;
+                for (let i = 0; i < items.length; i++) {
+                    yield items[i];
                 }
             }();
         },
