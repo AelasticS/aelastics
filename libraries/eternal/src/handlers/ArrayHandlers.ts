@@ -326,7 +326,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.name);
             const result = function* (): IterableIterator<T> {
-                for (let [index, value] of obj[key].values()) {
+                for (let value of obj[key].values()) {
                     yield toObject(value);
                 }
             };
