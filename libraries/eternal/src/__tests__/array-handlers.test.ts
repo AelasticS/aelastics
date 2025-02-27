@@ -601,7 +601,7 @@ test("array forEach operation", () => {
     user.tags.forEach(tag => forEachResult.push(`${tag}tag`));
 
     // check if operation was successful
-    expect(forEachResult.length).toBe(6);
+    expect(forEachResult.length).toBe(3);
     expect(forEachResult).toContain("tag1tag");
     expect(forEachResult).toContain("tag2tag");
     expect(forEachResult).toContain("tag3tag");
