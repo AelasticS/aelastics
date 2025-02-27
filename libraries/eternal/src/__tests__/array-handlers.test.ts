@@ -426,7 +426,7 @@ test("array length operation", () => {
     }, user);
 
     // check if operation was successful
-    expect(store.getObject<Person>(user.uuid)?.tags.length).toBe(2);
+    expect(store.getObject<Person>(user.uuid)?.tags.length).toBe(3);
 });
 
 test("Undo/Redo on array find operation", () => {
@@ -598,13 +598,13 @@ test("array forEach operation", () => {
 
     // apply operation
     let forEachResult: string[] = []
-    user.tags.forEach(tag => forEachResult.push(tag));
+    user.tags.forEach(tag => forEachResult.push(`${tag}tag`));
 
     // check if operation was successful
-    expect(forEachResult.length).toBe(3);
-    expect(forEachResult).toContain("tag1");
-    expect(forEachResult).toContain("tag2");
-    expect(forEachResult).toContain("tag3");
+    expect(forEachResult.length).toBe(6);
+    expect(forEachResult).toContain("tag1tag");
+    expect(forEachResult).toContain("tag2tag");
+    expect(forEachResult).toContain("tag3tag");
 
 });
 
@@ -635,7 +635,7 @@ test("Undo/Redo on array flat operation", () => {
     // initialize object
     user = store.updateObject((obj: EternalObject) => {
         obj.name = "Alice";
-        obj.tags = [["tag1"], ["tag2", "tag3"]];
+        obj.tags.push(["tag1"], ["tag2"], ["tag3"]);
         return obj;
     }, user);
 
