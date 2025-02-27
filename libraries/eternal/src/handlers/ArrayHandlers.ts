@@ -56,8 +56,9 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         },
         /** Remove item from array */
         delete: (target: T[], index: number) => {
+            const obj = checkWriteAccess(object, store, propDes.name);
             const key = makePrivatePropertyKey(propDes.name);
-            const deletedItem = Reflect.deleteProperty(target, index)
+            const deletedItem = delete obj[key][index]// Reflect.deleteProperty(obj, index)
             return [false, deletedItem];
         },
 
