@@ -1,5 +1,12 @@
 /** Defines allowed property types */
 export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
+
+/**
+ * Function to check if a value belongs to ComplexPropType
+ */
+export function isComplexPropType(value: any): value is ComplexPropType {
+    return ['object', 'array', 'map', 'set'].includes(value);
+}
 export type PropertyType = 'string' | 'number' | 'boolean' | ComplexPropType;
 
 
