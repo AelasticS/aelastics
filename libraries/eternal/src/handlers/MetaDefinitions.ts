@@ -16,6 +16,8 @@ export interface PropertyMeta {
     name: string; // Property name
     optional?: boolean; // Whether the property is optional,
     type: PropertyType; // Data type of the property
+    itemType?: PropertyType; // Data type of the items (if array, map, or set)
+    keyType?: PropertyType; // Data type of the keys (if map)
     inverseType?: string; // Name of the inverse type (if bidirectional)
     inverseProp?: string; // Name of the inverse property (if bidirectional)
 }
