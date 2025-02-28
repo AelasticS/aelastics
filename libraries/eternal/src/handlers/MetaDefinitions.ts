@@ -7,41 +7,54 @@ export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
 export function isComplexPropType(value: any): value is ComplexPropType {
     return ['object', 'array', 'map', 'set'].includes(value);
 }
+
 export type PropertyType = 'string' | 'number' | 'boolean' | ComplexPropType;
 
-
 /** Metadata for an individual property */
-
 export interface PropertyMeta {
     name: string; // Property name
-    optional?: boolean; // Whether the property is optional,
+    optional?: boolean; // Whether the property is optional
     type: PropertyType; // Data type of the property
     itemType?: PropertyType; // Data type of the items (if array, map, or set)
     keyType?: PropertyType; // Data type of the keys (if map)
     inverseType?: string; // Name of the inverse type (if bidirectional)
     inverseProp?: string; // Name of the inverse property (if bidirectional)
+    minElements?: number; // Minimum elements for collection properties
+    maxElements?: number; // Maximum elements for collection properties
+    defaultValue?: any; // Default value for simple properties
 }
 
 /** Metadata for an object type, defining its properties */
 export interface TypeMeta {
     name: string; // Name of the object type
     properties: Map<string, PropertyMeta>; // Property name -> PropertyMeta mapping
-    extends?: string; // Name of the base class (if sub classing is used)
+    extends?: string; // Name of the base class (if subclassing is used)
 }
 
-/** Schema containing multiple type definitions */
+/** Metadata for a role */
+export interface RoleMeta {
+    name: string; // Name of the role
+    type: string; // Type defining the role’s structure
+    isMandatory?: boolean; // If true, the role must always exist
+    isIndependent?: boolean; // If true, the role can exist without the object
+ //   isVersionable?: boolean; // If true, the role has its own versioning history
+}
+
+/** Schema containing multiple type and role definitions */
 export interface TypeSchema {
     name: string; // Schema name
+    version?: string; // Schema version
+    parentSchema?: string; // Full path of the parent schema
     types: Map<string, TypeMeta>; // Type name -> TypeMeta mapping
+    roles?: Map<string, RoleMeta>; // Role name -> RoleMeta mapping
+    export?: string[]; // List of exported types and roles
+    import?: Map<string, string[]>; // Imported schemas and their selected types/roles (supports aliasing)
 }
 
 /** Registry of schemas */
 export interface SchemaRegistry {
-    schemas: Map<string, TypeSchema>;
+    schemas: Map<string, TypeSchema>; // Mapping of schema full-path-names to schemas
 }
-
-// TODO  enhance schema registry with more methods
-
 
 /**
  * Function to get the type of a property for a given type
