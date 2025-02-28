@@ -54,6 +54,7 @@ export interface TypeSchema {
     roles?: Map<string, RoleMeta>; // Role name -> RoleMeta mapping
     export?: string[]; // List of exported types and roles
     import?: Map<string, string[]>; // Imported schemas and their selected types/roles (supports aliasing)
+    resolvedTypes?:Map<string, TypeMeta> // resolved types
 }
 
 /** Registry of schemas */
