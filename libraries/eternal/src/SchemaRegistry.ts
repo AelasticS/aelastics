@@ -115,7 +115,7 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
  * @param schemaQName - The fully qualified name (qName) of the schema to validate.
  * @returns A list of validation errors (empty if valid).
  */
-export function verifySchemaConsistency(schemaQName: string): string[] {
+export function verifySchemaConsistency(schemaQName: string, schemaRegistry: SchemaRegistry): string[] {
     const errors: string[] = [];
     const schema = schemaRegistry.schemas.get(schemaQName);
 
@@ -123,7 +123,11 @@ export function verifySchemaConsistency(schemaQName: string): string[] {
         errors.push(`Schema "${schemaQName}" not found in registry.`);
         return errors;
     }
-
+    // Ensure `types` is defined
+    if (!schema.types) {
+        errors.push(`Schema "${schemaQName}" is malformed: Missing 'types' definition.`);
+        return errors;
+    }
     // Check if all imported schemas exist
     if (schema.import) {
         for (const [importedSchemaQName, importedEntities] of schema.import.entries()) {
