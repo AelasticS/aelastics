@@ -9,6 +9,8 @@ interface StateView {
   index: number
 }
 
+// TODO add a trash for (soft) deleted objects
+
 export class State implements StateView {
   public readonly timestamp: number // Track when this state was created
   private objectMap: Map<string, any> // Maps UUIDs to objects
