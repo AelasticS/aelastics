@@ -13,6 +13,7 @@ export type PropertyType = 'string' | 'number' | 'boolean' | ComplexPropType;
 /** Metadata for an individual property */
 export interface PropertyMeta {
     qName: string; // Property name
+    label?: string; // Human-readable label for the property
     optional?: boolean; // Whether the property is optional
     type: PropertyType; // Data type of the property
     itemType?: PropertyType; // Data type of the items (if array, map, or set)
@@ -27,6 +28,7 @@ export interface PropertyMeta {
 /** Metadata for an object type, defining its properties */
 export interface TypeMeta {
     qName: string; // Name of the object type
+    label?: string; // Human-readable label for the type
     properties: Map<string, PropertyMeta>; // Property name -> PropertyMeta mapping
     extends?: string; // Name of the base class (if subclassing is used)
     roles?: string[]; // List of allowed role names for this type
@@ -35,6 +37,7 @@ export interface TypeMeta {
 /** Metadata for a role */
 export interface RoleMeta {
     qName: string; // Name of the role
+    label?: string; // Human-readable label for the role
     type: string; // Type defining the role’s structure
     isMandatory?: boolean; // If true, the role must always exist
     isIndependent?: boolean; // If true, the role can exist without the object
@@ -44,6 +47,7 @@ export interface RoleMeta {
 /** Schema containing multiple type and role definitions */
 export interface TypeSchema {
     qName: string; // Schema name
+    label?: string; // Human-readable label for the schema
     version?: string; // Schema version
     parentSchema?: string; // Full path of the parent schema
     types: Map<string, TypeMeta>; // Type name -> TypeMeta mapping
