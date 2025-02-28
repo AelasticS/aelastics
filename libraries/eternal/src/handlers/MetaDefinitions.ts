@@ -29,6 +29,7 @@ export interface TypeMeta {
     name: string; // Name of the object type
     properties: Map<string, PropertyMeta>; // Property name -> PropertyMeta mapping
     extends?: string; // Name of the base class (if subclassing is used)
+    roles?: string[]; // List of allowed role names for this type
 }
 
 /** Metadata for a role */
