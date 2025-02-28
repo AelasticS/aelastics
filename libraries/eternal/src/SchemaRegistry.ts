@@ -15,6 +15,7 @@ export function getLocalName(qName: string): string {
     return qName.split('/').pop() ?? qName;
 }
 
+
 /**
  * Function to populate the Schema Registry from an array of JSON schema definitions.
  * @param schemaDefinitions - An array of JSON objects representing schema definitions.
@@ -29,7 +30,8 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
             types: new Map(),
             roles: schemaDef.roles ? new Map() : undefined,
             export: schemaDef.export as string[] | undefined,
-            import: schemaDef.import ? new Map() : undefined
+            import: schemaDef.import ? new Map() : undefined,
+            resolvedTypes: new Map()
         };
 
         // Populate types
@@ -71,6 +73,7 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
                     }
                 }
                 schema.types.set(typeQName, typeMeta);
+                schema.resolvedTypes!.set(typeQName, typeMeta);
             }
         }
 
@@ -107,6 +110,68 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
         schemaRegistry.schemas.set(schema.qName, schema);
     }
 }
+
+function computeResolvedTypes(schema: TypeSchema, schemaRegistry: SchemaRegistry): string[] {
+    const errors: string[] = []; // Define errors array
+
+    // Ensure resolvedTypes exists and already contains local types
+    if (!schema.resolvedTypes) {
+        schema.resolvedTypes = new Map(schema.types); // Start with local types
+    }
+
+    if (!schema.import) return errors; // No imports to process
+
+    for (const [importedSchemaQName, importedEntries] of schema.import.entries()) {
+        const importedSchema = schemaRegistry.schemas.get(importedSchemaQName);
+        if (!importedSchema) continue; // Skip if schema is missing
+
+        if (importedEntries.includes("*")) {
+            // Ensure 'export' exists before iterating
+            if (!importedSchema.export) continue;
+            
+            // Import all exported types
+            for (const exportedTypeQName of importedSchema.export) {
+                if (!schema.resolvedTypes.has(exportedTypeQName) && importedSchema.types.has(exportedTypeQName)) {
+                    schema.resolvedTypes.set(exportedTypeQName, importedSchema.types.get(exportedTypeQName)!);
+                }
+            }
+        } else {
+            // Import specific types and handle aliases
+            for (const importEntry of importedEntries) {
+                if (typeof importEntry === "string") {
+                    // Check that the imported type is exported
+                    if (
+                        !schema.resolvedTypes.has(importEntry) &&
+                        importedSchema.types.has(importEntry) &&
+                        importedSchema.export?.includes(importEntry) 
+                    ) {
+                        schema.resolvedTypes.set(importEntry, importedSchema.types.get(importEntry)!);
+                    } else {
+                        errors.push(`Type "${importEntry}" is not exported by schema "${importedSchemaQName}".`);
+                    }
+                } else {
+                    // Handle aliasing { original, alias }
+                    const { original, alias } = importEntry;
+
+                    if (schema.resolvedTypes.has(alias)) {
+                        errors.push(`Duplicate alias "${alias}" detected in schema "${schema.qName}".`);
+                    } else if (
+                        importedSchema.types.has(original) &&
+                        importedSchema.export?.includes(original)
+                    ) {
+                        schema.resolvedTypes.set(alias, importedSchema.types.get(original)!);
+                    } else {
+                        errors.push(`Aliased type "${original}" not found in schema "${importedSchemaQName}".`);
+                    }
+                }
+            }
+        }
+    }
+
+    return errors; // Return errors array for further processing
+}
+
+
 
 
 /**
