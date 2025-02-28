@@ -14,11 +14,11 @@ let eternalStore: EternalStore;
 beforeEach(() => {
     store = createStore(new Map([
         ["User", {
-            name: "User",
+            qName: "User",
             properties: new Map([
-                ["name", { name: "name", type: "string" }],
-                ["age", { name: "age", type: "number" }],
-                ["tags", { name: "tags", type: "array" }]])
+                ["name", { qName: "name", type: "string" }],
+                ["age", { qName: "age", type: "number" }],
+                ["tags", { qName: "tags", type: "array" }]])
         }]
     ]));
     eternalStore = store.getEternalStore();

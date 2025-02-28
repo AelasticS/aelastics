@@ -7,17 +7,17 @@ describe("Bidirectional Relationships & Cyclic References", () => {
     beforeEach(() => {
         store = createStore(new Map([
             ["Parent", {
-                name: "Parent",
+                qName: "Parent",
                 properties: new Map([
-                    ["name", { name: "name", type: "string" }],
-                    ["children", { name: "children", type: "array", inverseType: "Child", inverseProp: "parent" }]
+                    ["name", { qName: "name", name: "name", type: "string" }],
+                    ["children", { qName: "children", name: "children", type: "array", inverseType: "Child", inverseProp: "parent" }]
                 ])
             }],
             ["Child", {
-                name: "Child",
+                qName: "Child",
                 properties: new Map([
-                    ["name", { name: "name", type: "string" }],
-                    ["parent", { name: "parent", type: "object", inverseType: "Parent", inverseProp: "children" }]
+                    ["name", { qName: "name", name: "name", type: "string" }],
+                    ["parent", { qName: "parent", name: "parent", type: "object", inverseType: "Parent", inverseProp: "children" }]
                 ])
             }]
         ]));

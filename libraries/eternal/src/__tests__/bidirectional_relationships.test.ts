@@ -6,11 +6,11 @@ describe("Bidirectional Relationships Tracking", () => {
     beforeEach(() => {
         store = new EternalStore(new Map([
             ["User", {
-                name: "User",
+                qName: "User",
                 properties: new Map([
-                    ["id", { name: "id", type: "string" }],
-                    ["name", { name: "name", type: "string" }],
-                    ["friends", { name: "friends", type: "set", inverseType: "User", inverseProp: "friends" }]
+                    ["id", { qName: "id", name: "id", type: "string" }],
+                    ["name", { qName: "name", name: "name", type: "string" }],
+                    ["friends", { qName: "friends", name: "friends", type: "set", inverseType: "User", inverseProp: "friends" }]
                 ])
             }]
         ]));

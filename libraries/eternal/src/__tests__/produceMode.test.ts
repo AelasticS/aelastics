@@ -7,10 +7,10 @@ describe("Store API: Produce Mode Detection", () => {
     beforeEach(() => {
         const metaInfo = new Map<string, TypeMeta>([
             ["User", {
-                name: "User",
+                qName: "User",
                 properties: new Map([
-                    ["name", { name: "name", type: "string" }],
-                    ["age", { name: "age", type: "number" }]
+                    ["name", { qName: "name", name: "name", type: "string" }],
+                    ["age", { qName: "age", name: "age", type: "number" }]
                 ])
             }]
         ]);

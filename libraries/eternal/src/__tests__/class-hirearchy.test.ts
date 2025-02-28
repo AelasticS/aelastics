@@ -4,26 +4,26 @@ import { EternalObject } from '../handlers/InternalTypes';
 
 // Define type metadata for the hierarchy
 const typeMetaA: TypeMeta = {
-  name: 'TypeA',
+  qName: 'TypeA',
   properties: new Map([
-    ['propA', { name: 'propA', type: 'string' }],
-    ['propArray', { name: 'propArray', type: 'array' }]
+    ['propA', { name: 'propA', type: 'string', qName: 'propA' }],
+    ['propArray', { name: 'propArray', type: 'array', qName: 'propArray' }]
   ])
 };
 
 const typeMetaB: TypeMeta = {
-  name: 'TypeB',
+  qName: 'TypeB',
   extends: 'TypeA',
   properties: new Map([
-    ['propB', { name: 'propB', type: 'number' }]
+    ['propB', { name: 'propB', type: 'number', qName: 'propB' }]
   ])
 };
 
 const typeMetaC: TypeMeta = {
-  name: 'TypeC',
+  qName: 'TypeC',
   extends: 'TypeB',
   properties: new Map([
-    ['propC', { name: 'propC', type: 'boolean' }]
+    ['propC', { name: 'propC', type: 'boolean', qName: 'propC' }]
   ])
 };
 

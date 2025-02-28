@@ -71,7 +71,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // Check if typeMeta.properties is defined and is a Map
     if (!typeMeta.properties || !(typeMeta.properties instanceof Map)) {
-        throw new Error(`Invalid properties for typeMeta: ${typeMeta.name}`);
+        throw new Error(`Invalid properties for typeMeta: ${typeMeta.qName}`);
     }
 
 
@@ -82,7 +82,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         const privateInverseKey = propertyMeta.inverseProp ? makePrivatePropertyKey(propertyMeta.inverseProp) : "";
 
         if (!propertyMeta) {
-            throw new Error(`Property metadata for key "${key}" is undefined in typeMeta: ${typeMeta.name}`);
+            throw new Error(`Property metadata for key "${key}" is undefined in typeMeta: ${typeMeta.qName}`);
         }
 
         // Generate optimized getter

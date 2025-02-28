@@ -1,19 +1,19 @@
 import { TypeSchema } from "../handlers/MetaDefinitions";
 
 export const UserSchema: TypeSchema = {
-    name: "UserSchema",
+    qName: "UserSchema",
     types: new Map([
         [
             "User",
             {
-                name: "User",
+                qName: "User",
                 properties: new Map([
-                    ["id", { name: "id", type: "string" }],
-                    ["name", { name: "name", type: "string" }],
-                    ["age", { name: "age", type: "number" }],
+                    ["id", { qName: "id", name: "id", type: "string" }],
+                    ["name", { qName: "name", name: "name", type: "string" }],
+                    ["age", { qName: "age", name: "age", type: "number" }],
                     [
                         "friends",
-                        { name: "friends", type: "array", inverseType: "User", inverseProp: "friends" }
+                        { qName: "friends", name: "friends", type: "array", inverseType: "User", inverseProp: "friends" }
                     ]
                 ])
             }
@@ -21,13 +21,13 @@ export const UserSchema: TypeSchema = {
         [
             "Post",
             {
-                name: "Post",
+                qName: "Post",
                 properties: new Map([
-                    ["id", { name: "id", type: "string" }],
-                    ["title", { name: "title", type: "string" }],
+                    ["id", { qName: "id", name: "id", type: "string" }],
+                    ["title", { qName: "title", name: "title", type: "string" }],
                     [
                         "author",
-                        { name: "author", type: "object", inverseType: "User", inverseProp: "posts" }
+                        { qName: "author", name: "author", type: "object", inverseType: "User", inverseProp: "posts" }
                     ]
                 ])
             }

@@ -7,12 +7,12 @@ describe("Undo/Redo Functionality", () => {
     beforeEach(() => {
         store = new EternalStore(new Map([
             ["User", {
-                name: "User",
+                qName: "User",
                 properties: new Map([
-                    ["id", { name: "id", type: "string" }],
-                    ["name", { name: "name", type: "string" }],
-                    ["age", { name: "age", type: "number" }],
-                    ["tags", { name: "tags", type: "array" }]                ])
+                    ["id", { qName: "id", type: "string" }],
+                    ["name", { qName: "name", type: "string" }],
+                    ["age", { qName: "age", type: "number" }],
+                    ["tags", { qName: "tags", type: "array" }]                ])
             }]
         ]));
     });
