@@ -1,4 +1,4 @@
-import { PropertyMeta, RoleMeta, SchemaRegistry, TypeMeta, TypeSchema } from "./handlers/MetaDefinitions";
+import { isComplexPropType, PropertyMeta, RoleMeta, SchemaRegistry, TypeMeta, TypeSchema } from "./handlers/MetaDefinitions";
 
 // Global Schema Registry
 const schemaRegistry: SchemaRegistry = {
@@ -35,9 +35,9 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
         // Populate types
         if (schemaDef.types && typeof schemaDef.types === 'object') {
             for (const [typeQName, typeDataRaw] of Object.entries(schemaDef.types)) {
-                const typeData = typeDataRaw as { 
-                    properties?: Record<string, any>; 
-                    extends?: string; 
+                const typeData = typeDataRaw as {
+                    properties?: Record<string, any>;
+                    extends?: string;
                     roles?: string[];
                     label?: string;
                 };
@@ -77,9 +77,9 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
         // Populate roles
         if (schemaDef.roles && typeof schemaDef.roles === 'object') {
             for (const [roleQName, roleDataRaw] of Object.entries(schemaDef.roles)) {
-                const roleData = roleDataRaw as { 
-                    type: string; 
-                    isMandatory?: boolean; 
+                const roleData = roleDataRaw as {
+                    type: string;
+                    isMandatory?: boolean;
                     isIndependent?: boolean;
                     label?: string;
                 };
@@ -106,4 +106,160 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
         // Add schema to the global registry
         schemaRegistry.schemas.set(schema.qName, schema);
     }
+}
+
+
+/**
+ * Verifies the consistency of an imported schema within the schema registry.
+ * Ensures that all imports exist, types and roles are valid, and no conflicts arise.
+ * @param schemaQName - The fully qualified name (qName) of the schema to validate.
+ * @returns A list of validation errors (empty if valid).
+ */
+export function verifySchemaConsistency(schemaQName: string): string[] {
+    const errors: string[] = [];
+    const schema = schemaRegistry.schemas.get(schemaQName);
+
+    if (!schema) {
+        errors.push(`Schema "${schemaQName}" not found in registry.`);
+        return errors;
+    }
+
+    // Check if all imported schemas exist
+    if (schema.import) {
+        for (const [importedSchemaQName, importedEntities] of schema.import.entries()) {
+            const importedSchema = schemaRegistry.schemas.get(importedSchemaQName);
+            if (!importedSchema) {
+                errors.push(`Imported schema "${importedSchemaQName}" not found in registry.`);
+                continue;
+            }
+
+            // Validate imported types and roles exist in the imported schema
+            for (const entity of importedEntities) {
+                const entityQName = entity.split(" as ")[0]; // Remove alias if present
+
+                if (
+                    !importedSchema.types?.has(entityQName) &&
+                    !importedSchema.roles?.has(entityQName)
+                ) {
+                    errors.push(
+                        `Entity "${entityQName}" imported from "${importedSchemaQName}" does not exist.`
+                    );
+                }
+            }
+        }
+    }
+
+    // Check for duplicate exports (conflicting definitions)
+    for (const [otherSchemaQName, otherSchema] of schemaRegistry.schemas.entries()) {
+        if (otherSchemaQName === schemaQName) continue;
+
+        if (otherSchema.export) {
+            for (const exportedEntity of otherSchema.export) {
+                if (schema.export?.includes(exportedEntity)) {
+                    errors.push(
+                        `Conflict: Entity "${exportedEntity}" is exported by both "${schemaQName}" and "${otherSchemaQName}".`
+                    );
+                }
+            }
+        }
+    }
+
+    // Validate properties (type references, inverse relationships, min/max constraints)
+    for (const [typeQName, typeMeta] of schema.types.entries()) {
+        for (const [propQName, propMeta] of typeMeta.properties.entries()) {
+            // Ensure the property type exists if it's a reference
+            if (isComplexPropType(propMeta.type)) {
+                if (
+                    propMeta.type === "object" &&
+                    !schemaRegistry.schemas.get(schemaQName)?.types?.has(propMeta.inverseType!)
+                ) {
+                    errors.push(`Property "${propQName}" refers to unknown type "${propMeta.inverseType}".`);
+                }
+
+                if (
+                    propMeta.type === "map" &&
+                    propMeta.keyType &&
+                    !["string", "number", "boolean"].includes(propMeta.keyType)
+                ) {
+                    errors.push(`Property "${propQName}" has invalid key type "${propMeta.keyType}".`);
+                }
+            }
+
+            // Validate inverse relationships (if inverseType and inverseProp are defined)
+            if (propMeta.inverseType && propMeta.inverseProp) {
+                const inverseTypeMeta = schemaRegistry.schemas.get(schemaQName)?.types?.get(propMeta.inverseType);
+                if (!inverseTypeMeta) {
+                    errors.push(`Property "${propQName}" has inverseType "${propMeta.inverseType}", but it does not exist.`);
+                } else {
+                    const inversePropMeta = inverseTypeMeta.properties.get(propMeta.inverseProp);
+                    if (!inversePropMeta) {
+                        errors.push(`Property "${propQName}" declares inverseProp "${propMeta.inverseProp}", but it does not exist in "${propMeta.inverseType}".`);
+                    } else if (inversePropMeta.inverseType !== typeQName || inversePropMeta.inverseProp !== propQName) {
+                        errors.push(`Inverse mismatch: Property "${propQName}" → "${propMeta.inverseType}" does not correctly link back to "${typeQName}".`);
+                    }
+                }
+            }
+
+            // Validate min/max constraints
+            if (propMeta.minElements !== undefined && propMeta.maxElements !== undefined) {
+                if (propMeta.maxElements !== undefined && propMeta.minElements > propMeta.maxElements) {
+                    errors.push(
+                        `Property "${propQName}" has minElements=${propMeta.minElements} but maxElements=${propMeta.maxElements} (invalid).`
+                    );
+                }
+            }
+        }
+    }
+
+    // Check for circular dependencies in imports
+    const visitedSchemas = new Set<string>();
+
+    function detectCircularDependency(currentSchemaQName: string): boolean {
+        if (visitedSchemas.has(currentSchemaQName)) {
+            errors.push(`Circular dependency detected in schema imports: "${currentSchemaQName}".`);
+            return true;
+        }
+        visitedSchemas.add(currentSchemaQName);
+
+        const currentSchema = schemaRegistry.schemas.get(currentSchemaQName);
+        if (currentSchema?.import) {
+            for (const importedSchemaQName of currentSchema.import.keys()) {
+                if (detectCircularDependency(importedSchemaQName)) {
+                    return true;
+                }
+            }
+        }
+
+        visitedSchemas.delete(currentSchemaQName);
+        return false;
+    }
+
+    detectCircularDependency(schemaQName);
+
+    // Check for circular subclassing in types
+    function detectCircularSubclassing(typeQName: string, path: Set<string>): boolean {
+        if (path.has(typeQName)) {
+            errors.push(`Circular inheritance detected in type hierarchy: "${Array.from(path).join(" → ")} → ${typeQName}".`);
+            return true;
+        }
+
+        const typeMeta = schema?.types.get(typeQName);
+        if (!typeMeta?.extends) return false;
+
+        path.add(typeQName);
+        const parentType = typeMeta.extends;
+        if (!schema?.types.has(parentType)) {
+            errors.push(`Type "${typeQName}" extends "${parentType}", but "${parentType}" does not exist.`);
+        } else {
+            detectCircularSubclassing(parentType, path);
+        }
+        path.delete(typeQName);
+        return false;
+    }
+
+    for (const typeQName of schema.types.keys()) {
+        detectCircularSubclassing(typeQName, new Set());
+    }
+
+    return errors;
 }
