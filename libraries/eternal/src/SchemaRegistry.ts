@@ -15,15 +15,114 @@ export function getLocalName(qName: string): string {
     return qName.split('/').pop() ?? qName;
 }
 
+export function initializeSchemaRegistry(jsonSchemas: any[]): SchemaRegistry | string[] {
+    const errors: string[] = [];
 
-/**
- * Function to populate the Schema Registry from an array of JSON schema definitions.
- * @param schemaDefinitions - An array of JSON objects representing schema definitions.
- */
-export function populateSchemaRegistry(schemaDefinitions: any[]): void {
-    for (const schemaDef of schemaDefinitions) {
+    // 1️⃣ Populate the registry
+    const newRegistry = populateSchemaRegistry(jsonSchemas, errors);
+
+    // 2️⃣ Compute resolved types
+    for (const schema of newRegistry.schemas.values()) {
+        errors.push(...computeResolvedTypes(schema, newRegistry));
+    }
+
+    // 3️⃣ Validate all schemas
+    for (const schemaQName of newRegistry.schemas.keys()) {
+        errors.push(...verifySchemaConsistency(schemaQName, newRegistry));
+    }
+
+    // ✅ Return new registry if no errors, otherwise return errors
+    return errors.length > 0 ? errors : newRegistry;
+}
+
+export function addSchemasToRegistry(
+    jsonSchemas: any[],
+    existingRegistry: SchemaRegistry
+): SchemaRegistry | string[] {
+    const errors: string[] = [];
+
+    // 1️⃣ Populate a copy of the registry with new schemas
+    const updatedRegistry = populateSchemaRegistry(jsonSchemas, errors, existingRegistry);
+
+    // 2️⃣ Compute resolved types only for new schemas
+    for (const schemaDef of jsonSchemas) {
+        const schema = updatedRegistry.schemas.get(schemaDef.qName);
+        if (schema) {
+            errors.push(...computeResolvedTypes(schema, updatedRegistry));
+        }
+    }
+
+    // 3️⃣ Validate only newly added schemas
+    for (const schemaDef of jsonSchemas) {
+        errors.push(...verifySchemaConsistency(schemaDef.qName, updatedRegistry));
+    }
+
+    // ✅ Return updated registry if no errors, otherwise return errors
+    return errors.length > 0 ? errors : updatedRegistry;
+}
+
+export function removeSchemasFromRegistry(
+    schemasToRemove: TypeSchema[], 
+    existingRegistry: SchemaRegistry
+): SchemaRegistry | string[] {
+    const errors: string[] = [];
+
+    // 1️⃣ Create a shallow copy of the registry before modification
+    const updatedRegistry: SchemaRegistry = {
+        schemas: new Map(existingRegistry.schemas) // Copy existing schemas
+    };
+
+    // 2️⃣ Remove specified schemas
+    for (const schema of schemasToRemove) {
+        if (!updatedRegistry.schemas.has(schema.qName)) {
+            errors.push(`Schema "${schema.qName}" does not exist and cannot be removed.`);
+        } else {
+            updatedRegistry.schemas.delete(schema.qName);
+        }
+    }
+
+    // 3️⃣ Recompute resolved types for the remaining schemas
+    for (const schema of updatedRegistry.schemas.values()) {
+        errors.push(...computeResolvedTypes(schema, updatedRegistry));
+    }
+
+    // 4️⃣ Validate all remaining schemas
+    for (const schemaQName of updatedRegistry.schemas.keys()) {
+        errors.push(...verifySchemaConsistency(schemaQName, updatedRegistry));
+    }
+
+    // 5️⃣ Return the updated registry if no errors, otherwise return errors
+    return errors.length > 0 ? errors : updatedRegistry;
+}
+
+
+export function populateSchemaRegistry(
+    jsonSchemas: any[],
+    errors: string[] = [],
+    existingRegistry?: SchemaRegistry
+): SchemaRegistry {
+
+    // Create a new shallow copy of the registry (or a new registry if undefined)
+    const newRegistry: SchemaRegistry = existingRegistry
+        ? { schemas: new Map(existingRegistry.schemas) }
+        : { schemas: new Map() };
+
+    for (const schemaDef of jsonSchemas) {
+        // Check required fields
+        if (!schemaDef.qName || typeof schemaDef.qName !== "string") {
+            errors.push("Schema is missing a valid 'qName'.");
+            continue;
+        }
+
+        // Check if schema already exists in the registry
+        if (newRegistry.schemas.has(schemaDef.qName)) {
+            errors.push(`Schema "${schemaDef.qName}" is already defined.`);
+            continue;
+        }
+
+        // Create a new schema object
         const schema: TypeSchema = {
-            qName: schemaDef.qName as string,
+            qName: schemaDef.qName,
             label: schemaDef.label ?? getLocalName(schemaDef.qName),
             version: schemaDef.version as string | undefined,
             parentSchema: schemaDef.parentSchema as string | undefined,
@@ -35,7 +134,7 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
         };
 
         // Populate types
-        if (schemaDef.types && typeof schemaDef.types === 'object') {
+        if (schemaDef.types && typeof schemaDef.types === "object") {
             for (const [typeQName, typeDataRaw] of Object.entries(schemaDef.types)) {
                 const typeData = typeDataRaw as {
                     properties?: Record<string, any>;
@@ -53,7 +152,7 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
                 };
 
                 // Populate properties
-                if (typeData.properties && typeof typeData.properties === 'object') {
+                if (typeData.properties && typeof typeData.properties === "object") {
                     for (const [propQName, propDataRaw] of Object.entries(typeData.properties)) {
                         const propData = propDataRaw as PropertyMeta;
                         const propertyMeta: PropertyMeta = {
@@ -78,7 +177,7 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
         }
 
         // Populate roles
-        if (schemaDef.roles && typeof schemaDef.roles === 'object') {
+        if (schemaDef.roles && typeof schemaDef.roles === "object") {
             for (const [roleQName, roleDataRaw] of Object.entries(schemaDef.roles)) {
                 const roleData = roleDataRaw as {
                     type: string;
@@ -99,17 +198,21 @@ export function populateSchemaRegistry(schemaDefinitions: any[]): void {
         }
 
         // Populate imports
-        if (schemaDef.import && typeof schemaDef.import === 'object') {
+        if (schemaDef.import && typeof schemaDef.import === "object") {
             for (const [importedSchemaQName, importedTypesRaw] of Object.entries(schemaDef.import)) {
                 const importedTypes = importedTypesRaw as string[];
                 schema.import?.set(importedSchemaQName, importedTypes);
             }
         }
 
-        // Add schema to the global registry
-        schemaRegistry.schemas.set(schema.qName, schema);
+        // Add schema to the new registry
+        newRegistry.schemas.set(schema.qName, schema);
     }
+
+    // Return the new registry
+    return newRegistry;
 }
+
 
 function computeResolvedTypes(schema: TypeSchema, schemaRegistry: SchemaRegistry): string[] {
     const errors: string[] = []; // Define errors array
@@ -128,7 +231,7 @@ function computeResolvedTypes(schema: TypeSchema, schemaRegistry: SchemaRegistry
         if (importedEntries.includes("*")) {
             // Ensure 'export' exists before iterating
             if (!importedSchema.export) continue;
-            
+
             // Import all exported types
             for (const exportedTypeQName of importedSchema.export) {
                 if (!schema.resolvedTypes.has(exportedTypeQName) && importedSchema.types.has(exportedTypeQName)) {
@@ -143,7 +246,7 @@ function computeResolvedTypes(schema: TypeSchema, schemaRegistry: SchemaRegistry
                     if (
                         !schema.resolvedTypes.has(importEntry) &&
                         importedSchema.types.has(importEntry) &&
-                        importedSchema.export?.includes(importEntry) 
+                        importedSchema.export?.includes(importEntry)
                     ) {
                         schema.resolvedTypes.set(importEntry, importedSchema.types.get(importEntry)!);
                     } else {
