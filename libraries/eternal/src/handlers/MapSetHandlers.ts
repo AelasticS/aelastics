@@ -1,23 +1,74 @@
-import { State } from "../State";
 import { PropertyMeta } from "./MetaDefinitions";
-import { isUUIDReference } from "../utils";
+import { isUUIDReference, makePrivatePropertyKey, toObject } from "../utils";
 import { createObservableMap, createObservableSet, MapHandlers, SetHandlers } from "@aelastics/observables";
+import { ObservableExtra } from "../types";
+import { checkReadAccess } from "../PropertyAccessors";
 
-/** Creates handlers for observable maps */
-export const createMapHandlers = <K, V>(
-    propertyMeta: Map<string, PropertyMeta>
-): MapHandlers<K, V, { key: string }> => ({
+export const createMapHandlers = <K, V>({ store, object, propDes }: ObservableExtra
+): MapHandlers<K, V> => ({
     /** Ensure values stored in the map are UUIDs if applicable */
     set: (target: Map<K, V>, key: K, value: V, extra?: { key: string }) => {
-        const meta = propertyMeta.get(extra?.key || "");
+                    const key = makePrivatePropertyKey(propDes.qName);
+                    const obj = checkReadAccess(object, store);
+                    const newValue = obj[key][index]
+                    const res = toObject(newValue, store, propDes)
+                    return [false, res];
         target.set(key, isUUIDReference(value) ? (value.uuid as unknown as V) : value);
         return true;
+    },
+
+    /** Get value by key */
+    get: (target: Map<K, V>, key: K, extra?: { key: string }) => {
+        const value = target.get(key);
+        return isUUIDReference(value) ? store.getObject(value.uuid) : value;
+    },
+
+    /** Check if key exists */
+    has: (target: Map<K, V>, key: K, extra?: { key: string }) => {
+        return [false, target.has(key)];
     },
 
     /** Delete entry from map */
     delete: (target: Map<K, V>, key: K, extra?: { key: string }) => {
         target.delete(key);
         return true;
+    },
+
+    /** Clear all entries from map */
+    clear: (target: Map<K, V>, extra?: { key: string }) => {
+        target.clear();
+        return true;
+    },
+
+    /** Get size of map */
+    size: (target: Map<K, V>, extra?: { key: string }) => {
+        return target.size;
+    },
+
+    /** Get keys iterator */
+    keys: (target: Map<K, V>, extra?: { key: string }) => {
+        return target.keys();
+    },
+
+    /** Get values iterator */
+    values: (target: Map<K, V>, extra?: { key: string }) => {
+        return target.values();
+    },
+
+    /** Get entries iterator */
+    entries: (target: Map<K, V>, extra?: { key: string }) => {
+        return target.entries();
+    },
+
+    /** Execute function for each entry */
+    forEach: (target: Map<K, V>, callback: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any, extra?: { key: string }) => {
+        target.forEach(callback, thisArg);
+        return true;
+    },
+
+    /** Handle Symbol.iterator */
+    [Symbol.iterator]: (target: Map<K, V>, extra?: { key: string }) => {
+        return target[Symbol.iterator]();
     },
 
     /** Default action */
