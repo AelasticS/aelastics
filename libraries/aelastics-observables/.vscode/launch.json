@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Ental test",
+            "name": "Heft test",
             "program": "${workspaceFolder}/node_modules/@rushstack/heft/lib/start.js",
             "cwd": "${workspaceFolder}",
             "args": ["--debug", "test", "--clean"],
