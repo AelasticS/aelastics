@@ -35,6 +35,7 @@ export interface ArrayHandlers<T> {
     join?: (target: T[], separator: string) => [boolean, string?];
     toStringA?: (target: T[]) => [boolean, string?];
     toLocaleStringA?: (target: T[]) => [boolean, string?];
+    //TODO consider to remove defaultAction as it is not useful
     defaultAction?: (target: T[], key: PropertyKey, args?: any[]) => [boolean, any?];
 }
 
