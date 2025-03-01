@@ -30,7 +30,9 @@ export function copyProperties(target: any, source: any) {
     }
 }
 
+import { EternalStore } from "./EternalStore";
 import { EternalObject } from "./handlers/InternalTypes";
+import { PropertyMeta } from "./handlers/MetaDefinitions";
 
 
 export const isObjectFrozen = (obj: EternalObject)=>{
@@ -52,6 +54,7 @@ export function uniqueTimestamp() {
 }
 // Initialize the previous timestamp
 uniqueTimestamp.previous = 0;
+
 
 /**
  * Removes an element from an array using splice.
@@ -76,3 +79,20 @@ export function makePrivateProxyKey(propertyName: string) {
     // return Symbol.for(propertyName);
     return `_proxy_${propertyName}`;
  }
+/** Convert to Object or Return Value */
+export function toObject(item: any, store: EternalStore, propDes: PropertyMeta): any {
+    return (propDes.type === 'object') ? store.getObject(item) : item;
+}
+/** Map UUIDs to Objects */
+//TODO find type of array elements
+export function mapToObjects(items: any[], store: EternalStore, propDes: PropertyMeta): any[] {
+    return (propDes.type === 'object') ? items.map((item) => store.getObject(item.uuid)) : items;
+}
+/** Convert Object to UUID */
+export function toUUID(value: any, propDes: PropertyMeta): any {
+    return (propDes.type === 'object') ? value.uuid : value;
+}
+/** Map Objects to UUIDs */
+export function mapToUUIDs(items: any[], propDes: any): any[] {
+    return (propDes.type === 'object') ? items.map((item) => item.uuid) : items;
+}

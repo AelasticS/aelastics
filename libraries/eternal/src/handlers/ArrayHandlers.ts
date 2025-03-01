@@ -1,41 +1,11 @@
 import { ArrayHandlers, createObservableArray } from "@aelastics/observables";
-import { PropertyMeta } from "./MetaDefinitions";
-import { isUUIDReference, makePrivatePropertyKey } from "../utils"; // Import the utility function
-import { EternalStore } from "../EternalStore";
+import { isUUIDReference, makePrivatePropertyKey, mapToObjects, mapToUUIDs, toObject, toUUID } from "../utils"; // Import the utility function
 import { checkWriteAccess, checkReadAccess } from "../PropertyAccessors";
 import { EternalObject } from "./InternalTypes";
+import { ObservableExtra } from "../types";
 
 /** Creates typed array handlers to track UUIDs and object references */
-
-// TODO: observable should be also frozen when parent is frozen  
-
-export interface ObservableExtra {
-    store: EternalStore,
-    object: EternalObject,
-    propDes: PropertyMeta
-}
-
-
 export const createArrayHandlers = <T extends EternalObject>({ store, object, propDes }: ObservableExtra): ArrayHandlers<T> => {
-    // Helper functions
-    /** Convert to Object or Return Value */
-    function toObject(item: any): T {
-        return (propDes.type === 'object') ? store.getObject(item) : item;
-    }
-    /** Map UUIDs to Objects */
-    //TODO find type of array elements
-    function mapToObjects(items: any[]): T[] {
-        return (propDes.type === 'object') ? items.map((item) => store.getObject(item.uuid)) : items;
-    }
-    /** Convert Object to UUID */
-    function toUUID(value: any): T {
-        return (propDes.type === 'object') ? value.uuid : value;
-    }
-    /** Map Objects to UUIDs */
-    function mapToUUIDs(items: any[]): T[] {
-        return (propDes.type === 'object') ? items.map((item) => item.uuid) : items;
-    }
-
     // Return the array handlers
     return {
         // Get element by index, if it is a UUID reference, return the object
@@ -43,13 +13,13 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const key = makePrivatePropertyKey(propDes.qName);
             const obj = checkReadAccess(object, store);
             const newValue = obj[key][index]
-            const res = toObject(newValue);
+            const res = toObject(newValue, store, propDes)
             return [false, res];
         },
         // Set item by index, convert object to UUID if needed
         setByIndex: (target: T[], index: number, value: any) => {
             const obj = checkWriteAccess(object, store, propDes.qName);
-            const newValue = toUUID(value);
+            const newValue = toUUID(value, propDes);
             const key = makePrivatePropertyKey(propDes.qName);
             obj[key][index] = newValue;
             return [false, newValue];
@@ -66,7 +36,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         push: (target: T[], items: T[]) => {
             const obj = checkWriteAccess(object, store, propDes.qName);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items1 = mapToUUIDs(items);
+            const items1 = mapToUUIDs(items, propDes);
             const result = obj[key].push(...items1);
             return [false, result];
         },
@@ -76,7 +46,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkWriteAccess(object, store, propDes.qName);
             const key = makePrivatePropertyKey(propDes.qName);
             const item = obj[key].pop();
-            return [false, toObject(item)];
+            return [false, toObject(item, store, propDes)];
         },
 
         /** Handle shift */
@@ -84,14 +54,14 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkWriteAccess(object, store, propDes.qName);
             const key = makePrivatePropertyKey(propDes.qName);
             const shiftedItem = obj[key].shift();
-            return [false, toObject(shiftedItem)];
+            return [false, toObject(shiftedItem, store, propDes)];
         },
 
         /** Handle unshift (convert objects to UUIDs if needed) */
         unshift: (target: T[], items: T[]) => {
             const obj = checkWriteAccess(object, store, propDes.qName);
             const key = makePrivatePropertyKey(propDes.qName);
-            items = mapToUUIDs(items);
+            items = mapToUUIDs(items, propDes);
             const result = obj[key].unshift(...items);
             return [false, result];
         },
@@ -100,9 +70,9 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         splice: (target: T[], start: number, deleteCount: number, items: T[]) => {
             const obj = checkWriteAccess(object, store, propDes.qName);
             const key = makePrivatePropertyKey(propDes.qName);
-            items = mapToUUIDs(items);
+            items = mapToUUIDs(items, propDes);
             const deletedItems = obj[key].splice(start, deleteCount, ...items);
-            return [false, mapToObjects(deletedItems)];
+            return [false, mapToObjects(deletedItems, store, propDes)];
         },
 
         /** Handle reverse */
@@ -118,10 +88,10 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkWriteAccess(object, store, propDes.qName);
             const key = makePrivatePropertyKey(propDes.qName);
             const items = obj[key];
-            const objects = mapToObjects(items);
+            const objects = mapToObjects(items, store, propDes);
             const sortedObjects = objects.sort();
 
-            const sortedUUIDS = mapToUUIDs(sortedObjects);
+            const sortedUUIDS = mapToUUIDs(sortedObjects, propDes);
             items.splice(0, items.length, ...sortedUUIDS); // Replace the items with sorted UUIDs
             return [false, obj[propDes.qName]]; // Return the proxy 
         },
@@ -130,7 +100,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         fill: (target: T[], value: T, start: number, end: number) => {
             const obj = checkWriteAccess(object, store, propDes.qName);
             const key = makePrivatePropertyKey(propDes.qName);
-            const newValue = toUUID(value);
+            const newValue = toUUID(value, propDes);
             obj[key].fill(newValue, start, end);
             return [false, obj[propDes.qName]];
         },
@@ -138,16 +108,16 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         concat: (target: T[], items: T[]) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            items = mapToUUIDs(items);
+            items = mapToUUIDs(items, propDes);
             const result = obj[key].concat(...items);
-            return [false, mapToObjects(result)];
+            return [false, mapToObjects(result, store, propDes)];
         },
 
         /** Handle includes */
         includes: (target: T[], value: T) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const newValue = toUUID(value);
+            const newValue = toUUID(value, propDes);
             const result = obj[key].includes(newValue);  // check is based on UUIDs, not timestamps
             return [false, result];
         },
@@ -182,7 +152,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
             const result = obj[key].slice(start, end);
-            return [false, mapToObjects(result)];
+            return [false, mapToObjects(result, store, propDes)];
         },
         /** Handle length */
         length: (target: T[]) => {
@@ -195,16 +165,16 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         find: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.find(callback, thisArg)
-            return [false, toObject(result)];
+            return [false, toObject(result, store, propDes)];
         },
 
         /** Handle findIndex */
         findIndex: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.findIndex(callback, thisArg);
             return [false, result];
         },
@@ -213,7 +183,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         map: (target: T[], callback: (value: T, index: number, array: T[]) => any, thisArg: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.map(callback, thisArg);
             return [false, result];
         },
@@ -222,7 +192,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         filter: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.filter(callback, thisArg);
             return [false, result];
         },
@@ -231,7 +201,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         reduce: (target: T[], callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.reduce(callback, initialValue);
             return [false, result];
         },
@@ -240,7 +210,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         reduceRight: (target: T[], callback: (accumulator: any, value: T, index: number, array: T[]) => any, initialValue: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.reduceRight(callback, initialValue);
             return [false, result];
         },
@@ -249,7 +219,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         every: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.every(callback, thisArg);
             return [false, result];
         },
@@ -258,7 +228,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         some: (target: T[], callback: (value: T, index: number, array: T[]) => boolean, thisArg: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.some(callback, thisArg);
             return [false, result];
         },
@@ -267,7 +237,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         forEach: (target: T[], callback: (value: T, index: number, array: T[]) => void, thisArg: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             items.forEach(callback, thisArg);
             return [false, undefined];
         },
@@ -276,7 +246,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         flatMap: (target: T[], callback: (value: T, index: number, array: T[]) => any, thisArg: any) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.flatMap(callback, thisArg);
             return [false, result];
         },
@@ -285,7 +255,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         flat: (target: T[], depth: number) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             const result = items.flat(depth);
             return [false, result];
         },
@@ -295,7 +265,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const obj = checkWriteAccess(object, store, propDes.qName);
             const key = makePrivatePropertyKey(propDes.qName);
             const result = obj[key].copyWithin(targetIndex, start, end);
-            return [false, mapToObjects(result)];
+            return [false, mapToObjects(result, store, propDes)];
         },
 
         /** Handle entries */
@@ -305,7 +275,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const result = function* (): IterableIterator<[number, T]> {
                 const size = obj[key].length;
                 for (let i = 0; i < size; i++) {
-                    yield [i, toObject(obj[key][i])];
+                    yield [i, toObject(obj[key][i], store, propDes)];
                 }
             };
             return [false, result()];
@@ -331,7 +301,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
             const result = function* (): IterableIterator<T> {
                 const values = obj[key];
                 for (let i = 0; i < values.length; i++) {
-                    yield toObject(values[i]);
+                    yield toObject(values[i], store, propDes);
                 }
             };
             return [false, result()];
@@ -340,7 +310,7 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
         [Symbol.iterator]: (target: T[]) => {
             const obj = checkReadAccess(object, store);
             const key = makePrivatePropertyKey(propDes.qName);
-            const items = mapToObjects(obj[key]);
+            const items = mapToObjects(obj[key], store, propDes);
             return function* (): IterableIterator<T> {
                 for (let i = 0; i < items.length; i++) {
                     yield items[i];
@@ -362,4 +332,3 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
 export function createObservableEntityArray<T extends EternalObject>(arr: T[], extra: ObservableExtra): T[] {
     return createObservableArray(arr, createArrayHandlers<T>(extra));
 }
-
