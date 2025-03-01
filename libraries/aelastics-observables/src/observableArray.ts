@@ -35,8 +35,6 @@ export interface ArrayHandlers<T> {
     join?: (target: T[], separator: string) => [boolean, string?];
     toStringA?: (target: T[]) => [boolean, string?];
     toLocaleStringA?: (target: T[]) => [boolean, string?];
-    //TODO consider to remove defaultAction as it is not useful
-    defaultAction?: (target: T[], key: PropertyKey, args?: any[]) => [boolean, any?];
 }
 
 export function createObservableArray<T>(
@@ -54,33 +52,25 @@ export function createObservableArray<T>(
                         return result;
                     }
                 }
-                Reflect.set(target, index, value, receiver);
-            } else if (handlers.defaultAction) {
-                const [continueOperation, result] = handlers.defaultAction(target, key, []);
-                if (!continueOperation) {
-                    return result;
-                }
+                return Reflect.set(target, index, value, receiver);
+            } else {
+                return Reflect.set(target, key, value, receiver);
             }
-            return value;
         },
+ 
 
         deleteProperty(target: T[], key: string | number | symbol): boolean {
             if (typeof key === 'number' || !isNaN(Number(key))) {
                 const index = Number(key);
-                if (handlers.delete) {
-                    const [continueOperation, result] = handlers.delete(target, index);
-                    if (!continueOperation) {
-                        return result;
-                    }
+
+                const [continueOperation, result] = handlers.delete?.(target, index) ?? [allowMutations, false];
+                if (!continueOperation) {
+                    return result;
                 }
                 return Reflect.deleteProperty(target, index);
-            } else if (handlers.defaultAction) {
-                const [continueOperation, result] = handlers.defaultAction(target, key, []);
-                if (!continueOperation) {
-                    return result !== undefined ? result : false;
-                }
+            } else {
+                return Reflect.deleteProperty(target, key);;
             }
-            return true;
         },
 
         get(target: T[], key: any | number | symbol, receiver: any): any {
@@ -367,12 +357,6 @@ export function createObservableArray<T>(
                 }
 
             }
-            if (handlers.defaultAction) {
-                const [continueOperationDefault, defaultResult] = handlers.defaultAction(target, key, []);
-                if (!continueOperationDefault) {
-                    return defaultResult;
-                }
-            }
-        }
+         }
     });
 }
