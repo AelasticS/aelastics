@@ -1,22 +1,21 @@
 export interface MapHandlers<K, V> {
-    set?: (target: Map<K, V>, key: K, value: V) => boolean;
-    delete?: (target: Map<K, V>, key: K) => boolean;
-    clear?: (target: Map<K, V>) => boolean;
-    get?: (target: Map<K, V>, key: K) => boolean;
-    has?: (target: Map<K, V>, key: K) => boolean;
-    forEach?: (target: Map<K, V>, callback: (value: V, key: K, map: Map<K, V>) => void) => boolean;
-    entries?: (target: Map<K, V>) => boolean;
-    keys?: (target: Map<K, V>) => boolean;
-    values?: (target: Map<K, V>) => boolean;
-    size?: (target: Map<K, V>) => boolean;
-    [Symbol.iterator]?: (target: Map<K, V>) => boolean;
-    defaultAction?: (target: Map<K, V>, key: PropertyKey, args?: any[]) => [boolean, any?];
+    set?: (target: Map<K, V>, key: K, value: V) => [boolean, any];
+    delete?: (target: Map<K, V>, key: K) => [boolean, boolean];
+    clear?: (target: Map<K, V>) => [boolean, undefined];
+    get?: (target: Map<K, V>, key: K) => [boolean, V];
+    has?: (target: Map<K, V>, key: K) => [boolean, boolean];
+    forEach?: (target: Map<K, V>, callback: (value: V, key: K, map: Map<K, V>) => void) => [boolean, any];
+    entries?: (target: Map<K, V>) => [boolean, IterableIterator<[K, V]>?];
+    keys?: (target: Map<K, V>) => [boolean, IterableIterator<K>?];
+    values?: (target: Map<K, V>) => [boolean, IterableIterator<V>?];
+    size?: (target: Map<K, V>) => [boolean, number];
+    [Symbol.iterator]?: (target: Map<K, V>) => [boolean, IterableIterator<[K, V]>?];
 }
 
 export function createObservableMap<K, V,>(
     map: Map<K, V>,
     handlers: MapHandlers<K, V>,
-    defaultMutation: boolean = true
+    allowMutation: boolean = true
 ): Map<K, V> {
     return new Proxy(map, {
         get(target: Map<K, V>, key: string | number | symbol, receiver: any): any {
@@ -25,78 +24,65 @@ export function createObservableMap<K, V,>(
                 switch (key) {
                     case 'set':
                         return (k: K, v: V) => {
-                            const allowSet = handlers.set?.(target, k, v) ?? defaultMutation;
-                            return allowSet ? Reflect.apply(target.set, target, [k, v]) : target;
+                            const [proceed, result] = handlers.set?.(target, k, v) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.set, target, [k, v]) : result;
                         };
                     case 'delete':
                         return (k: K) => {
-                            const allowDelete = handlers.delete?.(target, k) ?? defaultMutation;
-                            return allowDelete ? Reflect.apply(target.delete, target, [k]) : false;
+                            const [proceed, result] = handlers.delete?.(target, k) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.delete, target, [k]) : result;
                         };
                     case 'clear':
                         return () => {
-                            const allowClear = handlers.clear?.(target) ?? defaultMutation;
-                            return allowClear ? Reflect.apply(target.clear, target, []) : undefined;
+                            const [proceed, result] = handlers.clear?.(target) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.clear, target, []) : result;
                         };
                     case 'get':
                         return (k: K) => {
-                            const allowGet = handlers.get?.(target, k) ?? defaultMutation;
-                            return allowGet ? Reflect.apply(target.get, target, [k]) : undefined;
+                            const [proceed, result] = handlers.get?.(target, k) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.get, target, [k]) : result;
                         };
                     case 'has':
                         return (k: K) => {
-                            const allowHas = handlers.has?.(target, k) ?? defaultMutation;
-                            return allowHas ? Reflect.apply(target.has, target, [k]) : false;
+                            const [proceed, result] = handlers.has?.(target, k) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.has, target, [k]) : result;
                         };
                     case 'forEach':
                         return (callback: (value: V, key: K, map: Map<K, V>) => void) => {
-                            const allowForEach = handlers.forEach?.(target, callback) ?? defaultMutation;
-                            return allowForEach ? Reflect.apply(target.forEach, target, [callback]) : undefined;
+                            const [proceed, result] = handlers.forEach?.(target, callback) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.forEach, target, [callback]) : result;
                         };
                     case 'entries':
                         return () => {
-                            const allowEntries = handlers.entries?.(target) ?? defaultMutation;
-                            return allowEntries ? Reflect.apply(target.entries, target, []) : undefined;
+                            const [proceed, result] = handlers.entries?.(target) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.entries, target, []) : result;
                         };
                     case 'keys':
                         return () => {
-                            const allowKeys = handlers.keys?.(target) ?? defaultMutation;
-                            return allowKeys ? Reflect.apply(target.keys, target, []) : undefined;
+                            const [proceed, result] = handlers.keys?.(target) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.keys, target, []) : result;
                         };
                     case 'values':
                         return () => {
-                            const allowValues = handlers.values?.(target) ?? defaultMutation;
-                            return allowValues ? Reflect.apply(target.values, target, []) : undefined;
+                            const [proceed, result] = handlers.values?.(target) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.values, target, []) : result;
                         };
                     case 'size':
-                        if (handlers.size) {
-                            const allowSize = handlers.size(target);
-                            if (!allowSize) {
-                                return undefined;
-                            }
-                        }
-                        return Reflect.get(target, 'size');
-  
+                        const [proceed, result] = handlers.values?.(target) ?? [allowMutation, undefined];
+                        return proceed ? target.size : result;
                 }
             }
             else if (typeof key === 'symbol') {
                 switch (key) {
                     case Symbol.iterator:
                         return (k: K, v: V) => {
-                            const allowSet =  handlers[Symbol.iterator]?.(target) ?? defaultMutation;
-                            return allowSet ? Reflect.apply(target.set, target , [k,v]) : target;
+                            const [proceed, result] =  handlers[Symbol.iterator]?.(target) ?? [allowMutation, undefined];
+                            return proceed ? Reflect.apply(target.set, target , [k,v]) : result;
                         }
-                    default:
-                        return Reflect.get(target, key, receiver);
                 }
 
             }
-            if (handlers.defaultAction) {
-                const [continueOperationDefault, defaultResult] = handlers.defaultAction(target, key, [receiver]);
-                if (!continueOperationDefault) {
-                    return defaultResult;
-                }
-            }
+            return Reflect.get(target, key, receiver);
         }
     });
 }
