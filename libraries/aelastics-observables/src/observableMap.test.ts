@@ -1,12 +1,30 @@
 import { createObservableMap, MapHandlers } from './observableMap';
 
+const handlers: MapHandlers<string, number> = {
+    set: jest.fn((target: Map<string, number>, key: string, value: number): [boolean, any] => {
+        return [true, undefined];
+    }),
+    delete: jest.fn((target: Map<string, number>, key: string): [boolean, boolean] => {
+        return [true, true];
+    }),
+    clear: jest.fn((target: Map<string, number>): [boolean, undefined] => {
+        return [true, undefined];
+    }),
+    get: jest.fn((target: Map<string, number>, key: string): [boolean, number] => {
+        return [true, target.get(key) ?? 0];
+    }),
+    has: jest.fn((target: Map<string, number>, key: string): [boolean, boolean] => {
+        return [true, target.has(key)];
+    }),
+    forEach: jest.fn((target: Map<string, number>, callback: (value: number, key: string, map: Map<string, number>) => void): [boolean, any] => {
+        target.forEach(callback);
+        return [true, undefined];
+    })
+};
+
 describe('createObservableMap', () => {
     it('should call the set handler', () => {
         const target = new Map<string, number>();
-        const handlers: MapHandlers<string, number> = {
-            set: jest.fn().mockReturnValue(true),
-        };
-
         const proxy = createObservableMap(target, handlers, true);
         proxy.set('a', 100);
 
@@ -16,10 +34,6 @@ describe('createObservableMap', () => {
 
     it('should call the delete handler', () => {
         const target = new Map<string, number>([['a', 1]]);
-        const handlers: MapHandlers<string, number> = {
-            delete: jest.fn().mockReturnValue(true),
-        };
-
         const proxy = createObservableMap(target, handlers, true);
         proxy.delete('a');
 
@@ -29,10 +43,6 @@ describe('createObservableMap', () => {
 
     it('should call the clear handler', () => {
         const target = new Map<string, number>([['a', 1], ['b', 2]]);
-        const handlers: MapHandlers<string, number> = {
-            clear: jest.fn().mockReturnValue(true),
-        };
-
         const proxy = createObservableMap(target, handlers, true);
         proxy.clear();
 
@@ -42,10 +52,6 @@ describe('createObservableMap', () => {
 
     it('should call the get handler', () => {
         const target = new Map<string, number>([['a', 1]]);
-        const handlers: MapHandlers<string, number> = {
-            get: jest.fn().mockReturnValue(true),
-        };
-
         const proxy = createObservableMap(target, handlers, true);
         const value = proxy.get('a');
 
@@ -55,10 +61,6 @@ describe('createObservableMap', () => {
 
     it('should call the has handler', () => {
         const target = new Map<string, number>([['a', 1]]);
-        const handlers: MapHandlers<string, number> = {
-            has: jest.fn().mockReturnValue(true),
-        };
-
         const proxy = createObservableMap(target, handlers, true);
         const result = proxy.has('a');
 
@@ -68,14 +70,9 @@ describe('createObservableMap', () => {
 
     it('should call the forEach handler', () => {
         const target = new Map<string, number>([['a', 1], ['b', 2]]);
-        const handlers: MapHandlers<string, number> = {
-            forEach: jest.fn().mockReturnValue(true),
-        };
-
         const proxy = createObservableMap(target, handlers, true);
         proxy.forEach((value, key) => {});
 
         expect(handlers.forEach).toHaveBeenCalledWith(target, expect.any(Function));
     });
-
 });
