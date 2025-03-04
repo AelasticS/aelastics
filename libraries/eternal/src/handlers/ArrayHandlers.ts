@@ -322,6 +322,6 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
 
 
 /** Helper function to create observable arrays */
-export function createObservableEntityArray<T extends EternalObject>(arr: T[], extra: ObservableExtra): T[] {
+export function createImmutableArray<T extends EternalObject>(arr: T[], extra: ObservableExtra): T[] {
     return createObservableArray(arr, createArrayHandlers<T>(extra));
 }
