@@ -317,13 +317,6 @@ export const createArrayHandlers = <T extends EternalObject>({ store, object, pr
                 }
             }();
         },
-
-        /** Default action */
-        defaultAction: (target: T[], key: PropertyKey, args?: any[]) => {
-            console.warn(`Unhandled array method: ${String(key)}`);
-            return [true, undefined];
-        },
-
     }
 };
 
