@@ -81,18 +81,18 @@ export function makePrivateProxyKey(propertyName: string) {
  }
 /** Convert to Object or Return Value */
 export function toObject(item: any, store: EternalStore, propDes: PropertyMeta): any {
-    return (propDes.type === 'object') ? store.getObject(item) : item;
+    return (propDes.type === 'object') && item ? store.getObject(item) : item;
 }
 /** Map UUIDs to Objects */
 //TODO find type of array elements
 export function mapToObjects(items: any[], store: EternalStore, propDes: PropertyMeta): any[] {
-    return (propDes.type === 'object') ? items.map((item) => store.getObject(item.uuid)) : items;
+    return (propDes.type === 'object') && items ? items.map((item) => store.getObject(item.uuid)) : items;
 }
 /** Convert Object to UUID */
 export function toUUID(value: any, propDes: PropertyMeta): any {
-    return (propDes.type === 'object') ? value.uuid : value;
+    return (propDes.type === 'object') && value ? value.uuid : value;
 }
 /** Map Objects to UUIDs */
 export function mapToUUIDs(items: any[], propDes: any): any[] {
-    return (propDes.type === 'object') ? items.map((item) => item.uuid) : items;
+    return (propDes.type === 'object') && items ? items.map((item) => item.uuid) : items;
 }
