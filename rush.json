@@ -458,6 +458,12 @@
       ]
     },
     {
+      "packageName": "@aelastics/react-immutables",
+      "projectFolder": "libraries/react-immutables",
+      "reviewCategory": "production",
+      "tags": ["libraries", "web"]
+    },
+    {
       "packageName": "aelastics-types",
       "projectFolder": "libraries/aelastics-types",
       "reviewCategory": "production",

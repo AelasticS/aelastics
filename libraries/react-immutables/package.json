@@ -1,0 +1,61 @@
+{
+  "name": "@aelastics/react-immutables",
+  "version": "0.1.0",
+  "description": "A React integration package for the @aelastics/immutable store.",
+  "keywords": [
+    "immutable",
+    "state-management",
+    "uuid",
+    "cyclic-structures",
+    "bidirectional-associations",
+    "typescript",
+    "proxy",
+    "change-tracking",
+    "serialization",
+    "lazy-loading"
+  ],
+  "author": "Sinisa Neskovic <45012244+Sinisa-Neskovic@users.noreply.github.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AelasticS/aelastics.git"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "test": "heft test",
+    "test:integration": "heft test --test-match \"src/__integration__/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "18.11.9",
+    "typescript": "^4.8.3",
+    "@types/react": "^18.0.0",
+    "@testing-library/react": "~16.2.0",
+    "@testing-library/jest-dom": "^5.0.0",
+    "@types/heft-jest": "1.0.3",
+    "@rushstack/heft": "^0.48.7",
+    "@rushstack/eslint-config": "~3.1.1",
+    "eslint": "~7.15.0",
+    "tslib": "^1.10.0",
+    "@rushstack/heft-jest-plugin": "~0.3.44",
+    "@testing-library/dom": "^10.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "dependencies": {
+    "@aelastics/eternal": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDirs": ["src/"],
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "inlineSources": true,
+    "experimentalDecorators": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": [
+      "heft-jest",
+      "node"],
+    "moduleResolution": "Node",
+    "module": "ESNext",
+    "target": "es2021",
+    "lib": ["es2021", "DOM"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
