@@ -5,11 +5,11 @@ export interface MapHandlers<K, V> {
     get?: (target: Map<K, V>, key: K) => [boolean, V];
     has?: (target: Map<K, V>, key: K) => [boolean, boolean];
     forEach?: (target: Map<K, V>, callback: (value: V, key: K, map: Map<K, V>) => void) => [boolean, any];
-    entries?: (target: Map<K, V>) => [boolean, IterableIterator<[K, V]>?];
-    keys?: (target: Map<K, V>) => [boolean, IterableIterator<K>?];
+    entries?: (target: Map<K, V>) => [boolean, IterableIterator<[K, V]>];
+    keys?: (target: Map<K, V>) => [boolean, IterableIterator<K>];
     values?: (target: Map<K, V>) => [boolean, IterableIterator<V>?];
     size?: (target: Map<K, V>) => [boolean, number];
-    [Symbol.iterator]?: (target: Map<K, V>) => [boolean, IterableIterator<[K, V]>?];
+    [Symbol.iterator]?: (target: Map<K, V>) => [boolean, IterableIterator<[K, V]>];
 }
 
 export function createObservableMap<K, V,>(
