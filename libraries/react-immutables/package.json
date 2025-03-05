@@ -31,7 +31,7 @@
     }
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "heft build --clean",
     "test": "heft test",
     "test:integration": "heft test --test-match \"src/__integration__/**/*.test.ts\""
   },
@@ -52,7 +52,8 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "@aelastics/eternal": "workspace:*"
+    "@aelastics/eternal": "workspace:*",
+    "@aelastics/observables": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
