@@ -1,6 +1,6 @@
 import { createObservableMap, MapHandlers } from './observableMap';
 
-const handlers: MapHandlers<string, number> = {
+const handlers: Required<MapHandlers<string, number>> = {
     set: jest.fn((target: Map<string, number>, key: string, value: number): [boolean, any] => {
         return [true, undefined];
     }),
@@ -19,7 +19,25 @@ const handlers: MapHandlers<string, number> = {
     forEach: jest.fn((target: Map<string, number>, callback: (value: number, key: string, map: Map<string, number>) => void): [boolean, any] => {
         target.forEach(callback);
         return [true, undefined];
-    })
+    }),
+    entries: jest.fn((target: Map<string, number>): [boolean, IterableIterator<[string, number]>] => {
+        return [true, target.entries()];
+    }),
+    keys: jest.fn((target: Map<string, number>): [boolean, IterableIterator<string>] => {
+        return [true, target.keys()];
+    }),
+    values: jest.fn((target: Map<string, number>): [boolean, IterableIterator<number>] => {
+        return [true, target.values()];
+    }),
+    size: jest.fn((target: Map<string, number>): [boolean, number] => {
+        return [true, target.size];
+    }),
+    [Symbol.iterator]: jest.fn((target: Map<string, number>): [boolean, IterableIterator<[string, number]>] => {
+        return [true, target[Symbol.iterator]()];
+    }),
+    // toStringTag: jest.fn((target: Map<string, number>): [boolean, string] => {
+    //     return [true, target.toString()];
+    // }),
 };
 
 describe('createObservableMap', () => {
@@ -74,5 +92,59 @@ describe('createObservableMap', () => {
         proxy.forEach((value, key) => {});
 
         expect(handlers.forEach).toHaveBeenCalledWith(target, expect.any(Function));
+    });
+
+    it('should call the entries handler', () => {
+        const target = new Map<string, number>([['a', 1], ['b', 2]]);
+        const proxy = createObservableMap(target, handlers, true);
+        const iterator = proxy.entries();
+
+        expect(handlers.entries).toHaveBeenCalledWith(target);
+        expect(iterator.next().value).toEqual(['a', 1]);
+    });
+
+    it('should call the keys handler', () => {
+        const target = new Map<string, number>([['a', 1], ['b', 2]]);
+        const proxy = createObservableMap(target, handlers, true);
+        const iterator = proxy.keys();
+
+        expect(handlers.keys).toHaveBeenCalledWith(target);
+        expect(iterator.next().value).toEqual('a');
+    });
+
+    it('should call the values handler', () => {
+        const target = new Map<string, number>([['a', 1], ['b', 2]]);
+        const proxy = createObservableMap(target, handlers, true);
+        const iterator = proxy.values();
+
+        expect(handlers.values).toHaveBeenCalledWith(target);
+        expect(iterator.next().value).toEqual(1);
+    });
+
+    it('should call the size handler', () => {
+        const target = new Map<string, number>([['a', 1], ['b', 2]]);
+        const proxy = createObservableMap(target, handlers, true);
+        const size = proxy.size;
+
+        expect(handlers.size).toHaveBeenCalledWith(target);
+        expect(size).toBe(2);
+    });
+
+    it('should call the Symbol.iterator handler', () => {
+        const target = new Map<string, number>([['a', 1], ['b', 2]]);
+        const proxy = createObservableMap(target, handlers, true);
+        const iterator = proxy[Symbol.iterator]();
+
+        expect(handlers[Symbol.iterator]).toHaveBeenCalledWith(target);
+        expect(iterator.next().value).toEqual(['a', 1]);
+    });
+
+    it('should call the toString handler', () => {
+        const target = new Map<string, number>([['a', 1], ['b', 2]]);
+        const proxy = createObservableMap(target, handlers, true);
+        const result = proxy.toString();
+
+        expect(handlers.toString).toHaveBeenCalledWith(target);
+        expect(result).toBe('[object Map]');
     });
 });
