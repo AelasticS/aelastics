@@ -1,7 +1,7 @@
 import { useSyncExternalStore, useRef } from "react";
-import { useStore } from "./StoreProvider"; // Import useStore
+import { useStore } from "./useStore"; // Import useStore
 
-const useStoreSelector = <T,>(selector: () => T): T => {
+export const useStoreSelector = <T,>(selector: () => T): T => {
   const store = useStore(); // 🔹 Automatically get the store
   const prevSelectedValue = useRef<T | undefined>(undefined);
 
@@ -22,4 +22,3 @@ const useStoreSelector = <T,>(selector: () => T): T => {
   );
 };
 
-export default useStoreSelector;

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { Store } from "./Store"; // Import your store class
+import { Store } from "@aelastics/eternal"; // Import your store class
 
 // Create Context
 const StoreContext = createContext<Store | null>(null);

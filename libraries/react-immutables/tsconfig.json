@@ -11,16 +11,15 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strict": true,
+    "jsx": "react-jsx",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": [
-      "heft-jest",
-      "node"],
+    "types": ["heft-jest", "node"],
     "moduleResolution": "Node",
     "module": "ESNext",
-    "target": "es2021",
-    "lib": ["es2021", "DOM"]
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/useStore.tsx"],
   "exclude": ["node_modules", "dist"]
 }

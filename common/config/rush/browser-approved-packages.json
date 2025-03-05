@@ -3,6 +3,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@aelastics/eternal",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@aelastics/observables",
       "allowedCategories": [ "production" ]
     },
@@ -35,6 +39,18 @@
       "allowedCategories": [ "production", "prototypes" ]
     },
     {
+      "name": "@testing-library/dom",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@testing-library/jest-dom",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@testing-library/react",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@types/chai",
       "allowedCategories": [ "production" ]
     },
@@ -44,6 +60,10 @@
     },
     {
       "name": "@types/mocha",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/react",
       "allowedCategories": [ "production" ]
     },
     {
@@ -108,6 +128,14 @@
     },
     {
       "name": "oclif",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "react",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "react-dom",
       "allowedCategories": [ "production" ]
     },
     {

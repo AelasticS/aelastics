@@ -1,4 +1,7 @@
-const useObjectSelector = <T,>(
+import { useRef, useSyncExternalStore } from "react";
+import { useStore } from "./useStore";
+
+export const useObjectSelector = <T,>(
     selector: (object: any) => T, // No need for store access here
     objectOrUuid: any
   ): T => {
@@ -28,7 +31,7 @@ const useObjectSelector = <T,>(
   };
   
   // usage
-  const userUuid = "1234";
-  const user = {}
-  const userName1 = useObjectSelector((user) => user.name, userUuid);
-  const userName2 = useObjectSelector((user) => user.name, user);
+  // const userUuid = "1234";
+  // const user = {}
+  // const userName1 = useObjectSelector((user) => user.name, userUuid);
+  // const userName2 = useObjectSelector((user) => user.name, user);
