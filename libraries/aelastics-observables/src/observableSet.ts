@@ -1,17 +1,21 @@
-export interface SetHandlers<T, P extends {} = {}> {
-    add?: (target: Set<T>, value: T, extra?: P) => boolean;
-    delete?: (target: Set<T>, value: T, extra?: P) => boolean;
-    clear?: (target: Set<T>, extra?: P) => boolean;
-    has?: (target: Set<T>, value: T, extra?: P) => boolean;
-    forEach?: (target: Set<T>, callback: (value: T, value2: T, set: Set<T>) => void, extra?: P) => boolean;
-    defaultAction?: (target: Set<T>, key: PropertyKey, args?: any[], extra?: P) => boolean;
+export interface SetHandlers<T> {
+    add?: (target: Set<T>, value: T) => [boolean, Set<T>];
+    delete?: (target: Set<T>, value: T) => [boolean, boolean];
+    clear?: (target: Set<T>) => [boolean, undefined];
+    has?: (target: Set<T>, value: T) => [boolean, boolean];
+    forEach?: (target: Set<T>, callback: (value: T, value2: T, set: Set<T>) => void) => [boolean, void];
+    entries?: (target: Set<T>) => [boolean, IterableIterator<[T, T]>];
+    keys?: (target: Set<T>) => [boolean, IterableIterator<T>];
+    values?: (target: Set<T>) => [boolean, IterableIterator<T>];
+    size?: (target: Set<T>) => [boolean, number];
+    [Symbol.iterator]?: (target: Set<T>) => [boolean, IterableIterator<T>];
+    [Symbol.toStringTag]?: (target: Set<T>) => [boolean, string];
 }
 
-export function createObservableSet<T, P extends {} = {}>(
+export function createObservableSet<T>(
     set: Set<T>,
-    handlers: SetHandlers<T, P>,
+    handlers: SetHandlers<T>,
     defaultMutation: boolean = true,
-    extra?: P
 ): Set<T> {
     return new Proxy(set, {
         get(target: Set<T>, key: string | number | symbol, receiver: any): any {
@@ -19,53 +23,66 @@ export function createObservableSet<T, P extends {} = {}>(
                 switch (key) {
                     case 'add':
                         return (value: T) => {
-                            const allowAdd = handlers.add?.(target, value, extra) ?? defaultMutation;
-                            return allowAdd ? Reflect.apply(target.add, target, [value]) : target;
+                            const [allowAdd, result] = handlers.add?.(target, value) ?? [defaultMutation, target];
+                            return allowAdd ? Reflect.apply(target.add, target, [value]) : result;
                         };
                     case 'delete':
                         return (value: T) => {
-                            const allowDelete = handlers.delete?.(target, value, extra) ?? defaultMutation;
-                            return allowDelete ? Reflect.apply(target.delete, target, [value]) : false;
+                            const [allowDelete, result] = handlers.delete?.(target, value) ?? [defaultMutation, false];
+                            return allowDelete ? Reflect.apply(target.delete, target, [value]) : result;
                         };
                     case 'clear':
                         return () => {
-                            const allowClear = handlers.clear?.(target, extra) ?? defaultMutation;
-                            return allowClear ? Reflect.apply(target.clear, target, []) : undefined;
+                            const [allowClear, result] = handlers.clear?.(target) ?? [defaultMutation, undefined];
+                            return allowClear ? Reflect.apply(target.clear, target, []) : result;
                         };
                     case 'has':
                         return (value: T) => {
-                            const allowHas = handlers.has?.(target, value, extra) ?? defaultMutation;
-                            return allowHas ? Reflect.apply(target.has, target, [value]) : false;
+                            const [allowHas, result] = handlers.has?.(target, value) ?? [defaultMutation, false];
+                            return allowHas ? Reflect.apply(target.has, target, [value]) : result;
                         };
                     case 'forEach':
                         return (callback: (value: T, value2: T, set: Set<T>) => void) => {
-                            const allowForEach = handlers.forEach?.(target, callback, extra) ?? defaultMutation;
-                            return allowForEach ? Reflect.apply(target.forEach, target, [callback]) : undefined;
+                            const [allowForEach, result] = handlers.forEach?.(target, callback) ?? [defaultMutation, undefined];
+                            return allowForEach ? Reflect.apply(target.forEach, target, [callback]) : result;
+                        };
+                    case 'entries':
+                        return () => {
+                            const [allowEntries, result] = handlers.entries?.(target) ?? [defaultMutation, target.entries()];
+                            return allowEntries ? Reflect.apply(target.entries, target, []) : result;
+                        };
+                    case 'keys':
+                        return () => {
+                            const [allowKeys, result] = handlers.keys?.(target) ?? [defaultMutation, target.keys()];
+                            return allowKeys ? Reflect.apply(target.keys, target, []) : result;
+                        };
+                    case 'values':
+                        return () => {
+                            const [allowValues, result] = handlers.values?.(target) ?? [defaultMutation, target.values()];
+                            return allowValues ? Reflect.apply(target.values, target, []) : result;
+                        };
+                    case 'size':
+                        return () => {
+                            const [allowSize, result] = handlers.size?.(target) ?? [defaultMutation, target.size];
+                            return allowSize ? Reflect.get(target, 'size') : result;
                         };
                 }
             }
 
-            // Handle property getters like `size`
-            const propDescriptor = Object.getOwnPropertyDescriptor(Set.prototype, key);
-            if (propDescriptor?.get) {
-                if (handlers.defaultAction) {
-                    const allowDefault = handlers.defaultAction(target, key, [], extra);
-                    if (!allowDefault) {
-                        return undefined;
-                    }
-                }
-                return Reflect.get(target, key);
+            // Handle Symbol.iterator
+            if (key === Symbol.iterator) {
+                const [allowIterator, result] = handlers[Symbol.iterator]?.(target) ?? [defaultMutation, target[Symbol.iterator]()];
+                return allowIterator ? Reflect.apply(target[Symbol.iterator], target, []) : result;
+            }
+
+            // Handle Symbol.toStringTag
+            if (key === Symbol.toStringTag) {
+                const [allowToStringTag, result] = handlers[Symbol.toStringTag]?.(target) ?? [defaultMutation, 'Set'];
+                return allowToStringTag ? Reflect.get(target, Symbol.toStringTag) : result;
             }
 
             // Default behavior for other properties
-            const origProp = Reflect.get(target, key, receiver);
-            if (handlers.defaultAction) {
-                const allowDefault = handlers.defaultAction(target, key, [], extra);
-                if (!allowDefault) {
-                    return undefined;
-                }
-            }
-            return origProp;
+            console.warn(`Unhandled property ${key.toString()} in Set`);
         }
     });
 }
