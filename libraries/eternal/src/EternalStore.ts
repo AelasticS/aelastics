@@ -1,8 +1,9 @@
 import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, hasChanges, JSONPatchOperation } from "./ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
-import { createObservableEntityArray } from "./handlers/ArrayHandlers"
+import { createImmutableArray } from "./handlers/ArrayHandlers"
 import { EternalClass, EternalObject } from "./handlers/InternalTypes"
-import { createObservableEntityMap, createObservableEntitySet } from "./handlers/MapSetHandlers"
+import { createImmutableMap} from "./handlers/MapHandlers"
+import {createImmutableSet} from "./handlers/SetHandlers"
 import { TypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
@@ -236,23 +237,39 @@ export class EternalStore {
             // Initialize the property based on type
             switch (propertyMeta.type) {
               case "array":
-                this[privateKey] = [];
-                this[proxyKey] = createObservableEntityArray(this[privateKey], { store, object: this as any, propDes: propertyMeta });
-                break;
+              this[privateKey] = [];
+              this[proxyKey] = createImmutableArray(this[privateKey], { store, object: this as any, propDes: propertyMeta });
+              break;
 
               case "map":
-                this[privateKey] = new Map();
-                this[proxyKey] = createObservableEntityMap(this[privateKey], typeMeta.properties);
-                break;
+              this[privateKey] = new Map();
+              this[proxyKey] = createImmutableMap(this[privateKey], { store, object: this as any, propDes: propertyMeta });
+              break;
 
               case "set":
-                this[privateKey] = new Set();
-                this[proxyKey] = createObservableEntitySet(this[privateKey], typeMeta.properties);
-                break;
+              this[privateKey] = new Set();
+              this[proxyKey] = createImmutableSet(this[privateKey], { store, object: this as any, propDes: propertyMeta });
+              break;
+
+              case "string":
+              this[privateKey] = "";
+              break;
+
+              case "number":
+              this[privateKey] = 0;
+              break;
+
+              case "boolean":
+              this[privateKey] = false;
+              break;
+
+              case "object":
+              this[privateKey] = {};
+              break;
 
               default:
-                this[privateKey] = undefined;
-                break;
+              this[privateKey] = undefined;
+              break;
             }
           }
         }
