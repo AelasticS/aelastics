@@ -38,7 +38,7 @@ describe("Schema Existence Validation", () => {
         const errors = verifySchemaConsistency("/schema2", schemaRegistry);
         expect(errors).toEqual(
             expect.arrayContaining([
-            'Conflict: Entity "/schema1/SharedType" is exported by both "/schema1" and "/schema2".'
+            'Conflict: Entity "/schema1/SharedType" is exported by both "/schema2" and "/schema1".'
             ])
         );
     });
