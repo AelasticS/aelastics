@@ -94,7 +94,7 @@ describe("Schema Existence Validation", () => {
 
         const errors = verifySchemaConsistency("/invalid-schema-inverse", schemaRegistry);
         expect(errors).toContain(
-            'Property "/invalid-schema-inverse/InvalidType/ref" has inverseType "/valid-schema/NonExistentType", but "/valid-schema/NonExistentType" does not exist.'
+            'Property "/invalid-schema-inverse/InvalidType/ref" refers to unknown type "/valid-schema/NonExistentType".'
         );
     });
 
