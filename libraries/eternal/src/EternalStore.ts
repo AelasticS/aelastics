@@ -14,7 +14,7 @@ export type InternalRecipe = ((obj: EternalObject) => void) | (() => any)
 
 export class EternalStore {
   private stateHistory: State[] = [] // Stores the history of states
-  private subscriptionManager = new SubscriptionManager(); // Create a subscription manager
+  private subscriptionManager = new SubscriptionManager(this); // Create a subscription manager
   private currentStateIndex: number = -1// Track active state index
   private inUpdateMode: boolean = false // Flag to indicate if the store is in update mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
@@ -40,6 +40,10 @@ export class EternalStore {
   public getMeta(type: string): TypeMeta {
     return this.typeToClassMap.get(type)
   }
+
+  public getSubscriptionManager(): SubscriptionManager {
+    return this.subscriptionManager;
+  }; 
 
   /** Returns the latest (i.e. current) state */
   public getState(): State {
@@ -163,7 +167,7 @@ export class EternalStore {
         this.versionedObjects.push(...additionalVersionedObjects);
 
         if (this.versionedObjects.length > 0) {
-          this.subscriptionManager.notifySubscribers(this.versionedObjects); // Notify all updated objects
+          this.subscriptionManager.notifySubscribersToObj(this.versionedObjects); // Notify all updated objects
 
           // If `obj` itself was versioned, return the latest version
           const updatedObj = this.versionedObjects.find(o => o.uuid === newObj.uuid);
@@ -184,7 +188,7 @@ export class EternalStore {
       try {
         const result = (recipe as () => T)(); // Capture return value
         this.markVersionedObjects();
-        this.subscriptionManager.notifySubscribers(this.versionedObjects); // Notify global changes
+        this.subscriptionManager.notifySubscribersToObj(this.versionedObjects); // Notify global changes
         return result; // Return the result from recipe()
 
       } finally {
@@ -219,6 +223,8 @@ export class EternalStore {
       this.accessedObjects.add(obj);
     }
   }
+
+
   private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
     const className = typeMeta.qName; // Use the type name as the class name
     const superClass = typeMeta.extends ? this.getClassByName(typeMeta.extends) : undefined;
