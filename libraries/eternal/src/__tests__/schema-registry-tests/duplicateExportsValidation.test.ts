@@ -35,7 +35,7 @@ describe("Schema Existence Validation", () => {
     });
 
     test("T6: Two schemas export the same type or role (should fail)", () => {
-        const errors = verifySchemaConsistency("/schema2", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/schema2")!, schemaRegistry);
         expect(errors).toEqual(
             expect.arrayContaining([
             'Conflict: Entity "/schema1/SharedType" is exported by both "/schema2" and "/schema1".'

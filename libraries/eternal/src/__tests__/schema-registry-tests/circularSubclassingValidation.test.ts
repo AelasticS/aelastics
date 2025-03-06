@@ -27,7 +27,7 @@ describe("Schema Existence Validation", () => {
     });
 
     test("T14: Validate a correct inheritance chain (should pass)", () => {
-        const errors = verifySchemaConsistency("/valid-schema", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/valid-schema")!, schemaRegistry);
         expect(errors).toEqual([]); // No errors expected
     });
 
@@ -47,7 +47,7 @@ describe("Schema Existence Validation", () => {
             import: new Map()
         });
 
-        const errors = verifySchemaConsistency("/invalid-schema-missing-parent", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema-missing-parent")!, schemaRegistry);
         expect(errors).toContain(
             'Type "/invalid-schema-missing-parent/Orphan" extends "/non-existent/Parent", but "/non-existent/Parent" does not exist.'
         );
@@ -69,7 +69,7 @@ describe("Schema Existence Validation", () => {
             import: new Map()
         });
 
-        const errors = verifySchemaConsistency("/invalid-schema-self-extends", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema-self-extends")!, schemaRegistry);
         expect(errors).toContain(
             'Circular inheritance detected in type hierarchy: "/invalid-schema-self-extends/Self → /invalid-schema-self-extends/Self".'
         );
@@ -101,7 +101,7 @@ describe("Schema Existence Validation", () => {
             import: new Map()
         });
 
-        const errors = verifySchemaConsistency("/invalid-schema-circular", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema-circular")!, schemaRegistry);
         expect(errors).toContain(
             'Circular inheritance detected in type hierarchy: "/invalid-schema-circular/A → /invalid-schema-circular/B → /invalid-schema-circular/C → /invalid-schema-circular/A".'
         );

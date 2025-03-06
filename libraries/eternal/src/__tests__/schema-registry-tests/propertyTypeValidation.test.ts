@@ -42,7 +42,7 @@ describe("Schema Existence Validation", () => {
     });
 
     test("T8: Validate properties referencing correct types (should pass)", () => {
-        const errors = verifySchemaConsistency("/valid-schema", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/valid-schema")!, schemaRegistry);
         expect(errors).toEqual([]); // No errors expected
     });
 
@@ -67,7 +67,7 @@ describe("Schema Existence Validation", () => {
             import: new Map()
         });
 
-        const errors = verifySchemaConsistency("/invalid-schema", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema")!, schemaRegistry);
     });
 
     test("T10: Property references a missing inverseType (should fail)", () => {
@@ -92,7 +92,7 @@ describe("Schema Existence Validation", () => {
             import: new Map()
         });
 
-        const errors = verifySchemaConsistency("/invalid-schema-inverse", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema-inverse")!, schemaRegistry);
         expect(errors).toContain(
             'Property "/invalid-schema-inverse/InvalidType/ref" refers to unknown type "/valid-schema/NonExistentType".'
         );
@@ -131,7 +131,7 @@ describe("Schema Existence Validation", () => {
             import: new Map()
         });
 
-        const errors = verifySchemaConsistency("/invalid-schema-mismatch", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema-mismatch")!, schemaRegistry);
         expect(errors.some(error => error.includes(
             'Property "/invalid-schema-mismatch/TypeA/ref" declares inverseProp "/invalid-schema-mismatch/TypeB/missingRef", but it does not exist in "/invalid-schema-mismatch/TypeB".'))).toBe(true);
 

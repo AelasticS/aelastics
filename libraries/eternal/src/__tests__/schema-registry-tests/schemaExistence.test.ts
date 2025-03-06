@@ -31,17 +31,17 @@ describe("Schema Existence Validation", () => {
 
 
     test("T1: Validate an existing schema (should pass)", () => {
-        const errors = verifySchemaConsistency("/core", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/core")!, schemaRegistry);
         expect(errors).toEqual([]); // No errors expected
     });
 
     test("T2: Validate a non-existent schema (should fail)", () => {
-        const errors = verifySchemaConsistency("/non-existent", schemaRegistry);
+        const errors = verifySchemaConsistency({ qName: "/non-existent", version: "1.0", types: new Map(), roles: new Map(), export: [], import: new Map() }, schemaRegistry);
         expect(errors).toContain('Schema "/non-existent" not found in registry.');
     });
 
     test("T3: Validate an invalid schema (should fail)", () => {
-        const errors = verifySchemaConsistency("/invalid-schema", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema")!, schemaRegistry);
         expect(errors).toContain('Schema "/invalid-schema" is malformed: Missing \'types\' definition.');
     });
 });

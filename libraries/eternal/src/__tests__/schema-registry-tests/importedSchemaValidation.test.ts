@@ -1,4 +1,4 @@
-import { verifySchemaConsistency } from "../../SchemaRegistry"
+import { computeResolvedTypes, verifySchemaConsistency } from "../../SchemaRegistry"
 import { SchemaRegistry, TypeSchema } from "../../handlers/MetaDefinitions";
 
 describe("Schema Existence Validation", () => {
@@ -43,15 +43,19 @@ describe("Schema Existence Validation", () => {
                 ["/core", ["/core/Document"]]
             ])
         });
+            // Compute resolved types
+    for (const schema of schemaRegistry.schemas.values()) {
+        computeResolvedTypes(schema, schemaRegistry);
+    }
     });
 
     test("T3: Validate a schema that correctly imports another schema (should pass)", () => {
-        const errors = verifySchemaConsistency("/customer/sales", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/customer/sales")!, schemaRegistry);
         expect(errors).toEqual([]); // No errors expected
     });
 
     test("T4: Validate a schema importing a missing schema (should fail)", () => {
-        schemaRegistry.schemas.set("/customer/finance", {
+        const s = {
             qName: "/customer/finance",
             version: "2.0",
             types: new Map(),
@@ -59,15 +63,15 @@ describe("Schema Existence Validation", () => {
             export: [],
             import: new Map([
                 ["/missing-schema", ["/missing-schema/MissingType"]]
-            ])
-        });
-
-        const errors = verifySchemaConsistency("/customer/finance", schemaRegistry);
+            ])}
+        schemaRegistry.schemas.set("/customer/finance", s);
+        computeResolvedTypes(s, schemaRegistry);
+        const errors = verifySchemaConsistency(s, schemaRegistry);
         expect(errors).toContain('Imported schema "/missing-schema" not found in registry.');
     });
 
     test("T5: Validate a schema importing a missing type or role from an existing schema (should fail)", () => {
-        schemaRegistry.schemas.set("/customer/marketing", {
+        const s = {
             qName: "/customer/marketing",
             version: "2.0",
             types: new Map(),
@@ -76,9 +80,10 @@ describe("Schema Existence Validation", () => {
             import: new Map([
                 ["/core", ["/core/MissingType"]]
             ])
-        });
-
-        const errors = verifySchemaConsistency("/customer/marketing", schemaRegistry);
+        }
+        schemaRegistry.schemas.set("/customer/marketing", s);
+        computeResolvedTypes(s, schemaRegistry);
+        const errors = verifySchemaConsistency(s, schemaRegistry);
         expect(errors).toContain('Entity "/core/MissingType" imported from "/core" does not exist.');
     });
 });

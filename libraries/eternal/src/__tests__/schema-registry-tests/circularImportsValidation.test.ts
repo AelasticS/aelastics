@@ -34,7 +34,7 @@ describe("Schema Existence Validation", () => {
     });
 
     test("T7: A schema imports another schema, which imports back the first (should fail)", () => {
-        const errors = verifySchemaConsistency("/schemaA", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/schemaA")!, schemaRegistry);
         expect(errors).toContain('Circular dependency detected in schema imports: "/schemaA".');
     });
 });

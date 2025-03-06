@@ -33,7 +33,7 @@ describe("Schema Existence Validation", () => {
     });
 
     test("T12: Property with valid minElements and maxElements (should pass)", () => {
-        const errors = verifySchemaConsistency("/valid-schema", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/valid-schema")!, schemaRegistry);
         expect(errors).toEqual([]); // No errors expected
     });
 
@@ -60,7 +60,7 @@ describe("Schema Existence Validation", () => {
             import: new Map()
         });
 
-        const errors = verifySchemaConsistency("/invalid-schema", schemaRegistry);
+        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema")!, schemaRegistry);
         expect(errors).toContain(
             'Property "/invalid-schema/Product/tags" has minElements=5 but maxElements=3 (invalid).'
         );
