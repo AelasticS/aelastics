@@ -21,7 +21,8 @@
     "noImplicitThis": true,
     "alwaysStrict": true,
     "outDir": "./lib",
-    "jsx": "react" // Add this line
+    "jsx": "react", 
+    "sourceMap": true 
   },
   "include": ["src"],
   "exclude": ["node_modules", "lib"]
