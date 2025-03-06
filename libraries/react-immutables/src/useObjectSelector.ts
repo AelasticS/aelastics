@@ -1,37 +1,47 @@
-import { useRef, useSyncExternalStore } from "react";
-import { useStore } from "./useStore";
+import { Store } from "@aelastics/eternal";
+import { useSyncExternalStore, useRef } from "react";
 
-export const useObjectSelector = <T,>(
-    selector: (object: any) => T, // No need for store access here
-    objectOrUuid: any
-  ): T => {
+export const createObjectSelector = (useStore: () => Store) => {
+  return <T,>(selector: (object: any) => T, objectOrUuid: any): T => {
     const store = useStore();
     const prevSelectedValue = useRef<T | undefined>(undefined);
-  
+
     return useSyncExternalStore(
-      store.subscribe,
+      (onObjectChange) => {
+        const obj =
+          typeof objectOrUuid === "string"
+            ? store.getObject(objectOrUuid)
+            : store.getObject(objectOrUuid.uuid);
+
+        if (!obj) {
+          console.warn("useObjectSelector: Object not found in store.");
+          return () => {}; // Return a no-op function if object is missing
+        }
+
+        store.subscribeToObject(obj, onObjectChange); // ✅ Subscribe to object changes
+        return () => store.unsubscribeFromObject(obj, onObjectChange); // ✅ Unsubscribe on cleanup
+      },
       () => {
-        // 🔹 Automatically resolve the latest version of the object
-        const object = typeof objectOrUuid === "string"
-          ? store.getObject(objectOrUuid) // If UUID, fetch latest object
-          : store.getObject(objectOrUuid.uuid); // If object, fetch latest version
-  
-        const newSelectedValue = selector(object);
-  
-        // Prevent unnecessary re-renders
+        const obj =
+          typeof objectOrUuid === "string"
+            ? store.getObject(objectOrUuid)
+            : store.getObject(objectOrUuid.uuid);
+
+        if (!obj) {
+          return prevSelectedValue.current || ({} as T); // Return previous or empty state
+        }
+
+        const newSelectedValue = selector(obj);
+
         if (prevSelectedValue.current !== undefined && Object.is(prevSelectedValue.current, newSelectedValue)) {
           return prevSelectedValue.current;
         }
-  
+
         prevSelectedValue.current = newSelectedValue;
         return newSelectedValue;
       },
-      () => selector(store.getObject(objectOrUuid.uuid)) // SSR hydration
+      () => selector(store.getObject(objectOrUuid.uuid) || {}) // ✅ SSR hydration
     );
   };
-  
-  // usage
-  // const userUuid = "1234";
-  // const user = {}
-  // const userName1 = useObjectSelector((user) => user.name, userUuid);
-  // const userName2 = useObjectSelector((user) => user.name, user);
+};
+

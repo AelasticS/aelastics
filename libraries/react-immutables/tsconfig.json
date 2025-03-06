@@ -1,25 +1,28 @@
 {
-  "$schema": "http://json.schemastore.org/tsconfig",
+  //"$schema": "http://json.schemastore.org/tsconfig",
 
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDirs": ["src/"],
-    "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "sourceMap": true,
-    "declarationMap": true,
-    "inlineSources": true,
-    "experimentalDecorators": true,
-    "strict": true,
-    "jsx": "react-jsx",
+    "target": "ES2021",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@aelastics/*": ["node_modules/@aelastics/*"]
+    },
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["heft-jest", "node"],
-    "moduleResolution": "Node",
-    "module": "ESNext",
-    "target": "ESNext",
-    "lib": ["ESNext", "DOM"]
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "outDir": "./lib",
+    "jsx": "react" // Add this line
   },
-  "include": ["src/**/*.ts", "src/useStore.tsx"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"],
+  "exclude": ["node_modules", "lib"]
 }

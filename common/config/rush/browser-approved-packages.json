@@ -4,11 +4,11 @@
   "packages": [
     {
       "name": "@aelastics/eternal",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "@aelastics/observables",
-      "allowedCategories": [ "production" ]
+      "allowedCategories": [ "production", "prototypes" ]
     },
     {
       "name": "@oclif/core",
@@ -69,6 +69,10 @@
     {
       "name": "@types/uuid",
       "allowedCategories": [ "production", "prototypes" ]
+    },
+    {
+      "name": "aelastics-eternal",
+      "allowedCategories": [ "prototypes" ]
     },
     {
       "name": "aelastics-result",

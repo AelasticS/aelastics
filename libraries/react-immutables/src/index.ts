@@ -1,3 +1,3 @@
-export { useStore, StoreProvider } from "./useStore";
-export { useStoreSelector } from "./useStoreSelector";
-export { useObjectSelector } from "./useObjectSelector";
+export { createStoreProvider } from "./createStoreProvider";
+export { createStoreSelector } from "./useStoreSelector";
+export { createObjectSelector } from "./useObjectSelector";
