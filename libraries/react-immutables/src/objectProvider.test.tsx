@@ -4,13 +4,21 @@ import "@testing-library/jest-dom/extend-expect"; // Ensure toBeInTheDocument() 
 import { Store } from "@aelastics/eternal";
 import { createObjectStoreProvider } from "./createObjectProvider";
 
-jest.mock("@aelastics/eternal", () => ({
-  Store: jest.fn().mockImplementation(() => ({
-    subscribeToObj: jest.fn(),
-    unsubscribeFromObj: jest.fn(),
-    getObject: jest.fn((uuid) => ({ uuid, name: "Mocked Name" })),
-  })),
-}));
+jest.mock("@aelastics/eternal", () => {
+  return {
+    Store: jest.fn().mockImplementation(() => ({
+      subscribeToStore: jest.fn(),
+      unsubscribeFromStore: jest.fn(),
+      subscribeToObj: jest.fn(),
+      unsubscribeFromObj: jest.fn(),
+      getState: jest.fn(() => ({
+        users: { "user-123": { uuid: "user-123", name: "Alice" } },
+      })),
+      getObject: jest.fn((uuid) => ({ uuid, name: `Mocked Object for ${uuid}` })), // ✅ Ensure `getObject()` exists
+    })),
+  };
+});
+
 
 describe("ObjectStoreProvider and useObjectSelector", () => {
   it("provides the store and object via context", () => {

@@ -4,16 +4,21 @@ import { Store } from "@aelastics/eternal";
 import { createStoreProvider } from "./createStoreProvider";
 import { createObjectStoreProvider } from "./createObjectProvider";
 
-jest.mock("@aelastics/eternal", () => ({
-  Store: jest.fn().mockImplementation(() => ({
-    subscribeToStore: jest.fn(),
-    unsubscribeFromStore: jest.fn(),
-    getState: jest.fn(() => ({
-      users: { "user-123": { uuid: "user-123", name: "Alice" } },
+jest.mock("@aelastics/eternal", () => {
+  return {
+    Store: jest.fn().mockImplementation(() => ({
+      subscribeToStore: jest.fn(),
+      unsubscribeFromStore: jest.fn(),
+      subscribeToObj: jest.fn(),
+      unsubscribeFromObj: jest.fn(),
+      getState: jest.fn(() => ({
+        users: { "user-123": { uuid: "user-123", name: "Alice" } },
+      })),
+      getObject: jest.fn((uuid) => ({ uuid, name: `Mocked Object for ${uuid}` })), // ✅ Ensure `getObject()` exists
     })),
-    getObject: jest.fn((uuid) => ({ uuid, name: "Mocked Name" })),
-  })),
-}));
+  };
+});
+
 
 describe("StoreProvider and useStoreSelector", () => {
   it("provides the store instance via context", () => {
