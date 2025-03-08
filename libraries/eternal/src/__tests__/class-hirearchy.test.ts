@@ -1,9 +1,9 @@
 import { EternalStore } from '../EternalStore';
-import { TypeMeta } from '../handlers/MetaDefinitions';
+import { ObjectTypeMeta } from '../handlers/MetaDefinitions';
 import { EternalObject } from '../handlers/InternalTypes';
 
 // Define type metadata for the hierarchy
-const typeMetaA: TypeMeta = {
+const typeMetaA: ObjectTypeMeta = {
   qName: 'TypeA',
   properties: new Map([
     ['propA', { name: 'propA', type: 'string', qName: 'propA' }],
@@ -11,7 +11,7 @@ const typeMetaA: TypeMeta = {
   ])
 };
 
-const typeMetaB: TypeMeta = {
+const typeMetaB: ObjectTypeMeta = {
   qName: 'TypeB',
   extends: 'TypeA',
   properties: new Map([
@@ -19,7 +19,7 @@ const typeMetaB: TypeMeta = {
   ])
 };
 
-const typeMetaC: TypeMeta = {
+const typeMetaC: ObjectTypeMeta = {
   qName: 'TypeC',
   extends: 'TypeB',
   properties: new Map([
@@ -28,7 +28,7 @@ const typeMetaC: TypeMeta = {
 };
 
 // Create metaInfo map
-const metaInfo = new Map<string, TypeMeta>([
+const metaInfo = new Map<string, ObjectTypeMeta>([
   ['TypeA', typeMetaA],
   ['TypeB', typeMetaB],
   ['TypeC', typeMetaC]

@@ -1,5 +1,5 @@
 import { verifySchemaConsistency } from "../../SchemaRegistry"
-import { PropertyMeta, SchemaRegistry, TypeMeta, TypeSchema } from "../../handlers/MetaDefinitions";
+import { PropertyMeta, SchemaRegistry, ObjectTypeMeta, TypeSchema } from "../../handlers/MetaDefinitions";
 
 describe("Schema Existence Validation", () => {
     let schemaRegistry: SchemaRegistry = { schemas: new Map<string, TypeSchema>() } //  Local schema registry
@@ -12,7 +12,7 @@ describe("Schema Existence Validation", () => {
         schemaRegistry.schemas.set("/valid-schema", {
             qName: "/valid-schema",
             version: "1.0",
-            types: new Map<string, TypeMeta>([
+            types: new Map<string, ObjectTypeMeta>([
                 ["/valid-schema/Base", { qName: "/valid-schema/Base", properties: new Map() }],
                 ["/valid-schema/Derived", { 
                     qName: "/valid-schema/Derived", 
@@ -35,7 +35,7 @@ describe("Schema Existence Validation", () => {
         schemaRegistry.schemas.set("/invalid-schema-missing-parent", {
             qName: "/invalid-schema-missing-parent",
             version: "1.0",
-            types: new Map<string, TypeMeta>([
+            types: new Map<string, ObjectTypeMeta>([
                 ["/invalid-schema-missing-parent/Orphan", { 
                     qName: "/invalid-schema-missing-parent/Orphan", 
                     properties: new Map(),
@@ -57,7 +57,7 @@ describe("Schema Existence Validation", () => {
         schemaRegistry.schemas.set("/invalid-schema-self-extends", {
             qName: "/invalid-schema-self-extends",
             version: "1.0",
-            types: new Map<string, TypeMeta>([
+            types: new Map<string, ObjectTypeMeta>([
                 ["/invalid-schema-self-extends/Self", { 
                     qName: "/invalid-schema-self-extends/Self", 
                     properties: new Map(),
@@ -79,7 +79,7 @@ describe("Schema Existence Validation", () => {
         schemaRegistry.schemas.set("/invalid-schema-circular", {
             qName: "/invalid-schema-circular",
             version: "1.0",
-            types: new Map<string, TypeMeta>([
+            types: new Map<string, ObjectTypeMeta>([
                 ["/invalid-schema-circular/A", { 
                     qName: "/invalid-schema-circular/A", 
                     properties: new Map(),

@@ -1,4 +1,4 @@
-import { TypeMeta } from "./handlers/MetaDefinitions";
+import { ObjectTypeMeta } from "./handlers/MetaDefinitions";
 import { EternalStore } from "./EternalStore";
 import { EternalClass, EternalObject } from "./handlers/InternalTypes";
 import { isObjectFrozen, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, removeElement } from "./utils";
@@ -64,7 +64,7 @@ export function checkWriteAccess(obj: EternalObject, store: EternalStore, key: s
 
 
 /** Adds optimized property accessors to a dynamically generated class prototype */
-export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
+export function addPropertyAccessors(prototype: any, typeMeta: ObjectTypeMeta, store: EternalStore) {
 
     // type for inverse relationship updater
     type inverseUpdater = (obj: EternalObject, oldUUID: string, value?: EternalObject) => void;
@@ -249,7 +249,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 }
 
 // add dynamically method to shallow copy props (including observables) from one instance to another
-export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
+export function addCopyPropsMethod(prototype: any, typeMeta: ObjectTypeMeta) {
     prototype.copyProps = function (newObj: any, currentPrototype: any) {
         // Recursively copy properties from the superclass
         const superClass = Object.getPrototypeOf(currentPrototype);

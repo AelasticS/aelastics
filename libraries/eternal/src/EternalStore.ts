@@ -4,7 +4,7 @@ import { createImmutableArray } from "./handlers/ArrayHandlers"
 import { EternalClass, EternalObject } from "./handlers/InternalTypes"
 import { createImmutableMap} from "./handlers/MapHandlers"
 import {createImmutableSet} from "./handlers/SetHandlers"
-import { TypeMeta } from "./handlers/MetaDefinitions"
+import { ObjectTypeMeta } from "./handlers/MetaDefinitions"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
 import { randomUUID } from 'crypto';
@@ -25,9 +25,9 @@ export class EternalStore {
   private versionedObjects: EternalObject[] = []; // Track versioned objects
 
 
-  private metaInfo: Map<string, TypeMeta>;
+  private metaInfo: Map<string, ObjectTypeMeta>;
 
-  constructor(metaInfo: Map<string, TypeMeta>) {
+  constructor(metaInfo: Map<string, ObjectTypeMeta>) {
     this.metaInfo = metaInfo;
     // Create dynamic classes for each type
     for (const [type, typeMeta] of metaInfo) {
@@ -37,7 +37,7 @@ export class EternalStore {
     }
   }
 
-  public getMeta(type: string): TypeMeta {
+  public getMeta(type: string): ObjectTypeMeta {
     return this.typeToClassMap.get(type)
   }
 
@@ -225,7 +225,7 @@ export class EternalStore {
   }
 
 
-  private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
+  private createDynamicClass(typeMeta: ObjectTypeMeta, store: EternalStore) {
     const className = typeMeta.qName; // Use the type name as the class name
     const superClass = typeMeta.extends ? this.getClassByName(typeMeta.extends) : undefined;
     let BaseClass: any;

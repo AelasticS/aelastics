@@ -1,11 +1,11 @@
 import { createStore } from "../StoreFactory";
-import { TypeMeta } from "../handlers/MetaDefinitions";
+import { ObjectTypeMeta } from "../handlers/MetaDefinitions";
 
 describe("Store API: Historical State Access", () => {
     let store: ReturnType<typeof createStore>;
 
     beforeEach(() => {
-        const metaInfo = new Map<string, TypeMeta>([
+        const metaInfo = new Map<string, ObjectTypeMeta>([
             ["User", {
                 qName: "User",
                 properties: new Map([

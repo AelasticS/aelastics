@@ -1,6 +1,6 @@
 import { EternalStore, InternalRecipe } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { TypeMeta } from "./handlers/MetaDefinitions"
+import { ObjectTypeMeta } from "./handlers/MetaDefinitions"
 
 /**
  * Interface representing a Store that manages objects and their states.
@@ -122,7 +122,7 @@ export interface Store {
 export type recipe<T> = (obj: T) => void
 
 export function createStore(
-  metaInfo: Map<string, TypeMeta>,
+  metaInfo: Map<string, ObjectTypeMeta>,
   initialState: any = {},
   options: {
     freeze?: boolean
