@@ -28,7 +28,7 @@ export function initializeSchemaRegistry(jsonSchemas: any[]): SchemaRegistry | s
 
     // 3️⃣ Validate all schemas
     for (const schemaQName of newRegistry.schemas.keys()) {
-        errors.push(...verifySchemaConsistency(schemaQName, newRegistry));
+        errors.push(...verifySchemaConsistency(newRegistry.schemas.get(schemaQName)!, newRegistry));
     }
 
     // ✅ Return new registry if no errors, otherwise return errors
@@ -88,7 +88,7 @@ export function removeSchemasFromRegistry(
 
     // 4️⃣ Validate all remaining schemas
     for (const schemaQName of updatedRegistry.schemas.keys()) {
-        errors.push(...verifySchemaConsistency(schemaQName, updatedRegistry));
+        errors.push(...verifySchemaConsistency(updatedRegistry.schemas.get(schemaQName)!, updatedRegistry));
     }
 
     // 5️⃣ Return the updated registry if no errors, otherwise return errors
@@ -214,7 +214,7 @@ export function populateSchemaRegistry(
 }
 
 
-function computeResolvedTypes(schema: TypeSchema, schemaRegistry: SchemaRegistry): string[] {
+export function computeResolvedTypes(schema: TypeSchema, schemaRegistry: SchemaRegistry): string[] {
     const errors: string[] = []; // Define errors array
 
     // Ensure resolvedTypes exists and already contains local types
@@ -283,9 +283,9 @@ function computeResolvedTypes(schema: TypeSchema, schemaRegistry: SchemaRegistry
  * @param schemaQName - The fully qualified name (qName) of the schema to validate.
  * @returns A list of validation errors (empty if valid).
  */
-export function verifySchemaConsistency(schemaQName: string, schemaRegistry: SchemaRegistry): string[] {
+export function verifySchemaConsistency(schema: TypeSchema, schemaRegistry: SchemaRegistry): string[] {
     const errors: string[] = [];
-    const schema = schemaRegistry.schemas.get(schemaQName);
+    const schemaQName = schema.qName
 
     if (!schema) {
         errors.push(`Schema "${schemaQName}" not found in registry.`);
