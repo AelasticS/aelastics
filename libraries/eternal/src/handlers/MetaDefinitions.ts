@@ -20,8 +20,8 @@ export interface PropertyMeta {
     keyType?: PropertyType; // Data type of the keys (if map)
     inverseType?: string; // Name of the inverse type (if bidirectional)
     inverseProp?: string; // Name of the inverse property (if bidirectional)
-    minElements?: number; // Minimum elements for collection properties
-    maxElements?: number; // Maximum elements for collection properties
+    minElements?: string; // Minimum elements for collection properties
+    maxElements?: string; // Maximum elements for collection properties
     defaultValue?: any; // Default value for simple properties
 }
 
