@@ -1,4 +1,4 @@
-import { verifySchemaConsistency } from "../../SchemaRegistry"
+import { computeResolvedTypes, verifySchemaConsistency } from "../../SchemaRegistry"
 import { PropertyMeta, SchemaRegistry, TypeSchema } from "../../handlers/MetaDefinitions";
 
 describe("Schema Existence Validation", () => {
@@ -29,7 +29,7 @@ describe("Schema Existence Validation", () => {
                             qName: "/valid-schema/User/documents",
                             type: "array",
                             itemType: "object",
-                            inverseType: "/valid-schema/Document",
+                            domainType: "/valid-schema/Document",
                             inverseProp: "/valid-schema/Document/author"
                         }]
                     ])
@@ -42,6 +42,7 @@ describe("Schema Existence Validation", () => {
     });
 
     test("T8: Validate properties referencing correct types (should pass)", () => {
+        computeResolvedTypes(schemaRegistry.schemas.get("/valid-schema")!, schemaRegistry);
         const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/valid-schema")!, schemaRegistry);
         expect(errors).toEqual([]); // No errors expected
     });
@@ -57,7 +58,7 @@ describe("Schema Existence Validation", () => {
                         ["/invalid-schema/InvalidType/invalidRef", {
                             qName: "/invalid-schema/InvalidType/invalidRef",
                             type: "object",
-                            inverseType: "/non-existent/Type" // 🚨 This type does not exist
+                            domainType: "/non-existent/Type" // 🚨 This type does not exist
                         }]
                     ])
                 }]
@@ -81,7 +82,7 @@ describe("Schema Existence Validation", () => {
                         ["/invalid-schema-inverse/InvalidType/ref", {
                             qName: "/invalid-schema-inverse/InvalidType/ref",
                             type: "object",
-                            inverseType: "/valid-schema/NonExistentType", // 🚨 This inverse type does not exist
+                            domainType: "/valid-schema/NonExistentType", // 🚨 This inverse type does not exist
                             inverseProp: "/valid-schema/NonExistentType/refBack"
                         }]
                     ])
@@ -109,7 +110,7 @@ describe("Schema Existence Validation", () => {
                         ["/invalid-schema-mismatch/TypeA/ref", {
                             qName: "/invalid-schema-mismatch/TypeA/ref",
                             type: "object",
-                            inverseType: "/invalid-schema-mismatch/TypeB",
+                            domainType: "/invalid-schema-mismatch/TypeB",
                             inverseProp: "/invalid-schema-mismatch/TypeB/missingRef" // 🚨 Inverse property does not exist
                         }]
                     ])
@@ -120,7 +121,7 @@ describe("Schema Existence Validation", () => {
                         ["/invalid-schema-mismatch/TypeB/actualRef", {
                             qName: "/invalid-schema-mismatch/TypeB/actualRef",
                             type: "object",
-                            inverseType: "/invalid-schema-mismatch/TypeA",
+                            domainType: "/invalid-schema-mismatch/TypeA",
                             inverseProp: "/invalid-schema-mismatch/TypeA/ref"
                         }]
                     ])

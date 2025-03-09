@@ -24,11 +24,11 @@ export interface PropertyMeta {
     label?: string; // Human-readable label for the property
     optional?: boolean; // Whether the property is optional
     type: PropertyType; // Data type of the property
-    itemType?: PropertyType; // Data type of the items (if array, map, or set): simplePPropTYpe or ComplexPropType
+    itemType?: PropertyType; // Data type of the items (if array, map, or set): simplePropType or ComplexPropType
     keyType?: PropertyType; // Data type of the keys (if map)
-    inverseType?: string; // Name of the inverse type (if bidirectional)
+    domainType?: string; // Name of the property domain of
     inverseProp?: string; // Name of the inverse property (if bidirectional)
-    minElements?: string; // Minimum elements for collection properties
+    minElements?: string; // Minimum elements for collection properties // TODO add collection of constrains as (self)=>boolean
     maxElements?: string; // Maximum elements for collection properties
     defaultValue?: any; // Default value for simple properties
 }

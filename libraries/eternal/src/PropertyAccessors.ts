@@ -125,7 +125,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
                 const oldUUID = obj[privateKey] // get old value
                 obj[key] = value?.uuid; // update value
                 // Ensure bidirectional relationships are updated correctly
-                if (propertyMeta.inverseType && propertyMeta.inverseProp && (oldUUID || value)) {
+                if (propertyMeta.domainType && propertyMeta.inverseProp && (oldUUID || value)) {
                     // Get precomputed inverse updater function
 
                     const updater: inverseUpdater | undefined = obj[inverseUpdaterKey];
@@ -149,8 +149,8 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         // Define property on prototype
         Object.defineProperty(prototype, key, { get: getter, set: setter });
         // Precompute and bind inverse relationship updater
-        if (propertyMeta.inverseType && propertyMeta.inverseProp) {
-            switch (propertyMeta.inverseType) {
+        if (propertyMeta.domainType && propertyMeta.inverseProp) {
+            switch (propertyMeta.domainType) {
                 case "object":
                     prototype[inverseUpdaterKey] = one2one(store, key, privateInverseKey);
                     break;

@@ -1,5 +1,6 @@
 import {
   isComplexPropType,
+  isSimplePropType,
   PropertyMeta,
   RoleMeta,
   SchemaRegistry,
@@ -164,7 +165,7 @@ export function populateSchemaRegistry(
               type: propData.type,
               itemType: propData.itemType,
               keyType: propData.keyType,
-              inverseType: propData.inverseType,
+              domainType: propData.domainType,
               inverseProp: propData.inverseProp,
               minElements: propData.minElements,
               maxElements: propData.maxElements,
@@ -333,19 +334,19 @@ export function verifySchemaConsistency(schema: TypeSchema, schemaRegistry: Sche
       if (isComplexPropType(propMeta.type)) {
         switch (propMeta.type) {
           case "object":
-            const inverseTypeMeta = schema.resolvedTypes?.get(propMeta.inverseType!)
+            const inverseTypeMeta = schema.resolvedTypes?.get(propMeta.domainType!)
             if (!inverseTypeMeta) {
-              errors.push(`Property "${propQName}" refers to unknown type "${propMeta.inverseType}".`)
+              errors.push(`Property "${propQName}" refers to unknown type "${propMeta.domainType}".`)
             } else if (propMeta.inverseProp) {
               // Validate inverse relationships (if inverseType and inverseProp are defined)
               const inversePropMeta = inverseTypeMeta.properties.get(propMeta.inverseProp)
               if (!inversePropMeta) {
                 errors.push(
-                  `Property "${propQName}" declares inverseProp "${propMeta.inverseProp}", but it does not exist in "${propMeta.inverseType}".`
+                  `Property "${propQName}" declares inverseProp "${propMeta.inverseProp}", but it does not exist in "${propMeta.domainType}".`
                 )
-              } else if (inversePropMeta.inverseType !== typeQName || inversePropMeta.inverseProp !== propQName) {
+              } else if (inversePropMeta.domainType !== typeQName || inversePropMeta.inverseProp !== propQName) {
                 errors.push(
-                  `Inverse mismatch: Property "${propQName}" → "${propMeta.inverseType}" does not correctly link back to "${typeQName}".`
+                  `Inverse mismatch: Property "${propQName}" → "${propMeta.domainType}" does not correctly link back to "${typeQName}".`
                 )
               }
             }
@@ -366,7 +367,7 @@ export function verifySchemaConsistency(schema: TypeSchema, schemaRegistry: Sche
           default:
         }
       } else { // Simple property type
-        if (!["string", "number", "date", "boolean"].includes(propMeta.type)) {
+        if (!isSimplePropType(propMeta.type)) {
           errors.push(`Property "${propQName}" has invalid type "${propMeta.type}".`)
         }
       }
@@ -375,14 +376,14 @@ export function verifySchemaConsistency(schema: TypeSchema, schemaRegistry: Sche
   }
   function validateComplexDomain(propMeta: PropertyMeta, prop: keyof PropertyMeta, errors: string[]) {
     const valueOfType = propMeta[prop]
-      if (valueOfType && !["string", "number", "boolean"].includes(valueOfType)) {
+      if (valueOfType && !isSimplePropType(valueOfType)) {
       errors.push(`Property "${propMeta.qName}" has invalid value "${valueOfType}" of ${prop}.`)
     }
 
     if(!valueOfType) {
         errors.push(`Property "${propMeta.qName}" has invalid value "${valueOfType}" of ${prop}.`)
     }
-    else if (["string", "number", "date", "boolean"].includes(valueOfType)) {
+    else if (isSimplePropType(valueOfType)) {
         // Simple types are valid
         return
     } else { // Complex types //TODO expand type schema that xan be arbitrary nested collections
