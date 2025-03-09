@@ -20,8 +20,8 @@ describe("Schema Existence Validation", () => {
                             qName: "/valid-schema/Order/items",
                             type: "array", 
                             itemType: "string",
-                            minElements: 1,
-                            maxElements: 10
+                            minElements: "1",
+                            maxElements: "10"
                         }]
                     ])
                 }]
@@ -42,18 +42,18 @@ describe("Schema Existence Validation", () => {
             qName: "/invalid-schema",
             version: "1.0",
             types: new Map([
-                ["/invalid-schema/Product", {
-                    qName: "/invalid-schema/Product",
-                    properties: new Map<string, PropertyMeta>([
-                        ["/invalid-schema/Product/tags", { 
-                            qName: "/invalid-schema/Product/tags",
-                            type: "set", 
-                            itemType: "string",
-                            minElements: 5,
-                            maxElements: 3 // 🚨 Invalid: minElements > maxElements
-                        }]
-                    ])
+            ["/invalid-schema/Product", {
+                qName: "/invalid-schema/Product",
+                properties: new Map<string, PropertyMeta>([
+                ["/invalid-schema/Product/tags", { 
+                    qName: "/invalid-schema/Product/tags",
+                    type: "set", 
+                    itemType: "string",
+                    minElements: "5",
+                    maxElements: "3" // 🚨 Invalid: minElements > maxElements
                 }]
+                ])
+            }]
             ]),
             roles: new Map(),
             export: [],
