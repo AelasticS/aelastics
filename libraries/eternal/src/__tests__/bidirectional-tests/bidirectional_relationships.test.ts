@@ -1,4 +1,4 @@
-import { EternalStore } from "../EternalStore";
+import { EternalStore } from "../../EternalStore";
 
 describe("Bidirectional Relationships Tracking", () => {
     let store: EternalStore;
@@ -10,7 +10,7 @@ describe("Bidirectional Relationships Tracking", () => {
                 properties: new Map([
                     ["id", { qName: "id", name: "id", type: "string" }],
                     ["name", { qName: "name", name: "name", type: "string" }],
-                    ["friends", { qName: "friends", name: "friends", type: "set", inverseType: "User", inverseProp: "friends" }]
+                    ["friends", { qName: "friends", name: "friends", type: "set", domainType: "User", inverseProp: "friends" }]
                 ])
             }]
         ]));

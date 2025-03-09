@@ -9,7 +9,7 @@ import {
 } from "./handlers/MetaDefinitions"
 
 // Global Schema Registry
-const schemaRegistry: SchemaRegistry = {
+export const schemaRegistry: SchemaRegistry = {
   schemas: new Map<string, TypeSchema>(),
 }
 

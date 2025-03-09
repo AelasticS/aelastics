@@ -1,5 +1,4 @@
-import { EternalObject } from "../handlers/InternalTypes";
-import { createStore } from "../StoreFactory";
+import { createStore } from "../../StoreFactory";
 
 describe("Bidirectional Relationships & Cyclic References", () => {
     let store:  ReturnType<typeof createStore>;
@@ -10,14 +9,14 @@ describe("Bidirectional Relationships & Cyclic References", () => {
                 qName: "Parent",
                 properties: new Map([
                     ["name", { qName: "name", name: "name", type: "string" }],
-                    ["children", { qName: "children", name: "children", type: "array", inverseType: "Child", inverseProp: "parent" }]
+                    ["children", { qName: "children", name: "children", type: "array", domainType: "Child", inverseProp: "parent" }]
                 ])
             }],
             ["Child", {
                 qName: "Child",
                 properties: new Map([
                     ["name", { qName: "name", name: "name", type: "string" }],
-                    ["parent", { qName: "parent", name: "parent", type: "object", inverseType: "Parent", inverseProp: "children" }]
+                    ["parent", { qName: "parent", name: "parent", type: "object", domainType: "Parent", inverseProp: "children" }]
                 ])
             }]
         ]));

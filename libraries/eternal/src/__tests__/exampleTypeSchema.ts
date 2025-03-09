@@ -13,7 +13,7 @@ export const UserSchema: TypeSchema = {
                     ["age", { qName: "age", name: "age", type: "number" }],
                     [
                         "friends",
-                        { qName: "friends", name: "friends", type: "array", inverseType: "User", inverseProp: "friends" }
+                        { qName: "friends", name: "friends", type: "array", domainType: "User", inverseProp: "friends" }
                     ]
                 ])
             }
@@ -27,7 +27,7 @@ export const UserSchema: TypeSchema = {
                     ["title", { qName: "title", name: "title", type: "string" }],
                     [
                         "author",
-                        { qName: "author", name: "author", type: "object", inverseType: "User", inverseProp: "posts" }
+                        { qName: "author", name: "author", type: "object", domainType: "User", inverseProp: "posts" }
                     ]
                 ])
             }

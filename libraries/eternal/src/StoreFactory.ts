@@ -1,6 +1,6 @@
 import { EternalStore, InternalRecipe } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { TypeMeta } from "./handlers/MetaDefinitions"
+import { TypeMeta, TypeSchema } from "./handlers/MetaDefinitions"
 
 /**
  * Interface representing a Store that manages objects and their states.
@@ -122,14 +122,15 @@ export interface Store {
 export type recipe<T> = (obj: T) => void
 
 export function createStore(
-  metaInfo: Map<string, TypeMeta>,
+  metaInfo: Map<string, TypeMeta> | TypeSchema,
   initialState: any = {},
   options: {
     freeze?: boolean
     fetchFromExternalSource?: (type: string, uuid: string) => any
   } = { freeze: true }
 ): Store {
-  const store = new EternalStore(metaInfo)
+  const types:Map<string, TypeMeta> = (metaInfo as TypeSchema).types || (metaInfo as Map<string, TypeMeta>)
+  const store = new EternalStore(types)
 
   const publicAPI: Store = {
     createObject: (type) => store.createObject(type), // TODO check if new state is always created
