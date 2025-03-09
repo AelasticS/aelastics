@@ -1,3 +1,4 @@
+import { resolve } from "path";
 import { computeResolvedTypes, verifySchemaConsistency } from "../../SchemaRegistry"
 import { PropertyMeta, SchemaRegistry, TypeSchema } from "../../handlers/MetaDefinitions";
 
@@ -71,7 +72,7 @@ describe("Schema Existence Validation", () => {
         const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema")!, schemaRegistry);
     });
 
-    test("T10: Property references a missing inverseType (should fail)", () => {
+    test("T10: Property references a missing domainType (should fail)", () => {
         schemaRegistry.schemas.set("/invalid-schema-inverse", {
             qName: "/invalid-schema-inverse",
             version: "1.0",
@@ -99,7 +100,7 @@ describe("Schema Existence Validation", () => {
         );
     });
 
-    test("T11: Property references an inverseType, but inverseProp does not match (should fail)", () => {
+    test("T11: Property references an domainType, but inverseProp does not match (should fail)", () => {
         schemaRegistry.schemas.set("/invalid-schema-mismatch", {
             qName: "/invalid-schema-mismatch",
             version: "1.0",
@@ -131,7 +132,7 @@ describe("Schema Existence Validation", () => {
             export: [],
             import: new Map()
         });
-
+        computeResolvedTypes(schemaRegistry.schemas.get("/invalid-schema-mismatch")!, schemaRegistry);
         const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/invalid-schema-mismatch")!, schemaRegistry);
         expect(errors.some(error => error.includes(
             'Property "/invalid-schema-mismatch/TypeA/ref" declares inverseProp "/invalid-schema-mismatch/TypeB/missingRef", but it does not exist in "/invalid-schema-mismatch/TypeB".'))).toBe(true);

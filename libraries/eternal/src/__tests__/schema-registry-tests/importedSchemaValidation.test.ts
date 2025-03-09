@@ -33,7 +33,7 @@ describe("Schema Existence Validation", () => {
                     properties: new Map([
                         ["/customer/sales/Invoice/document", { 
                             qName: "/customer/sales/Invoice/document", 
-                            type: "object", inverseType: "/core/Document" }]
+                            type: "object", domainType: "/core/Document" }]
                     ])
                 }]
             ]),
@@ -50,7 +50,9 @@ describe("Schema Existence Validation", () => {
     });
 
     test("T3: Validate a schema that correctly imports another schema (should pass)", () => {
-        const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/customer/sales")!, schemaRegistry);
+        const schema = schemaRegistry.schemas.get("/customer/sales")!
+        computeResolvedTypes(schema, schemaRegistry);
+        const errors = verifySchemaConsistency(schema, schemaRegistry);
         expect(errors).toEqual([]); // No errors expected
     });
 

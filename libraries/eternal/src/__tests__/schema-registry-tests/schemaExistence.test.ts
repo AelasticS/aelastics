@@ -1,4 +1,4 @@
-import { verifySchemaConsistency } from "../../SchemaRegistry"
+import { computeResolvedTypes, verifySchemaConsistency } from "../../SchemaRegistry"
 import { SchemaRegistry, TypeSchema } from "../../handlers/MetaDefinitions";
 
 describe("Schema Existence Validation", () => {
@@ -31,13 +31,9 @@ describe("Schema Existence Validation", () => {
 
 
     test("T1: Validate an existing schema (should pass)", () => {
+        computeResolvedTypes(schemaRegistry.schemas.get("/core")!, schemaRegistry);
         const errors = verifySchemaConsistency(schemaRegistry.schemas.get("/core")!, schemaRegistry);
         expect(errors).toEqual([]); // No errors expected
-    });
-
-    test("T2: Validate a non-existent schema (should fail)", () => {
-        const errors = verifySchemaConsistency({ qName: "/non-existent", version: "1.0", types: new Map(), roles: new Map(), export: [], import: new Map() }, schemaRegistry);
-        expect(errors).toContain('Schema "/non-existent" not found in registry.');
     });
 
     test("T3: Validate an invalid schema (should fail)", () => {

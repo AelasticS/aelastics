@@ -352,10 +352,15 @@ export function verifySchemaConsistency(schema: TypeSchema, schemaRegistry: Sche
             }
             break
           case "array":
-           validateComplexDomain(propMeta, "itemType", errors)
-           validateMinMaxConstraints(propQName, propMeta, errors)
+            if (!isSimplePropType(propMeta.itemType)) {
+              validateComplexDomain(propMeta, "domainType", errors)
+            }
+            validateMinMaxConstraints(propQName, propMeta, errors)
             break
           case "map":
+            if (!isSimplePropType(propMeta.itemType)) {
+                validateComplexDomain(propMeta, "domainType", errors)
+              }
             validateComplexDomain(propMeta, "itemType", errors)
             validateComplexDomain(propMeta, "keyType", errors)
             validateMinMaxConstraints(propQName, propMeta, errors)
@@ -366,32 +371,25 @@ export function verifySchemaConsistency(schema: TypeSchema, schemaRegistry: Sche
             break
           default:
         }
-      } else { // Simple property type
+      } else {
+        // Simple property type
         if (!isSimplePropType(propMeta.type)) {
           errors.push(`Property "${propQName}" has invalid type "${propMeta.type}".`)
         }
       }
-
     }
   }
   function validateComplexDomain(propMeta: PropertyMeta, prop: keyof PropertyMeta, errors: string[]) {
     const valueOfType = propMeta[prop]
-      if (valueOfType && !isSimplePropType(valueOfType)) {
+    if (!valueOfType) {
       errors.push(`Property "${propMeta.qName}" has invalid value "${valueOfType}" of ${prop}.`)
-    }
-
-    if(!valueOfType) {
+    } else {
+      // Complex types //TODO expand type schema that can be arbitrary nested collections
+      const itemTypeMeta = schema.resolvedTypes?.get(valueOfType!)
+      if (!itemTypeMeta) {
         errors.push(`Property "${propMeta.qName}" has invalid value "${valueOfType}" of ${prop}.`)
-    }
-    else if (isSimplePropType(valueOfType)) {
-        // Simple types are valid
-        return
-    } else { // Complex types //TODO expand type schema that xan be arbitrary nested collections
-        const itemTypeMeta = schema.resolvedTypes?.get(propMeta.itemType!)
-        if (!itemTypeMeta) {
-            errors.push(`Property "${propMeta.qName}" has invalid value "${valueOfType}" of ${prop}.`)
-        }
       }
+    }
   }
 
   function validateMinMaxConstraints(propQName: string, propMeta: PropertyMeta, errors: string[]) {
