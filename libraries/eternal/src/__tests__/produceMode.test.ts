@@ -1,5 +1,5 @@
 import { createStore } from "../StoreFactory";
-import { TypeMeta } from "../handlers/MetaDefinitions";
+import { TypeMeta } from "../meta/InternalSchema";
 
 describe("Store API: Produce Mode Detection", () => {
     let store: ReturnType<typeof createStore>;

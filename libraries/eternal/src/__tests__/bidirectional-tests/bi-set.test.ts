@@ -1,87 +1,8 @@
 import { createStore } from "../../StoreFactory";
 import { initializeSchemaRegistry } from "../../SchemaRegistry";
-import { SchemaRegistry } from "../../handlers/MetaDefinitions";
+import { SchemaRegistry } from "../../meta/InternalSchema";
 
-const jsonSchemas = [
-    {
-        qName: "/library",
-        version: "1.0",
-        types: {
-            "/library/Author": {
-                properties: {
-                    "/library/Author/name": { type: "string" },
-                    "/library/Author/books": { 
-                        type: "set", 
-                        itemType: "object", 
-                        inverseType: "/library/Book", 
-                        inverseProp: "/library/Book/author",
-                        minElements: "0",
-                        maxElements: "100"
-                    }
-                }
-            },
-            "/library/Book": {
-                properties: {
-                    "/library/Book/title": { type: "string" },
-                    "/library/Book/author": { 
-                        type: "object", 
-                        inverseType: "/library/Author", 
-                        inverseProp: "/library/Author/books"
-                    }
-                }
-            },
-            "/library/Publisher": {
-                properties: {
-                    "/library/Publisher/name": { type: "string" },
-                    "/library/Publisher/books": { 
-                        type: "set", 
-                        itemType: "object", 
-                        inverseType: "/library/PublishedBook", 
-                        inverseProp: "/library/PublishedBook/publisher",
-                        minElements: "0",
-                        maxElements: "100"
-                    }
-                }
-            },
-            "/library/PublishedBook": {
-                properties: {
-                    "/library/PublishedBook/title": { type: "string" },
-                    "/library/PublishedBook/publisher": { 
-                        type: "object", 
-                        inverseType: "/library/Publisher", 
-                        inverseProp: "/library/Publisher/books"
-                    }
-                }
-            },
-            "/school/Student": {
-                properties: {
-                    "/school/Student/name": { type: "string" },
-                    "/school/Student/courses": { 
-                        type: "set", 
-                        itemType: "object", 
-                        inverseType: "/school/Course", 
-                        inverseProp: "/school/Course/students",
-                        minElements: "0",
-                        maxElements: "*"
-                    }
-                }
-            },
-            "/school/Course": {
-                properties: {
-                    "/school/Course/title": { type: "string" },
-                    "/school/Course/students": { 
-                        type: "set", 
-                        itemType: "object", 
-                        inverseType: "/school/Student", 
-                        inverseProp: "/school/Student/courses",
-                        minElements: "0",
-                        maxElements: "*"
-                    }
-                }
-            }
-        }
-    }
-];
+import jsonSchemas from "../data/jsonSchemaWithArrays";
 
 // TypeScript interfaces based on the type definitions
 interface Author {

@@ -1,6 +1,6 @@
 import { EternalStore, InternalRecipe } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { TypeMeta, TypeSchema } from "./handlers/MetaDefinitions"
+import { TypeMeta, TypeSchema } from "./meta/InternalSchema"
 
 /**
  * Interface representing a Store that manages objects and their states.

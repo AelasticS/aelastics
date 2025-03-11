@@ -4,7 +4,7 @@ import { createImmutableArray } from "./handlers/ArrayHandlers"
 import { EternalClass, EternalObject } from "./handlers/InternalTypes"
 import { createImmutableMap} from "./handlers/MapHandlers"
 import {createImmutableSet} from "./handlers/SetHandlers"
-import { TypeMeta } from "./handlers/MetaDefinitions"
+import { TypeMeta } from "./meta/InternalSchema"
 import { State } from "./State"
 import { SubscriptionManager } from "./SubscriptionManager";
 import { randomUUID } from 'crypto';

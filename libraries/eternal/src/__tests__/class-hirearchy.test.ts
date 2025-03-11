@@ -1,5 +1,5 @@
 import { EternalStore } from '../EternalStore';
-import { TypeMeta } from '../handlers/MetaDefinitions';
+import { TypeMeta } from '../meta/InternalSchema';
 import { EternalObject } from '../handlers/InternalTypes';
 
 // Define type metadata for the hierarchy

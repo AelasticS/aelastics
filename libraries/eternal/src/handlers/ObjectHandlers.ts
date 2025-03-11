@@ -1,6 +1,6 @@
 import { ObjectHandlers, createObservableObject } from "@aelastics/observables";
 import { State } from "../State";
-import { PropertyMeta } from "./MetaDefinitions";
+import { PropertyMeta } from "../meta/InternalSchema";
 import { isUUIDReference } from "../utils"; // Import the utility function
 import { EternalObject } from "./InternalTypes";
 import { EternalStore } from "../EternalStore";

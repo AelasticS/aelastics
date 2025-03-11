@@ -1,22 +1,5 @@
-/** Defines allowed property types */
-export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
-export type SimplePropType = 'string' | 'number' | 'boolean' | 'date';
+import { PropertyType } from "./PropertyDefinitions";
 
-/**
- * Function to check if a value belongs to SimplePropType
- */
-export function isSimplePropType(value: any): value is SimplePropType {
-    return ['string', 'number', 'boolean', 'date'].includes(value);
-}
-
-/**
- * Function to check if a value belongs to ComplexPropType
- */
-export function isComplexPropType(value: any): value is ComplexPropType {
-    return ['object', 'array', 'map', 'set'].includes(value);
-}
-
-export type PropertyType = SimplePropType | ComplexPropType;
 
 /** Metadata for an individual property */
 export interface PropertyMeta {

@@ -1,12 +1,11 @@
 import {
-  isComplexPropType,
-  isSimplePropType,
   PropertyMeta,
   RoleMeta,
   SchemaRegistry,
   TypeMeta,
   TypeSchema,
-} from "./handlers/MetaDefinitions"
+} from "./meta/InternalSchema"
+import { isComplexPropType, isSimplePropType } from "./meta/PropertyDefinitions"
 
 // Global Schema Registry
 export const schemaRegistry: SchemaRegistry = {

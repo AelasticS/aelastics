@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { computeResolvedTypes, verifySchemaConsistency } from "../../SchemaRegistry"
-import { PropertyMeta, SchemaRegistry, TypeSchema } from "../../handlers/MetaDefinitions";
+import { PropertyMeta, SchemaRegistry, TypeSchema } from "../../meta/InternalSchema";
 
 describe("Schema Existence Validation", () => {
     let schemaRegistry: SchemaRegistry = { schemas: new Map<string, TypeSchema>() } //  Local schema registry

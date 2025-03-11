@@ -1,4 +1,4 @@
-import { TypeMeta } from "./handlers/MetaDefinitions";
+import { TypeMeta } from "./meta/InternalSchema";
 import { EternalStore } from "./EternalStore";
 import { EternalClass, EternalObject } from "./handlers/InternalTypes";
 import { isObjectFrozen, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, removeElement } from "./utils";

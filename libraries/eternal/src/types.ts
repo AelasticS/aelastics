@@ -1,6 +1,6 @@
 import { EternalStore } from "./EternalStore";
 import { EternalObject } from "./handlers/InternalTypes";
-import { PropertyMeta } from "./handlers/MetaDefinitions";
+import { PropertyMeta } from "./meta/InternalSchema";
 
 export type UUID = string;
 

@@ -32,7 +32,7 @@ export function copyProperties(target: any, source: any) {
 
 import { EternalStore } from "./EternalStore";
 import { EternalObject } from "./handlers/InternalTypes";
-import { PropertyMeta } from "./handlers/MetaDefinitions";
+import { PropertyMeta } from "./meta/InternalSchema";
 
 
 export const isObjectFrozen = (obj: EternalObject)=>{

@@ -1,5 +1,5 @@
 import { createObservableSet, SetHandlers } from "@aelastics/observables"
-import { PropertyMeta } from "./MetaDefinitions"
+import { PropertyMeta } from "../meta/InternalSchema"
 import { makePrivatePropertyKey, toObject, toUUID } from "../utils"
 import { checkReadAccess, checkWriteAccess } from "../PropertyAccessors"
 import { ObservableExtra } from "../types"

@@ -1,4 +1,4 @@
-import { TypeSchema } from "../handlers/MetaDefinitions";
+import { TypeSchema } from "../meta/InternalSchema";
 
 export const UserSchema: TypeSchema = {
     qName: "UserSchema",

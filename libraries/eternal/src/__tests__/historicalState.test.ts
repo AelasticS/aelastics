@@ -1,5 +1,5 @@
 import { createStore } from "../StoreFactory";
-import { TypeMeta } from "../handlers/MetaDefinitions";
+import { TypeMeta } from "../meta/InternalSchema";
 
 describe("Store API: Historical State Access", () => {
     let store: ReturnType<typeof createStore>;
