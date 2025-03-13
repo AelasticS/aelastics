@@ -21,7 +21,7 @@ export interface TypeMeta {
     qName: string; // Name of the object type
     label?: string; // Human-readable label for the type
     properties: Map<string, PropertyMeta>; // Property name -> PropertyMeta mapping
-    extends?: string; // Name of the base class (if subclassing is used)
+    extends?: string; // Name of the base class (if subclass-ing is used)
     roles?: string[]; // List of allowed role names for this type
 }
 

@@ -1,8 +1,19 @@
 import { createObservableSet, SetHandlers } from "@aelastics/observables"
 import { PropertyMeta } from "../meta/InternalSchema"
-import { makePrivatePropertyKey, toObject, toUUID } from "../utils"
+import { makePrivatePropertyKey} from "../utils"
 import { checkReadAccess, checkWriteAccess } from "../PropertyAccessors"
 import { ObservableExtra } from "../types"
+import { EternalStore } from "../EternalStore"
+
+// Convert UUID to Object
+const toObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>
+    propDes.itemType === "object" && item ? store.getObject(item) : item
+
+// Convert object to UUID if needed
+const toUUID = (value: any, propDes: PropertyMeta): any =>
+    propDes.itemType === "object" && value ? value.uuid : value
+
+
 
 /** Creates handlers for observable sets */
 export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra): SetHandlers<V> => ({
