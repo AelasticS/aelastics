@@ -270,7 +270,7 @@ export class EternalStore {
               break;
 
               case "object":
-              this[privateKey] = {};
+              this[privateKey] = undefined;
               break;
 
               default:
