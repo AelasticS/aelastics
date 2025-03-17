@@ -71,7 +71,7 @@ export const createArrayHandlers = <T extends EternalObject>({
     },
 
     /** Handle push (convert objects to UUIDs if needed) */
-    push: (target: T[], items: T[]) => {
+    push: (target: T[], ...items: T[]) => {
       const obj = checkWriteAccess(object, store, propDes.qName) as EternalObject;
       const items1 = mapToUUIDs(items, propDes);
       const result = obj[privateKey].push(...items1);
@@ -110,7 +110,7 @@ export const createArrayHandlers = <T extends EternalObject>({
     },
 
     /** Handle unshift (convert objects to UUIDs if needed) */
-    unshift: (target: T[], items: T[]) => {
+    unshift: (target: T[], ...items: T[]) => {
       const obj = checkWriteAccess(object, store, propDes.qName);
       items = mapToUUIDs(items, propDes);
       const result = obj[privateKey].unshift(...items);
@@ -125,7 +125,7 @@ export const createArrayHandlers = <T extends EternalObject>({
     },
 
     /** Handle splice (convert objects to UUIDs if needed) */
-    splice: (target: T[], start: number, deleteCount: number, items: T[]) => {
+    splice: (target: T[], start: number, deleteCount: number, ...items: T[]) => {
       const obj = checkWriteAccess(object, store, propDes.qName);
       items = mapToUUIDs(items, propDes);
       const deletedItems = obj[privateKey].splice(start, deleteCount, ...items);
@@ -186,7 +186,7 @@ export const createArrayHandlers = <T extends EternalObject>({
       return [false, obj[propDes.qName]];
     },
     /** Handle concat */
-    concat: (target: T[], items: T[]) => {
+    concat: (target: T[], ...items: T[]) => {
       const obj = checkReadAccess(object, store);
       items = mapToUUIDs(items, propDes);
       const result = obj[privateKey].concat(...items);
