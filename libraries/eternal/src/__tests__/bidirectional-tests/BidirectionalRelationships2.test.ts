@@ -88,9 +88,9 @@ describe("Bidirectional Relationships & Cyclic References", () => {
   })
 
   test("Updating parent-child relationship should not cause infinite loops", () => {
-    const parent = store.createObject<Parent>("Parent") as Parent
+    let parent = store.createObject<Parent>("Parent") as Parent
 
-    const child = store.createObject<Child>("Child") as Child
+    let child = store.createObject<Child>("Child") as Child
 
     store.updateState(() => {
       parent.name = "Root"
@@ -98,16 +98,23 @@ describe("Bidirectional Relationships & Cyclic References", () => {
       parent.children.push(child)
     })
 
-    expect(parent.children).toContain(child)
+    parent = store.getObject((parent as unknown as EternalObject).uuid) as Parent
+    child = store.getObject((child as unknown as EternalObject).uuid) as Child
+    
+    expect(parent.children[0]).toBe(child)
     expect(child.parent).toBe(parent)
 
     // Update child's parent to a new parent
-    const newParent = store.createObject<Parent>("Parent") as Parent
+    let newParent = store.createObject<Parent>("Parent") as Parent
 
     store.updateState(() => {
       newParent.name = "New Root"
       child.parent = newParent
     })
+
+    parent = store.getObject((parent as unknown as EternalObject).uuid) as Parent
+    child = store.getObject((child as unknown as EternalObject).uuid) as Child
+    newParent = store.getObject((newParent as unknown as EternalObject).uuid) as Parent
 
     expect(child.parent).toBe(newParent)
     expect(newParent.children).toContain(child)
