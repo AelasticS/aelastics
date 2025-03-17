@@ -1,7 +1,7 @@
 export interface ArrayHandlers<T> {
-  getByIndex?: (target: T[], index: any, value: T) => [boolean, T]
-  setByIndex?: (target: T[], index: any, value: T) => [boolean, T]
-  delete?: (target: T[], index: any) => [boolean, boolean]
+  getByIndex?: (target: T[], index: number, value: T) => [boolean, T]
+  setByIndex?: (target: T[], index: number, value: T) => [boolean, T]
+  delete?: (target: T[], index: number) => [boolean, boolean]
   push?: (target: T[], ...items: T[]) => [boolean, number?]
   pop?: (target: T[]) => [boolean, T?]
   shift?: (target: T[]) => [boolean, T?]
@@ -52,23 +52,32 @@ export interface ArrayHandlers<T> {
 export function createObservableArray<T>(arr: T[], handlers: ArrayHandlers<T>, allowMutations: boolean = true): T[] {
   return new Proxy(arr, {
     set(target: T[], key: string | number | symbol, value: any, receiver: any): any {
-      if (handlers.setByIndex) {
-        const [continueOperation, result] = handlers.setByIndex(target, key, value)
+      if (typeof key === "number" || !isNaN(Number(key))) {
+        const index = Number(key)
+        if (handlers.setByIndex) {
+          const [continueOperation, result] = handlers.setByIndex(target, index, value)
+          if (!continueOperation) {
+            return result
+          }
+        }
+        return Reflect.set(target, index, value, receiver)
+      } else {
+        return Reflect.set(target, key, value, receiver)
+      }
+    },
+    deleteProperty(target: T[], key: string | number | symbol): boolean {
+      if (typeof key === "number" || !isNaN(Number(key))) {
+        const index = Number(key)
+
+        const [continueOperation, result] = handlers.delete?.(target, index) ?? [allowMutations, false]
         if (!continueOperation) {
           return result
         }
+        return Reflect.deleteProperty(target, index)
+      } else {
+        return Reflect.deleteProperty(target, key)
       }
-      return Reflect.set(target, key, value, receiver)
     },
-
-    deleteProperty(target: T[], key: string | number | symbol): boolean {
-      const [continueOperation, result] = handlers.delete?.(target, key) ?? [allowMutations, false]
-      if (!continueOperation) {
-        return result
-      }
-      return Reflect.deleteProperty(target, key)
-    },
-
     get(target: T[], key: any | number | symbol, receiver: any): any {
       if (typeof key === "string") {
         switch (key) {
@@ -388,11 +397,16 @@ export function createObservableArray<T>(arr: T[], handlers: ArrayHandlers<T>, a
             }
 
           default:
-            const [cont, getResult] = handlers.getByIndex?.(target, key, receiver) ?? [allowMutations, undefined]
-            if (!cont) {
+            if (typeof key === "number" || !isNaN(Number(key))) {
+              const index = Number(key)
+              const [cont, getResult] = handlers.getByIndex?.(target, index, receiver) ?? [allowMutations, undefined]
+              if (!cont) {
               return getResult
+              }
+              return Reflect.get(target, index, receiver)
+            } else {
+              return Reflect.get(target, key, receiver)
             }
-            return Reflect.get(target, key, receiver)
         }
       } else if (typeof key === "symbol") {
         switch (key) {

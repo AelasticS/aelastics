@@ -118,7 +118,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         const value = proxy[1];
 
-        expect(handlers.getByIndex).toHaveBeenCalledWith(target, "1", proxy);
+        expect(handlers.getByIndex).toHaveBeenCalledWith(target, 1, proxy);
     });
 
     it('should call the setByIndex handler', () => {
@@ -126,7 +126,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         proxy[1] = 99;
 
-        expect(handlers.setByIndex).toHaveBeenCalledWith(target, "1", 99);
+        expect(handlers.setByIndex).toHaveBeenCalledWith(target, 1, 99);
         expect(target[1]).toBe(99);
     });
 
@@ -135,7 +135,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         delete proxy[1];
 
-        expect(handlers.delete).toHaveBeenCalledWith(target, "1");
+        expect(handlers.delete).toHaveBeenCalledWith(target, 1);
         expect(target[1]).toBeUndefined();
     });
 
