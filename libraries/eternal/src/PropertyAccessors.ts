@@ -125,7 +125,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         // check if allowed to update and return new version if allowed
         const obj = checkWriteAccess(this, store, key)
         const oldUUID = obj[privateKey] // get old value
-        obj[key] = value?.uuid // update value
+        obj[privateKey] = value?.uuid // update value
         // Ensure bidirectional relationships are updated correctly
         if (propertyMeta.domainType && propertyMeta.inverseProp && (oldUUID || value)) {
           // Get precomputed inverse updater function
