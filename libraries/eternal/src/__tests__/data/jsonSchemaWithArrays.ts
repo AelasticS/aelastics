@@ -45,7 +45,7 @@ const jsonSchemaWithArrays: SchemaDescription[] = [
         },
         export: ["/core/Document", "/core/User", "/core/Versionable"],
         import: {
-            "/external-schema": ["/external-schema/ExternalType as Ext"]
+            
         }
     },
     {
