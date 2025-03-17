@@ -35,7 +35,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
               ["name", { qName: "name", name: "name", type: "string" }],
               [
                 "parent",
-                { qName: "parent", name: "parent", type: "object", domainType: "Parent", inverseProp: "children" },
+                { qName: "parent", name: "parent", type: "object", domainType: "Parent", itemType:"array", inverseProp: "children" },
               ],
             ]),
           },
@@ -117,14 +117,14 @@ describe("Bidirectional Relationships & Cyclic References", () => {
     newParent = store.getObject((newParent as unknown as EternalObject).uuid) as Parent
 
     expect(child.parent).toBe(newParent)
-    expect(newParent.children).toContain(child)
-    expect(parent.children).not.toContain(child)
+    expect(newParent.children[0]).toBe(child)
+    expect(parent.children[0]).not.toBe(child)
   })
 
   test("Cyclic relationships should not cause errors", () => {
-    const parent = store.createObject<Parent>("Parent") as Parent
+    let parent = store.createObject<Parent>("Parent") as Parent
 
-    const child = store.createObject<Child>("Child") as Child
+    let child = store.createObject<Child>("Child") as Child
 
     // Introduce a cycle: child becomes its own grandparent
     store.updateState(() => {
@@ -134,7 +134,10 @@ describe("Bidirectional Relationships & Cyclic References", () => {
       child.parent = parent
     })
 
-    expect(parent.children).toContain(child)
+    parent = store.getObject((parent as unknown as EternalObject).uuid) as Parent
+    child = store.getObject((child as unknown as EternalObject).uuid) as Child
+
+    expect(parent.children[0]).toBe(child)
     expect(child.parent).toBe(parent)
 
     // Ensure cyclic relationship does not break serialization or cause infinite loops
