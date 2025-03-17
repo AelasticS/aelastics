@@ -129,6 +129,9 @@ export function createStore(
     fetchFromExternalSource?: (type: string, uuid: string) => any
   } = { freeze: true }
 ): Store {
+  if(!metaInfo) {
+    throw new Error("meta information is required to create a store")
+  }
   const types:Map<string, TypeMeta> = (metaInfo as TypeSchema).types || (metaInfo as Map<string, TypeMeta>)
   const store = new EternalStore(types)
 
