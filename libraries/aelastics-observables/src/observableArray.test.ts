@@ -14,7 +14,7 @@ const handlers: Required<ArrayHandlers<number>> = {
     delete: jest.fn((target: number[], index: number): [boolean, boolean] => {
         return [true, true];
     }),
-    push: jest.fn((target: number[], items: number[]): [boolean, number?] => {
+    push: jest.fn((target: number[], ...items: number[]): [boolean, number?] => {
         return [true, items.length];
     }),
     pop: jest.fn((target: number[]): [boolean, number?] => {
@@ -23,14 +23,14 @@ const handlers: Required<ArrayHandlers<number>> = {
     shift: jest.fn((target: number[]): [boolean, number?] => {
         return [true, target[0]];
     }),
-    unshift: jest.fn((target: number[], items: number[]): [boolean, number?] => {
+    unshift: jest.fn((target: number[], ...items: number[]): [boolean, number?] => {
         return [true, items.length];
     }),
-    splice: jest.fn((target: number[], start: number, deleteCount: number, items: number[]): [boolean, number[]?] => {
+    splice: jest.fn((target: number[], start: number, deleteCount: number, ...items: number[]): [boolean, number[]?] => {
         return [true, items];
     }),
     reverse: jest.fn((target: number[]): [boolean, number[]?] => {
-        return [true, target.reverse()];
+        return [false, target.reverse()];
     }),
     sort: jest.fn((target: number[]): [boolean, number[]?] => {
         return [true, target.sort()];
@@ -56,7 +56,7 @@ const handlers: Required<ArrayHandlers<number>> = {
     findIndex: jest.fn((target: number[], callback: (value: number, index: number, array: number[]) => boolean, thisArg: any): [boolean, number?] => {
         return [true, target.findIndex(callback, thisArg)];
     }),
-    concat: jest.fn((target: number[], items: number[]): [boolean, number[]] => {
+    concat: jest.fn((target: number[], ...items: number[]): [boolean, number[]] => {
         return [true, target.concat(items)];
     }),
     slice: jest.fn((target: number[], start?: number, end?: number): [boolean, number[]] => {
@@ -90,7 +90,7 @@ const handlers: Required<ArrayHandlers<number>> = {
         return [true, target.flat(depth)];
     }),
     copyWithin: jest.fn((target: number[], targetIndex: number, start: number, end: number): [boolean, number[]?] => {
-        return [true, target.copyWithin(targetIndex, start, end)];
+        return [false, target.copyWithin(targetIndex, start, end)];
     }),
     entries: jest.fn((target: number[]): [boolean, IterableIterator<[number, number]>?] => {
         return [true, target.entries()];
@@ -118,7 +118,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         const value = proxy[1];
 
-        expect(handlers.getByIndex).toHaveBeenCalledWith(target, 1, value);
+        expect(handlers.getByIndex).toHaveBeenCalledWith(target, "1", proxy);
     });
 
     it('should call the setByIndex handler', () => {
@@ -126,7 +126,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         proxy[1] = 99;
 
-        expect(handlers.setByIndex).toHaveBeenCalledWith(target, 1, 99);
+        expect(handlers.setByIndex).toHaveBeenCalledWith(target, "1", 99);
         expect(target[1]).toBe(99);
     });
 
@@ -135,7 +135,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         delete proxy[1];
 
-        expect(handlers.delete).toHaveBeenCalledWith(target, 1);
+        expect(handlers.delete).toHaveBeenCalledWith(target, "1");
         expect(target[1]).toBeUndefined();
     });
 
@@ -144,7 +144,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         proxy.push(4, 5);
 
-        expect(handlers.push).toHaveBeenCalledWith(target, [4, 5]);
+        expect(handlers.push).toHaveBeenCalledWith(target, 4, 5);
         expect(target).toEqual([1, 2, 3, 4, 5]);
     });
 
@@ -171,7 +171,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         proxy.unshift(0);
 
-        expect(handlers.unshift).toHaveBeenCalledWith(target, [0]);
+        expect(handlers.unshift).toHaveBeenCalledWith(target, 0);
         expect(target).toEqual([0, 1, 2, 3]);
     });
 
@@ -180,17 +180,17 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         proxy.splice(1, 2, 99, 100);
 
-        expect(handlers.splice).toHaveBeenCalledWith(target, 1, 2, [99, 100]);
+        expect(handlers.splice).toHaveBeenCalledWith(target, 1, 2, 99, 100);
         expect(target).toEqual([1, 99, 100, 4]);
     });
 
     it('should call the reverse handler', () => {
         const target = [1, 2, 3];
         const proxy = createObservableArray(target, handlers, true);
-        proxy.reverse();
+        const res = proxy.reverse();
 
         expect(handlers.reverse).toHaveBeenCalledWith(target);
-        expect(target).toEqual([3, 2, 1]);
+        expect(res).toEqual([3, 2, 1]);
     });
 
     it('should call the sort handler', () => {

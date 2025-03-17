@@ -14,7 +14,7 @@ const handlers: Required<ArrayHandlers<number>> = {
     delete: jest.fn((target: number[], index: number): [boolean, boolean] => {
         return [true, true];
     }),
-    push: jest.fn((target: number[], items: number[]): [boolean, number?] => {
+    push: jest.fn((target: number[], ...items: number[]): [boolean, number?] => {
         return [true, items.length];
     }),
     pop: jest.fn((target: number[]): [boolean, number?] => {
@@ -23,10 +23,10 @@ const handlers: Required<ArrayHandlers<number>> = {
     shift: jest.fn((target: number[]): [boolean, number?] => {
         return [true, target[0]];
     }),
-    unshift: jest.fn((target: number[], items: number[]): [boolean, number?] => {
+    unshift: jest.fn((target: number[], ...items: number[]): [boolean, number?] => {
         return [true, items.length];
     }),
-    splice: jest.fn((target: number[], start: number, deleteCount: number, items: number[]): [boolean, number[]?] => {
+    splice: jest.fn((target: number[], start: number, deleteCount: number, ...items: number[]): [boolean, number[]?] => {
         return [true, items];
     }),
     reverse: jest.fn((target: number[]): [boolean, number[]?] => {
@@ -56,7 +56,7 @@ const handlers: Required<ArrayHandlers<number>> = {
     findIndex: jest.fn((target: number[], callback: (value: number, index: number, array: number[]) => boolean, thisArg: any): [boolean, number?] => {
         return [true, target.findIndex(callback, thisArg)];
     }),
-    concat: jest.fn((target: number[], items: number[]): [boolean, number[]] => {
+    concat: jest.fn((target: number[], ...items: number[]): [boolean, number[]] => {
         return [true, target.concat(items)];
     }),
     slice: jest.fn((target: number[], start?: number, end?: number): [boolean, number[]] => {
