@@ -104,13 +104,14 @@ const handlers: Required<ArrayHandlers<number>> = {
     join: jest.fn((target: number[], separator: string): [boolean, string?] => {
         return [true, target.join(separator)];
     }),
-    toStringA: jest.fn((target: number[]): [boolean, string?] => {
+    toStringHandler: jest.fn((target: number[]): [boolean, string?] => {
         return [true, target.toString()];
     }),
-    toLocaleStringA: jest.fn((target: number[]): [boolean, string?] => {
+    toLocaleStringHandler: jest.fn((target: number[]): [boolean, string?] => {
         return [true, target.toLocaleString()];
     }),
 };
+
 
 describe('createObservableArray', () => {
     it('should call the getByIndex handler', () => {
@@ -408,31 +409,26 @@ describe('createObservableArray', () => {
         expect(result).toBe('1-2-3');
     });
 
-    it('should call the toStringA handler', () => {
+    it('should call the toString handler', () => {
         const target = [1, 2, 3];
         const proxy = createObservableArray(target, handlers, true);
         const result = proxy.toString();
 
-        expect(handlers.toStringA).toHaveBeenCalledWith(target);
+        expect(handlers.toStringHandler).toHaveBeenCalledWith(target);
         expect(result).toBe('1,2,3');
     });
 
-    it('should call the toLocaleStringA handler', () => {
+    it('should call the toLocaleString handler', () => {
         const target = [1, 2, 3];
         const proxy = createObservableArray(target, handlers, true);
         const result = proxy.toLocaleString();
 
-        expect(handlers.toLocaleStringA).toHaveBeenCalledWith(target);
+        expect(handlers.toLocaleStringHandler).toHaveBeenCalledWith(target);
         expect(result).toBe('1,2,3');
     });
 
     it('should call the Symbol.iterator handler', () => {
         const target = [1, 2, 3];
-        const handlers: ArrayHandlers<number> = {
-            [Symbol.iterator]: jest.fn((target: number[]): IterableIterator<number> => {
-                return target[Symbol.iterator]();
-            })
-        };
         const proxy = createObservableArray(target, handlers, true);
         const iterator = proxy[Symbol.iterator]();
 
