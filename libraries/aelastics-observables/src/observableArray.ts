@@ -45,8 +45,8 @@ export interface ArrayHandlers<T> {
   keys?: (target: T[]) => [boolean, IterableIterator<number>?]
   values?: (target: T[]) => [boolean, IterableIterator<T>?]
   join?: (target: T[], separator: string) => [boolean, string?]
-  toStringA?: (target: T[]) => [boolean, string?]
-  toLocaleStringA?: (target: T[]) => [boolean, string?]
+  toStringHandler?: (target: T[]) => [boolean, string?] 
+  toLocaleStringHandler?: (target: T[]) => [boolean, string?]
 }
 
 export function createObservableArray<T>(arr: T[], handlers: ArrayHandlers<T>, allowMutations: boolean = true): T[] {
@@ -378,7 +378,7 @@ export function createObservableArray<T>(arr: T[], handlers: ArrayHandlers<T>, a
             }
           case "toString":
             return () => {
-              const [continueOperation, toStringResult] = handlers.toStringA?.(target) ?? [allowMutations, undefined]
+              const [continueOperation, toStringResult] = handlers.toStringHandler?.(target) ?? [allowMutations, undefined]
               if (!continueOperation) {
                 return toStringResult
               }
@@ -386,7 +386,7 @@ export function createObservableArray<T>(arr: T[], handlers: ArrayHandlers<T>, a
             }
           case "toLocaleString":
             return () => {
-              const [continueOperation, toLocaleStringResult] = handlers.toLocaleStringA?.(target) ?? [
+              const [continueOperation, toLocaleStringResult] = handlers.toLocaleStringHandler?.(target) ?? [
                 allowMutations,
                 undefined,
               ]
