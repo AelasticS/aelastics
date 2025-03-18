@@ -4,7 +4,7 @@ describe('createObservableSet', () => {
     it('should call the add handler', () => {
         const target = new Set<number>();
         const handlers: SetHandlers<number> = {
-            add: jest.fn().mockReturnValue(true),
+            add: jest.fn((set, value) => [false, set.add(value)]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -17,7 +17,7 @@ describe('createObservableSet', () => {
     it('should call the delete handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            delete: jest.fn().mockReturnValue(true),
+            delete: jest.fn((set, value) => [false, set.delete(value)]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -30,7 +30,10 @@ describe('createObservableSet', () => {
     it('should call the clear handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            clear: jest.fn().mockReturnValue(true),
+            clear: jest.fn((set) => {
+                set.clear();
+                return [false, undefined];
+            }),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -43,7 +46,7 @@ describe('createObservableSet', () => {
     it('should call the has handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            has: jest.fn().mockReturnValue(true),
+            has: jest.fn((set, value) => [false, set.has(value)]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -56,7 +59,7 @@ describe('createObservableSet', () => {
     it('should call the forEach handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            forEach: jest.fn().mockReturnValue(true),
+            forEach: jest.fn((set, callback) => [false, set.forEach(callback)]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -68,7 +71,7 @@ describe('createObservableSet', () => {
     it('should call the entries handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            entries: jest.fn().mockReturnValue(target.entries()),
+            entries: jest.fn((set) => [false, set.entries()]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -81,7 +84,7 @@ describe('createObservableSet', () => {
     it('should call the keys handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            keys: jest.fn().mockReturnValue(target.keys()),
+            keys: jest.fn((set) => [false, set.keys()]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -94,7 +97,7 @@ describe('createObservableSet', () => {
     it('should call the values handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            values: jest.fn().mockReturnValue(target.values()),
+            values: jest.fn((set) => [false, set.values()]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -107,7 +110,7 @@ describe('createObservableSet', () => {
     it('should call the size handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            size: jest.fn().mockReturnValue(target.size),
+            size: jest.fn((set) => [false, set.size]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -120,7 +123,7 @@ describe('createObservableSet', () => {
     it('should call the Symbol.iterator handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            [Symbol.iterator]: jest.fn().mockReturnValue(target[Symbol.iterator]()),
+            [Symbol.iterator]: jest.fn((set) => [false, set[Symbol.iterator]()]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
@@ -133,7 +136,7 @@ describe('createObservableSet', () => {
     it('should call the toString handler', () => {
         const target = new Set<number>([1, 2, 3]);
         const handlers: SetHandlers<number> = {
-            [Symbol.toStringTag]: jest.fn().mockReturnValue(target.toString()),
+            [Symbol.toStringTag]: jest.fn((set) => [false, set.toString()]),
         };
 
         const proxy = createObservableSet(target, handlers, true);
