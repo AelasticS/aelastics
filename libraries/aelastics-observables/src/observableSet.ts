@@ -62,7 +62,7 @@ export function createObservableSet<T>(
                             return allowValues ? Reflect.apply(target.values, target, []) : result;
                         };
                     case 'size':
-                        const [proceed, result] = handlers.values?.(target) ?? [defaultMutation, undefined]
+                        const [proceed, result] = handlers.size?.(target) ?? [defaultMutation, undefined]
                         return proceed ? target.size : result
 
                 }
