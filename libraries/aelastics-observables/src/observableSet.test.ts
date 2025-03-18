@@ -1,12 +1,47 @@
 import { createObservableSet, SetHandlers } from './observableSet';
 
+const handlers: Required<SetHandlers<number>> = {
+    add: jest.fn((target: Set<number>, value: number): [boolean, any] => {
+        return [true, target];
+    }),
+    delete: jest.fn((target: Set<number>, value: number): [boolean, boolean] => {
+        return [true, true];
+    }),
+    clear: jest.fn((target: Set<number>): [boolean, undefined] => {
+        return [true, undefined];
+    }),
+    has: jest.fn((target: Set<number>, value: number): [boolean, boolean] => {
+        return [true, target.has(value)];
+    }),
+    forEach: jest.fn((target: Set<number>, callback: (value: number, value2: number, set: Set<number>) => void): [boolean, any] => {
+        target.forEach(callback);
+        return [true, undefined];
+    }),
+    entries: jest.fn((target: Set<number>): [boolean, IterableIterator<[number, number]>] => {
+        return [true, target.entries()];
+    }),
+    keys: jest.fn((target: Set<number>): [boolean, IterableIterator<number>] => {
+        return [true, target.keys()];
+    }),
+    values: jest.fn((target: Set<number>): [boolean, IterableIterator<number>] => {
+        return [true, target.values()];
+    }),
+    size: jest.fn((target: Set<number>): [boolean, number] => {
+        return [true, target.size];
+    }),
+    toStringHandler: jest.fn((target: Set<number>): [boolean, string] => {
+        return [true, target.toString()];
+    }),
+
+    [Symbol.iterator]: jest.fn((target: Set<number>): IterableIterator<number> => {
+        return target[Symbol.iterator]();
+    }),
+
+};
+
 describe('createObservableSet', () => {
     it('should call the add handler', () => {
         const target = new Set<number>();
-        const handlers: SetHandlers<number> = {
-            add: jest.fn((set, value) => [false, set.add(value)]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         proxy.add(100);
 
@@ -16,10 +51,6 @@ describe('createObservableSet', () => {
 
     it('should call the delete handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            delete: jest.fn((set, value) => [false, set.delete(value)]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         proxy.delete(2);
 
@@ -29,13 +60,6 @@ describe('createObservableSet', () => {
 
     it('should call the clear handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            clear: jest.fn((set) => {
-                set.clear();
-                return [false, undefined];
-            }),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         proxy.clear();
 
@@ -45,10 +69,6 @@ describe('createObservableSet', () => {
 
     it('should call the has handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            has: jest.fn((set, value) => [false, set.has(value)]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         const result = proxy.has(1);
 
@@ -58,10 +78,6 @@ describe('createObservableSet', () => {
 
     it('should call the forEach handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            forEach: jest.fn((set, callback) => [false, set.forEach(callback)]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         proxy.forEach((value) => {});
 
@@ -70,10 +86,6 @@ describe('createObservableSet', () => {
 
     it('should call the entries handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            entries: jest.fn((set) => [false, set.entries()]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         const iterator = proxy.entries();
 
@@ -83,10 +95,6 @@ describe('createObservableSet', () => {
 
     it('should call the keys handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            keys: jest.fn((set) => [false, set.keys()]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         const iterator = proxy.keys();
 
@@ -96,10 +104,6 @@ describe('createObservableSet', () => {
 
     it('should call the values handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            values: jest.fn((set) => [false, set.values()]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         const iterator = proxy.values();
 
@@ -109,10 +113,6 @@ describe('createObservableSet', () => {
 
     it('should call the size handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            size: jest.fn((set) => [false, set.size]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         const size = proxy.size;
 
@@ -122,10 +122,6 @@ describe('createObservableSet', () => {
 
     it('should call the Symbol.iterator handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            [Symbol.iterator]: jest.fn((set) => [false, set[Symbol.iterator]()]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         const iterator = proxy[Symbol.iterator]();
 
@@ -135,14 +131,10 @@ describe('createObservableSet', () => {
 
     it('should call the toString handler', () => {
         const target = new Set<number>([1, 2, 3]);
-        const handlers: SetHandlers<number> = {
-            [Symbol.toStringTag]: jest.fn((set) => [false, set.toString()]),
-        };
-
         const proxy = createObservableSet(target, handlers, true);
         const result = proxy.toString();
 
-        expect(handlers.toString).toHaveBeenCalledWith(target);
+        expect(handlers.toStringHandler).toHaveBeenCalledWith(target);
         expect(result).toBe('[object Set]');
     });
 });
