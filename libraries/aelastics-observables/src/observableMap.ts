@@ -9,13 +9,14 @@ export interface MapHandlers<K, V> {
   keys?: (target: Map<K, V>) => [boolean, IterableIterator<K>]
   values?: (target: Map<K, V>) => [boolean, IterableIterator<V>?]
   size?: (target: Map<K, V>) => [boolean, number]
-  [Symbol.iterator]?: (target: Map<K, V>) => [boolean, IterableIterator<[K, V]>]
+  toStringHandler?: (target: Map<K,V>) => [boolean, string]
+  [Symbol.iterator]?: (target: Map<K, V>) => IterableIterator<[K,V]>
 }
 
 export function createObservableMap<K, V>(
   map: Map<K, V>,
   handlers: MapHandlers<K, V>,
-  allowMutation: boolean = true
+  allow: boolean = true // Default to allowing all operations to continue to the target's original method
 ): Map<K, V> {
   return new Proxy(map, {
     get(target: Map<K, V>, key: string | number | symbol, receiver: any): any {
@@ -24,59 +25,67 @@ export function createObservableMap<K, V>(
         switch (key) {
           case "set":
             return (k: K, v: V) => {
-              const [proceed, result] = handlers.set?.(target, k, v) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.set?.(target, k, v) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.set, target, [k, v]) : result
             }
           case "delete":
             return (k: K) => {
-              const [proceed, result] = handlers.delete?.(target, k) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.delete?.(target, k) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.delete, target, [k]) : result
             }
           case "clear":
             return () => {
-              const [proceed, result] = handlers.clear?.(target) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.clear?.(target) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.clear, target, []) : result
             }
           case "get":
             return (k: K) => {
-              const [proceed, result] = handlers.get?.(target, k) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.get?.(target, k) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.get, target, [k]) : result
             }
           case "has":
             return (k: K) => {
-              const [proceed, result] = handlers.has?.(target, k) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.has?.(target, k) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.has, target, [k]) : result
             }
           case "forEach":
             return (callback: (value: V, key: K, map: Map<K, V>) => void) => {
-              const [proceed, result] = handlers.forEach?.(target, callback) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.forEach?.(target, callback) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.forEach, target, [callback]) : result
             }
           case "entries":
             return () => {
-              const [proceed, result] = handlers.entries?.(target) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.entries?.(target) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.entries, target, []) : result
             }
           case "keys":
             return () => {
-              const [proceed, result] = handlers.keys?.(target) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.keys?.(target) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.keys, target, []) : result
             }
           case "values":
             return () => {
-              const [proceed, result] = handlers.values?.(target) ?? [allowMutation, undefined]
+              const [proceed, result] = handlers.values?.(target) ?? [allow, undefined]
               return proceed ? Reflect.apply(target.values, target, []) : result
             }
+            case "toString":
+              return () => {
+                const [proceed, result] = handlers.toStringHandler?.(target) ?? [allow, undefined]
+                return proceed ? target.toString() : result
+              }
           case "size":
-            const [proceed, result] = handlers.values?.(target) ?? [allowMutation, undefined]
-            return proceed ? target.size : result
+            const [proceedSize, resultSize] = handlers.size?.(target) ?? [allow, undefined]
+            return proceedSize ? target.size : resultSize
         }
       } else if (typeof key === "symbol") {
         switch (key) {
           case Symbol.iterator:
-            return (k: K, v: V) => {
-              const [proceed, result] = handlers[Symbol.iterator]?.(target) ?? [allowMutation, undefined]
-              return proceed ? Reflect.apply(target.set, target, [k, v]) : result
+            return () => {
+              const [continueOperation, result] = handlers[Symbol.iterator]?.(target) ?? [allow, undefined]
+              if (!continueOperation) {
+                return result
+              }
+              return Reflect.apply(Map.prototype[Symbol.iterator], target, receiver)
             }
         }
       }

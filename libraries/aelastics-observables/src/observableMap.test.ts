@@ -32,12 +32,13 @@ const handlers: Required<MapHandlers<string, number>> = {
     size: jest.fn((target: Map<string, number>): [boolean, number] => {
         return [true, target.size];
     }),
-    [Symbol.iterator]: jest.fn((target: Map<string, number>): [boolean, IterableIterator<[string, number]>] => {
-        return [true, target[Symbol.iterator]()];
+    [Symbol.iterator]: jest.fn((target: Map<string, number>): IterableIterator<[string, number]> => {
+        return target[Symbol.iterator]();
     }),
-    // toStringTag: jest.fn((target: Map<string, number>): [boolean, string] => {
-    //     return [true, target.toString()];
-    // }),
+    toStringHandler: jest.fn((target: Map<string, number>): [boolean, string] => {
+    return [true, target.toString()];
+    }),
+    
 };
 
 describe('createObservableMap', () => {
@@ -144,7 +145,7 @@ describe('createObservableMap', () => {
         const proxy = createObservableMap(target, handlers, true);
         const result = proxy.toString();
 
-        expect(handlers.toString).toHaveBeenCalledWith(target);
+        expect(handlers.toStringHandler).toHaveBeenCalledWith(target);
         expect(result).toBe('[object Map]');
     });
 });
