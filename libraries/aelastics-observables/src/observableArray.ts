@@ -401,7 +401,7 @@ export function createObservableArray<T>(arr: T[], handlers: ArrayHandlers<T>, a
               const index = Number(key)
               const [cont, getResult] = handlers.getByIndex?.(target, index, receiver) ?? [allowMutations, undefined]
               if (!cont) {
-              return getResult
+                return getResult
               }
               return Reflect.get(target, index, receiver)
             } else {
@@ -412,7 +412,6 @@ export function createObservableArray<T>(arr: T[], handlers: ArrayHandlers<T>, a
         switch (key) {
           case Symbol.iterator:
             return () => {
-              handlers[Symbol.iterator](target)
               const [continueOperation, result] = handlers[Symbol.iterator]?.(target) ?? [allowMutations, undefined]
               if (!continueOperation) {
                 return result
