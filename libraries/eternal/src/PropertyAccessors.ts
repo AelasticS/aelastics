@@ -1,16 +1,9 @@
 import { TypeMeta } from "./meta/InternalSchema"
 import { EternalStore } from "./EternalStore"
 import { EternalClass, EternalObject } from "./handlers/InternalTypes"
-import {
-  isObjectFrozen,
-  makePrivatePropertyKey,
-  makePrivateProxyKey,
-  makeUpdateInverseKey,
-} from "./utils"
+import { isObjectFrozen, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey } from "./utils"
 
 import * as invUpd from "./inverseUpdaters"
-
-
 
 // check access and return correct version of object
 
@@ -26,15 +19,18 @@ export function checkReadAccess(obj: EternalObject, store: EternalStore): Eterna
         return nextVersion
       }
       if (!isFrozen) {
-        throw new Error(`Reference to an object ${obj.uuid} not from the current state.`)
+        throw new Error(
+          `Invalid reference to object ${obj.constructor.name}: ${obj.uuid} from a past state.\n` +
+            `Use 'store.getObject(uuid)' to retrieve the current version of the object, or 'store.getFromState(stateIndex, uuid)' to access it from an old state.`
+        )
       }
     }
     return obj
   }
   if (!isFrozen && obj.nextVersion && !state.isMemberOfState(obj)) {
     throw new Error(
-      `Invalid reference to object ${obj.uuid} from a past state.\n` +
-        `Use 'store.getObject(uuid)' to get the current version or 'store.getFromState(uuid)' to get the frozen object.`
+      `Invalid reference to object ${obj.constructor.name}: ${obj.uuid} from a past state.\n` +
+        `Use 'store.getObject(uuid)' to retrieve the current version of the object, or 'store.getFromState(stateIndex, uuid)' to access it from an old state.`
     )
   }
   return obj
@@ -160,73 +156,73 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         case "object":
           switch (propertyMeta.inverseType) {
             case "object":
-              prototype[inverseUpdaterKey] = invUpd.one2one(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.one2one(store, propertyMeta)
+              break
             case "array":
-              prototype[inverseUpdaterKey] = invUpd.one2array(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.one2array(store, propertyMeta)
+              break
             case "map":
-              prototype[inverseUpdaterKey] = invUpd.one2map(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.one2map(store, propertyMeta)
+              break
             case "set":
-              prototype[inverseUpdaterKey] = invUpd.one2set(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.one2set(store, propertyMeta)
+              break
           }
-          break;
-    
+          break
+
         // property is an array
         case "array":
           switch (propertyMeta.inverseType) {
             case "object":
-              prototype[inverseUpdaterKey] = invUpd.array2one(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.array2one(store, propertyMeta)
+              break
             case "array":
-              prototype[inverseUpdaterKey] = invUpd.array2array(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.array2array(store, propertyMeta)
+              break
             case "map":
-              prototype[inverseUpdaterKey] = invUpd.array2map(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.array2map(store, propertyMeta)
+              break
             case "set":
-              prototype[inverseUpdaterKey] = invUpd.array2set(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.array2set(store, propertyMeta)
+              break
           }
-          break;
-    
+          break
+
         // property is a map
         case "map":
           switch (propertyMeta.inverseType) {
             case "object":
-              prototype[inverseUpdaterKey] = invUpd.map2one(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.map2one(store, propertyMeta)
+              break
             case "array":
-              prototype[inverseUpdaterKey] = invUpd.map2array(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.map2array(store, propertyMeta)
+              break
             case "map":
-              prototype[inverseUpdaterKey] = invUpd.map2map(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.map2map(store, propertyMeta)
+              break
             case "set":
-              prototype[inverseUpdaterKey] = invUpd.map2set(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.map2set(store, propertyMeta)
+              break
           }
-          break;
-    
+          break
+
         // property is a set
         case "set":
           switch (propertyMeta.inverseType) {
             case "object":
-              prototype[inverseUpdaterKey] = invUpd.set2one(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.set2one(store, propertyMeta)
+              break
             case "array":
-              prototype[inverseUpdaterKey] = invUpd.set2array(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.set2array(store, propertyMeta)
+              break
             case "map":
-              prototype[inverseUpdaterKey] = invUpd.set2map(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.set2map(store, propertyMeta)
+              break
             case "set":
-              prototype[inverseUpdaterKey] = invUpd.set2set(store, propertyMeta);
-              break;
+              prototype[inverseUpdaterKey] = invUpd.set2set(store, propertyMeta)
+              break
           }
-          break;
+          break
       }
     }
   }
@@ -259,4 +255,3 @@ export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
     }
   }
 }
-
