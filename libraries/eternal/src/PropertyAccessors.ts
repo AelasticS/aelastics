@@ -176,7 +176,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     
         // property is an array
         case "array":
-          switch (propertyMeta.itemType) {
+          switch (propertyMeta.inverseType) {
             case "object":
               prototype[inverseUpdaterKey] = invUpd.array2one(store, propertyMeta);
               break;
@@ -194,7 +194,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     
         // property is a map
         case "map":
-          switch (propertyMeta.itemType) {
+          switch (propertyMeta.inverseType) {
             case "object":
               prototype[inverseUpdaterKey] = invUpd.map2one(store, propertyMeta);
               break;
@@ -212,7 +212,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     
         // property is a set
         case "set":
-          switch (propertyMeta.itemType) {
+          switch (propertyMeta.inverseType) {
             case "object":
               prototype[inverseUpdaterKey] = invUpd.set2one(store, propertyMeta);
               break;
