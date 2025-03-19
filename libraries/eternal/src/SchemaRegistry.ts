@@ -361,12 +361,15 @@ export function verifySchemaConsistency(schema: TypeSchema, schemaRegistry: Sche
             if (!isSimplePropType(propMeta.itemType)) {
                 validateComplexDomain(propMeta, "domainType", errors)
               }
-            validateComplexDomain(propMeta, "itemType", errors)
-            validateComplexDomain(propMeta, "keyType", errors)
+              if (!isSimplePropType(propMeta.keyType)) {
+                errors.push(`Property "${propQName}" has invalid keyType "${propMeta.keyType}".`)
+              }
             validateMinMaxConstraints(propQName, propMeta, errors)
             break
           case "set":
-            validateComplexDomain(propMeta, "itemType", errors)
+            if (!isSimplePropType(propMeta.itemType)) {
+              validateComplexDomain(propMeta, "domainType", errors)
+            }
             validateMinMaxConstraints(propQName, propMeta, errors)
             break
           default:
