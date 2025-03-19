@@ -65,6 +65,12 @@ export class State implements StateView {
 
   /** Retrieves an object which can be changed */
   public getDynamicObject<T>(uuid: string): T | undefined {
+    if (uuid === undefined || uuid === null) {
+      return undefined
+    }
+    if (typeof uuid !== 'string') {
+      throw new Error("UUID must be a string.")
+    }
     const object = this.objectMap.get(uuid)
     // Ensure the object is not from a future state
     if (object.createdAt > this.timestamp) {
