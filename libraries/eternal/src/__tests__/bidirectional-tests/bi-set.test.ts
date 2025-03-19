@@ -1,9 +1,125 @@
 import { createStore } from "../../StoreFactory";
 import { initializeSchemaRegistry } from "../../SchemaRegistry";
 import { SchemaRegistry } from "../../meta/InternalSchema";
+import { SchemaDescription } from "../../meta/ExternalSchema";
 
-import jsonSchemas from "../data/jsonSchemaWithArrays";
+// import jsonSchemas from "../data/jsonSchemaWithArrays";
 
+
+const schemas: SchemaDescription[] = [
+    {
+      qName: "/library",
+      version: "1.0",
+      types: {
+        Author: {
+          qName: "Author",
+          properties: {
+            name: {
+              qName: "name",
+              type: "string",
+            },
+            books: {
+              qName: "books",
+              type: "set",
+              itemType: "object",
+              domainType: "Book",
+              inverseProp: "author",
+              inverseType: "object",
+            },
+          },
+        },
+        Book: {
+          qName: "Book",
+          properties: {
+            title: {
+              qName: "title",
+              type: "string",
+            },
+            author: {
+              qName: "author",
+              type: "object",
+              domainType: "Author",
+              inverseProp: "books",
+              inverseType: "set",
+            },
+          },
+        },
+        Publisher: {
+          qName: "Publisher",
+          properties: {
+            name: {
+              qName: "name",
+              type: "string",
+            },
+            books: {
+              qName: "books",
+              type: "set",
+              itemType: "object",
+              domainType: "PublishedBook",
+              inverseProp: "publisher",
+              inverseType: "object",
+            },
+          },
+        },
+        PublishedBook: {
+          qName: "PublishedBook",
+          properties: {
+            title: {
+              qName: "title",
+              type: "string",
+            },
+            publisher: {
+              qName: "publisher",
+              type: "object",
+              domainType: "Publisher",
+              inverseProp: "books",
+              inverseType: "set",
+            },
+          },
+          
+        },
+        Student: {
+            qName: "Student",
+            properties: {
+              name: {
+                qName: "name",
+                type: "string",
+              },
+              courses: {
+                qName: "courses",
+                type: "set",
+                itemType: "object",
+                domainType: "Course",
+                inverseProp: "students",
+                inverseType: "set",
+              },
+            },
+          },
+          Course: {
+            qName: "Course",
+            properties: {
+              title: {
+                qName: "title",
+                type: "string",
+              },
+              students: {
+                qName: "students",
+                type: "set",
+                itemType: "object",
+                domainType: "Student",
+                inverseProp: "courses",
+                inverseType: "set",
+              },
+            },
+          },
+      },
+      roles: {},
+      export: ["Author", "Book", "Publisher", "PublishedBook"],
+      import: {},
+    }
+  ];
+
+  
 // TypeScript interfaces based on the type definitions
 interface Author {
     uuid: string;
@@ -45,7 +161,7 @@ describe("Bidirectional Relationships with Sets", () => {
     let store: ReturnType<typeof createStore>;
 
     beforeEach(() => {
-        const schemaRegistry = initializeSchemaRegistry(jsonSchemas) as SchemaRegistry;
+        const schemaRegistry = initializeSchemaRegistry(schemas) as SchemaRegistry;
         store = createStore(schemaRegistry.schemas.get("/library")!);
     });
 
