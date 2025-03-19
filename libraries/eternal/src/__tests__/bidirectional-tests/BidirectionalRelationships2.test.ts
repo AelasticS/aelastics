@@ -42,7 +42,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
                   type: "object",
                   domainType: "Parent",
                   inverseProp: "children",
-                  inverseType: "object",
+                  inverseType: "array",
                 },
               ],
             ]),

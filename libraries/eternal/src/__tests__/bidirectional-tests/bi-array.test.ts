@@ -189,8 +189,8 @@ describe("Bidirectional Relationships", () => {
 
         store.updateObject((a) => {
             // TODO enable set on collections: a.books = a.books.filter(book => book !== book1);
-            // check if array os proxyed
-            // diconnect all old elemnts and connect new ones
+            // check if array os proxied
+            // disconnect all old elements and connect new ones
             filteredBooks = a.books.filter(book => book !== book1);
         }, author);
 
@@ -295,8 +295,11 @@ describe("Bidirectional Relationships", () => {
             s.courses.push(course1, course2);
         }, student2);
 
+        student1 = store.getObject<Student>((student1 as unknown as EternalObject).uuid)!;
+
         store.updateObject((s) => {
-            s.courses = s.courses.filter(course => course !== course1);
+            // s.courses = s.courses.filter(course => course !== course1);
+            s.courses.shift()
         }, student1);
 
         student1 = store.getObject<Student>((student1 as unknown as EternalObject).uuid)!;
