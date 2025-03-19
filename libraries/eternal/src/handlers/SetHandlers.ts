@@ -62,9 +62,11 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
   values: (target: Set<V>) => {
     const obj = checkReadAccess(object, store)
     const key = makePrivatePropertyKey(propDes.qName)
-    const result = Array.from(obj[key].values())
-      .map((v) => toObject(v, store, propDes))
-      [Symbol.iterator]()
+    const result = (function* () {
+      for (const value of obj[key].values()) {
+        yield toObject(value, store, propDes)
+      }
+    })()
     return [false, result]
   },
 
@@ -72,14 +74,10 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
   entries: (target: Set<V>) => {
     const obj = checkReadAccess(object, store)
     const key = makePrivatePropertyKey(propDes.qName)
-    const array = Array.from((obj[key] as Set<V>).entries()).map(([v, _]) => {
-      const r = <V>toObject(v, store, propDes)
-      return [r, r] as [V, V]
-    })
-    const result = (function* (): IterableIterator<[V, V]> {
-      const size = array.length
-      for (let i = 0; i < size; i++) {
-        yield array[i]
+    const result = (function* () {
+      for (const [value] of obj[key].entries()) {
+        const convertedValue = toObject(value, store, propDes)
+        yield [convertedValue, convertedValue] as [V, V]
       }
     })()
     return [false, result]
@@ -100,10 +98,11 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
   [Symbol.iterator]: (target: Set<V>) => {
     const obj = checkReadAccess(object, store)
     const key = makePrivatePropertyKey(propDes.qName)
-    const result = Array.from(obj[key][Symbol.iterator]())
-      .map((v) => toObject(v, store, propDes))
-      [Symbol.iterator]()
-    return [false, result]
+    return (function* () {
+      for (const value of obj[key]) {
+        yield toObject(value, store, propDes)
+      }
+    })()
   },
 })
 

@@ -124,10 +124,11 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
   [Symbol.iterator]: (target: Map<K, V>) => {
     const obj = checkReadAccess(object, store)
     const key = makePrivatePropertyKey(propDes.qName)
-    const result = (<[[K, V]]>Array.from(obj[key][Symbol.iterator]()))
-      .map(([k, v]) => [toKeyObject(k, store, propDes), toValueObject(v, store, propDes)] as [K, V])
-      [Symbol.iterator]()
-    return [false, result]
+    return (function* generator() {
+      for (const [k, v] of obj[key]) {
+        yield [toKeyObject(k, store, propDes), toValueObject(v, store, propDes)] as [K, V]
+      }
+    })()
   },
 })
 

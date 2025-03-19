@@ -228,6 +228,8 @@ describe("Bidirectional Relationships", () => {
             p.books.push(book1, book2);
         }, publisher);
 
+        publisher = store.getObject<Publisher>((publisher as unknown as EternalObject).uuid)!;
+        
         store.updateObject((p) => {
             p.books = p.books.filter(book => book !== book1);
         }, publisher);
