@@ -158,7 +158,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
       switch (propertyMeta.type) {
         // property is an object
         case "object":
-          switch (propertyMeta.itemType) {
+          switch (propertyMeta.inverseType) {
             case "object":
               prototype[inverseUpdaterKey] = invUpd.one2one(store, propertyMeta);
               break;

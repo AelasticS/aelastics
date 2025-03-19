@@ -166,6 +166,7 @@ export function populateSchemaRegistry(
               keyType: propData.keyType,
               domainType: propData.domainType,
               inverseProp: propData.inverseProp,
+              inverseType: propData.inverseType,
               minElements: propData.minElements,
               maxElements: propData.maxElements,
               defaultValue: propData.defaultValue,

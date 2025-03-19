@@ -15,6 +15,7 @@ const jsonSchemaWithArrays: SchemaDescription[] = [
                         label: "author", 
                         type: "object", 
                         inverseProp: "/core/User/documents",
+                        inverseType: "array",
                         domainType: "/core/User"
                     }
                 }
@@ -30,6 +31,7 @@ const jsonSchemaWithArrays: SchemaDescription[] = [
                         type: "array", 
                         itemType: "object", 
                         inverseProp: "/core/Document/author",
+                        inverseType: "object",
                         domainType: "/core/Document",
                         minElements: "0",
                         maxElements: "100"
@@ -63,6 +65,7 @@ const jsonSchemaWithArrays: SchemaDescription[] = [
                         label: "customer", 
                         type: "object", 
                         inverseProp: "/customer/sales/Customer/invoices",
+                        inverseType: "array",
                         domainType: "/customer/sales/Customer"
                     }
                 },
@@ -79,6 +82,7 @@ const jsonSchemaWithArrays: SchemaDescription[] = [
                         type: "array", 
                         itemType: "object", 
                         inverseProp: "/customer/sales/Invoice/customer",
+                        inverseType: "object",
                         domainType: "/customer/sales/Invoice",
                         minElements: "0",
                         maxElements: "50"

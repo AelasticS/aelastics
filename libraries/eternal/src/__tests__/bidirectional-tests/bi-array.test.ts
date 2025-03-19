@@ -23,6 +23,7 @@ const schemas: SchemaDescription[] = [
               itemType: "object",
               domainType: "Book",
               inverseProp: "author",
+              inverseType: "object",
             },
           },
         },
@@ -38,6 +39,7 @@ const schemas: SchemaDescription[] = [
               type: "object",
               domainType: "Author",
               inverseProp: "books",
+              inverseType: "array",
             },
           },
         },
@@ -54,6 +56,7 @@ const schemas: SchemaDescription[] = [
               itemType: "object",
               domainType: "PublishedBook",
               inverseProp: "publisher",
+                inverseType: "object",
             },
           },
         },
@@ -69,6 +72,7 @@ const schemas: SchemaDescription[] = [
               type: "object",
               domainType: "Publisher",
               inverseProp: "books",
+                inverseType: "array",
             },
           },
           
@@ -86,6 +90,7 @@ const schemas: SchemaDescription[] = [
                 itemType: "object",
                 domainType: "Course",
                 inverseProp: "students",
+                inverseType: "array",
               },
             },
           },
@@ -102,6 +107,7 @@ const schemas: SchemaDescription[] = [
                 itemType: "object",
                 domainType: "Student",
                 inverseProp: "courses",
+                inverseType: "array",
               },
             },
           },
@@ -229,9 +235,11 @@ describe("Bidirectional Relationships", () => {
         }, publisher);
 
         publisher = store.getObject<Publisher>((publisher as unknown as EternalObject).uuid)!;
-        
-        store.updateObject((p) => {
-            p.books = p.books.filter(book => book !== book1);
+
+        store.updateObject((p) => { //= p.books.filter(book => book !== book1);
+            const i = p.books.findIndex(book => book !== book1);
+            if(i >= 0)           
+                p.books.splice(i,1) 
         }, publisher);
 
         book1 = store.getObject<PublishedBook>((book1 as unknown as EternalObject).uuid)!;

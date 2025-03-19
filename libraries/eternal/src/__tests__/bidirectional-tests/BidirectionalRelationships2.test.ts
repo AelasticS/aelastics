@@ -22,6 +22,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
                   itemType: "object",
                   domainType: "Child",
                   inverseProp: "parent",
+                  inverseType: "object",
                 },
               ],
             ]),
@@ -35,7 +36,14 @@ describe("Bidirectional Relationships & Cyclic References", () => {
               ["name", { qName: "name", name: "name", type: "string" }],
               [
                 "parent",
-                { qName: "parent", name: "parent", type: "object", domainType: "Parent", itemType:"array", inverseProp: "children" },
+                {
+                  qName: "parent",
+                  name: "parent",
+                  type: "object",
+                  domainType: "Parent",
+                  inverseProp: "children",
+                  inverseType: "object",
+                },
               ],
             ]),
           },
@@ -81,7 +89,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
     parent = store.getObject((parent as unknown as EternalObject).uuid) as Parent
     child1 = store.getObject((child1 as unknown as EternalObject).uuid) as Child
     child2 = store.getObject((child2 as unknown as EternalObject).uuid) as Child
-    
+
     expect(parent.children).toHaveLength(2)
     expect(child1.parent).toBe(parent)
     expect(child2.parent).toBe(parent)
@@ -100,7 +108,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
 
     parent = store.getObject((parent as unknown as EternalObject).uuid) as Parent
     child = store.getObject((child as unknown as EternalObject).uuid) as Child
-    
+
     expect(parent.children[0]).toBe(child)
     expect(child.parent).toBe(parent)
 

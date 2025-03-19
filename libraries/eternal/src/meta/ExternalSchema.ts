@@ -26,6 +26,7 @@ export interface PropertyDescription extends SchemaElement {
   keyType?: PropertyType // Data type of the keys (if map)
   domainType?: string // Name of the property domain of
   inverseProp?: string // Name of the inverse property (if bidirectional)
+  inverseType?: PropertyType // Data type of the inverse property
   minElements?: string // Minimum elements for collection properties // TODO add collection of constrains as (self)=>boolean
   maxElements?: string // Maximum elements for collection properties
   defaultValue?: any // Default value for simple properties

@@ -10,10 +10,11 @@ export interface PropertyMeta {
     itemType?: PropertyType; // Data type of the items (if array, map, or set): simplePropType or ComplexPropType
     keyType?: PropertyType; // Data type of the keys (if map)
     domainType?: string; // Name of the property domain of
-    inverseProp?: string; // Name of the inverse property (if bidirectional)
     minElements?: string; // Minimum elements for collection properties // TODO add collection of constrains as (self)=>boolean
     maxElements?: string; // Maximum elements for collection properties
     defaultValue?: any; // Default value for simple properties
+    inverseProp?: string; // Name of the inverse property (if bidirectional)
+    inverseType?: PropertyType; // Data type of the inverse property
 }
 
 /** Metadata for an object type, defining its properties */
