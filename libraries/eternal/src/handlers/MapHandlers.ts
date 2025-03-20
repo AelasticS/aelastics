@@ -114,28 +114,29 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
     /** Get values iterator */
     values: (target: Map<K, V>) => {
       const obj = checkReadAccess(object, store)
-      const key = makePrivatePropertyKey(propDes.qName)
-      const result = Array.from(obj[key].values())
-        .map((v) => toValueObject(v, store, propDes))
-        [Symbol.iterator]()
+      const result = (function* () {
+        for (const value of obj[privateKey].values()) {
+          yield toValueObject(value, store, propDes)
+        }
+      })()
       return [false, result]
     },
 
     /** Get entries iterator */
     entries: (target: Map<K, V>) => {
       const obj = checkReadAccess(object, store)
-      const key = makePrivatePropertyKey(propDes.qName)
-      const result = (<[[K, V]]>Array.from(obj[key].entries()))
-        .map(([k, v]) => [toKeyObject(k, store, propDes), toValueObject(v, store, propDes)] as [K, V])
-        [Symbol.iterator]()
+      const result = (function* (): IterableIterator<[K, V]> {
+        for (const [key, value] of obj[privateKey].entries()) {
+          yield [toKeyObject(key, store,propDes), toValueObject(value, store, propDes)]
+        }
+      })()
       return [false, result]
     },
 
     /** Execute function for each entry */
     forEach: (target: Map<K, V>, callback: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any) => {
       const obj = checkReadAccess(object, store)
-      const key = makePrivatePropertyKey(propDes.qName)
-      const result = obj[key].forEach((value: V, key: K, map: Map<K, V>) => {
+      const result = obj[privateKey].forEach((value: V, key: K, map: Map<K, V>) => {
         const newKey = toKeyObject(key, store, propDes)
         const newValue = toValueObject(value, store, propDes)
         callback.call(thisArg, newValue, newKey, map)
