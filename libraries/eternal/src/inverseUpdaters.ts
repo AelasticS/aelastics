@@ -124,8 +124,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         if (oldUUID && (oldObj = store.getObject(oldUUID))) {
           oldObj = checkWriteAccess(oldObj, store, key);
           const mapObj: Map<any, any> = oldObj[privateInverseKey];
-          const mapKey = propertyMeta.keyType === 'object' ? obj[privateKey].uuid : obj[privateKey];
-          mapObj.delete(mapKey); // Remove inverse relationship
+          mapObj.delete(obj.uuid); // Remove inverse relationship
         }
       }
   
@@ -137,8 +136,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         if (newUUID && (newObj = store.getObject(newUUID))) {
           newObj = checkWriteAccess(newObj, store, key);
           const mapObj: Map<any, any> = newObj[privateInverseKey];
-          const mapKey = propertyMeta.keyType === 'object' ? obj[privateKey].uuid : obj[privateKey];
-          mapObj.set(mapKey, obj.uuid); // Add inverse relationship
+          mapObj.set(obj.uuid, obj.uuid); // Add inverse relationship
         }
       }
     };
@@ -250,8 +248,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             if (oldUUID && (oldObj = store.getObject(oldUUID))) {
             oldObj = checkWriteAccess(oldObj, store, key);
             const mapObj: Map<any, any> = oldObj[privateInverseKey];
-            const mapKey = propertyMeta.keyType === 'object' ? obj[privateKey].uuid : obj[privateKey];
-            mapObj.delete(mapKey); // Remove inverse relationship
+            mapObj.delete(obj.uuid); // Remove inverse relationship
             }
         }
     
@@ -263,8 +260,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             if (newUUID && (newObj = store.getObject(newUUID))) {
             newObj = checkWriteAccess(newObj, store, key);
             const mapObj: Map<any, any> = newObj[privateInverseKey];
-            const mapKey = propertyMeta.keyType === 'object' ? obj[privateKey].uuid : obj[privateKey];
-            mapObj.set(mapKey, obj.uuid); // Add inverse relationship
+            mapObj.set(obj.uuid, obj.uuid); // Add inverse relationship
             }
         }
         };
@@ -376,8 +372,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             if (oldUUID && (oldObj = store.getObject(oldUUID))) {
             oldObj = checkWriteAccess(oldObj, store, key);
             const mapObj: Map<any, any> = oldObj[privateInverseKey];
-            const mapKey = propertyMeta.keyType === 'object' ? obj[privateKey].uuid : obj[privateKey];
-            mapObj.delete(mapKey); // Remove inverse relationship
+            mapObj.delete(obj.uuid); // Remove inverse relationship
             }
         }
     
@@ -502,8 +497,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             if (oldUUID && (oldObj = store.getObject(oldUUID))) {
             oldObj = checkWriteAccess(oldObj, store, key);
             const mapObj: Map<any, any> = oldObj[privateInverseKey];
-            const mapKey = propertyMeta.keyType === 'object' ? obj[privateKey].uuid : obj[privateKey];
-            mapObj.delete(mapKey); // Remove inverse relationship
+            mapObj.delete(obj.uuid); // Remove inverse relationship
             }
         }
     
@@ -515,8 +509,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             if (newUUID && (newObj = store.getObject(newUUID))) {
             newObj = checkWriteAccess(newObj, store, key);
             const mapObj: Map<any, any> = newObj[privateInverseKey];
-            const mapKey = propertyMeta.keyType === 'object' ? obj[privateKey].uuid : obj[privateKey];
-            mapObj.set(mapKey, obj.uuid); // Add inverse relationship
+            mapObj.set(obj.uuid, obj.uuid); // Add inverse relationship
             }
         }
         };
