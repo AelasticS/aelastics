@@ -8,7 +8,7 @@ export interface ArrayHandlers<T> {
   unshift?: (target: T[], ...items: T[]) => [boolean, number?]
   splice?: (target: T[], start: number, deleteCount: number, ...items: T[]) => [boolean, T[]?]
   reverse?: (target: T[]) => [boolean, T[]?]
-  sort?: (target: T[]) => [boolean, T[]?]
+  sort?: (target: T[], compareFn?: (a: T, b: T) => number) => [boolean, T[]?]
   fill?: (target: T[], value: T, start: number, end: number) => [boolean, T[]?]
   length?: (target: T[], length: number) => [boolean, number?]
   includes?: (target: T[], value: T) => [boolean, boolean?]
