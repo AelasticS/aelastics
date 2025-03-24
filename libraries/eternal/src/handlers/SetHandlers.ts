@@ -6,6 +6,8 @@ import { ObservableExtra } from "../types"
 import { EternalStore } from "../EternalStore"
 
 import * as invUpd from "../inverseUpdaters"
+import { EventPayload, Result } from "../events/EventTypes"
+import { ChangeLogEntry } from "../events/ChangeLog"
 
 // Convert UUID to Object
 const toObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>
@@ -20,48 +22,203 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
   const proxyKey = makePrivateProxyKey(propDes.qName)
   const inverseUpdaterKey = makeUpdateInverseKey(propDes.qName)
   const privateInverseKey = propDes.inverseProp ? makePrivatePropertyKey(propDes.inverseProp) : ""
+  const subscriptionManager = store.getSubscriptionManager()
+  const state = store.getState()
 
   return {
     /** Ensure values stored in the set are UUIDs if applicable */
     add: (target: Set<V>, value: V) => {
-      const newValue = toUUID(value, propDes)
       const obj = checkWriteAccess(object, store, propDes.qName)
-      const res = obj[privateKey].add(newValue)
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        // set inverse of shifted item to null
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
-        updater(obj, undefined, newValue)
+      const valueUUID = toUUID(value, propDes)
+
+      // Check if the value already exists in the set
+      if (obj[privateKey].has(valueUUID)) {
+        return [false, obj[privateKey]]
       }
-      return [false, res]
+
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [
+        {
+          objectId: object.uuid,
+          operation: "update" as const,
+          changeType: "add" as const,
+          property: propDes.qName,
+          newValue: valueUUID,
+        },
+      ]
+
+      const beforeEvent: EventPayload = {
+        eventType: "before.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      let result: Result = subscriptionManager.emit(beforeEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by before.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      // Perform the actual operation
+      obj[privateKey].add(valueUUID)
+
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
+        updater(obj, undefined, valueUUID)
+      }
+
+      // Track the change
+      state.trackChange(changes)
+
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: "after.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      result = subscriptionManager.emit(afterEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by after.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      return [false, obj[propDes.qName]]
     },
 
     /** Delete entry from set */
     delete: (target: Set<V>, value: V) => {
-      const newValue = toUUID(value, propDes)
       const obj = checkWriteAccess(object, store, propDes.qName)
-      const res = obj[privateKey].delete(newValue)
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        // set inverse of shifted item to null
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
-        updater(obj, newValue, undefined)
+      const valueUUID = toUUID(value, propDes)
+
+      // Check if the value exists in the set
+      if (!obj[privateKey].has(valueUUID)) {
+        return [false, obj[privateKey]]
       }
-      return [false, res]
+
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [
+        {
+          objectId: object.uuid,
+          operation: "update" as const,
+          changeType: "remove" as const,
+          property: propDes.qName,
+          oldValue: valueUUID,
+        },
+      ]
+
+      const beforeEvent: EventPayload = {
+        eventType: "before.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      let result: Result = subscriptionManager.emit(beforeEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by before.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      // Perform the actual operation
+      obj[privateKey].delete(valueUUID)
+
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
+        updater(obj, valueUUID, undefined)
+      }
+
+      // Track the change
+      state.trackChange(changes)
+
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: "after.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      result = subscriptionManager.emit(afterEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by after.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      return [false, true]
     },
 
     /** Clear all entries from set */
     clear: (target: Set<V>) => {
       const obj = checkWriteAccess(object, store, propDes.qName)
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        // set inverse of cleared item to null
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
-        for (const value of obj[privateKey]) {
-          updater(obj, value, undefined)
-        }
-      }
-      obj[privateKey].clear()
-      return [false, undefined]
-    },
 
+      // Check if the set is already empty
+      if (obj[privateKey].size === 0) {
+        return [false, obj[privateKey]]
+      }
+
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = []
+      obj[privateKey].forEach((valueUUID: any) => {
+        changes.push({
+          objectId: object.uuid,
+          operation: "update" as const,
+          changeType: "remove" as const,
+          property: propDes.qName,
+          oldValue: valueUUID,
+        })
+      })
+
+      const beforeEvent: EventPayload = {
+        eventType: "before.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      let result: Result = subscriptionManager.emit(beforeEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by before.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      // Perform the actual operation
+      obj[privateKey].clear()
+
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
+        changes.forEach((change) => {
+          updater(obj, change.oldValue, undefined)
+        })
+      }
+
+      // Track the change
+      state.trackChange(changes)
+
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: "after.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      result = subscriptionManager.emit(afterEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by after.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      return [false, obj[privateKey]]
+    },
     /** Check if value exists */
     has: (target: Set<V>, value: V) => {
       const newValue = toUUID(value, propDes)
