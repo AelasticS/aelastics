@@ -134,7 +134,7 @@ export function createObservableArray<T>(arr: T[], handlers: ArrayHandlers<T>, a
             }
           case "sort":
             return (compareFn?: (a: T, b: T) => number) => {
-              const [continueOperation, result] = handlers.sort?.(target) ?? [allowMutations, undefined]
+              const [continueOperation, result] = handlers.sort?.(target, compareFn) ?? [allowMutations, undefined]
               if (!continueOperation) {
                 return result
               }
