@@ -6,6 +6,8 @@ import { EternalStore } from "../EternalStore"
 import { PropertyMeta } from "../meta/InternalSchema"
 
 import * as invUpd from "../inverseUpdaters"
+import { ChangeLogEntry } from "../events/ChangeLog"
+import { EventPayload, Result } from "../events/EventTypes"
 
 // Convert value UUID to Object
 const toValueObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>
@@ -26,6 +28,8 @@ const keyToUUID = (value: any, propDes: PropertyMeta): any =>
 export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: ObservableExtra): MapHandlers<K, V> => {
   const privateKey = makePrivatePropertyKey(propDes.qName)
   const inverseUpdaterKey = propDes.inverseProp ? makeUpdateInverseKey(propDes.qName) : ""
+  const subscriptionManager = store.getSubscriptionManager()
+  const state = store.getState()
 
   return {
     /** Ensure values stored in the map are UUIDs if applicable */
@@ -33,12 +37,62 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       const newValue = valueToUUID(value, propDes)
       const newKey = keyToUUID(key, propDes)
       const obj = checkWriteAccess(object, store, propDes.qName)
-      const res = obj[privateKey].set(newKey, newValue)
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        // set inverse to null
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
-        updater(obj, undefined, newValue)
+
+      // Check if the key already exists in the map
+      const oldValue = obj[privateKey].get(newKey)
+
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [
+        {
+          objectId: object.uuid,
+          operation: "update" as const,
+          changeType: oldValue ? ("update" as const) : ("add" as const),
+          property: propDes.qName,
+          oldValue: oldValue,
+          newValue: newValue,
+        },
+      ]
+
+      const beforeEvent: EventPayload = {
+        eventType: "before.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
       }
+
+      let result: Result = subscriptionManager.emit(beforeEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by before.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      // Perform the actual operation
+      const res = obj[privateKey].set(newKey, newValue)
+
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
+        updater(obj, oldValue, newValue)
+      }
+
+      // Track the change
+      state.trackChange(changes)
+
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: "after.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      result = subscriptionManager.emit(afterEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by after.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
       return [false, res]
     },
 
@@ -60,36 +114,129 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
 
     /** Delete entry from map */
     delete: (target: Map<K, V>, key: K) => {
-      const obj = checkReadAccess(object, store)
+      const obj = checkWriteAccess(object, store, propDes.qName)
       const keyUUID = keyToUUID(key, propDes)
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        // set inverse to null
-        const delObjUUID = obj[privateKey].get(keyUUID)
-        if (delObjUUID) {
-          const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
-          updater(obj, delObjUUID, undefined)
-        }
+      const oldValue = obj[privateKey].get(keyUUID)
+
+      // Check if the key exists in the map
+      if (!obj[privateKey].has(keyUUID)) {
+        return [false, false]
       }
+
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [
+        {
+          objectId: object.uuid,
+          operation: "update" as const,
+          changeType: "remove" as const,
+          property: propDes.qName,
+          oldValue: oldValue,
+        },
+      ]
+
+      const beforeEvent: EventPayload = {
+        eventType: "before.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      let result: Result = subscriptionManager.emit(beforeEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by before.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      // Perform the actual operation
       const res = obj[privateKey].delete(keyUUID)
+
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
+        updater(obj, oldValue, undefined)
+      }
+
+      // Track the change
+      state.trackChange(changes)
+
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: "after.update",
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      }
+
+      result = subscriptionManager.emit(afterEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by after.update event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
       return [false, res]
     },
 
     /** Clear all entries from map */
     clear: (target: Map<K, V>) => {
-      const privateKey = makePrivatePropertyKey(propDes.qName)
-      const obj = checkReadAccess(object, store)
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
-        // set inverse to null
-        for (const keyUUID of obj[privateKey].keys()) {
-          const delObjUUID = obj[privateKey].get(keyUUID)
-          if (delObjUUID) {
-            updater(obj, delObjUUID, undefined)
-          }
-        }
+      const obj = checkWriteAccess(object, store, propDes.qName);
+    
+      // Check if the map is already empty
+      if (obj[privateKey].size === 0) {
+        return [false, undefined];
       }
-      const res = obj[privateKey].clear()
-      return [false, res]
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [];
+      obj[privateKey].forEach((valueUUID: any, keyUUID: any) => {
+        changes.push({
+          objectId: object.uuid,
+          operation: 'update' as const,
+          changeType: 'remove' as const,
+          property: propDes.qName,
+          oldValue: valueUUID,
+        });
+      });
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      obj[privateKey].clear();
+    
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
+        changes.forEach(change => {
+          updater(obj, change.oldValue, undefined);
+        });
+      }
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, undefined];
     },
 
     /** Get size of map */
@@ -127,7 +274,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       const obj = checkReadAccess(object, store)
       const result = (function* (): IterableIterator<[K, V]> {
         for (const [key, value] of obj[privateKey].entries()) {
-          yield [toKeyObject(key, store,propDes), toValueObject(value, store, propDes)]
+          yield [toKeyObject(key, store, propDes), toValueObject(value, store, propDes)]
         }
       })()
       return [false, result]
