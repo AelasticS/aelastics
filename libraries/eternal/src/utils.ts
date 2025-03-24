@@ -25,9 +25,7 @@ export function copyProperties(target: any, source: any) {
   }
 }
 
-import { EternalStore } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { PropertyMeta } from "./meta/InternalSchema"
 
 export const isObjectFrozen = (obj: EternalObject) => {
   return obj.state !== undefined
@@ -75,7 +73,7 @@ export function makePrivateProxyKey(propertyName: string) {
 
 export function makeDisconnectKey() {
   // return Symbol.for(propertyName);
-  return `_proxy_disconnect
+  return `_proxy_disconnect`
 }
 
 // export type Role = 'prop' | 'arrayElement' | 'setMember' | 'mapKey' | 'mapValue';
