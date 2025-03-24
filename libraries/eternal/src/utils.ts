@@ -73,6 +73,11 @@ export function makePrivateProxyKey(propertyName: string) {
   return `_proxy_${propertyName}`
 }
 
+export function makeDisconnectKey() {
+  // return Symbol.for(propertyName);
+  return `_proxy_disconnect
+}
+
 // export type Role = 'prop' | 'arrayElement' | 'setMember' | 'mapKey' | 'mapValue';
 
 

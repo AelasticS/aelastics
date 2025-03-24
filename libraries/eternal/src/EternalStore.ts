@@ -1,4 +1,4 @@
-import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, hasChanges, JSONPatchOperation } from "./ChangeLog"
+import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, hasChanges, JSONPatchOperation } from "./events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "./handlers/ArrayHandlers"
 import { EternalClass, EternalObject } from "./handlers/InternalTypes"
@@ -6,7 +6,7 @@ import { createImmutableMap} from "./handlers/MapHandlers"
 import {createImmutableSet} from "./handlers/SetHandlers"
 import { TypeMeta } from "./meta/InternalSchema"
 import { State } from "./State"
-import { SubscriptionManager } from "./SubscriptionManager";
+import { SubscriptionManager } from "./events/SubscriptionManager";
 import { randomUUID } from 'crypto';
 import { makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 
@@ -227,11 +227,12 @@ export class EternalStore {
 
   private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
     const className = typeMeta.qName; // Use the type name as the class name
+// TODO: support creation of subclasses recursively, so that order is not important
+
     const superClass = typeMeta.extends ? this.getClassByName(typeMeta.extends) : undefined;
     let BaseClass: any;
     BaseClass = superClass ? superClass
       : (typeMeta.extends ? this.createDynamicClass(this.metaInfo.get(typeMeta.extends)!, store) : EternalClass);
-
     const DynamicClass = {
       [className]: class extends BaseClass {
         constructor() {

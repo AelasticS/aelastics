@@ -34,6 +34,7 @@
     "@rushstack/heft-jest-plugin": "~0.3.44"
   },
   "dependencies": {
-    "@aelastics/observables": "workspace:*"
+    "@aelastics/observables": "workspace:*",
+    "eventemitter2": "~6.4.9"
   }
 }

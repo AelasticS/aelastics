@@ -1,9 +1,17 @@
-import { TypeMeta } from "./meta/InternalSchema"
+import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "./meta/InternalSchema"
 import { EternalStore } from "./EternalStore"
 import { EternalClass, EternalObject } from "./handlers/InternalTypes"
-import { isObjectFrozen, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey } from "./utils"
+import {
+  isObjectFrozen,
+  makeDisconnectKey,
+  makePrivatePropertyKey,
+  makePrivateProxyKey,
+  makeUpdateInverseKey,
+} from "./utils"
 
 import * as invUpd from "./inverseUpdaters"
+import { EventPayload, Result } from "./events/EventTypes"
+import { ChangeLogEntry } from "./events/ChangeLog"
 
 // check access and return correct version of object
 
@@ -68,6 +76,16 @@ export function checkWriteAccess(obj: EternalObject, store: EternalStore, key: s
 
 /** Adds optimized property accessors to a dynamically generated class prototype */
 export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
+  const subscriptionManager = store.getSubscriptionManager()
+  const state = store.getState()
+
+  if (!subscriptionManager) {
+    throw new Error("Subscription manager not found.")
+  }
+  if (!state) {
+    throw new Error("State not found.")
+  }
+
   // Check if typeMeta.properties is defined and is a Map
   if (!typeMeta.properties || !(typeMeta.properties instanceof Map)) {
     throw new Error(`Invalid properties for typeMeta: ${typeMeta.qName}`)
@@ -118,19 +136,64 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         if (this[privateKey] === value?.uuid && store.isInUpdateMode()) {
           return
         }
-        // check if allowed to update and return new version if allowed
+
+        // Emit before.update event and check for cancellation
+        const oldUUID = this[privateKey]
+        const newUUID = value?.uuid
+        const changes: ChangeLogEntry[] = [
+          {
+            objectId: this.uuid,
+            operation: "update" as const,
+            changeType: "add" as const,
+            property: key,
+            oldValue: oldUUID,
+            newValue: newUUID,
+          },
+        ]
+
+        const beforeEvent: EventPayload = {
+          eventType: "before.update",
+          timestamp: new Date(),
+          objectId: this.uuid,
+          changes: changes,
+        }
+
+        let result: Result = subscriptionManager.emit(beforeEvent)
+        if (!result.success) {
+          throw new Error(
+            `Transaction cancelled by before.update event: ${result.errors.map((e) => e.message).join(", ")}`
+          )
+        }
+
+        // Perform the actual change
         const obj = checkWriteAccess(this, store, key)
-        const oldUUID = obj[privateKey] // get old value
-        obj[privateKey] = value?.uuid // update value
+        obj[privateKey] = newUUID
+
         // Ensure bidirectional relationships are updated correctly
         if (propertyMeta.domainType && propertyMeta.inverseProp && (oldUUID || value)) {
-          // Get precomputed inverse updater function
-
           const updater: invUpd.inverseUpdater | undefined = obj[inverseUpdaterKey]
           if (!updater) {
             throw new Error(`Inverse updater function for property "${key}" is undefined.`)
           }
-          updater(obj, oldUUID, value) // Call precomputed function
+          updater(obj, oldUUID, value)
+        }
+
+        // Track the change
+        state.trackChange(changes)
+
+        // Emit after.update event and check for cancellation
+        const afterEvent: EventPayload = {
+          eventType: "after.update",
+          timestamp: new Date(),
+          objectId: this.uuid,
+          changes: changes,
+        }
+
+        result = subscriptionManager.emit(afterEvent)
+        if (!result.success) {
+          throw new Error(
+            `Transaction cancelled by after.update event: ${result.errors.map((e) => e.message).join(", ")}`
+          )
         }
       }
     } else {
@@ -140,9 +203,55 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         if (this[privateKey] === value && store.isInUpdateMode()) {
           return
         }
-        // check if allowed to update and return new version if allowed
+
+        // Emit before.update event and check for cancellation
+        const oldValue = this[privateKey]
+        const changes: ChangeLogEntry[] = [
+          {
+            objectId: this.uuid,
+            operation: "update" as const,
+            changeType: "add" as const,
+            property: key,
+            oldValue: oldValue,
+            newValue: value,
+          },
+        ]
+
+        const beforeEvent: EventPayload = {
+          eventType: "before.update",
+          timestamp: new Date(),
+          objectId: this.uuid,
+          changes: changes,
+        }
+
+        let result: Result = subscriptionManager.emit(beforeEvent)
+        if (!result.success) {
+          throw new Error(
+            `Transaction cancelled by before.update event: ${result.errors.map((e) => e.message).join(", ")}`
+          )
+        }
+
+        // Perform the actual change
         const obj = checkWriteAccess(this, store, key)
         obj[privateKey] = value
+
+        // Track the change
+        state.trackChange(changes)
+
+        // Emit after.update event and check for cancellation
+        const afterEvent: EventPayload = {
+          eventType: "after.update",
+          timestamp: new Date(),
+          objectId: this.uuid,
+          changes: changes,
+        }
+
+        result = subscriptionManager.emit(afterEvent)
+        if (!result.success) {
+          throw new Error(
+            `Transaction cancelled by after.update event: ${result.errors.map((e) => e.message).join(", ")}`
+          )
+        }
       }
     }
     // Define property on prototype
@@ -226,6 +335,8 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
       }
     }
   }
+  // Add disconnect method to the class
+  addDisconnectMethod(prototype, typeMeta, store)
 }
 
 // add dynamically method to shallow copy props (including observables) from one instance to another
@@ -251,6 +362,52 @@ export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
         })
       } else {
         newObj[privateKey] = this[privateKey]
+      }
+    }
+  }
+}
+
+function addDisconnectMethod(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
+  const disconnectKey = makeDisconnectKey()
+
+  // Precalculate properties that are references, including collections
+  const referenceProps: PropertyMeta[] = []
+  let currentMeta: TypeMeta | undefined = typeMeta
+
+  // while (currentMeta) {
+  for (const prop of currentMeta.properties.values()) {
+    if (isReference(prop) || isCollectionOfReferences(prop)) {
+      referenceProps.push(prop)
+    }
+  }
+  //  currentMeta = currentMeta.superType;
+  //}
+
+  prototype[disconnectKey] = function () {
+    const obj = this as EternalObject
+
+    // Call disconnect method from superclass recursively
+    const superProto = Object.getPrototypeOf(prototype)
+    if (superProto && typeof superProto[disconnectKey] === "function") {
+      superProto[disconnectKey].call(this)
+    }
+    // Disconnect references using meta information
+    for (const prop of referenceProps) {
+      const value = obj[prop.qName]
+      if (prop.type === "array" && prop.itemType === "object") {
+        // value.length = 0 // Clear the array // TODO restore this code when setting array  length is resolved
+        for (let i = 0; i < value.length; i++) {
+          if (value[i] && typeof value[i] === "object" && "uuid" in value[i]) {
+            value.splice(i, 1) // Remove the element from the array
+            i-- // Adjust index after removal
+          }
+        }
+      } else if (prop.type === "map" && prop.itemType === "object") {
+        value.clear() // Clear the map
+      } else if (prop.type === "set" && prop.itemType === "object") {
+        value.clear() // Clear the set
+      } else if (prop.type === "object") {
+        obj[prop.qName] = undefined // Use property setter to nullify the reference
       }
     }
   }

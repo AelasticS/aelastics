@@ -17,6 +17,13 @@ export interface PropertyMeta {
     inverseType?: PropertyType; // Data type of the inverse property
 }
 
+export function isCollectionOfReferences(p: PropertyMeta): boolean {
+    return (p.type === "array" || p.type === "map" || p.type === "set") && p.itemType === "object";
+}
+export function isReference(p: PropertyMeta): boolean {    
+    return (p.type === "object")
+}
+
 /** Metadata for an object type, defining its properties */
 export interface TypeMeta {
     qName: string; // Name of the object type

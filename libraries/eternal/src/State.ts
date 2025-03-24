@@ -1,7 +1,8 @@
-import { ChangeLogEntry, hasChanges } from "./ChangeLog"
+import { ChangeLogEntry, hasChanges } from "./events/ChangeLog"
 import { EternalStore } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { isObjectFrozen, uniqueTimestamp } from "./utils"
+import { isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
+import { EventPayload, Result } from "./events/EventTypes"
 
 /** Read-only interface for accessing immutable objects in a specific state */
 interface StateView {
@@ -24,7 +25,7 @@ export class State implements StateView {
     this.index = previousState ? previousState.index + 1 : 0
     this.objectMap = new Map(previousState ? previousState.objectMap : [])
   }
-  
+
   // Create a new object version
   public createNewVersion<T extends EternalObject>(obj: T, trackForNotification = true): T {
     // Check if the object is fixed
@@ -37,7 +38,7 @@ export class State implements StateView {
       newInstance.createdAt = this.timestamp // Copy timestamp from state
       // Track the new version
       obj.nextVersion = new WeakRef(newInstance)
-      this.addObject(newInstance, 'versioned')
+      this.addObject(newInstance, "versioned")
       // TODO check subscriptions - track for notifications !!!
       if (trackForNotification) {
         this.store.deref()?.trackVersionedObject(newInstance) // Track for notifications
@@ -68,7 +69,7 @@ export class State implements StateView {
     if (uuid === undefined || uuid === null) {
       return undefined
     }
-    if (typeof uuid !== 'string') {
+    if (typeof uuid !== "string") {
       throw new Error("UUID must be a string.")
     }
     const object = this.objectMap.get(uuid)
@@ -81,7 +82,7 @@ export class State implements StateView {
 
   private createFrozenStateObject<T extends EternalObject>(obj: T): T {
     // Create a shallow copy of the object
-    const frozenObject = obj.clone(this)  
+    const frozenObject = obj.clone(this)
     return frozenObject as T
   }
 
@@ -94,40 +95,59 @@ export class State implements StateView {
    * - Assigns a UUID if missing.
    * - Tracks insertion in the change log.
    */
-  public addObject<T extends EternalObject>(obj: T, reason: 'created' | 'imported' | 'versioned'): T {
-    if (!obj || typeof obj !== "object") {
-      throw new Error("Invalid object provided.")
+  public addObject<T extends EternalObject>(obj: T, reason: "created" | "imported" | "versioned"): void {
+    if (reason === "created") {
+      const subscriptionManager = this.store.deref()?.getSubscriptionManager()
+      if (!subscriptionManager) {
+        throw new Error("Subscription manager not found.")
+      }
+
+      // Create the change entry
+      const change: ChangeLogEntry = {
+        objectId: obj.uuid,
+        operation: "create",
+        newValue: obj,
+      }
+
+      // Emit before.create.object event and check for cancellation
+      const beforeEvent: EventPayload = {
+        eventType: "before.create.object",
+        timestamp: new Date(),
+        objectId: obj.uuid,
+        changes: [change],
+      }
+
+      let result: Result = subscriptionManager.emit(beforeEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by before.create.object event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+
+      // Store the object in the state
+      this.objectMap.set(obj.uuid, obj)
+
+      // Track the change
+      this.trackChange(change)
+
+      // Emit after.create.object event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: "after.create.object",
+        timestamp: new Date(),
+        objectId: obj.uuid,
+        changes: [change],
+      }
+
+      result = subscriptionManager.emit(afterEvent)
+      if (!result.success) {
+        throw new Error(
+          `Transaction cancelled by after.create.object event: ${result.errors.map((e) => e.message).join(", ")}`
+        )
+      }
+    } else {
+      // Store the object in the state without emitting events or tracking changes
+      this.objectMap.set(obj.uuid, obj)
     }
-    if (!("uuid" in obj) || !obj.uuid) {
-      throw new Error("Cannot add an object without a UUID.")
-    }
-
-    // Check if the object already exists in the state
-    if (this.objectMap.has(obj.uuid) && (reason === 'created' || reason === 'imported')) {
-      throw new Error(`Object with UUID ${obj.uuid} already exists in the state.`)
-    }
-
-    // Store the object in the state
-    this.objectMap.set(obj.uuid, obj)
-
-    // TODO check if needed changelog and timestamp for other reasons
-    if (reason === 'created') {
-      // add timestamp to object, to know the state it is created in
-      obj.createdAt = this.timestamp
-
-      // Track insertion in the change log
-      this.changeLog.push({
-        uuid: obj.uuid,
-        objectType: obj.constructor.name, // Assuming dynamic classes
-        change: "insert",
-      })
-    }
-    return obj
-  }
-
-  /** Removes an object from THIS state (but does not affect history) */
-  public removeObject(uuid: string): void {
-    this.objectMap.delete(uuid)
   }
 
   /**
@@ -136,41 +156,64 @@ export class State implements StateView {
    * - Ensures bidirectional relationships are updated.
    * - Tracks the deletion in the change log.
    */
-  public deleteObject(uuid: string): void {
-    const object = this.objectMap.get(uuid)
-    if (!object) {
-      console.warn(`Attempted to delete non-existent object: ${uuid}`)
-      return
+  public deleteObject(objectId: string): void {
+    const subscriptionManager = this.store.deref()?.getSubscriptionManager()
+    if (!subscriptionManager) {
+      throw new Error("Subscription manager not found.")
     }
 
-    // Track deletion in the change log
-    this.changeLog.push({
-      uuid,
-      objectType: object.constructor.name, // Assuming dynamic classes are used
-      change: "delete",
-    })
-
-    // Remove references from other objects
-    for (const [key, value] of Object.entries(object)) {
-      if (value instanceof Set) {
-        value.forEach((item: any) => {
-          if (item && typeof item === "object" && "uuid" in item) {
-            item[key]?.delete(object)
-          }
-        })
-      } else if (value instanceof Map) {
-        value.forEach((item: any) => {
-          if (item && typeof item === "object" && "uuid" in item) {
-            item[key]?.delete(uuid)
-          }
-        })
-      } else if (Array.isArray(value)) {
-        object[key] = value.filter((item: any) => item.uuid !== uuid)
-      }
+    const obj = this.objectMap.get(objectId)
+    if (!obj) {
+      throw new Error("Object not found.")
     }
 
-    // Remove the object itself
-    this.objectMap.delete(uuid)
+    // Create the change entry
+    const change: ChangeLogEntry = {
+      objectId: objectId,
+      operation: "delete",
+    }
+
+    // Emit before.delete.object event and check for cancellation
+    const beforeEvent: EventPayload = {
+      eventType: "before.delete.object",
+      timestamp: new Date(),
+      objectId: objectId,
+      changes: [change],
+    }
+
+    let result: Result = subscriptionManager.emit(beforeEvent)
+    if (!result.success) {
+      throw new Error(
+        `Transaction cancelled by before.delete.object event: ${result.errors.map((e) => e.message).join(", ")}`
+      )
+    }
+
+    // Disconnect the object from all other objects
+    const disconnectKey = makeDisconnectKey()
+    if (typeof obj[disconnectKey] === "function") {
+      obj[disconnectKey]()
+    }
+
+    // Remove the object from the state
+    this.objectMap.delete(objectId)
+
+    // Track the change
+    this.trackChange(change)
+
+    // Emit after.delete.object event and check for cancellation
+    const afterEvent: EventPayload = {
+      eventType: "after.delete.object",
+      timestamp: new Date(),
+      objectId: objectId,
+      changes: [change],
+    }
+
+    result = subscriptionManager.emit(afterEvent)
+    if (!result.success) {
+      throw new Error(
+        `Transaction cancelled by after.delete.object event: ${result.errors.map((e) => e.message).join(", ")}`
+      )
+    }
   }
 
   // Check if an object is older then this state
@@ -191,8 +234,12 @@ export class State implements StateView {
   }
 
   // Track changed objects
-  public trackChange(entry: ChangeLogEntry) {
-    this.changeLog.push(entry)
+  public trackChange(entry: ChangeLogEntry | ChangeLogEntry[]): void {
+    if (Array.isArray(entry)) {
+      this.changeLog.push(...entry)
+    } else {
+      this.changeLog.push(entry)
+    }
   }
 
   public getChangeLog(): ChangeLogEntry[] {

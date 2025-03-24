@@ -7,6 +7,9 @@ import { PropertyMeta } from "../meta/InternalSchema"
 import { EternalStore } from "../EternalStore"
 
 import * as invUpd from "../inverseUpdaters"
+import { EventPayload, Result } from "../events/EventTypes"
+import { ChangeLogEntry } from "../events/ChangeLog"
+import { State } from "../State"
 
 // Convert UUID to Object
 const toObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>
@@ -33,6 +36,15 @@ export const createArrayHandlers = <T extends EternalObject>({
   const proxyKey = makePrivateProxyKey(propDes.qName)
   const inverseUpdaterKey = makeUpdateInverseKey(propDes.qName)
   const privateInverseKey = propDes.inverseProp ? makePrivatePropertyKey(propDes.inverseProp) : ""
+  const subscriptionManager = store.getSubscriptionManager()
+  const state = store.getState()
+
+  if (!subscriptionManager) {
+    throw new Error("Subscription manager not found.")
+  }
+  if (!state) {
+    throw new Error("State not found.")
+  }
 
   // Return the array handlers
   return {
@@ -43,38 +55,168 @@ export const createArrayHandlers = <T extends EternalObject>({
       const res = toObject(newValue, store, propDes)
       return [false, res]
     },
-    // Set item by index, convert object to UUID if needed
-    setByIndex: (target: T[], index: number, value: any) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
-      const newValue = toUUID(value, propDes)
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        const oldValueUUID = obj[privateKey][index] 
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
-        // set inverse of newValue to object (connect to new value)
-        // set inverse of oldValue to null (disconnect old value)
-        updater(obj, oldValueUUID, newValue)
-      }
-      obj[privateKey][index] = newValue
-      return [false, newValue]
-    },
-    /** Remove item from array */
-    delete: (target: T[], index: number) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
-      const deletedItem = obj[privateKey][index]; // Store the item before deleting it
-      delete obj[privateKey][index]; // Delete the item
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        // set inverse of oldValue to null (disconnect old value)
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
-        updater(obj, deletedItem, undefined);
-      }
-      return [false, toObject(deletedItem, store, propDes)];
-    },
+setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
+  const obj = checkWriteAccess(object, store, propDes.qName);
+  const newValueUUID = toUUID(value, propDes);
+  const oldValueUUID = obj[privateKey][index];
 
+  // Check if there are changes to be made
+  if (oldValueUUID === newValueUUID) {
+    return [false, newValueUUID];
+  }
+
+  // Emit before.update event and check for cancellation
+  const changes: ChangeLogEntry[] = [];
+  if (oldValueUUID !== undefined) {
+    changes.push({
+      objectId: object.uuid,
+      operation: 'update' as const,
+      changeType: 'remove' as const,
+      property: propDes.qName,
+      oldValue: oldValueUUID,
+    });
+  }
+  if (newValueUUID !== undefined) {
+    changes.push({
+      objectId: object.uuid,
+      operation: 'update' as const,
+      changeType: 'add' as const,
+      property: propDes.qName,
+      newValue: newValueUUID,
+    });
+  }
+
+  if (changes.length > 0) {
+    const beforeEvent: EventPayload = {
+      eventType: 'before.update',
+      timestamp: new Date(),
+      objectId: object.uuid,
+      changes: changes,
+    };
+
+    let result: Result = subscriptionManager.emit(beforeEvent);
+    if (!result.success) {
+      throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+    }
+  }
+
+  // Perform the actual operation
+  obj[privateKey][index] = newValueUUID;
+  if (propDes.itemType === "object" && propDes.inverseProp) {
+    const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
+    updater(obj, oldValueUUID, newValueUUID);
+  }
+
+  // Track the change
+  state.trackChange(changes);
+
+  // Emit after.update event and check for cancellation
+  if (changes.length > 0) {
+    const afterEvent: EventPayload = {
+      eventType: 'after.update',
+      timestamp: new Date(),
+      objectId: object.uuid,
+      changes: changes,
+    };
+
+    let result: Result = subscriptionManager.emit(afterEvent);
+    if (!result.success) {
+      throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+    }
+  }
+
+  return [true, newValueUUID];
+},
+    /** Remove item from array */
+    delete: (target: T[], index: number): [boolean, boolean] => {
+      const obj = checkWriteAccess(object, store, propDes.qName);
+      const oldValueUUID = obj[privateKey][index];
+    
+      // Check if there are changes to be made
+      if (oldValueUUID === undefined) {
+        return [false, false];
+      }
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [{
+        objectId: object.uuid,
+        operation: 'update' as const,
+        changeType: 'remove' as const,
+        property: propDes.qName,
+        oldValue: oldValueUUID,
+      }];
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      obj[privateKey].splice(index, 1);
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
+        updater(obj, oldValueUUID, undefined);
+      }
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, true];
+    },
     /** Handle push (convert objects to UUIDs if needed) */
     push: (target: T[], ...items: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName) as EternalObject;
-      const items1 = mapToUUIDs(items, propDes);
-      const result = obj[privateKey].push(...items1);
+      const obj = checkWriteAccess(object, store, propDes.qName) as EternalObject
+      const itemsUUIDs = mapToUUIDs(items, propDes)
+    
+      // Check if there are changes to be made
+      if (itemsUUIDs.length === 0) {
+        return [false, target.length];
+      }
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
+        objectId: object.uuid,
+        operation: 'update' as const,
+        changeType: 'add' as const,
+        property: propDes.qName,
+        newValue: newValue,
+      }));
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      const newLength = obj[privateKey].push(...itemsUUIDs);
+    
       if (propDes.itemType === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
@@ -82,57 +224,252 @@ export const createArrayHandlers = <T extends EternalObject>({
           updater(obj, undefined, item);
         });
       }
-      return [false, result];
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, newLength];
     },
 
     /** Handle pop */
     pop: (target: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
-      const item = obj[privateKey].pop();
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        // set inverse of popped item to null
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
-        updater(obj, item, undefined);
+      const obj = checkWriteAccess(object, store, propDes.qName)
+      const item = obj[privateKey][obj[privateKey].length - 1] // Access the element to be popped
+    
+      // Check if there are changes to be made
+      if (item === undefined) {
+        return [false, undefined];
       }
-      return [false, toObject(item, store, propDes)];
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [{
+        objectId: object.uuid,
+        operation: 'update' as const,
+        changeType: 'remove' as const,
+        property: propDes.qName,
+        oldValue: item,
+      }];
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      const poppedItem = obj[privateKey].pop();
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
+        updater(obj, poppedItem, undefined)
+      }
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, toObject(poppedItem, store, propDes)];
     },
 
     /** Handle shift */
     shift: (target: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
-      const shiftedItem = obj[privateKey].shift();
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        // set inverse of shifted item to null
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
-        updater(obj, shiftedItem, undefined);
+      const obj = checkWriteAccess(object, store, propDes.qName)
+      const shiftedItem = obj[privateKey][0] // Access the element to be shifted
+    
+      // Check if there are changes to be made
+      if (shiftedItem === undefined) {
+        return [false, undefined];
       }
-      return [false, toObject(shiftedItem, store, propDes)];
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [{
+        objectId: object.uuid,
+        operation: 'update' as const,
+        changeType: 'remove' as const,
+        property: propDes.qName,
+        oldValue: shiftedItem,
+      }];
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      const shiftedItemUUID = obj[privateKey].shift();
+      if (propDes.itemType === "object" && propDes.inverseProp) {
+        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
+        updater(obj, shiftedItemUUID, undefined)
+      }
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, toObject(shiftedItemUUID, store, propDes)];
     },
 
     /** Handle unshift (convert objects to UUIDs if needed) */
     unshift: (target: T[], ...items: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
-      items = mapToUUIDs(items, propDes);
-      const result = obj[privateKey].unshift(...items);
+      const obj = checkWriteAccess(object, store, propDes.qName)
+      const itemsUUIDs = mapToUUIDs(items, propDes)
+    
+      // Check if there are changes to be made
+      if (itemsUUIDs.length === 0) {
+        return [false, target.length];
+      }
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
+        objectId: object.uuid,
+        operation: 'update' as const,
+        changeType: 'add' as const,
+        property: propDes.qName,
+        newValue: newValue,
+      }));
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      const newLength = obj[privateKey].unshift(...itemsUUIDs);
+    
       if (propDes.itemType === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
-        // set inverse of unshift items to object (connect to new values)
+        // set inverse of newValue to object (connect to new value)
         items.forEach((item) => {
           updater(obj, undefined, item);
         });
       }
-      return [false, result];
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, newLength];
     },
 
     /** Handle splice (convert objects to UUIDs if needed) */
     splice: (target: T[], start: number, deleteCount: number, ...items: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
-      items = mapToUUIDs(items, propDes);
-      const deletedItems = obj[privateKey].splice(start, deleteCount, ...items);
+      const obj = checkWriteAccess(object, store, propDes.qName)
+      const itemsUUIDs = mapToUUIDs(items, propDes)
+      const deletedItems:any[] = obj[privateKey].slice(start, start + deleteCount)
+    
+      // Check if there are changes to be made
+      if (deletedItems.length === 0 && itemsUUIDs.length === 0) {
+        return [false, []];
+      }
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [];
+      if (deletedItems.length > 0) {
+        changes.push(...deletedItems.map((oldValue, index) => ({
+          objectId: object.uuid,
+          operation: 'update' as const,
+          changeType: 'remove' as const,
+          property: propDes.qName,
+          oldValue: oldValue,
+        })));
+      }
+      if (itemsUUIDs.length > 0) {
+        changes.push(...itemsUUIDs.map((newValue, index) => ({
+          objectId: object.uuid,
+          operation: 'update' as const,
+          changeType: 'add' as const,
+          property: propDes.qName,
+          newValue: newValue,
+        })));
+      }
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      const deletedItemsUUIDs = obj[privateKey].splice(start, deleteCount, ...itemsUUIDs);
+    
       if (propDes.itemType === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of deleted items to null
-        deletedItems.forEach((item: any) => {
+        deletedItemsUUIDs.forEach((item: any) => {
           updater(obj, item, undefined);
         });
         // set inverse of new items to object
@@ -140,64 +477,246 @@ export const createArrayHandlers = <T extends EternalObject>({
           updater(obj, undefined, item);
         });
       }
-      return [false, mapToObjects(deletedItems, store, propDes)];
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, mapToObjects(deletedItemsUUIDs, store, propDes)];
     },
 
     /** Handle reverse */
     reverse: (target: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
-      const key = makePrivatePropertyKey(propDes.qName)
-      const res = obj[key].reverse()
-      return [false, obj[propDes.qName]]
+      const obj = checkWriteAccess(object, store, propDes.qName);
+      const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [{
+        objectId: object.uuid,
+        operation: 'update' as const,
+        changeType: 'order' as const,
+        property: propDes.qName,
+        oldValue: originalArray,
+        newValue: [...originalArray].reverse(),
+      }];
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      obj[privateKey].reverse();
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, obj[privateKey]];
     },
 
     /** Handle sort */
-    sort: (target: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
-      const items = obj[privateKey]
-      const objects = mapToObjects(items, store, propDes)
-      const sortedObjects = objects.sort()
-
-      const sortedUUIDS = mapToUUIDs(sortedObjects, propDes)
-      items.splice(0, items.length, ...sortedUUIDS) // Replace the items with sorted UUIDs
-      return [false, obj[propDes.qName]] // Return the proxy
+    sort: (target: T[], compareFn?: (a: T, b: T) => number) => {
+      const obj = checkWriteAccess(object, store, propDes.qName);
+      const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [{
+        objectId: object.uuid,
+        operation: 'update' as const,
+        changeType: 'order' as const,
+        property: propDes.qName,
+        oldValue: originalArray,
+        newValue: [...originalArray].sort(compareFn),
+      }];
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      obj[privateKey].sort(compareFn);
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, obj[privateKey]];
     },
 
     /** Handle fill */
-    fill: (target: T[], value: T, start: number, end: number) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
-      const newValue = toUUID(value, propDes);
-      const oldValues = obj[privateKey].slice(start, end); // Store old values before filling
-    
-      obj[privateKey].fill(newValue, start, end);
-    
-      if (propDes.itemType === "object" && propDes.inverseProp) {
-        const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
-        // set inverse of old values to null (disconnect old values)
-        oldValues.forEach((oldValue: any) => {
-          updater(obj, oldValue, undefined);
-        });
-        // set inverse of new values to object (connect to new values)
-        for (let i = start; i < end; i++) {
-          updater(obj, undefined, newValue);
-        }
+    fill: (target: T[], value: T, start?: number, end?: number) => {
+      if (propDes.itemType === "object") {
+        throw new Error("Fill operation is not allowed for arrays of object UUIDs.");
       }
     
-      return [false, obj[propDes.qName]];
+      const obj = checkWriteAccess(object, store, propDes.qName);
+      const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
+      const itemsUUID = toUUID(value, propDes);
+    
+      // Determine the actual start and end indices
+      const actualStart = start ?? 0;
+      const actualEnd = end ?? obj[privateKey].length;
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [];
+      for (let i = actualStart; i < actualEnd; i++) {
+        changes.push({
+          objectId: object.uuid,
+          operation: 'update' as const,
+          changeType: 'add' as const,
+          property: propDes.qName,
+          oldValue: obj[privateKey][i],
+          newValue: itemsUUID,
+        });
+      }
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      obj[privateKey].fill(itemsUUID, actualStart, actualEnd);
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, obj[privateKey]];
     },
     /** Handle concat */
-    concat: (target: T[], ...items: T[]) => {
-      const obj = checkReadAccess(object, store);
-      items = mapToUUIDs(items, propDes);
-      const result = obj[privateKey].concat(...items);
+    concat: (target: T[], ...items: (T | ConcatArray<T>)[]) => {
+      const obj = checkWriteAccess(object, store, propDes.qName);
+      const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
+    
+      // Flatten the items array and map to UUIDs
+      const itemsUUIDs = items.flat().map(item => toUUID(item, propDes));
+    
+      // Check if there are changes to be made
+      if (itemsUUIDs.length === 0) {
+        return [false, obj[privateKey]];
+      }
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
+        objectId: object.uuid,
+        operation: 'update' as const,
+        changeType: 'add' as const,
+        property: propDes.qName,
+        newValue: newValue,
+      }));
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      const newArray = obj[privateKey].concat(itemsUUIDs);
+    
       if (propDes.itemType === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
-        // set inverse of items to object (connect to new values)
-        items.forEach((item) => {
+        // set inverse of newValue to object (connect to new value)
+        itemsUUIDs.forEach((item) => {
           updater(obj, undefined, item);
         });
       }
-      return [false, mapToObjects(result, store, propDes)];
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, newArray];
     },
 
     /** Handle includes */
@@ -236,6 +755,7 @@ export const createArrayHandlers = <T extends EternalObject>({
       const result = obj[privateKey].slice(start, end)
       return [false, mapToObjects(result, store, propDes)]
     },
+    // TODO set length ??!
     /** Handle length */
     length: (target: T[]) => {
       const obj = checkReadAccess(object, store)
@@ -339,10 +859,71 @@ export const createArrayHandlers = <T extends EternalObject>({
     },
 
     /** Handle copyWithin */
-    copyWithin: (target: T[], targetIndex: number, start: number, end: number) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
-      const result = obj[privateKey].copyWithin(targetIndex, start, end)
-      return [false, mapToObjects(result, store, propDes)]
+    copyWithin: (target: T[], targetIndex: number, start: number = 0, end: number = target.length) => {
+      if (propDes.itemType === "object") {
+        throw new Error("copyWithin operation is not allowed for arrays of object UUIDs.");
+      }
+    
+      const obj = checkWriteAccess(object, store, propDes.qName);
+      const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
+    
+      // Determine the actual start, end, and target indices
+      const actualStart = start;
+      const actualEnd = end;
+      const actualTargetIndex = targetIndex;
+    
+      // Check if there are changes to be made
+      if (actualStart === actualEnd || actualTargetIndex >= obj[privateKey].length) {
+        return [false, obj[privateKey]];
+      }
+    
+      // Emit before.update event and check for cancellation
+      const changes: ChangeLogEntry[] = [];
+      for (let i = actualStart; i < actualEnd; i++) {
+        const oldValue = obj[privateKey][actualTargetIndex + i - actualStart];
+        const newValue = obj[privateKey][i];
+        changes.push({
+          objectId: object.uuid,
+          operation: 'update' as const,
+          changeType: 'add' as const,
+          property: propDes.qName,
+          oldValue: oldValue,
+          newValue: newValue,
+        });
+      }
+    
+      const beforeEvent: EventPayload = {
+        eventType: 'before.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      let result: Result = subscriptionManager.emit(beforeEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      // Perform the actual operation
+      obj[privateKey].copyWithin(actualTargetIndex, actualStart, actualEnd);
+    
+      // Track the change
+      state.trackChange(changes);
+    
+      // Emit after.update event and check for cancellation
+      const afterEvent: EventPayload = {
+        eventType: 'after.update',
+        timestamp: new Date(),
+        objectId: object.uuid,
+        changes: changes,
+      };
+    
+      result = subscriptionManager.emit(afterEvent);
+      if (!result.success) {
+        throw new Error(`Transaction cancelled by after.update event: ${result.errors.map(e => e.message).join(', ')}`);
+      }
+    
+      return [false, obj[privateKey]];
     },
 
     /** Handle entries */

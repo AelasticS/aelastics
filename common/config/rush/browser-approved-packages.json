@@ -107,6 +107,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "eventemitter2",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "generic-metamodel",
       "allowedCategories": [ "production", "prototypes" ]
     },
