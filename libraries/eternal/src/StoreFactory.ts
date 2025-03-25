@@ -1,4 +1,6 @@
 import { EternalStore, InternalRecipe } from "./EternalStore"
+import { EventPayload, Result } from "./events/EventTypes"
+import { ChangeType, Operation, Property, Timing, Type } from "./events/SubscriptionInterface"
 import { EternalObject } from "./handlers/InternalTypes"
 import { TypeMeta, TypeSchema } from "./meta/InternalSchema"
 
@@ -112,6 +114,16 @@ export interface Store {
   subscribeToStore(callback: () => void): () => void
   // unsubscribeFromStore(callback: () => void): void
 
+  // Subscribes to event patterns, returns a function that can be called to unsubscribe
+  subscribe(
+    listener: (event: EventPayload) => Result,
+    timing: Timing,
+    operation: Operation,
+    type: Type,
+    property?: Property,
+    changeType?: ChangeType
+  ): () => void
+
   /**
    * Retrieves the internal EternalStore instance.
    * @returns The internal EternalStore instance.
@@ -152,6 +164,14 @@ export function createStore(
     //  unsubscribeFromObject: (obj, callback) => store.getSubscriptionManager().unsubscribeFromObj(obj, callback),
     subscribeToStore: (callback) => store.getSubscriptionManager().subscribeToStore(callback),
     //   unsubscribeFromStore: (callback) => store.getSubscriptionManager().unsubscribeFromStore(callback),
+    subscribe: (
+      listener: (event: EventPayload) => Result,
+      timing: Timing,
+      operation: Operation,
+      type: Type,
+      property?: Property,
+      changeType?: ChangeType
+    ) => store.getSubscriptionManager().subscribe(listener, timing, operation, type, property, changeType),
     getEternalStore: () => store,
   }
 
