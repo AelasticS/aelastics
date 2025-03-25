@@ -77,14 +77,11 @@ export function checkWriteAccess(obj: EternalObject, store: EternalStore, key: s
 /** Adds optimized property accessors to a dynamically generated class prototype */
 export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
   const subscriptionManager = store.getSubscriptionManager()
-  const state = store.getState()
 
   if (!subscriptionManager) {
     throw new Error("Subscription manager not found.")
   }
-  if (!state) {
-    throw new Error("State not found.")
-  }
+
 
   // Check if typeMeta.properties is defined and is a Map
   if (!typeMeta.properties || !(typeMeta.properties instanceof Map)) {
@@ -144,7 +141,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           {
             objectId: this.uuid,
             operation: "update" as const,
-            changeType: "add" as const,
+            changeType: "update" as const,
             property: key,
             oldValue: oldUUID,
             newValue: newUUID,
@@ -179,6 +176,10 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         }
 
         // Track the change
+        const state = store.getState()
+        if (!state) {
+          throw new Error("State not found.")
+        }
         state.trackChange(changes)
 
         // Emit after.update event and check for cancellation
@@ -210,7 +211,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           {
             objectId: this.uuid,
             operation: "update" as const,
-            changeType: "add" as const,
+            changeType: "update" as const,
             property: key,
             oldValue: oldValue,
             newValue: value,
@@ -236,6 +237,10 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         obj[privateKey] = value
 
         // Track the change
+        const state = store.getState()
+        if (!state) {
+          throw new Error("State not found.")
+        }
         state.trackChange(changes)
 
         // Emit after.update event and check for cancellation
