@@ -167,7 +167,7 @@ export class EternalStore {
         this.versionedObjects.push(...additionalVersionedObjects);
 
         if (this.versionedObjects.length > 0) {
-          this.subscriptionManager.notifySubscribersToObj(this.versionedObjects); // Notify all updated objects
+          this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/); // Notify all updated objects
 
           // If `obj` itself was versioned, return the latest version
           const updatedObj = this.versionedObjects.find(o => o.uuid === newObj.uuid);
@@ -188,7 +188,7 @@ export class EternalStore {
       try {
         const result = (recipe as () => T)(); // Capture return value
         this.markVersionedObjects();
-        this.subscriptionManager.notifySubscribersToObj(this.versionedObjects); // Notify global changes
+        this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/); // Notify global changes
         return result; // Return the result from recipe()
 
       } finally {

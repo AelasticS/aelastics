@@ -101,16 +101,16 @@ export interface Store {
    * @param obj - The object to subscribe/unsubscribe to.
    * @param callback - The callback function to be called when the object is updated.
    */
-  subscribeToObject(obj: object, callback: (updatedObj: object) => void): void
-  unsubscribeFromObject(obj: object, callback: (updatedObj: object) => void): void
+  subscribeToObject(obj: object, callback: (updatedObj: object) => void): () => void
+  // unsubscribeFromObject(obj: object, callback: (updatedObj: object) => void): void
 
   /**
    *
    * Subscribes/unsubscribe to updates of store.
    * @param callback - The callback function to be called when store is updated.
    */
-  subscribeToStore(callback: () => void): void
-  unsubscribeFromStore(callback: () => void): void
+  subscribeToStore(callback: () => void): () => void
+  // unsubscribeFromStore(callback: () => void): void
 
   /**
    * Retrieves the internal EternalStore instance.
@@ -129,10 +129,10 @@ export function createStore(
     fetchFromExternalSource?: (type: string, uuid: string) => any
   } = { freeze: true }
 ): Store {
-  if(!metaInfo) {
+  if (!metaInfo) {
     throw new Error("meta information is required to create a store")
   }
-  const types:Map<string, TypeMeta> = (metaInfo as TypeSchema).types || (metaInfo as Map<string, TypeMeta>)
+  const types: Map<string, TypeMeta> = (metaInfo as TypeSchema).types || (metaInfo as Map<string, TypeMeta>)
   const store = new EternalStore(types)
 
   const publicAPI: Store = {
@@ -148,10 +148,10 @@ export function createStore(
     fromState: (stateIndex, target) => store.fromState(stateIndex, target),
     makeEternal: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
 
-    subscribeToObject: (obj, callback) => store.getSubscriptionManager().subscribeToObj(obj, callback),
-    unsubscribeFromObject: (obj, callback) => store.getSubscriptionManager().unsubscribeFromObj(obj, callback),
+    subscribeToObject: (obj, callback) => store.getSubscriptionManager().subscribeToObject(obj, callback),
+    //  unsubscribeFromObject: (obj, callback) => store.getSubscriptionManager().unsubscribeFromObj(obj, callback),
     subscribeToStore: (callback) => store.getSubscriptionManager().subscribeToStore(callback),
-    unsubscribeFromStore: (callback) => store.getSubscriptionManager().unsubscribeFromStore(callback),
+    //   unsubscribeFromStore: (callback) => store.getSubscriptionManager().unsubscribeFromStore(callback),
     getEternalStore: () => store,
   }
 
