@@ -126,7 +126,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     }
   }
 
-  return [true, newValueUUID];
+  return [false, newValueUUID];
 },
     /** Remove item from array */
     delete: (target: T[], index: number): [boolean, boolean] => {
