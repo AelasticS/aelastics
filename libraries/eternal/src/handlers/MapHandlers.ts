@@ -29,7 +29,6 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
   const privateKey = makePrivatePropertyKey(propDes.qName)
   const inverseUpdaterKey = propDes.inverseProp ? makeUpdateInverseKey(propDes.qName) : ""
   const subscriptionManager = store.getSubscriptionManager()
-  const state = store.getState()
 
   return {
     /** Ensure values stored in the map are UUIDs if applicable */
@@ -76,6 +75,10 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       }
 
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes)
 
       // Emit after.update event and check for cancellation
@@ -157,6 +160,10 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       }
 
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes)
 
       // Emit after.update event and check for cancellation
@@ -221,6 +228,10 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       }
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation

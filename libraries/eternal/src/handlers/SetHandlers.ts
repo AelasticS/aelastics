@@ -23,7 +23,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
   const inverseUpdaterKey = makeUpdateInverseKey(propDes.qName)
   const privateInverseKey = propDes.inverseProp ? makePrivatePropertyKey(propDes.inverseProp) : ""
   const subscriptionManager = store.getSubscriptionManager()
-  const state = store.getState()
+
 
   return {
     /** Ensure values stored in the set are UUIDs if applicable */
@@ -70,6 +70,10 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       }
 
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes)
 
       // Emit after.update event and check for cancellation
@@ -134,6 +138,10 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       }
 
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes)
 
       // Emit after.update event and check for cancellation
@@ -200,6 +208,10 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       }
 
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes)
 
       // Emit after.update event and check for cancellation

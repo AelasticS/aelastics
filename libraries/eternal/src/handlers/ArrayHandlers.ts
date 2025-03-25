@@ -37,14 +37,11 @@ export const createArrayHandlers = <T extends EternalObject>({
   const inverseUpdaterKey = makeUpdateInverseKey(propDes.qName)
   const privateInverseKey = propDes.inverseProp ? makePrivatePropertyKey(propDes.inverseProp) : ""
   const subscriptionManager = store.getSubscriptionManager()
-  const state = store.getState()
 
   if (!subscriptionManager) {
     throw new Error("Subscription manager not found.")
   }
-  if (!state) {
-    throw new Error("State not found.")
-  }
+
 
   // Return the array handlers
   return {
@@ -107,6 +104,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     updater(obj, oldValueUUID, newValueUUID);
   }
 
+  const state = store.getState()
+  if (!state) {
+    throw new Error("State not found.")
+  }
   // Track the change
   state.trackChange(changes);
 
@@ -166,6 +167,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -226,6 +231,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -283,6 +292,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -340,6 +353,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -401,6 +418,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -479,6 +500,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -528,6 +553,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       obj[privateKey].reverse();
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -577,6 +606,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       obj[privateKey].sort(compareFn);
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -638,6 +671,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       obj[privateKey].fill(itemsUUID, actualStart, actualEnd);
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -701,6 +738,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
@@ -908,6 +949,10 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       obj[privateKey].copyWithin(actualTargetIndex, actualStart, actualEnd);
     
       // Track the change
+      const state = store.getState()
+      if (!state) {
+        throw new Error("State not found.")
+      }
       state.trackChange(changes);
     
       // Emit after.update event and check for cancellation
