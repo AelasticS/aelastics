@@ -759,7 +759,7 @@ test("Undo/Redo on array delete operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObject<Person>(user.uuid)?.tags[1]).toBeUndefined();
+    expect(store.getObject<Person>(user.uuid)?.tags[1]).toBe("tag3");
 
     // undo operation
     store.undo();
@@ -769,7 +769,7 @@ test("Undo/Redo on array delete operation", () => {
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObject<Person>(user.uuid)?.tags[1]).toBeUndefined();
+    expect(store.getObject<Person>(user.uuid)?.tags[1]).toBe("tag3");
 });
 
 
