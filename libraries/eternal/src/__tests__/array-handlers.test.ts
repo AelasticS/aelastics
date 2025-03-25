@@ -323,10 +323,15 @@ test("array concat operation", () => {
     // });
      //expect(store.getObject<Person>(user.uuid)?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
-    const res= user.tags.concat(["tag2", "tag3"]);
+    store.updateState(() => {
+        user.tags = user.tags.concat(["tag2", "tag3"]);
+    });
+
+    // retrieve the latest version of user
+    user = store.getObject<Person>(user.uuid)!;
 
     // check if operation was successful
-    expect(res).toEqual(["tag1", "tag2", "tag3"]);
+    expect(user.tags).toEqual(["tag1", "tag2", "tag3"]);
 });
 
 test("array includes operation", () => {
