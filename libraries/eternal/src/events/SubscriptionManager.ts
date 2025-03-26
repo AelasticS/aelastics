@@ -99,15 +99,15 @@ export class SubscriptionManager implements SubscriptionInterface {
   /** Emits events using EventEmitter2 and returns a Result */
   public emit(event: EventPayload): Result {
     let eventPattern = `${event.eventType}`
-    if (event.changes && event.changes.length > 0) {
-      const change = event.changes[0]
-      if (change.property) {
-        eventPattern += `.${change.property}`
-      }
-      if (change.changeType) {
-        eventPattern += `.${change.changeType}`
-      }
-    }
+    // if (event.changes && event.changes.length > 0) {
+    //   const change = event.changes[0]
+    //   if (change.property) {
+    //     eventPattern += `.${change.property}`
+    //   }
+    //   if (change.changeType) {
+    //     eventPattern += `.${change.changeType}`
+    //   }
+    // }
 
     const listeners = this.eventEmitter.listeners(eventPattern)
     for (const listener of listeners) {

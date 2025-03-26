@@ -52,7 +52,7 @@ describe("Primitive Property Updates", () => {
     // Define real functions for before.update and after.update handlers
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
       // Simulate a successful result
-      expect(event.eventType).toBe("before.update")
+      expect(event.eventType).toBe("before.update.Person.name.update")
       expect(event.changes?.[0].property).toBe("name")
       expect(event.changes?.[0].oldValue).toBe("John")
       expect(event.changes?.[0].newValue).toBe("Doe")
@@ -61,7 +61,7 @@ describe("Primitive Property Updates", () => {
 
     const afterUpdateHandler = (event: EventPayload): Result => {
       // Simulate a successful result
-      expect(event.eventType).toBe("after.update")
+      expect(event.eventType).toBe("after.update.Person.name.update")
       expect(event.changes?.[0].property).toBe("name")
       expect(event.changes?.[0].oldValue).toBe("John")
       expect(event.changes?.[0].newValue).toBe("Doe")
@@ -69,8 +69,8 @@ describe("Primitive Property Updates", () => {
     }
 
     // Subscribe to before.update and after.update events for the "name" property of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "name")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "name")
+    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "name", "update")
+    store.subscribe(afterUpdateHandler, "after", "update", "Person", "name", "update")
 
     // Update the Person object
     person = store.updateObject((p) => {
@@ -85,7 +85,7 @@ describe("Primitive Property Updates", () => {
     expect(beforeUpdateHandler).toHaveBeenCalledTimes(1)
     expect(beforeUpdateHandler).toHaveBeenCalledWith(
       expect.objectContaining({
-        eventType: "before.update",
+        eventType: "before.update.Person.name.update",
         changes: [
           expect.objectContaining({
             property: "name",

@@ -149,7 +149,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         ]
 
         const beforeEvent: EventPayload = {
-          eventType: "before.update",
+          eventType: `before.update.${typeMeta.qName}.${propertyMeta.qName}.update`,
           timestamp: new Date(),
           objectId: this.uuid,
           changes: changes,
@@ -184,7 +184,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // Emit after.update event and check for cancellation
         const afterEvent: EventPayload = {
-          eventType: "after.update",
+          eventType: `after.update.${typeMeta.qName}.${propertyMeta.qName}.update`,
           timestamp: new Date(),
           objectId: this.uuid,
           changes: changes,
@@ -219,7 +219,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         ]
 
         const beforeEvent: EventPayload = {
-          eventType: "before.update",
+          eventType: `before.update.${typeMeta.qName}.${propertyMeta.qName}.update`,
           timestamp: new Date(),
           objectId: this.uuid,
           changes: changes,
@@ -245,7 +245,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // Emit after.update event and check for cancellation
         const afterEvent: EventPayload = {
-          eventType: "after.update",
+          eventType: `after.update.${typeMeta.qName}.${propertyMeta.qName}.update`,
           timestamp: new Date(),
           objectId: this.uuid,
           changes: changes,
