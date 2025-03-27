@@ -129,6 +129,10 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
       }
     } else if (propertyMeta.type === "object") {
       setter = function (this: EternalObject, value: EternalObject | undefined) {
+        // Validate that the value is an object, undefined, or null, but not an array or any other special object
+        if (value !== null && value !== undefined && (typeof value !== "object" || Array.isArray(value))) {
+          throw new Error(`Invalid value for property "${key}". Expected an object, null, or undefined.`);
+        }
         // Prevent redundant updates
         if (this[privateKey] === value?.uuid && store.isInUpdateMode()) {
           return
@@ -200,6 +204,22 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     } else {
       // primitive type
       setter = function (this: EternalObject, value: any) {
+        // Validate that the value has the correct primitive type
+        const expectedType = propertyMeta.type
+        const actualType = typeof value
+
+        if (
+          value !== null &&
+          value !== undefined &&
+          ((expectedType === "string" && actualType !== "string") ||
+            (expectedType === "number" && actualType !== "number") ||
+            (expectedType === "boolean" && actualType !== "boolean"))
+        ) {
+          throw new Error(
+            `Invalid value for property "${key}". Expected type "${expectedType}", but received type "${actualType}".`
+          )
+        }
+
         // Prevent redundant updates
         if (this[privateKey] === value && store.isInUpdateMode()) {
           return
