@@ -7,6 +7,7 @@ import {
   makePrivatePropertyKey,
   makePrivateProxyKey,
   makeUpdateInverseKey,
+  uniqueTimestamp,
 } from "./utils"
 
 import * as invUpd from "./inverseUpdaters"
@@ -145,7 +146,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           {
             objectId: this.uuid,
             operation: "update" as const,
-            changeType: "update" as const,
+            changeType: "replace" as const,
             property: key,
             oldValue: oldUUID,
             newValue: newUUID,
@@ -153,8 +154,11 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         ]
 
         const beforeEvent: EventPayload = {
-          eventType: `before.update.${typeMeta.qName}.${propertyMeta.qName}.update`,
-          timestamp: new Date(),
+          timing: "before",
+          operation: "update",
+          objectType: typeMeta.qName,
+          property: propertyMeta.qName,
+          timestamp: uniqueTimestamp(),
           objectId: this.uuid,
           changes: changes,
         }
@@ -188,8 +192,11 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // Emit after.update event and check for cancellation
         const afterEvent: EventPayload = {
-          eventType: `after.update.${typeMeta.qName}.${propertyMeta.qName}.update`,
-          timestamp: new Date(),
+          timing: "after",
+          operation: "update",
+          objectType: typeMeta.qName,
+          property: propertyMeta.qName,
+          timestamp: uniqueTimestamp(),
           objectId: this.uuid,
           changes: changes,
         }
@@ -231,7 +238,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           {
             objectId: this.uuid,
             operation: "update" as const,
-            changeType: "update" as const,
+            changeType: "replace" as const,
             property: key,
             oldValue: oldValue,
             newValue: value,
@@ -239,8 +246,11 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         ]
 
         const beforeEvent: EventPayload = {
-          eventType: `before.update.${typeMeta.qName}.${propertyMeta.qName}.update`,
-          timestamp: new Date(),
+          timing: "before",
+          operation: "update",
+          objectType: typeMeta.qName,
+          property: propertyMeta.qName,
+          timestamp: uniqueTimestamp(),
           objectId: this.uuid,
           changes: changes,
         }
@@ -265,8 +275,11 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // Emit after.update event and check for cancellation
         const afterEvent: EventPayload = {
-          eventType: `after.update.${typeMeta.qName}.${propertyMeta.qName}.update`,
-          timestamp: new Date(),
+          timing: "after",
+          operation: "update",
+          objectType: typeMeta.qName,
+          property: propertyMeta.qName,
+          timestamp: uniqueTimestamp(),
           objectId: this.uuid,
           changes: changes,
         }

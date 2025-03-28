@@ -1,6 +1,6 @@
 import { EternalStore, InternalRecipe } from "./EternalStore"
 import { EventPayload, Result } from "./events/EventTypes"
-import { ChangeType, Operation, Property, Timing, Type } from "./events/SubscriptionInterface"
+import { Operation, Property, Timing, Type } from "./events/SubscriptionInterface"
 import { EternalObject } from "./handlers/InternalTypes"
 import { TypeMeta, TypeSchema } from "./meta/InternalSchema"
 
@@ -121,7 +121,6 @@ export interface Store {
     operation: Operation,
     type: Type,
     property?: Property,
-    changeType?: ChangeType
   ): () => void
 
   /**
@@ -170,8 +169,7 @@ export function createStore(
       operation: Operation,
       type: Type,
       property?: Property,
-      changeType?: ChangeType
-    ) => store.getSubscriptionManager().subscribe(listener, timing, operation, type, property, changeType),
+    ) => store.getSubscriptionManager().subscribe(listener, timing, operation, type, property),
     getEternalStore: () => store,
   }
 
