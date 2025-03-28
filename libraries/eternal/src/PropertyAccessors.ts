@@ -2,6 +2,7 @@ import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from ".
 import { EternalStore } from "./EternalStore"
 import { EternalClass, EternalObject } from "./handlers/InternalTypes"
 import {
+  getClassName,
   isObjectFrozen,
   makeDisconnectKey,
   makePrivatePropertyKey,
@@ -144,6 +145,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         const newUUID = value?.uuid
         const changes: ChangeLogEntry[] = [
           {
+            objectType: getClassName(this),
             objectId: this.uuid,
             operation: "update" as const,
             changeType: "replace" as const,
@@ -236,6 +238,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         const oldValue = this[privateKey]
         const changes: ChangeLogEntry[] = [
           {
+            objectType: getClassName(this),
             objectId: this.uuid,
             operation: "update" as const,
             changeType: "replace" as const,

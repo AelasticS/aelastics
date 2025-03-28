@@ -31,6 +31,10 @@ export const isObjectFrozen = (obj: EternalObject) => {
   return obj.state !== undefined
 }
 
+export function getClassName(obj: EternalObject): string {
+  return obj.constructor.name;
+}
+
 // Generate a unique timestamp
 export function uniqueTimestamp() {
   var date = Date.now()

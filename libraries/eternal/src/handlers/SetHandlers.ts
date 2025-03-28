@@ -1,6 +1,6 @@
 import { createObservableSet, SetHandlers } from "@aelastics/observables"
 import { PropertyMeta } from "../meta/InternalSchema"
-import { makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey } from "../utils"
+import { getClassName, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../utils"
 import { checkReadAccess, checkWriteAccess } from "../PropertyAccessors"
 import { ObservableExtra } from "../types"
 import { EternalStore } from "../EternalStore"
@@ -39,6 +39,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [
         {
+          objectType: getClassName(object),
           objectId: object.uuid,
           operation: "update" as const,
           changeType: "add" as const,
@@ -48,8 +49,11 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       ]
 
       const beforeEvent: EventPayload = {
-        eventType: "before.update",
-        timestamp: new Date(),
+        timing: "before",
+        operation: "update",
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       }
@@ -78,8 +82,11 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
 
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: "after.update",
-        timestamp: new Date(),
+        timing: "after",
+        operation: "update",
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       }
@@ -107,6 +114,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [
         {
+          objectType: getClassName(object),
           objectId: object.uuid,
           operation: "update" as const,
           changeType: "remove" as const,
@@ -116,8 +124,11 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       ]
 
       const beforeEvent: EventPayload = {
-        eventType: "before.update",
-        timestamp: new Date(),
+        timing: "before",
+        operation: "update",
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       }
@@ -146,8 +157,11 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
 
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: "after.update",
-        timestamp: new Date(),
+        timing: "after",
+        operation: "update",
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       }
@@ -175,6 +189,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       const changes: ChangeLogEntry[] = []
       obj[privateKey].forEach((valueUUID: any) => {
         changes.push({
+          objectType: getClassName(object),
           objectId: object.uuid,
           operation: "update" as const,
           changeType: "remove" as const,
@@ -184,8 +199,11 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       })
 
       const beforeEvent: EventPayload = {
-        eventType: "before.update",
-        timestamp: new Date(),
+        timing: "before",
+        operation: "update",
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       }
@@ -216,8 +234,11 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
 
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: "after.update",
-        timestamp: new Date(),
+        timing: "after",
+        operation: "update",
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       }

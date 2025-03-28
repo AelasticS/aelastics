@@ -1,5 +1,4 @@
 import { ChangeLogEntry } from './ChangeLog';
-import { Timing, Operation, Type, Property } from './SubscriptionInterface';
 
 export type EventPayload = {
   timing: 'before' | 'after' | 'beforeCommit' | 'afterCommit'; // Specific timing of the event
@@ -10,6 +9,7 @@ export type EventPayload = {
   objectId?: string; // The ID of the object being modified
   changes?: ChangeLogEntry[]; // Describes the specific changes
 }
+
 
 export type Result = 
   | { success: true } // Indicates the operation was successful

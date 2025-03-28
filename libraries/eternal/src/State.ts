@@ -1,7 +1,7 @@
 import { ChangeLogEntry, hasChanges } from "./events/ChangeLog"
 import { EternalStore } from "./EternalStore"
 import { EternalObject } from "./handlers/InternalTypes"
-import { isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
+import { getClassName, isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
 import { EventPayload, Result } from "./events/EventTypes"
 
 /** Read-only interface for accessing immutable objects in a specific state */
@@ -104,6 +104,7 @@ export class State implements StateView {
 
       // Create the change entry
       const change: ChangeLogEntry = {
+        objectType: getClassName(obj),
         objectId: obj.uuid,
         operation: "create",
         newValue: obj,
@@ -111,8 +112,10 @@ export class State implements StateView {
 
       // Emit before.create.object event and check for cancellation
       const beforeEvent: EventPayload = {
-        eventType: "before.create.object",
-        timestamp: new Date(),
+        timing: "before",
+        operation: "create",
+        objectType: getClassName(obj),
+        timestamp: uniqueTimestamp(),
         objectId: obj.uuid,
         changes: [change],
       }
@@ -132,8 +135,10 @@ export class State implements StateView {
 
       // Emit after.create.object event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: "after.create.object",
-        timestamp: new Date(),
+        timing: "after",
+        operation: "create",
+        objectType: getClassName(obj),
+        timestamp: uniqueTimestamp(),
         objectId: obj.uuid,
         changes: [change],
       }
@@ -169,14 +174,17 @@ export class State implements StateView {
 
     // Create the change entry
     const change: ChangeLogEntry = {
+      objectType: getClassName(obj),
       objectId: objectId,
       operation: "delete",
     }
 
     // Emit before.delete.object event and check for cancellation
     const beforeEvent: EventPayload = {
-      eventType: "before.delete.object",
-      timestamp: new Date(),
+      timing: "before",
+      operation: "delete",
+      objectType: getClassName(obj),
+      timestamp: uniqueTimestamp(),
       objectId: objectId,
       changes: [change],
     }
@@ -202,8 +210,10 @@ export class State implements StateView {
 
     // Emit after.delete.object event and check for cancellation
     const afterEvent: EventPayload = {
-      eventType: "after.delete.object",
-      timestamp: new Date(),
+      timing: "after",
+      operation: "delete",
+      objectType: getClassName(obj),
+      timestamp: uniqueTimestamp(),
       objectId: objectId,
       changes: [change],
     }

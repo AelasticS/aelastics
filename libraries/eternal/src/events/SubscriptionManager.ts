@@ -44,19 +44,7 @@ export class SubscriptionManager implements SubscriptionInterface {
     };
   }
 
-  /** Constructs an event pattern based on the provided parameters */
-  private constructEventPattern(
-    timing: Timing,
-    operation: Operation,
-    objectType: Type,
-    property?: Property
-  ): string {
-    let pattern = `${timing}.${operation}.${objectType}`;
-    if (property) {
-      pattern += `.${property}`;
-    }
-    return pattern;
-  }
+
 
   /** Subscribes to event patterns */
   public subscribe(
@@ -67,7 +55,7 @@ export class SubscriptionManager implements SubscriptionInterface {
     property?: Property
   ): () => void {
     // Construct the event pattern
-    const eventPattern = this.constructEventPattern(timing, operation, objectType, property);
+    const eventPattern = constructEventPattern(timing, operation, objectType, property);
 
     // Register the listener with the event emitter
     this.eventEmitter.on(eventPattern, listener);
@@ -108,7 +96,7 @@ export class SubscriptionManager implements SubscriptionInterface {
 
   /** Emits events using EventEmitter2 and returns a Result */
   public emit(event: EventPayload): Result {
-    const eventPattern = this.constructEventPattern(event.timing, event.operation, event.objectType, event.property);
+    const eventPattern = constructEventPattern(event.timing, event.operation, event.objectType, event.property);
     const listeners = this.eventEmitter.listeners(eventPattern);
     for (const listener of listeners) {
       const result: Result = (listener as unknown as (event: EventPayload) => Result)(event);
@@ -134,3 +122,26 @@ export class SubscriptionManager implements SubscriptionInterface {
     // throw new Error("Method not implemented.")
   }
 }
+
+  /** Constructs an event pattern based on the provided parameters */
+  export function constructEventPattern(
+    timing: Timing,
+    operation: Operation,
+    objectType: Type,
+    property?: Property
+  ): string {
+    let pattern = `${timing}.${operation}.${objectType}`;
+    if (property) {
+      pattern += `.${property}`;
+    }
+    return pattern;
+  }
+  
+  export function getEventPattern(eventPayload: EventPayload): string {
+    return constructEventPattern(
+      eventPayload.timing,
+      eventPayload.operation,
+      eventPayload.objectType,
+      eventPayload.property
+    );
+  }

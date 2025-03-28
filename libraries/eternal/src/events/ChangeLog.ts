@@ -1,14 +1,15 @@
 import { State } from "../State";
 
   export interface ChangeLogEntry {
+    objectType: string; // The TypeMeta qName of the object being modified (e.g., "Person")
     objectId: string; // The ID of the object being modified
     property?: string; // The property being modified (if applicable)
     operation: 'create' | 'update' | 'delete'; // Operation type
     changeType?: 'add' | 'remove' | 'replace' | 'reorder'; // Type of change
     index?: number; // For arrays (e.g., add/remove/reorder)
     key?: string; // For Maps (e.g., replace/add/remove)
-    oldValue?: any; // The previous value (if applicable)
-    newValue?: any; // The new value (if applicable)
+    oldValue?: any; // The previous value, applicable for remove and replace
+    newValue?: any; // The new value, applicable for add and replace
   }
 
 

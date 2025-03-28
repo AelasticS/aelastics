@@ -1,5 +1,5 @@
 import { ArrayHandlers, createObservableArray } from "@aelastics/observables"
-import { isUUIDReference, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey } from "../utils" // Import the utility function
+import { getClassName, isUUIDReference, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../utils" // Import the utility function
 import { checkWriteAccess, checkReadAccess } from "../PropertyAccessors"
 import { EternalObject } from "./InternalTypes"
 import { ObservableExtra } from "../types"
@@ -66,6 +66,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
   const changes: ChangeLogEntry[] = [];
   if (oldValueUUID !== undefined) {
     changes.push({
+      objectType: getClassName(object),
       objectId: object.uuid,
       operation: 'update' as const,
       changeType: 'remove' as const,
@@ -75,6 +76,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
   }
   if (newValueUUID !== undefined) {
     changes.push({
+      objectType: getClassName(object),
       objectId: object.uuid,
       operation: 'update' as const,
       changeType: 'add' as const,
@@ -85,8 +87,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
   if (changes.length > 0) {
     const beforeEvent: EventPayload = {
-      eventType: 'before.update',
-      timestamp: new Date(),
+      timing: 'before',
+      operation: 'update',
+      objectType: getClassName(object),
+      property: propDes.qName,
+      timestamp: uniqueTimestamp(),
       objectId: object.uuid,
       changes: changes,
     };
@@ -114,8 +119,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
   // Emit after.update event and check for cancellation
   if (changes.length > 0) {
     const afterEvent: EventPayload = {
-      eventType: 'after.update',
-      timestamp: new Date(),
+      timing: 'after',
+      operation: 'update',
+      objectType: getClassName(object),
+      property: propDes.qName,
+      timestamp: uniqueTimestamp(),
       objectId: object.uuid,
       changes: changes,
     };
@@ -140,6 +148,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
+        objectType: getClassName(object),
         objectId: object.uuid,
         operation: 'update' as const,
         changeType: 'remove' as const,
@@ -148,8 +157,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }];
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -175,8 +187,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -200,6 +215,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
+        objectType: getClassName(object),
         objectId: object.uuid,
         operation: 'update' as const,
         changeType: 'add' as const,
@@ -208,8 +224,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }));
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -239,8 +258,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -265,6 +287,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
+        objectType: getClassName(object),
         objectId: object.uuid,
         operation: 'update' as const,
         changeType: 'remove' as const,
@@ -273,8 +296,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }];
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -300,8 +326,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -326,6 +355,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
+        objectType: getClassName(object),
         objectId: object.uuid,
         operation: 'update' as const,
         changeType: 'remove' as const,
@@ -334,8 +364,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }];
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -361,8 +394,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -387,6 +423,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
+        objectType: getClassName(object),
         objectId: object.uuid,
         operation: 'update' as const,
         changeType: 'add' as const,
@@ -395,8 +432,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }));
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -426,8 +466,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -455,6 +498,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       const changes: ChangeLogEntry[] = [];
       if (deletedItems.length > 0) {
         changes.push(...deletedItems.map((oldValue, index) => ({
+          objectType: getClassName(object),
           objectId: object.uuid,
           operation: 'update' as const,
           changeType: 'remove' as const,
@@ -464,6 +508,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
       if (itemsUUIDs.length > 0) {
         changes.push(...itemsUUIDs.map((newValue, index) => ({
+          objectType: getClassName(object),
           objectId: object.uuid,
           operation: 'update' as const,
           changeType: 'add' as const,
@@ -473,8 +518,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -508,8 +556,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -529,17 +580,21 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
+        objectType: getClassName(object),
         objectId: object.uuid,
         operation: 'update' as const,
-        changeType: 'order' as const,
+        changeType: 'reorder' as const,
         property: propDes.qName,
         oldValue: originalArray,
         newValue: [...originalArray].reverse(),
       }];
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -561,8 +616,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -582,17 +640,21 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
+        objectType: getClassName(object),
         objectId: object.uuid,
         operation: 'update' as const,
-        changeType: 'order' as const,
+        changeType: 'reorder' as const,
         property: propDes.qName,
         oldValue: originalArray,
         newValue: [...originalArray].sort(compareFn),
       }];
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -614,8 +676,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -646,6 +711,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       const changes: ChangeLogEntry[] = [];
       for (let i = actualStart; i < actualEnd; i++) {
         changes.push({
+          objectType: getClassName(object),
           objectId: object.uuid,
           operation: 'update' as const,
           changeType: 'add' as const,
@@ -656,8 +722,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -679,8 +748,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -707,6 +779,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
+        objectType: getClassName(object),
         objectId: object.uuid,
         operation: 'update' as const,
         changeType: 'add' as const,
@@ -715,8 +788,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }));
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -746,8 +822,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -924,6 +1003,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         const oldValue = obj[privateKey][actualTargetIndex + i - actualStart];
         const newValue = obj[privateKey][i];
         changes.push({
+          objectType: getClassName(object),
           objectId: object.uuid,
           operation: 'update' as const,
           changeType: 'add' as const,
@@ -934,8 +1014,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       const beforeEvent: EventPayload = {
-        eventType: 'before.update',
-        timestamp: new Date(),
+        timing: 'before',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
@@ -957,8 +1040,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Emit after.update event and check for cancellation
       const afterEvent: EventPayload = {
-        eventType: 'after.update',
-        timestamp: new Date(),
+        timing: 'after',
+        operation: 'update',
+        objectType: getClassName(object),
+        property: propDes.qName,
+        timestamp: uniqueTimestamp(),
         objectId: object.uuid,
         changes: changes,
       };
