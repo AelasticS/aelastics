@@ -221,6 +221,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         changeType: 'add' as const,
         property: propDes.qName,
         newValue: newValue,
+        index:index,
       }));
     
       const beforeEvent: EventPayload = {
