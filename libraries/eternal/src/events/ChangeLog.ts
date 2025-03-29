@@ -1,4 +1,4 @@
-import { State } from "../State";
+import { State } from "../store/State";
 
   export interface ChangeLogEntry {
     objectType: string; // The TypeMeta qName of the object being modified (e.g., "Person")

@@ -1,6 +1,6 @@
-import { EternalStore } from "../EternalStore";
+import { EternalStore } from "../store/EternalStore";
 import { EternalObject } from "../handlers/InternalTypes";
-import { createStore, Store } from "../StoreFactory";
+import { createStore, Store } from "../store/StoreFactory";
 
 interface Person extends EternalObject {
     name: string;

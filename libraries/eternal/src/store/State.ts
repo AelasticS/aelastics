@@ -1,8 +1,8 @@
-import { ChangeLogEntry, hasChanges } from "./events/ChangeLog"
+import { ChangeLogEntry, hasChanges } from "../events/ChangeLog"
 import { EternalStore } from "./EternalStore"
-import { EternalObject } from "./handlers/InternalTypes"
+import { EternalObject } from "../handlers/InternalTypes"
 import { getClassName, isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
-import { EventPayload, Result } from "./events/EventTypes"
+import { EventPayload, Result } from "../events/EventTypes"
 
 /** Read-only interface for accessing immutable objects in a specific state */
 interface StateView {

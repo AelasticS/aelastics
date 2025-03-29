@@ -1,4 +1,4 @@
-import { createStore } from "../../StoreFactory";
+import { createStore } from "../../store/StoreFactory";
 import { initializeSchemaRegistry } from "../../meta/SchemaRegistry";
 import { SchemaRegistry } from "../../meta/InternalSchema";
 //import jsonSchemaWithArrays from "../data/jsonSchemaWithArrays";

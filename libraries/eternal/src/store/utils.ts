@@ -25,7 +25,7 @@ export function copyProperties(target: any, source: any) {
   }
 }
 
-import { EternalObject } from "./handlers/InternalTypes"
+import { EternalObject } from "../handlers/InternalTypes"
 
 export const isObjectFrozen = (obj: EternalObject) => {
   return obj.state !== undefined

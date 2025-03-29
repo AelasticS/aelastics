@@ -1,8 +1,8 @@
 import { EternalStore } from "./EternalStore";
-import { EternalObject } from "./handlers/InternalTypes";
+import { EternalObject } from "../handlers/InternalTypes";
 import { checkWriteAccess } from "./PropertyAccessors";
 import { makePrivatePropertyKey, removeElement } from "./utils";
-import { PropertyMeta } from "./meta/InternalSchema";
+import { PropertyMeta } from "../meta/InternalSchema";
 
 // type for inverse relationship updater
 export type inverseUpdater = (

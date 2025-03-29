@@ -1,9 +1,9 @@
 import { ObjectHandlers, createObservableObject } from "@aelastics/observables";
-import { State } from "../State";
+import { State } from "../store/State";
 import { PropertyMeta } from "../meta/InternalSchema";
-import { isUUIDReference } from "../utils"; // Import the utility function
+import { isUUIDReference } from "../store/utils"; // Import the utility function
 import { EternalObject } from "./InternalTypes";
-import { EternalStore } from "../EternalStore";
+import { EternalStore } from "../store/EternalStore";
 
 /** Creates typed object handlers to track UUID references and enforce immutability */
 export const createObjectHandlers = <T extends object>(

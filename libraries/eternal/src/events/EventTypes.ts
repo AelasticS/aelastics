@@ -1,4 +1,4 @@
-import { EternalStore } from '../EternalStore';
+import { EternalStore } from '../store/EternalStore';
 import { EternalObject } from '../handlers/InternalTypes';
 import { PropertyMeta } from '../meta/InternalSchema';
 import { ChangeLogEntry } from './ChangeLog';

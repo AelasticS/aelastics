@@ -1,15 +1,15 @@
 import { ArrayHandlers, createObservableArray } from "@aelastics/observables"
-import { getClassName, isUUIDReference, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../utils" // Import the utility function
-import { checkWriteAccess, checkReadAccess } from "../PropertyAccessors"
+import { getClassName, isUUIDReference, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../store/utils" // Import the utility function
+import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
 import { EternalObject } from "./InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
 import { PropertyMeta } from "../meta/InternalSchema"
-import { EternalStore } from "../EternalStore"
+import { EternalStore } from "../store/EternalStore"
 
-import * as invUpd from "../inverseUpdaters"
+import * as invUpd from "../store/inverseUpdaters"
 import { EventPayload, Result } from "../events/EventTypes"
 import { ChangeLogEntry } from "../events/ChangeLog"
-import { State } from "../State"
+import { State } from "../store/State"
 
 // Convert UUID to Object
 const toObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>

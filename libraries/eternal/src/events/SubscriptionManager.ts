@@ -1,4 +1,4 @@
-import { EternalStore } from "../EternalStore";
+import { EternalStore } from "../store/EternalStore";
 import { EventEmitter2 } from "eventemitter2";
 import { EventPayload, Result } from "./EventTypes";
 import { SubscriptionInterface, Timing, Operation, Type, Property } from "./SubscriptionInterface";

@@ -1,6 +1,6 @@
-import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "./meta/InternalSchema"
+import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "../meta/InternalSchema"
 import { EternalStore } from "./EternalStore"
-import { EternalClass, EternalObject } from "./handlers/InternalTypes"
+import { EternalClass, EternalObject } from "../handlers/InternalTypes"
 import {
   getClassName,
   isObjectFrozen,
@@ -12,8 +12,8 @@ import {
 } from "./utils"
 
 import * as invUpd from "./inverseUpdaters"
-import { EventPayload, Result } from "./events/EventTypes"
-import { ChangeLogEntry } from "./events/ChangeLog"
+import { EventPayload, Result } from "../events/EventTypes"
+import { ChangeLogEntry } from "../events/ChangeLog"
 
 // check access and return correct version of object
 

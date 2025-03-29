@@ -1,4 +1,4 @@
-import { EternalStore } from '../EternalStore';
+import { EternalStore } from '../store/EternalStore';
 import { TypeMeta } from '../meta/InternalSchema';
 import { EternalObject } from '../handlers/InternalTypes';
 

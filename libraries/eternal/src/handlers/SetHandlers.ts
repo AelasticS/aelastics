@@ -1,11 +1,11 @@
 import { createObservableSet, SetHandlers } from "@aelastics/observables"
 import { PropertyMeta } from "../meta/InternalSchema"
-import { getClassName, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../utils"
-import { checkReadAccess, checkWriteAccess } from "../PropertyAccessors"
+import { getClassName, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../store/utils"
+import { checkReadAccess, checkWriteAccess } from "../store/PropertyAccessors"
 import { ObservableExtra } from "../events/EventTypes"
-import { EternalStore } from "../EternalStore"
+import { EternalStore } from "../store/EternalStore"
 
-import * as invUpd from "../inverseUpdaters"
+import * as invUpd from "../store/inverseUpdaters"
 import { EventPayload, Result } from "../events/EventTypes"
 import { ChangeLogEntry } from "../events/ChangeLog"
 

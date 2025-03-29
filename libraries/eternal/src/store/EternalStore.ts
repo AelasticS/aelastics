@@ -4,15 +4,15 @@ import {
   generateJsonPatch,
   hasChanges,
   JSONPatchOperation,
-} from "./events/ChangeLog"
+} from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
-import { createImmutableArray } from "./handlers/ArrayHandlers"
-import { EternalClass, EternalObject } from "./handlers/InternalTypes"
-import { createImmutableMap } from "./handlers/MapHandlers"
-import { createImmutableSet } from "./handlers/SetHandlers"
-import { TypeMeta } from "./meta/InternalSchema"
+import { createImmutableArray } from "../handlers/ArrayHandlers"
+import { EternalClass, EternalObject } from "../handlers/InternalTypes"
+import { createImmutableMap } from "../handlers/MapHandlers"
+import { createImmutableSet } from "../handlers/SetHandlers"
+import { TypeMeta } from "../meta/InternalSchema"
 import { State } from "./State"
-import { SubscriptionManager } from "./events/SubscriptionManager"
+import { SubscriptionManager } from "../events/SubscriptionManager"
 import { randomUUID } from "crypto"
 import { makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 

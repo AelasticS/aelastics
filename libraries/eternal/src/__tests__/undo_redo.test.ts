@@ -1,5 +1,5 @@
 import { EternalObject } from "../handlers/InternalTypes";
-import { EternalStore } from "../EternalStore";
+import { EternalStore } from "../store/EternalStore";
 
 describe("Undo/Redo Functionality", () => {
     let store: EternalStore;

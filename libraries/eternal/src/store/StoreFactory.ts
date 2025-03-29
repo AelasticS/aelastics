@@ -1,8 +1,8 @@
 import { EternalStore, InternalRecipe } from "./EternalStore"
-import { EventPayload, Result } from "./events/EventTypes"
-import { Operation, Property, Timing, Type } from "./events/SubscriptionInterface"
-import { EternalObject } from "./handlers/InternalTypes"
-import { TypeMeta, TypeSchema } from "./meta/InternalSchema"
+import { EventPayload, Result } from "../events/EventTypes"
+import { Operation, Property, Timing, Type } from "../events/SubscriptionInterface"
+import { EternalObject } from "../handlers/InternalTypes"
+import { TypeMeta, TypeSchema } from "../meta/InternalSchema"
 
 /**
  * Interface representing a Store that manages objects and their states.

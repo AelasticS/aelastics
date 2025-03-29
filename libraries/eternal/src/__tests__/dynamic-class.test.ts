@@ -1,4 +1,4 @@
-import { EternalStore } from '../EternalStore';
+import { EternalStore } from '../store/EternalStore';
 import {UserSchema} from './exampleTypeSchema';
 
 describe('EternalStore', () => {
