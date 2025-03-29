@@ -12,7 +12,7 @@ export interface StoreObject {
     [key: string]: any;    // Allow additional properties with dynamic keys
 }
 
-export abstract class StoreSuperClass implements StoreObject {
+export abstract class __StoreSuperClass__ implements StoreObject {
     [key: string]: any;
     uuid: string = "";
     createdAt: number = 0;

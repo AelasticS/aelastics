@@ -7,7 +7,7 @@ import {
 } from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
-import { StoreSuperClass, StoreObject } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, StoreObject } from "../handlers/InternalTypes"
 import { createImmutableMap } from "../handlers/MapHandlers"
 import { createImmutableSet } from "../handlers/SetHandlers"
 import { TypeMeta } from "../meta/InternalSchema"
@@ -163,7 +163,7 @@ export class StoreClass {
     const currentState = this.getState()
 
     if (obj) {
-      if (!(obj instanceof StoreSuperClass)) {
+      if (!(obj instanceof __StoreSuperClass__)) {
         throw new Error("The provided object is not created or .");
       }
       // Versioning logic when an object is passed
@@ -241,7 +241,7 @@ export class StoreClass {
       ? superClass
       : typeMeta.extends
       ? this.createDynamicClass(this.metaInfo.get(typeMeta.extends)!, store)
-      : StoreSuperClass
+      : __StoreSuperClass__
     const DynamicClass = {
       [className]: class extends BaseClass {
         constructor() {

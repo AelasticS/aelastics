@@ -1,6 +1,6 @@
 import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "../meta/InternalSchema"
 import { StoreClass } from "./StoreClass"
-import { StoreSuperClass, StoreObject } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, StoreObject } from "../handlers/InternalTypes"
 import {
   getClassName,
   isObjectFrozen,
@@ -385,7 +385,7 @@ export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
   prototype.copyProps = function (newObj: any, currentPrototype: any) {
     // Recursively copy properties from the superclass
     const superClass = Object.getPrototypeOf(currentPrototype)
-    if (superClass !== StoreSuperClass.prototype && typeof superClass.copyProps === "function") {
+    if (superClass !== __StoreSuperClass__.prototype && typeof superClass.copyProps === "function") {
       superClass.copyProps.call(this, newObj, superClass) // Use this as the context
     }
     // Copy properties of the current type
