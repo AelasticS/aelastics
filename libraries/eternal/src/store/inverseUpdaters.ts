@@ -1,4 +1,4 @@
-import { EternalStore } from "./EternalStore";
+import { StoreClass } from "./EternalStore";
 import { StoreObject } from "../handlers/InternalTypes";
 import { checkWriteAccess } from "./PropertyAccessors";
 import { makePrivatePropertyKey, removeElement } from "./utils";
@@ -12,7 +12,7 @@ export type inverseUpdater = (
 ) => void 
 
 
-export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+export function array2one(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
     const key = propertyMeta.qName;
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
@@ -48,7 +48,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
     };
   }
 
-  export function array2array(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+  export function array2array(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
     const key = propertyMeta.qName;
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
@@ -78,7 +78,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
     };
   }
 
-  export function array2set(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+  export function array2set(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
     const key = propertyMeta.qName;
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
@@ -110,7 +110,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
     };
   }
 
-  export function array2map(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+  export function array2map(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
     const key = propertyMeta.qName;
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
@@ -142,7 +142,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
     };
   }
 
-    export function one2one(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function one2one(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -172,7 +172,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function one2array(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function one2array(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -202,7 +202,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function one2set(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function one2set(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -234,7 +234,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function one2map(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function one2map(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -266,7 +266,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function set2one(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function set2one(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -296,7 +296,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function set2array(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function set2array(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -326,7 +326,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function set2set(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function set2set(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -358,7 +358,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function set2map(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function set2map(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -391,7 +391,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function map2one(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function map2one(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -421,7 +421,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function map2array(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function map2array(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -451,7 +451,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function map2set(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function map2set(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
@@ -483,7 +483,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         };
     }
 
-    export function map2map(store: EternalStore, propertyMeta: PropertyMeta): inverseUpdater {
+    export function map2map(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
         const key = propertyMeta.qName;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);

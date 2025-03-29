@@ -1,5 +1,5 @@
 import { ChangeLogEntry, hasChanges } from "../events/ChangeLog"
-import { EternalStore } from "./EternalStore"
+import { StoreClass } from "./EternalStore"
 import { StoreObject } from "../handlers/InternalTypes"
 import { getClassName, isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
 import { EventPayload, Result } from "../events/EventTypes"
@@ -15,11 +15,11 @@ interface StateView {
 export class State implements StateView {
   public readonly timestamp: number // Track when this state was created
   private objectMap: Map<string, any> // Maps UUIDs to objects
-  private store: WeakRef<EternalStore> // Reference to the store that owns this state
+  private store: WeakRef<StoreClass> // Reference to the store that owns this state
   public index: number // Index of this state in the store's history
   private changeLog: ChangeLogEntry[] = [] // Stores tracked changes
 
-  constructor(store: EternalStore, previousState?: State) {
+  constructor(store: StoreClass, previousState?: State) {
     this.timestamp = uniqueTimestamp() // Assign a unique timestamp for each state
     this.store = new WeakRef(store)
     this.index = previousState ? previousState.index + 1 : 0

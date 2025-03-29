@@ -1,11 +1,11 @@
-import { EternalStore } from '../store/EternalStore';
+import { StoreClass } from '../store/EternalStore';
 import {UserSchema} from './exampleTypeSchema';
 
 describe('EternalStore', () => {
-  let store: EternalStore;
+  let store: StoreClass;
 
   beforeEach(() => {
-    store = new EternalStore(UserSchema.types);
+    store = new StoreClass(UserSchema.types);
   });
 
   it('should create a dynamic class with the correct name', () => {

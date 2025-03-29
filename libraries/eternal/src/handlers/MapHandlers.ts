@@ -2,7 +2,7 @@ import { getClassName, makePrivatePropertyKey, makeUpdateInverseKey, uniqueTimes
 import { createObservableMap, MapHandlers } from "@aelastics/observables"
 import { ObservableExtra } from "../events/EventTypes"
 import { checkReadAccess, checkWriteAccess } from "../store/PropertyAccessors"
-import { EternalStore } from "../store/EternalStore"
+import { StoreClass } from "../store/EternalStore"
 import { PropertyMeta } from "../meta/InternalSchema"
 
 import * as invUpd from "../store/inverseUpdaters"
@@ -10,11 +10,11 @@ import { ChangeLogEntry } from "../events/ChangeLog"
 import { EventPayload, Result } from "../events/EventTypes"
 
 // Convert value UUID to Object
-const toValueObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>
+const toValueObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
   propDes.itemType === "object" && item ? store.getObject(item) : item
 
 // Convert key UUID to Object
-const toKeyObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>
+const toKeyObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
   propDes.keyType === "object" && item ? store.getObject(item) : item
 
 // Convert value object to UUID if needed

@@ -2,7 +2,7 @@ import { EventPayload, Result } from "../events/EventTypes";
 import { Timing, Operation, Type, Property } from "../events/SubscriptionInterface";
 import { StoreObject } from "../handlers/InternalTypes";
 import { TypeMeta, TypeSchema } from "../meta/InternalSchema";
-import { EternalStore, InternalRecipe } from "./EternalStore";
+import { StoreClass, InternalRecipe } from "./EternalStore";
 import { Store } from "./StoreInterface";
 
 
@@ -18,7 +18,7 @@ export function createStore(
     throw new Error("meta information is required to create a store");
   }
   const types: Map<string, TypeMeta> = (metaInfo as TypeSchema).types || (metaInfo as Map<string, TypeMeta>);
-  const store = new EternalStore(types);
+  const store = new StoreClass(types);
 
   const publicAPI: Store = {
     createObject: (type) => store.createObject(type), 

@@ -3,14 +3,14 @@ import { PropertyMeta } from "../meta/InternalSchema"
 import { getClassName, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../store/utils"
 import { checkReadAccess, checkWriteAccess } from "../store/PropertyAccessors"
 import { ObservableExtra } from "../events/EventTypes"
-import { EternalStore } from "../store/EternalStore"
+import { StoreClass } from "../store/EternalStore"
 
 import * as invUpd from "../store/inverseUpdaters"
 import { EventPayload, Result } from "../events/EventTypes"
 import { ChangeLogEntry } from "../events/ChangeLog"
 
 // Convert UUID to Object
-const toObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>
+const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
   propDes.itemType === "object" && item ? store.getObject(item) : item
 
 // Convert object to UUID if needed

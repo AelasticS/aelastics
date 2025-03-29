@@ -4,7 +4,7 @@ import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
 import { StoreObject } from "./InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
 import { PropertyMeta } from "../meta/InternalSchema"
-import { EternalStore } from "../store/EternalStore"
+import { StoreClass } from "../store/EternalStore"
 
 import * as invUpd from "../store/inverseUpdaters"
 import { EventPayload, Result } from "../events/EventTypes"
@@ -12,11 +12,11 @@ import { ChangeLogEntry } from "../events/ChangeLog"
 import { State } from "../store/State"
 
 // Convert UUID to Object
-const toObject = (item: any, store: EternalStore, propDes: PropertyMeta) =>
+const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
   propDes.itemType === "object" && item ? store.getObject(item) : item
 
 /** Convert UUIDs to Objects */
-const mapToObjects = (items: any[], store: EternalStore, propDes: PropertyMeta): any[] =>
+const mapToObjects = (items: any[], store: StoreClass, propDes: PropertyMeta): any[] =>
   items.map((item) => toObject(item, store, propDes))
 
 // Convert object to UUID if needed

@@ -1,5 +1,5 @@
 import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "../meta/InternalSchema"
-import { EternalStore } from "./EternalStore"
+import { StoreClass } from "./EternalStore"
 import { StoreSuperClass, StoreObject } from "../handlers/InternalTypes"
 import {
   getClassName,
@@ -17,7 +17,7 @@ import { ChangeLogEntry } from "../events/ChangeLog"
 
 // check access and return correct version of object
 
-export function checkReadAccess(obj: StoreObject, store: EternalStore): StoreObject {
+export function checkReadAccess(obj: StoreObject, store: StoreClass): StoreObject {
   const state = store.getState()
   const isFrozen = isObjectFrozen(obj)
   const isInUpdateMode = store.isInUpdateMode()
@@ -46,7 +46,7 @@ export function checkReadAccess(obj: StoreObject, store: EternalStore): StoreObj
   return obj
 }
 
-export function checkWriteAccess(obj: StoreObject, store: EternalStore, key: string): StoreObject {
+export function checkWriteAccess(obj: StoreObject, store: StoreClass, key: string): StoreObject {
   // if not allowed update throw error
   if (isObjectFrozen(obj)) {
     throw new Error(`Cannot modify property "${key}" of the frozen object"`)
@@ -77,7 +77,7 @@ export function checkWriteAccess(obj: StoreObject, store: EternalStore, key: str
 }
 
 /** Adds optimized property accessors to a dynamically generated class prototype */
-export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
+export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: StoreClass) {
   const subscriptionManager = store.getSubscriptionManager()
 
   if (!subscriptionManager) {
@@ -408,7 +408,7 @@ export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
   }
 }
 
-function addDisconnectMethod(prototype: any, typeMeta: TypeMeta, store: EternalStore) {
+function addDisconnectMethod(prototype: any, typeMeta: TypeMeta, store: StoreClass) {
   const disconnectKey = makeDisconnectKey()
 
   // Precalculate properties that are references, including collections

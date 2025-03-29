@@ -1,4 +1,4 @@
-import { EternalStore } from '../store/EternalStore';
+import { StoreClass } from '../store/EternalStore';
 import { StoreObject } from '../handlers/InternalTypes';
 import { PropertyMeta } from '../meta/InternalSchema';
 import { ChangeLogEntry } from './ChangeLog';
@@ -31,7 +31,7 @@ export interface CancelTransactionError extends ErrorInfo {
 // extra data for observable creators
 
 export interface ObservableExtra {
-    store: EternalStore;
+    store: StoreClass;
     object: StoreObject;
     propDes: PropertyMeta;
 }

@@ -1,4 +1,4 @@
-import { EternalStore } from "./EternalStore"
+import { StoreClass } from "./EternalStore"
 import { EventPayload, Result } from "../events/EventTypes"
 import { Operation, Property, Timing, Type } from "../events/SubscriptionInterface"
 
@@ -102,7 +102,7 @@ export interface Store {
    * Retrieves the internal EternalStore instance.
    * @returns The internal EternalStore instance.
    */
-  getEternalStore(): EternalStore
+  getEternalStore(): StoreClass
 }
 
 

@@ -1,4 +1,4 @@
-import { EternalStore } from "../store/EternalStore";
+import { StoreClass } from "../store/EternalStore";
 import { EventEmitter2 } from "eventemitter2";
 import { EventPayload, Result } from "./EventTypes";
 import { SubscriptionInterface, Timing, Operation, Type, Property } from "./SubscriptionInterface";
@@ -10,7 +10,7 @@ export class SubscriptionManager implements SubscriptionInterface {
   private storeSubscriptions: Set<() => void> = new Set();
   private eventEmitter: EventEmitter2;
 
-  constructor(private readonly store: EternalStore) {
+  constructor(private readonly store: StoreClass) {
     this.eventEmitter = new EventEmitter2({
       wildcard: true,
       delimiter: ".",

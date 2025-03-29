@@ -1,4 +1,4 @@
-import { EternalStore } from '../store/EternalStore';
+import { StoreClass } from '../store/EternalStore';
 import { TypeMeta } from '../meta/InternalSchema';
 import { StoreObject } from '../handlers/InternalTypes';
 
@@ -35,11 +35,11 @@ const metaInfo = new Map<string, TypeMeta>([
 ]);
 
 describe('EternalStore Dynamic Class Creation', () => {
-  let store: EternalStore;
+  let store: StoreClass;
 
   beforeAll(() => {
     // Initialize EternalStore with metaInfo
-    store = new EternalStore(metaInfo);
+    store = new StoreClass(metaInfo);
   });
 
   it('should dynamically create a hierarchy of classes', () => {

@@ -1,4 +1,4 @@
-import { EternalStore } from "../store/EternalStore";
+import { StoreClass } from "../store/EternalStore";
 import { StoreObject } from "../handlers/InternalTypes";
 import { Store } from "../store/StoreInterface";
 import { createStore } from "../store/createStore";
@@ -10,7 +10,7 @@ interface Person extends StoreObject {
 }
 
 let store: Store;
-let eternalStore: EternalStore;
+let eternalStore: StoreClass;
 
 beforeEach(() => {
     store = createStore(new Map([

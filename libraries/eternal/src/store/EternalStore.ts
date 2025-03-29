@@ -18,7 +18,7 @@ import { makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
-export class EternalStore {
+export class StoreClass {
   private stateHistory: State[] = [] // Stores the history of states
   private subscriptionManager = new SubscriptionManager(this) // Create a subscription manager
   private currentStateIndex: number = -1 // Track active state index
@@ -231,7 +231,7 @@ export class EternalStore {
     }
   }
 
-  private createDynamicClass(typeMeta: TypeMeta, store: EternalStore) {
+  private createDynamicClass(typeMeta: TypeMeta, store: StoreClass) {
     const className = typeMeta.qName // Use the type name as the class name
     // TODO: support creation of subclasses recursively, so that order is not important
 

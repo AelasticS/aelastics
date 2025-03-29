@@ -3,7 +3,7 @@ import { State } from "../store/State";
 import { PropertyMeta } from "../meta/InternalSchema";
 import { isUUIDReference } from "../store/utils"; // Import the utility function
 import { StoreObject } from "./InternalTypes";
-import { EternalStore } from "../store/EternalStore";
+import { StoreClass } from "../store/EternalStore";
 
 /** Creates typed object handlers to track UUID references and enforce immutability */
 export const createObjectHandlers = <T extends object>(
@@ -48,7 +48,7 @@ export function createObservableEntity<T extends object>(
     return createObservableObject(obj, createObjectHandlers<T>(state, propertyMeta));
 }
 
-export function createVersionedProxy<T extends StoreObject>(store: EternalStore, uuid: string): T {
+export function createVersionedProxy<T extends StoreObject>(store: StoreClass, uuid: string): T {
     return new Proxy({} as T, {
         get(target, prop, receiver) {
             const latestObject = store.getState().getObject<T>(uuid);
