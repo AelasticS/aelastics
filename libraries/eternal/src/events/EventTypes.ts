@@ -1,4 +1,4 @@
-import { StoreClass } from '../store/EternalStore';
+import { StoreClass } from '../store/StoreClass';
 import { StoreObject } from '../handlers/InternalTypes';
 import { PropertyMeta } from '../meta/InternalSchema';
 import { ChangeLogEntry } from './ChangeLog';

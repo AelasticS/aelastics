@@ -3,7 +3,7 @@ import { State } from "../store/State";
 import { PropertyMeta } from "../meta/InternalSchema";
 import { isUUIDReference } from "../store/utils"; // Import the utility function
 import { StoreObject } from "./InternalTypes";
-import { StoreClass } from "../store/EternalStore";
+import { StoreClass } from "../store/StoreClass";
 
 /** Creates typed object handlers to track UUID references and enforce immutability */
 export const createObjectHandlers = <T extends object>(

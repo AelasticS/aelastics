@@ -3,7 +3,7 @@ import { PropertyMeta } from "../meta/InternalSchema"
 import { getClassName, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../store/utils"
 import { checkReadAccess, checkWriteAccess } from "../store/PropertyAccessors"
 import { ObservableExtra } from "../events/EventTypes"
-import { StoreClass } from "../store/EternalStore"
+import { StoreClass } from "../store/StoreClass"
 
 import * as invUpd from "../store/inverseUpdaters"
 import { EventPayload, Result } from "../events/EventTypes"

@@ -1,4 +1,4 @@
-import { StoreClass } from "./EternalStore"
+import { StoreClass } from "./StoreClass"
 import { EventPayload, Result } from "../events/EventTypes"
 import { Operation, Property, Timing, Type } from "../events/SubscriptionInterface"
 

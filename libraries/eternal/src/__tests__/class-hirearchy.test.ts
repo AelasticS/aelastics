@@ -1,4 +1,4 @@
-import { StoreClass } from '../store/EternalStore';
+import { StoreClass } from '../store/StoreClass';
 import { TypeMeta } from '../meta/InternalSchema';
 import { StoreObject } from '../handlers/InternalTypes';
 

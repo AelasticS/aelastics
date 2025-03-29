@@ -1,4 +1,4 @@
-import { StoreClass } from "./EternalStore";
+import { StoreClass } from "./StoreClass";
 import { StoreObject } from "../handlers/InternalTypes";
 import { checkWriteAccess } from "./PropertyAccessors";
 import { makePrivatePropertyKey, removeElement } from "./utils";

@@ -1,4 +1,4 @@
-import { StoreClass } from "../store/EternalStore";
+import { StoreClass } from "../store/StoreClass";
 import { StoreObject } from "../handlers/InternalTypes";
 import { Store } from "../store/StoreInterface";
 import { createStore } from "../store/createStore";

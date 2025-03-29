@@ -4,7 +4,7 @@ import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
 import { StoreObject } from "./InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
 import { PropertyMeta } from "../meta/InternalSchema"
-import { StoreClass } from "../store/EternalStore"
+import { StoreClass } from "../store/StoreClass"
 
 import * as invUpd from "../store/inverseUpdaters"
 import { EventPayload, Result } from "../events/EventTypes"

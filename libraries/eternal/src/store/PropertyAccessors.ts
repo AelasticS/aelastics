@@ -1,5 +1,5 @@
 import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "../meta/InternalSchema"
-import { StoreClass } from "./EternalStore"
+import { StoreClass } from "./StoreClass"
 import { StoreSuperClass, StoreObject } from "../handlers/InternalTypes"
 import {
   getClassName,

@@ -1,5 +1,5 @@
 import { ChangeLogEntry, hasChanges } from "../events/ChangeLog"
-import { StoreClass } from "./EternalStore"
+import { StoreClass } from "./StoreClass"
 import { StoreObject } from "../handlers/InternalTypes"
 import { getClassName, isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
 import { EventPayload, Result } from "../events/EventTypes"

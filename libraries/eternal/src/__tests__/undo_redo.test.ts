@@ -1,5 +1,5 @@
 import { StoreObject } from "../handlers/InternalTypes";
-import { StoreClass } from "../store/EternalStore";
+import { StoreClass } from "../store/StoreClass";
 
 describe("Undo/Redo Functionality", () => {
     let store: StoreClass;

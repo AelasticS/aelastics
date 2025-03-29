@@ -2,7 +2,7 @@ import { getClassName, makePrivatePropertyKey, makeUpdateInverseKey, uniqueTimes
 import { createObservableMap, MapHandlers } from "@aelastics/observables"
 import { ObservableExtra } from "../events/EventTypes"
 import { checkReadAccess, checkWriteAccess } from "../store/PropertyAccessors"
-import { StoreClass } from "../store/EternalStore"
+import { StoreClass } from "../store/StoreClass"
 import { PropertyMeta } from "../meta/InternalSchema"
 
 import * as invUpd from "../store/inverseUpdaters"
