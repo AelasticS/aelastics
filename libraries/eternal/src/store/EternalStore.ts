@@ -7,7 +7,7 @@ import {
 } from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
-import { EternalClass, EternalObject } from "../handlers/InternalTypes"
+import { StoreSuperClass, EternalObject } from "../handlers/InternalTypes"
 import { createImmutableMap } from "../handlers/MapHandlers"
 import { createImmutableSet } from "../handlers/SetHandlers"
 import { TypeMeta } from "../meta/InternalSchema"
@@ -163,7 +163,7 @@ export class EternalStore {
     const currentState = this.getState()
 
     if (obj) {
-      if (!(obj instanceof EternalClass)) {
+      if (!(obj instanceof StoreSuperClass)) {
         throw new Error("The provided object is not created or .");
       }
       // Versioning logic when an object is passed
@@ -241,7 +241,7 @@ export class EternalStore {
       ? superClass
       : typeMeta.extends
       ? this.createDynamicClass(this.metaInfo.get(typeMeta.extends)!, store)
-      : EternalClass
+      : StoreSuperClass
     const DynamicClass = {
       [className]: class extends BaseClass {
         constructor() {

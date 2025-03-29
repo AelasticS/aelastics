@@ -12,7 +12,7 @@ export interface EternalObject {
     [key: string]: any;    // Allow additional properties with dynamic keys
 }
 
-export abstract class EternalClass implements EternalObject {
+export abstract class StoreSuperClass implements EternalObject {
     [key: string]: any;
     uuid: string = "";
     createdAt: number = 0;
