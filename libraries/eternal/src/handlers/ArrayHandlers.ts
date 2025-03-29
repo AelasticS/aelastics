@@ -294,6 +294,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         changeType: 'remove' as const,
         property: propDes.qName,
         oldValue: item,
+        index: obj[privateKey].length - 1,
       }];
     
       const beforeEvent: EventPayload = {
@@ -362,6 +363,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         changeType: 'remove' as const,
         property: propDes.qName,
         oldValue: shiftedItem,
+        index: 0,
       }];
     
       const beforeEvent: EventPayload = {
@@ -430,6 +432,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         changeType: 'add' as const,
         property: propDes.qName,
         newValue: newValue,
+        index:index,
       }));
     
       const beforeEvent: EventPayload = {
@@ -505,6 +508,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
           changeType: 'remove' as const,
           property: propDes.qName,
           oldValue: oldValue,
+          index: start + index,
         })));
       }
       if (itemsUUIDs.length > 0) {
@@ -515,6 +519,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
           changeType: 'add' as const,
           property: propDes.qName,
           newValue: newValue,
+          index: start + index,
         })));
       }
     
@@ -719,6 +724,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
           property: propDes.qName,
           oldValue: obj[privateKey][i],
           newValue: itemsUUID,
+          index: i,
         });
       }
     
@@ -786,6 +792,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         changeType: 'add' as const,
         property: propDes.qName,
         newValue: newValue,
+        index: obj[privateKey].length + index,
       }));
     
       const beforeEvent: EventPayload = {
