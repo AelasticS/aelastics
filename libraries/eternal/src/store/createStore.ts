@@ -1,8 +1,7 @@
 import { EventPayload, Result } from "../events/EventTypes";
 import { Timing, Operation, Type, Property } from "../events/SubscriptionInterface";
-import { StoreObject } from "../handlers/InternalTypes";
 import { TypeMeta, TypeSchema } from "../meta/InternalSchema";
-import { StoreClass, InternalRecipe } from "./StoreClass";
+import { StoreClass } from "./StoreClass";
 import { Store } from "./StoreInterface";
 
 
