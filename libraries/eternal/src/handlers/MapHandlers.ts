@@ -1,6 +1,6 @@
 import { getClassName, makePrivatePropertyKey, makeUpdateInverseKey, uniqueTimestamp } from "../utils"
 import { createObservableMap, MapHandlers } from "@aelastics/observables"
-import { ObservableExtra } from "../types"
+import { ObservableExtra } from "../events/EventTypes"
 import { checkReadAccess, checkWriteAccess } from "../PropertyAccessors"
 import { EternalStore } from "../EternalStore"
 import { PropertyMeta } from "../meta/InternalSchema"

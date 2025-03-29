@@ -1,3 +1,6 @@
+import { EternalStore } from '../EternalStore';
+import { EternalObject } from '../handlers/InternalTypes';
+import { PropertyMeta } from '../meta/InternalSchema';
 import { ChangeLogEntry } from './ChangeLog';
 
 export type EventPayload = {
@@ -24,4 +27,11 @@ export type ErrorInfo = {
 export interface CancelTransactionError extends ErrorInfo {
   reason: string; // A detailed reason for why the transaction was canceled
   eventPayload: EventPayload; // The event payload that caused the cancellation
+}
+// extra data for observable creators
+
+export interface ObservableExtra {
+    store: EternalStore;
+    object: EternalObject;
+    propDes: PropertyMeta;
 }
