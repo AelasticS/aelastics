@@ -2,7 +2,7 @@ import { createStore } from "../../store/createStore"
 import { initializeSchemaRegistry } from "../../meta/SchemaRegistry"
 import { SchemaRegistry } from "../../meta/InternalSchema"
 import { SchemaDescription } from "../../meta/ExternalSchema"
-import { EternalObject } from "../../handlers/InternalTypes"
+import { StoreObject } from "../../handlers/InternalTypes"
 
 // import jsonSchemas from "../data/jsonSchemaWithArrays";
 
@@ -173,9 +173,9 @@ describe("Bidirectional Relationships with Sets", () => {
       a.books.add(book2)
     }, author)
 
-    book1 = store.getObject<Book>((book1 as unknown as EternalObject).uuid)!
-    book2 = store.getObject<Book>((book2 as unknown as EternalObject).uuid)!
-    author = store.getObject<Author>((author as unknown as EternalObject).uuid)!
+    book1 = store.getObject<Book>((book1 as unknown as StoreObject).uuid)!
+    book2 = store.getObject<Book>((book2 as unknown as StoreObject).uuid)!
+    author = store.getObject<Author>((author as unknown as StoreObject).uuid)!
 
     expect(author.books.has(book1)).toBe(true)
     expect(author.books.has(book2)).toBe(true)
@@ -193,15 +193,15 @@ describe("Bidirectional Relationships with Sets", () => {
       a.books.add(book2)
     }, author)
 
-    author = store.getObject<Author>((author as unknown as EternalObject).uuid)!
+    author = store.getObject<Author>((author as unknown as StoreObject).uuid)!
 
     store.updateObject((a) => {
       a.books.delete(book1)
     }, author)
 
-    book1 = store.getObject<Book>((book1 as unknown as EternalObject).uuid)!
-    book2 = store.getObject<Book>((book2 as unknown as EternalObject).uuid)!
-    author = store.getObject<Author>((author as unknown as EternalObject).uuid)!
+    book1 = store.getObject<Book>((book1 as unknown as StoreObject).uuid)!
+    book2 = store.getObject<Book>((book2 as unknown as StoreObject).uuid)!
+    author = store.getObject<Author>((author as unknown as StoreObject).uuid)!
 
     expect(author.books.has(book1)).toBe(false)
     expect(author.books.has(book2)).toBe(true)
@@ -219,9 +219,9 @@ test("Many-to-One: Adding Books to Publisher", () => {
         p.books.add(book2)
     }, publisher)
 
-    book1 = store.getObject<PublishedBook>((book1 as unknown as EternalObject).uuid)!
-    book2 = store.getObject<PublishedBook>((book2 as unknown as EternalObject).uuid)!
-    publisher = store.getObject<Publisher>((publisher as unknown as EternalObject).uuid)!
+    book1 = store.getObject<PublishedBook>((book1 as unknown as StoreObject).uuid)!
+    book2 = store.getObject<PublishedBook>((book2 as unknown as StoreObject).uuid)!
+    publisher = store.getObject<Publisher>((publisher as unknown as StoreObject).uuid)!
 
     expect(publisher.books.has(book1)).toBe(true)
     expect(publisher.books.has(book2)).toBe(true)
@@ -239,17 +239,17 @@ test("Many-to-One: Removing Books from Publisher", () => {
         p.books.add(book2)
     }, publisher)
 
-    book1 = store.getObject<PublishedBook>((book1 as unknown as EternalObject).uuid)!
-    book2 = store.getObject<PublishedBook>((book2 as unknown as EternalObject).uuid)!
-    publisher = store.getObject<Publisher>((publisher as unknown as EternalObject).uuid)!
+    book1 = store.getObject<PublishedBook>((book1 as unknown as StoreObject).uuid)!
+    book2 = store.getObject<PublishedBook>((book2 as unknown as StoreObject).uuid)!
+    publisher = store.getObject<Publisher>((publisher as unknown as StoreObject).uuid)!
 
     store.updateObject((p) => {
         p.books.delete(book1)
     }, publisher)
 
-    book1 = store.getObject<PublishedBook>((book1 as unknown as EternalObject).uuid)!
-    book2 = store.getObject<PublishedBook>((book2 as unknown as EternalObject).uuid)!
-    publisher = store.getObject<Publisher>((publisher as unknown as EternalObject).uuid)!
+    book1 = store.getObject<PublishedBook>((book1 as unknown as StoreObject).uuid)!
+    book2 = store.getObject<PublishedBook>((book2 as unknown as StoreObject).uuid)!
+    publisher = store.getObject<Publisher>((publisher as unknown as StoreObject).uuid)!
 
     expect(publisher.books.has(book1)).toBe(false)
     expect(publisher.books.has(book2)).toBe(true)
@@ -268,20 +268,20 @@ test("Many-to-Many: Adding Courses to Students", () => {
         s.courses.add(course2)
     }, student1)
 
-    course1 = store.getObject<Course>((course1 as unknown as EternalObject).uuid)!
-    course2 = store.getObject<Course>((course2 as unknown as EternalObject).uuid)!
-    student1 = store.getObject<Student>((student1 as unknown as EternalObject).uuid)!
-    student2 = store.getObject<Student>((student2 as unknown as EternalObject).uuid)!
+    course1 = store.getObject<Course>((course1 as unknown as StoreObject).uuid)!
+    course2 = store.getObject<Course>((course2 as unknown as StoreObject).uuid)!
+    student1 = store.getObject<Student>((student1 as unknown as StoreObject).uuid)!
+    student2 = store.getObject<Student>((student2 as unknown as StoreObject).uuid)!
 
     store.updateObject((s) => {
         s.courses.add(course1)
         s.courses.add(course2)
     }, student2)
 
-    course1 = store.getObject<Course>((course1 as unknown as EternalObject).uuid)!
-    course2 = store.getObject<Course>((course2 as unknown as EternalObject).uuid)!
-    student1 = store.getObject<Student>((student1 as unknown as EternalObject).uuid)!
-    student2 = store.getObject<Student>((student2 as unknown as EternalObject).uuid)!
+    course1 = store.getObject<Course>((course1 as unknown as StoreObject).uuid)!
+    course2 = store.getObject<Course>((course2 as unknown as StoreObject).uuid)!
+    student1 = store.getObject<Student>((student1 as unknown as StoreObject).uuid)!
+    student2 = store.getObject<Student>((student2 as unknown as StoreObject).uuid)!
 
     expect(student1.courses.has(course1)).toBe(true)
     expect(student1.courses.has(course2)).toBe(true)
@@ -304,29 +304,29 @@ test("Many-to-Many: Removing Courses from Students", () => {
         s.courses.add(course2)
     }, student1)
 
-    course1 = store.getObject<Course>((course1 as unknown as EternalObject).uuid)!
-    course2 = store.getObject<Course>((course2 as unknown as EternalObject).uuid)!
-    student1 = store.getObject<Student>((student1 as unknown as EternalObject).uuid)!
-    student2 = store.getObject<Student>((student2 as unknown as EternalObject).uuid)!
+    course1 = store.getObject<Course>((course1 as unknown as StoreObject).uuid)!
+    course2 = store.getObject<Course>((course2 as unknown as StoreObject).uuid)!
+    student1 = store.getObject<Student>((student1 as unknown as StoreObject).uuid)!
+    student2 = store.getObject<Student>((student2 as unknown as StoreObject).uuid)!
     
     store.updateObject((s) => {
         s.courses.add(course1)
         s.courses.add(course2)
     }, student2)
 
-    course1 = store.getObject<Course>((course1 as unknown as EternalObject).uuid)!
-    course2 = store.getObject<Course>((course2 as unknown as EternalObject).uuid)!
-    student1 = store.getObject<Student>((student1 as unknown as EternalObject).uuid)!
-    student2 = store.getObject<Student>((student2 as unknown as EternalObject).uuid)!
+    course1 = store.getObject<Course>((course1 as unknown as StoreObject).uuid)!
+    course2 = store.getObject<Course>((course2 as unknown as StoreObject).uuid)!
+    student1 = store.getObject<Student>((student1 as unknown as StoreObject).uuid)!
+    student2 = store.getObject<Student>((student2 as unknown as StoreObject).uuid)!
 
     store.updateObject((s) => {
         s.courses.delete(course1)
     }, student1)
 
-    course1 = store.getObject<Course>((course1 as unknown as EternalObject).uuid)!
-    course2 = store.getObject<Course>((course2 as unknown as EternalObject).uuid)!
-    student1 = store.getObject<Student>((student1 as unknown as EternalObject).uuid)!
-    student2 = store.getObject<Student>((student2 as unknown as EternalObject).uuid)!
+    course1 = store.getObject<Course>((course1 as unknown as StoreObject).uuid)!
+    course2 = store.getObject<Course>((course2 as unknown as StoreObject).uuid)!
+    student1 = store.getObject<Student>((student1 as unknown as StoreObject).uuid)!
+    student2 = store.getObject<Student>((student2 as unknown as StoreObject).uuid)!
 
     expect(student1.courses.has(course1)).toBe(false)
     expect(student1.courses.has(course2)).toBe(true)

@@ -1,6 +1,6 @@
 import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "../meta/InternalSchema"
 import { EternalStore } from "./EternalStore"
-import { StoreSuperClass, EternalObject } from "../handlers/InternalTypes"
+import { StoreSuperClass, StoreObject } from "../handlers/InternalTypes"
 import {
   getClassName,
   isObjectFrozen,
@@ -17,7 +17,7 @@ import { ChangeLogEntry } from "../events/ChangeLog"
 
 // check access and return correct version of object
 
-export function checkReadAccess(obj: EternalObject, store: EternalStore): EternalObject {
+export function checkReadAccess(obj: StoreObject, store: EternalStore): StoreObject {
   const state = store.getState()
   const isFrozen = isObjectFrozen(obj)
   const isInUpdateMode = store.isInUpdateMode()
@@ -46,7 +46,7 @@ export function checkReadAccess(obj: EternalObject, store: EternalStore): Eterna
   return obj
 }
 
-export function checkWriteAccess(obj: EternalObject, store: EternalStore, key: string): EternalObject {
+export function checkWriteAccess(obj: StoreObject, store: EternalStore, key: string): StoreObject {
   // if not allowed update throw error
   if (isObjectFrozen(obj)) {
     throw new Error(`Cannot modify property "${key}" of the frozen object"`)
@@ -101,9 +101,9 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     }
 
     // Generate optimized getter
-    let getter: (this: EternalObject) => any
+    let getter: (this: StoreObject) => any
     if (propertyMeta.type === "object") {
-      getter = function (this: EternalObject) {
+      getter = function (this: StoreObject) {
         let obj = checkReadAccess(this, store)
         return store.getObject(obj[privateKey]) // Directly resolve UUIDs
       }
@@ -115,7 +115,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     }
 
     // Generate optimized setter
-    let setter: (this: EternalObject, value: any) => void
+    let setter: (this: StoreObject, value: any) => void
 
     // TODO add to changelog
 
@@ -130,7 +130,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         throw new Error(`Cannot directly assign to collection property "${key}" of an object"`)
       }
     } else if (propertyMeta.type === "object") {
-      setter = function (this: EternalObject, value: EternalObject | undefined) {
+      setter = function (this: StoreObject, value: StoreObject | undefined) {
         // Validate that the value is an object, undefined, or null, but not an array or any other special object
         if (value !== null && value !== undefined && (typeof value !== "object" || Array.isArray(value))) {
           throw new Error(`Invalid value for property "${key}". Expected an object, null, or undefined.`);
@@ -212,7 +212,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
       }
     } else {
       // primitive type
-      setter = function (this: EternalObject, value: any) {
+      setter = function (this: StoreObject, value: any) {
         // Validate that the value has the correct primitive type
         const expectedType = propertyMeta.type
         const actualType = typeof value
@@ -425,7 +425,7 @@ function addDisconnectMethod(prototype: any, typeMeta: TypeMeta, store: EternalS
   //}
 
   prototype[disconnectKey] = function () {
-    const obj = this as EternalObject
+    const obj = this as StoreObject
 
     // Call disconnect method from superclass recursively
     const superProto = Object.getPrototypeOf(prototype)

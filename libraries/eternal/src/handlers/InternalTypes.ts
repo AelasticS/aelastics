@@ -2,7 +2,7 @@ import { State } from "../store/State";
 import { isObjectFrozen } from "../store/utils";
 
 // src/handlers/InternalTypes.ts (or MetaDefinitions.ts)
-export interface EternalObject {
+export interface StoreObject {
     uuid: string;          // Unique identifier for the object
     createdAt: number;     // Timestamp when the object was created
     nextVersion?: WeakRef<any>; // Weak reference to the next version in state history
@@ -12,13 +12,13 @@ export interface EternalObject {
     [key: string]: any;    // Allow additional properties with dynamic keys
 }
 
-export abstract class StoreSuperClass implements EternalObject {
+export abstract class StoreSuperClass implements StoreObject {
     [key: string]: any;
     uuid: string = "";
     createdAt: number = 0;
     nextVersion?: WeakRef<any> | undefined;
     
-    public clone(frozenToState?:State): EternalObject {
+    public clone(frozenToState?:State): StoreObject {
         // check if object is frozen
         if (isObjectFrozen(this))
             throw new Error("Cannot clone a frozen object");

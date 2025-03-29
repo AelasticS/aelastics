@@ -3,7 +3,7 @@ import { EventEmitter2 } from "eventemitter2";
 import { EventPayload, Result } from "./EventTypes";
 import { SubscriptionInterface, Timing, Operation, Type, Property } from "./SubscriptionInterface";
 import { ChangeLogEntry } from "./ChangeLog";
-import { EternalObject } from "../handlers/InternalTypes";
+import { StoreObject } from "../handlers/InternalTypes";
 
 export class SubscriptionManager implements SubscriptionInterface {
   private objectSubscriptions: Map<string, Set<(updatedObject: any) => void>> = new Map();
@@ -19,7 +19,7 @@ export class SubscriptionManager implements SubscriptionInterface {
 
   /** Subscribes a callback to be notified when the given object is updated */
   public subscribeToObject<T extends object>(object: T, listener: (updatedObject: T) => void): () => void {
-    const objectId = (object as EternalObject).uuid;
+    const objectId = (object as StoreObject).uuid;
     if (!objectId) {
       throw new Error("Object does not have a UUID");
     }

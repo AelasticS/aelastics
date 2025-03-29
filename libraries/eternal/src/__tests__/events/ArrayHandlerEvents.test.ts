@@ -2,7 +2,7 @@ import { createStore } from "../../store/createStore";
 import { initializeSchemaRegistry } from "../../meta/SchemaRegistry";
 import { SchemaRegistry } from "../../meta/InternalSchema";
 import { SchemaDescription } from "../../meta/ExternalSchema";
-import { EternalObject } from "../../handlers/InternalTypes";
+import { StoreObject } from "../../handlers/InternalTypes";
 import { EventPayload, Result } from "../../events/EventTypes";
 import { getEventPattern } from "../../events/SubscriptionManager";
 
@@ -34,7 +34,7 @@ interface SimpleArrayType {
 
 describe("ArrayHandler Events", () => {
   let store: ReturnType<typeof createStore>;
-  let simpleArrayObject: EternalObject;
+  let simpleArrayObject: StoreObject;
 
   beforeEach(() => {
     // Initialize the schema registry and store
@@ -42,10 +42,10 @@ describe("ArrayHandler Events", () => {
     store = createStore(schemaRegistry.schemas.get("/test")!);
 
     // Create an object of type SimpleArrayType
-    simpleArrayObject = store.createObject("SimpleArrayType") as EternalObject;
+    simpleArrayObject = store.createObject("SimpleArrayType") as StoreObject;
 
     // Retrieve the latest version of the object
-    simpleArrayObject = store.getObject((simpleArrayObject as EternalObject).uuid)!;
+    simpleArrayObject = store.getObject((simpleArrayObject as StoreObject).uuid)!;
   });
 
   test("should emit events and track changes for push operation on array of simple values", () => {
@@ -383,7 +383,7 @@ const schemas2: SchemaDescription[] = [
   ];
 describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () => {
     let store: ReturnType<typeof createStore>;
-    let objectArrayObject: EternalObject;
+    let objectArrayObject: StoreObject;
   
 
     beforeEach(() => {
@@ -392,18 +392,18 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
       store = createStore(schemaRegistry.schemas.get("/test")!);
   
       // Create an object of type ObjectArrayType
-      objectArrayObject = store.createObject("ObjectArrayType") as EternalObject;
+      objectArrayObject = store.createObject("ObjectArrayType") as StoreObject;
   
       // Retrieve the latest version of the object
-      objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
+      objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
     });
   
     test("should emit events and update inverse properties for push operation on array of objects", () => {
         // Create a related object
-        let relatedObject = store.createObject("RelatedObject") as EternalObject;
+        let relatedObject = store.createObject("RelatedObject") as StoreObject;
     
         // Get the UUID of the related object
-        const relatedObjectUUID = (relatedObject as EternalObject).uuid;
+        const relatedObjectUUID = (relatedObject as StoreObject).uuid;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -435,8 +435,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the variables with their latest versions
-        objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
-        relatedObject = store.getObject((relatedObject as EternalObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+        relatedObject = store.getObject((relatedObject as StoreObject).uuid)!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject]);
@@ -447,7 +447,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for pop operation on array of objects", () => {
         // Create a related object and add it to the array
-        let relatedObject = store.createObject("RelatedObject") as EternalObject;
+        let relatedObject = store.createObject("RelatedObject") as StoreObject;
     
         // Add the related object to the array
         objectArrayObject = store.updateObject((obj) => {
@@ -455,11 +455,11 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
-        relatedObject = store.getObject((relatedObject as EternalObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+        relatedObject = store.getObject((relatedObject as StoreObject).uuid)!;
     
         // Get the UUID of the related object
-        const relatedObjectUUID = (relatedObject as EternalObject).uuid;
+        const relatedObjectUUID = (relatedObject as StoreObject).uuid;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -491,8 +491,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
-        relatedObject = store.getObject((relatedObject as EternalObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+        relatedObject = store.getObject((relatedObject as StoreObject).uuid)!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([]);
@@ -503,8 +503,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for splice operation on array of objects", () => {
         // Create related objects and add them to the array
-        let relatedObject1 = store.createObject("RelatedObject") as EternalObject;
-        let relatedObject2 = store.createObject("RelatedObject") as EternalObject;
+        let relatedObject1 = store.createObject("RelatedObject") as StoreObject;
+        let relatedObject2 = store.createObject("RelatedObject") as StoreObject;
     
         // Add the related objects to the array
         objectArrayObject = store.updateObject((obj) => {
@@ -512,13 +512,13 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
-        relatedObject1 = store.getObject((relatedObject1 as EternalObject).uuid)!;
-        relatedObject2 = store.getObject((relatedObject2 as EternalObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+        relatedObject1 = store.getObject((relatedObject1 as StoreObject).uuid)!;
+        relatedObject2 = store.getObject((relatedObject2 as StoreObject).uuid)!;
     
         // Get the UUIDs of the related objects
-        const relatedObject1UUID = (relatedObject1 as EternalObject).uuid;
-        const relatedObject2UUID = (relatedObject2 as EternalObject).uuid;
+        const relatedObject1UUID = (relatedObject1 as StoreObject).uuid;
+        const relatedObject2UUID = (relatedObject2 as StoreObject).uuid;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -550,8 +550,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
-        relatedObject1 = store.getObject((relatedObject1 as EternalObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+        relatedObject1 = store.getObject((relatedObject1 as StoreObject).uuid)!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject2]);
@@ -562,7 +562,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for unshift operation on array of objects", () => {
         // Create a related object
-        let relatedObject = store.createObject("RelatedObject") as EternalObject;
+        let relatedObject = store.createObject("RelatedObject") as StoreObject;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -570,7 +570,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
           expect(getEventPattern(event)).toBe("before.update.ObjectArrayType.items");
           expect(event.changes?.[0].changeType).toBe("add");
           expect(event.changes?.[0].index).toBe(0); // First index
-          expect(event.changes?.[0].newValue).toBe((relatedObject as EternalObject).uuid); // New value is UUID
+          expect(event.changes?.[0].newValue).toBe((relatedObject as StoreObject).uuid); // New value is UUID
           return { success: true }; // Simulate a successful result
         });
     
@@ -580,7 +580,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
           expect(getEventPattern(event)).toBe("after.update.ObjectArrayType.items");
           expect(event.changes?.[0].changeType).toBe("add");
           expect(event.changes?.[0].index).toBe(0); // First index
-          expect(event.changes?.[0].newValue).toBe((relatedObject as EternalObject).uuid); // New value is UUID
+          expect(event.changes?.[0].newValue).toBe((relatedObject as StoreObject).uuid); // New value is UUID
           return { success: true }; // Simulate a successful result
         });
     
@@ -594,8 +594,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
-        relatedObject = store.getObject((relatedObject as EternalObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+        relatedObject = store.getObject((relatedObject as StoreObject).uuid)!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject]);
@@ -606,8 +606,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for shift operation on array of objects", () => {
         // Create related objects and add them to the array
-        let relatedObject1 = store.createObject("RelatedObject") as EternalObject;
-        let relatedObject2 = store.createObject("RelatedObject") as EternalObject;
+        let relatedObject1 = store.createObject("RelatedObject") as StoreObject;
+        let relatedObject2 = store.createObject("RelatedObject") as StoreObject;
     
         // Add the related objects to the array
         objectArrayObject = store.updateObject((obj) => {
@@ -615,12 +615,12 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
-        relatedObject1 = store.getObject((relatedObject1 as EternalObject).uuid)!;
-        relatedObject2 = store.getObject((relatedObject2 as EternalObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+        relatedObject1 = store.getObject((relatedObject1 as StoreObject).uuid)!;
+        relatedObject2 = store.getObject((relatedObject2 as StoreObject).uuid)!;
     
         // Get the UUID of the first related object
-        const relatedObject1UUID = (relatedObject1 as EternalObject).uuid;
+        const relatedObject1UUID = (relatedObject1 as StoreObject).uuid;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -652,8 +652,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as EternalObject).uuid)!;
-        relatedObject1 = store.getObject((relatedObject1 as EternalObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+        relatedObject1 = store.getObject((relatedObject1 as StoreObject).uuid)!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject2]);

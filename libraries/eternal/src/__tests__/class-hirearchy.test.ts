@@ -1,6 +1,6 @@
 import { EternalStore } from '../store/EternalStore';
 import { TypeMeta } from '../meta/InternalSchema';
-import { EternalObject } from '../handlers/InternalTypes';
+import { StoreObject } from '../handlers/InternalTypes';
 
 // Define type metadata for the hierarchy
 const typeMetaA: TypeMeta = {
@@ -44,9 +44,9 @@ describe('EternalStore Dynamic Class Creation', () => {
 
   it('should dynamically create a hierarchy of classes', () => {
     // Create objects of each type
-    const objA = store.createObject<EternalObject>('TypeA');
-    const objB = store.createObject<EternalObject>('TypeB');
-    const objC = store.createObject<EternalObject>('TypeC');
+    const objA = store.createObject<StoreObject>('TypeA');
+    const objB = store.createObject<StoreObject>('TypeB');
+    const objC = store.createObject<StoreObject>('TypeC');
 
     // Check if objects are instances of their respective classes
     expect(objA).toBeInstanceOf(store.getClassByName('TypeA'));
@@ -69,7 +69,7 @@ describe('EternalStore Dynamic Class Creation', () => {
 
   it('should clone objects correctly in a hierarchy of classes', () => {
     // Create an object of type 'TypeC'
-    let objC = store.createObject<EternalObject>('TypeC');
+    let objC = store.createObject<StoreObject>('TypeC');
     objC = store.produce((o) => {
       o.propA = 'valueA';
       o.propB = 42;

@@ -25,13 +25,13 @@ export function copyProperties(target: any, source: any) {
   }
 }
 
-import { EternalObject } from "../handlers/InternalTypes"
+import { StoreObject } from "../handlers/InternalTypes"
 
-export const isObjectFrozen = (obj: EternalObject) => {
+export const isObjectFrozen = (obj: StoreObject) => {
   return obj.state !== undefined
 }
 
-export function getClassName(obj: EternalObject): string {
+export function getClassName(obj: StoreObject): string {
   return obj.constructor.name;
 }
 

@@ -2,7 +2,7 @@ import { ObjectHandlers, createObservableObject } from "@aelastics/observables";
 import { State } from "../store/State";
 import { PropertyMeta } from "../meta/InternalSchema";
 import { isUUIDReference } from "../store/utils"; // Import the utility function
-import { EternalObject } from "./InternalTypes";
+import { StoreObject } from "./InternalTypes";
 import { EternalStore } from "../store/EternalStore";
 
 /** Creates typed object handlers to track UUID references and enforce immutability */
@@ -48,7 +48,7 @@ export function createObservableEntity<T extends object>(
     return createObservableObject(obj, createObjectHandlers<T>(state, propertyMeta));
 }
 
-export function createVersionedProxy<T extends EternalObject>(store: EternalStore, uuid: string): T {
+export function createVersionedProxy<T extends StoreObject>(store: EternalStore, uuid: string): T {
     return new Proxy({} as T, {
         get(target, prop, receiver) {
             const latestObject = store.getState().getObject<T>(uuid);

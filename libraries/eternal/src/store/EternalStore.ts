@@ -7,7 +7,7 @@ import {
 } from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
-import { StoreSuperClass, EternalObject } from "../handlers/InternalTypes"
+import { StoreSuperClass, StoreObject } from "../handlers/InternalTypes"
 import { createImmutableMap } from "../handlers/MapHandlers"
 import { createImmutableSet } from "../handlers/SetHandlers"
 import { TypeMeta } from "../meta/InternalSchema"
@@ -16,7 +16,7 @@ import { SubscriptionManager } from "../events/SubscriptionManager"
 import { randomUUID } from "crypto"
 import { makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 
-export type InternalRecipe = ((obj: EternalObject) => void) | (() => any)
+export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
 export class EternalStore {
   private stateHistory: State[] = [] // Stores the history of states
@@ -25,8 +25,8 @@ export class EternalStore {
   private inUpdateMode: boolean = false // Flag to indicate if the store is in update mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
 
-  private accessedObjects: Set<EternalObject> = new Set() // Track accessed object
-  private versionedObjects: EternalObject[] = [] // Track versioned objects
+  private accessedObjects: Set<StoreObject> = new Set() // Track accessed object
+  private versionedObjects: StoreObject[] = [] // Track versioned objects
 
   private metaInfo: Map<string, TypeMeta>
 
@@ -168,7 +168,7 @@ export class EternalStore {
       }
       // Versioning logic when an object is passed
       // Use State's method to create a new object version
-      let newObj = obj as EternalObject
+      let newObj = obj as StoreObject
       try {
         recipe(newObj as T) // Apply modifications
         // Track changed objects
@@ -207,13 +207,13 @@ export class EternalStore {
   }
 
   // Track changed objects
-  public trackVersionedObject(obj: EternalObject): void {
+  public trackVersionedObject(obj: StoreObject): void {
     if (!this.versionedObjects.includes(obj)) {
       this.versionedObjects.push(obj)
     }
   }
-  private markVersionedObjects(): EternalObject[] {
-    const versionedObjects: EternalObject[] = []
+  private markVersionedObjects(): StoreObject[] {
+    const versionedObjects: StoreObject[] = []
 
     for (const obj of this.accessedObjects) {
       if (hasChanges(this.getChangeLog(), obj["uuid"])) {
@@ -225,7 +225,7 @@ export class EternalStore {
     return versionedObjects
   }
 
-  public trackAccess(obj: EternalObject): void {
+  public trackAccess(obj: StoreObject): void {
     if (this.inUpdateMode) {
       this.accessedObjects.add(obj)
     }

@@ -1,6 +1,6 @@
 import { ChangeLogEntry, hasChanges } from "../events/ChangeLog"
 import { EternalStore } from "./EternalStore"
-import { EternalObject } from "../handlers/InternalTypes"
+import { StoreObject } from "../handlers/InternalTypes"
 import { getClassName, isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
 import { EventPayload, Result } from "../events/EventTypes"
 
@@ -27,14 +27,14 @@ export class State implements StateView {
   }
 
   // Create a new object version
-  public createNewVersion<T extends EternalObject>(obj: T, trackForNotification = true): T {
+  public createNewVersion<T extends StoreObject>(obj: T, trackForNotification = true): T {
     // Check if the object is fixed
     if (isObjectFrozen(obj)) {
       throw new Error(`Cannot make a new version from a frozen object.`)
     }
     // check if object is from old state, then make a new version
     if (obj.createdAt < this.timestamp) {
-      const newInstance: EternalObject = obj.clone()
+      const newInstance: StoreObject = obj.clone()
       newInstance.createdAt = this.timestamp // Copy timestamp from state
       // Track the new version
       obj.nextVersion = new WeakRef(newInstance)
@@ -49,13 +49,13 @@ export class State implements StateView {
     return obj
   }
   // Track an object for versioning
-  public trackVersionedObject(obj: EternalObject): void {
+  public trackVersionedObject(obj: StoreObject): void {
     this.store?.deref()?.trackVersionedObject(obj)
   }
 
   /** Retrieves an object from this specific state */
   public getObject<T>(uuid: string, frozen = false): T | undefined {
-    const obj = this.getDynamicObject<EternalObject>(uuid)
+    const obj = this.getDynamicObject<StoreObject>(uuid)
     if (!obj) return undefined
     // If requested, return a frozen object
     if (frozen) {
@@ -80,13 +80,13 @@ export class State implements StateView {
     return object // Returns the object without fixing it
   }
 
-  private createFrozenStateObject<T extends EternalObject>(obj: T): T {
+  private createFrozenStateObject<T extends StoreObject>(obj: T): T {
     // Create a shallow copy of the object
     const frozenObject = obj.clone(this)
     return frozenObject as T
   }
 
-  public isObjectFrozenInState(obj: EternalObject): boolean {
+  public isObjectFrozenInState(obj: StoreObject): boolean {
     return obj.state === this
   }
 
@@ -95,7 +95,7 @@ export class State implements StateView {
    * - Assigns a UUID if missing.
    * - Tracks insertion in the change log.
    */
-  public addObject<T extends EternalObject>(obj: T, reason: "created" | "imported" | "versioned"): void {
+  public addObject<T extends StoreObject>(obj: T, reason: "created" | "imported" | "versioned"): void {
     if (reason === "created") {
       const subscriptionManager = this.store.deref()?.getSubscriptionManager()
       if (!subscriptionManager) {
@@ -227,18 +227,18 @@ export class State implements StateView {
   }
 
   // Check if an object is older then this state
-  public isFromOlderState(obj: EternalObject): boolean {
+  public isFromOlderState(obj: StoreObject): boolean {
     // If object's timestamp is older than the current state
     return obj.createdAt < this.timestamp
   }
 
-  public isCreatedInState(obj: EternalObject): boolean {
+  public isCreatedInState(obj: StoreObject): boolean {
     // If object's timestamp is equal the current state
     return obj.createdAt === this.timestamp
   }
 
   // Check if an object is member of this state
-  public isMemberOfState(obj: EternalObject): boolean {
+  public isMemberOfState(obj: StoreObject): boolean {
     const member = this.objectMap.get(obj.uuid)
     return member === obj
   }

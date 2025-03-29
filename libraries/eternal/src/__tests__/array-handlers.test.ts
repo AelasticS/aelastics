@@ -1,9 +1,9 @@
 import { EternalStore } from "../store/EternalStore";
-import { EternalObject } from "../handlers/InternalTypes";
+import { StoreObject } from "../handlers/InternalTypes";
 import { Store } from "../store/StoreInterface";
 import { createStore } from "../store/createStore";
 
-interface Person extends EternalObject {
+interface Person extends StoreObject {
     name: string;
     age: number;
     tags: string[]
@@ -459,7 +459,7 @@ test("array findIndex operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2");
         return obj;
@@ -479,7 +479,7 @@ test("array map operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2");
         return obj;
@@ -499,7 +499,7 @@ test("array filter operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -520,7 +520,7 @@ test("array reduce operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -539,7 +539,7 @@ test("array reduceRight operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -557,7 +557,7 @@ test("array every operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -577,7 +577,7 @@ test("array some operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -597,7 +597,7 @@ test("array forEach operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -619,7 +619,7 @@ test("Undo/Redo on array flatMap operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2");
         return obj;
@@ -640,7 +640,7 @@ test("Undo/Redo on array flat operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push(["tag1"], ["tag2"], ["tag3"]);
         return obj;
@@ -660,7 +660,7 @@ test("Undo/Redo on array copyWithin operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -689,7 +689,7 @@ test("Undo/Redo on array entries operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -710,7 +710,7 @@ test("Array.keys operation", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -732,7 +732,7 @@ test("values() method", () => {
     // create object
     let user: Person = store.createObject("User");
     // initialize object
-    user = store.updateObject((obj: EternalObject) => {
+    user = store.updateObject((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;

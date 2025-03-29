@@ -1,4 +1,4 @@
-import { EternalObject } from "../handlers/InternalTypes";
+import { StoreObject } from "../handlers/InternalTypes";
 import { EternalStore } from "../store/EternalStore";
 
 describe("Undo/Redo Functionality", () => {
@@ -17,18 +17,18 @@ describe("Undo/Redo Functionality", () => {
         ]));
     });
 
-    interface Person extends EternalObject { uuid: string; name: string; age: number; id: string }
+    interface Person extends StoreObject { uuid: string; name: string; age: number; id: string }
 
 
     test("Undo should revert to the previous state", () => {
         let userAlice: Person = store.createObject<Person>("User");
 
-        userAlice = store.produce((user: EternalObject) => {
+        userAlice = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Alice";
         }, userAlice)!;
 
-        store.produce((user: EternalObject) => {
+        store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Bob";
         }, userAlice);
@@ -43,12 +43,12 @@ describe("Undo/Redo Functionality", () => {
     test("Redo should reapply a reverted state", () => {
         let user: Person = store.createObject<Person>("User");
 
-        user = store.produce((user: EternalObject) => {
+        user = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Alice";
         }, user)!;
 
-        user = store.produce((user: EternalObject) => {
+        user = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Bob";
         }, user)!;
@@ -63,12 +63,12 @@ describe("Undo/Redo Functionality", () => {
     test("New changes after undo should clear redo history", () => {
         let user: Person = store.createObject<Person>("User");
 
-        user = store.produce((user: EternalObject) => {
+        user = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Alice";
         }, user)!;
 
-        user = store.produce((user: EternalObject) => {
+        user = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Bob";
         }, user)!;
@@ -76,7 +76,7 @@ describe("Undo/Redo Functionality", () => {
         store.undo();
         expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Alice");
 
-        user = store.produce((user: EternalObject) => {
+        user = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Charlie";
         }, user)!;
@@ -93,12 +93,12 @@ describe("Undo/Redo Functionality", () => {
     test("Redo at latest state should do nothing", () => {
         let user: Person = store.createObject<Person>("User");
 
-        user = store.produce((user: EternalObject) => {
+        user = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Alice";
         }, user)!;
 
-        user = store.produce((user: EternalObject) => {
+        user = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Bob";
         }, user)!;
@@ -107,7 +107,7 @@ describe("Undo/Redo Functionality", () => {
     });
     test("Undo/Redo on array push operation", () => {
         let user: Person = store.createObject<Person>("User");
-        user = store.produce((obj: EternalObject) => {
+        user = store.produce((obj: StoreObject) => {
             obj.name = "Alice";
         }, user)!;
 

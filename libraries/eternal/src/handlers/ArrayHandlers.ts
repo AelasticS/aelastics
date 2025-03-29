@@ -1,7 +1,7 @@
 import { ArrayHandlers, createObservableArray } from "@aelastics/observables"
 import { getClassName, isUUIDReference, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../store/utils" // Import the utility function
 import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
-import { EternalObject } from "./InternalTypes"
+import { StoreObject } from "./InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
 import { PropertyMeta } from "../meta/InternalSchema"
 import { EternalStore } from "../store/EternalStore"
@@ -27,7 +27,7 @@ const mapToUUIDs = (items: any[], propDes: PropertyMeta): any[] =>
   propDes.itemType === "object" && items ? items.map((item) => item.uuid) : items
 
 /** Creates typed array handlers to track UUIDs and object references */
-export const createArrayHandlers = <T extends EternalObject>({
+export const createArrayHandlers = <T extends StoreObject>({
   store,
   object,
   propDes,
@@ -205,7 +205,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     },
     /** Handle push (convert objects to UUIDs if needed) */
     push: (target: T[], ...items: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName) as EternalObject
+      const obj = checkWriteAccess(object, store, propDes.qName) as StoreObject
       const itemsUUIDs = mapToUUIDs(items, propDes)
     
       // Check if there are changes to be made
@@ -1114,6 +1114,6 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 }
 
 /** Helper function to create observable arrays */
-export function createImmutableArray<T extends EternalObject>(arr: T[], extra: ObservableExtra): T[] {
+export function createImmutableArray<T extends StoreObject>(arr: T[], extra: ObservableExtra): T[] {
   return createObservableArray(arr, createArrayHandlers<T>(extra))
 }

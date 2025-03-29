@@ -1,14 +1,14 @@
 import { EternalStore } from "./EternalStore";
-import { EternalObject } from "../handlers/InternalTypes";
+import { StoreObject } from "../handlers/InternalTypes";
 import { checkWriteAccess } from "./PropertyAccessors";
 import { makePrivatePropertyKey, removeElement } from "./utils";
 import { PropertyMeta } from "../meta/InternalSchema";
 
 // type for inverse relationship updater
 export type inverseUpdater = (
-  obj: EternalObject,
-  disconnectedObject?: string | EternalObject,
-  connectedObject?: string | EternalObject
+  obj: StoreObject,
+  disconnectedObject?: string | StoreObject,
+  connectedObject?: string | StoreObject
 ) => void 
 
 
@@ -17,8 +17,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
   
-    return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-      let oldObj: EternalObject | undefined;
+    return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+      let oldObj: StoreObject | undefined;
   
       // Check if old element is present and get the correct version of it
       if (disconnectedObject) {
@@ -29,7 +29,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         }
       }
   
-      let newObj: EternalObject | undefined;
+      let newObj: StoreObject | undefined;
   
       // Check if new value is present and get the correct version of it
       if (connectedObject) {
@@ -53,8 +53,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
   
-    return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-      let oldObj: EternalObject | undefined;
+    return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+      let oldObj: StoreObject | undefined;
   
       // Check if old element is present and get the correct version of it
       if (disconnectedObject) {
@@ -65,7 +65,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         }
       }
   
-      let newObj: EternalObject | undefined;
+      let newObj: StoreObject | undefined;
   
       // Check if new value is present and get the correct version of it
       if (connectedObject) {
@@ -83,8 +83,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
   
-    return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-      let oldObj: EternalObject | undefined;
+    return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+      let oldObj: StoreObject | undefined;
   
       // Check if old element is present and get the correct version of it
       if (disconnectedObject) {
@@ -96,7 +96,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         }
       }
   
-      let newObj: EternalObject | undefined;
+      let newObj: StoreObject | undefined;
   
       // Check if new value is present and get the correct version of it
       if (connectedObject) {
@@ -115,8 +115,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
   
-    return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-      let oldObj: EternalObject | undefined;
+    return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+      let oldObj: StoreObject | undefined;
   
       // Check if old element is present and get the correct version of it
       if (disconnectedObject) {
@@ -128,7 +128,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         }
       }
   
-      let newObj: EternalObject | undefined;
+      let newObj: StoreObject | undefined;
   
       // Check if new value is present and get the correct version of it
       if (connectedObject) {
@@ -147,8 +147,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -159,7 +159,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -177,8 +177,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -189,7 +189,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -207,8 +207,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -220,7 +220,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -239,8 +239,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -252,7 +252,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -271,8 +271,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -283,7 +283,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -301,8 +301,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -313,7 +313,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -331,8 +331,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -344,7 +344,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -363,8 +363,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -376,7 +376,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -396,8 +396,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -408,7 +408,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -426,8 +426,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -438,7 +438,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -456,8 +456,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -469,7 +469,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
@@ -488,8 +488,8 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
-        return function (obj: EternalObject, disconnectedObject?: string | EternalObject, connectedObject?: string | EternalObject) {
-        let oldObj: EternalObject | undefined;
+        return function (obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+        let oldObj: StoreObject | undefined;
     
         // Check if old element is present and get the correct version of it
         if (disconnectedObject) {
@@ -501,7 +501,7 @@ export function array2one(store: EternalStore, propertyMeta: PropertyMeta): inve
             }
         }
     
-        let newObj: EternalObject | undefined;
+        let newObj: StoreObject | undefined;
     
         // Check if new value is present and get the correct version of it
         if (connectedObject) {
