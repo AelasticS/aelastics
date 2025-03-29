@@ -45,6 +45,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       }
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = []
+      if(obj[privateKey].has(newKey)) {
       changes.push({
         objectType: getClassName(object),
         objectId: object.uuid,
@@ -53,7 +54,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         property: propDes.qName,
         oldValue: oldValue,
         key: newKey,
-      })
+      })}
       changes.push({
         objectType: getClassName(object),
         objectId: object.uuid,
