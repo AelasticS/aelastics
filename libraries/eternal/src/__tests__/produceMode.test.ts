@@ -1,4 +1,4 @@
-import { createStore } from "../store/StoreFactory";
+import { createStore } from "../store/createStore";
 import { TypeMeta } from "../meta/InternalSchema";
 
 describe("Store API: Produce Mode Detection", () => {

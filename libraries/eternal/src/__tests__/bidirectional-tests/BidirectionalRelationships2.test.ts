@@ -1,5 +1,5 @@
 import { EternalObject } from "../../handlers/InternalTypes"
-import { createStore } from "../../store/StoreFactory"
+import { createStore } from "../../store/createStore"
 
 describe("Bidirectional Relationships & Cyclic References", () => {
   let store: ReturnType<typeof createStore>
