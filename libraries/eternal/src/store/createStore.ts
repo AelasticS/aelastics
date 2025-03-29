@@ -3,7 +3,7 @@ import { Timing, Operation, Type, Property } from "../events/SubscriptionInterfa
 import { EternalObject } from "../handlers/InternalTypes";
 import { TypeMeta, TypeSchema } from "../meta/InternalSchema";
 import { EternalStore, InternalRecipe } from "./EternalStore";
-import { Store } from "./StoreFactory";
+import { Store } from "./StoreInterface";
 
 
 export function createStore(

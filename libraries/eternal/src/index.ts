@@ -1,3 +1,3 @@
-export { Store } from './store/StoreFactory';
+export { Store } from './store/StoreInterface';
 export { State } from './store/State';
 export { applyJsonPatch, generateJsonPatch} from "./events/ChangeLog"
