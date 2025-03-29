@@ -128,6 +128,5 @@ export interface Store {
   getEternalStore(): EternalStore
 }
 
-export type recipe<T> = (obj: T) => void
 
 
