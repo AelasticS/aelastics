@@ -1,5 +1,5 @@
 import { resolve } from "path"
-import { computeResolvedTypes, verifySchemaConsistency } from "../../SchemaRegistry"
+import { computeResolvedTypes, verifySchemaConsistency } from "../../meta/SchemaRegistry"
 import { PropertyMeta, SchemaRegistry, TypeSchema } from "../../meta/InternalSchema"
 
 describe("Schema Existence Validation", () => {

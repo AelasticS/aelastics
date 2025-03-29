@@ -1,4 +1,4 @@
-import { verifySchemaConsistency } from "../../SchemaRegistry"
+import { verifySchemaConsistency } from "../../meta/SchemaRegistry"
 import { PropertyMeta, SchemaRegistry, TypeSchema } from "../../meta/InternalSchema";
 
 describe("Schema Existence Validation", () => {

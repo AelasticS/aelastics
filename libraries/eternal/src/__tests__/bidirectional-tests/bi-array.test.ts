@@ -1,5 +1,5 @@
 import { createStore } from "../../StoreFactory";
-import { initializeSchemaRegistry } from "../../SchemaRegistry";
+import { initializeSchemaRegistry } from "../../meta/SchemaRegistry";
 import { SchemaRegistry } from "../../meta/InternalSchema";
 //import jsonSchemaWithArrays from "../data/jsonSchemaWithArrays";
 import { SchemaDescription } from "../../meta/ExternalSchema";

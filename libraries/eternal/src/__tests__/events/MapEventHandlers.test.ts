@@ -1,5 +1,5 @@
 import { createStore } from "../../StoreFactory"
-import { initializeSchemaRegistry } from "../../SchemaRegistry"
+import { initializeSchemaRegistry } from "../../meta/SchemaRegistry"
 import { SchemaRegistry } from "../../meta/InternalSchema"
 import { SchemaDescription } from "../../meta/ExternalSchema"
 import { EternalObject } from "../../handlers/InternalTypes"

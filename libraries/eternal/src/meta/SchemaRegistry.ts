@@ -4,8 +4,8 @@ import {
   SchemaRegistry,
   TypeMeta,
   TypeSchema,
-} from "./meta/InternalSchema"
-import { isComplexPropType, isSimplePropType } from "./meta/PropertyDefinitions"
+} from "./InternalSchema"
+import { isComplexPropType, isSimplePropType } from "./PropertyDefinitions"
 
 // Global Schema Registry
 export const schemaRegistry: SchemaRegistry = {
