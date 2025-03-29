@@ -19,14 +19,14 @@ export interface Store {
    * @param obj - The object to be updated.
    * @returns The new version of the input object.
    */
-  updateObject<T>(recipe: (obj: T) => void, obj: T): T
+  updateObject<T extends object>(recipe: (obj: T) => void, obj: T): T
 
   /**
-   * Applies a recipe function to update the store's state. A new state in store is automatically created
+   * Applies a recipe function to update the store. A new state in the store is automatically created
    * @param recipe - A function that modifies the store's state.
    * @returns The result of the recipe function.
    */
-  updateState<R>(recipe: () => R): R
+  updateStore<R>(recipe: () => R): R
 
   /**
    * Retrieves an object by its UUID.
@@ -59,29 +59,6 @@ export interface Store {
    * @param target - The target object or its identifier.
    * @returns The object from the specified historical state if found, otherwise undefined.
    */
-  fromState<T>(stateIndex: number, target: string | T): T | undefined
-
-  createObject<T extends object>(type: string): T
-
-  // Apply a recipe to an object
-  updateObject<T>(recipe: (obj: T) => void, obj: T): T
-
-  // Apply a recipe to an object
-  updateState<R>(recipe: () => R): R
-
-  // Retrieve an object by UUID
-  getObject<T extends object>(uuid: string): T | undefined
-
-  /** Check if produce() is currently active */
-  isInUpdateMode(): boolean
-
-  /** Undo last state change */
-  undo(): boolean
-
-  /** Redo last undone state change */
-  redo(): boolean
-
-  /** Retrieve an object from a specific historical state */
   fromState<T>(stateIndex: number, target: string | T): T | undefined
 
   //

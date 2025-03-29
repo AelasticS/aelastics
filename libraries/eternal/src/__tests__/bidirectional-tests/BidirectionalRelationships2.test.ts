@@ -78,7 +78,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
     store.subscribeToObject(child2, (c) => {
       child2 = c as Child
     })
-    store.updateState(() => {
+    store.updateStore(() => {
       parent.name = "Root"
       child1.name = "Child 1"
       child2.name = "Child 2"
@@ -100,7 +100,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
 
     let child = store.createObject<Child>("Child") as Child
 
-    store.updateState(() => {
+    store.updateStore(() => {
       parent.name = "Root"
       child.name = "Child 1"
       parent.children.push(child)
@@ -115,7 +115,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
     // Update child's parent to a new parent
     let newParent = store.createObject<Parent>("Parent") as Parent
 
-    store.updateState(() => {
+    store.updateStore(() => {
       newParent.name = "New Root"
       child.parent = newParent
     })
@@ -135,7 +135,7 @@ describe("Bidirectional Relationships & Cyclic References", () => {
     let child = store.createObject<Child>("Child") as Child
 
     // Introduce a cycle: child becomes its own grandparent
-    store.updateState(() => {
+    store.updateStore(() => {
       parent.name = "Root"
       child.name = "Child 1"
       parent.children.push(child)

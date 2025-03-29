@@ -21,9 +21,9 @@ export function createStore(
   const store = new EternalStore(types);
 
   const publicAPI: Store = {
-    createObject: (type) => store.createObject(type), // TODO check if new state is always created
-    updateObject: <T>(recipe: (obj: T) => void, obj: T) => store.produce(recipe as InternalRecipe, obj as EternalObject) as any,
-    updateState: <R>(recipe: () => R) => store.produce(recipe as InternalRecipe) as any,
+    createObject: (type) => store.createObject(type), 
+    updateObject: <T extends object>(recipe: (obj: T ) => void, obj: T) => store.produce(recipe, obj),
+    updateStore: <R>(recipe: () => R) => store.produce(recipe) as R,
     getObject: (uuid) => store.getObject(uuid),
     isInUpdateMode: () => store.isInUpdateMode(),
     makeRegular: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
@@ -33,9 +33,7 @@ export function createStore(
     makeEternal: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
 
     subscribeToObject: (obj, callback) => store.getSubscriptionManager().subscribeToObject(obj, callback),
-    //  unsubscribeFromObject: (obj, callback) => store.getSubscriptionManager().unsubscribeFromObj(obj, callback),
     subscribeToStore: (callback) => store.getSubscriptionManager().subscribeToStore(callback),
-    //   unsubscribeFromStore: (callback) => store.getSubscriptionManager().unsubscribeFromStore(callback),
     subscribe: (
       listener: (event: EventPayload) => Result,
       timing: Timing,

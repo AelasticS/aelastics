@@ -152,7 +152,7 @@ export class EternalStore {
   }
 
   /** Produces a new state with modifications */
-  public produce<T extends object>(recipe: InternalRecipe, obj?: T): T | void {
+  public produce<T>(recipe: (obj: T) => void, obj?: T): T{
     if (this.inUpdateMode) {
       throw new Error("Nested produce() calls are not allowed.")
     }
@@ -163,11 +163,14 @@ export class EternalStore {
     const currentState = this.getState()
 
     if (obj) {
+      if (!(obj instanceof EternalClass)) {
+        throw new Error("The provided object is not created or .");
+      }
       // Versioning logic when an object is passed
       // Use State's method to create a new object version
       let newObj = obj as EternalObject
       try {
-        recipe(newObj) // Apply modifications
+        recipe(newObj as T) // Apply modifications
         // Track changed objects
         const additionalVersionedObjects = this.markVersionedObjects()
         this.versionedObjects.push(...additionalVersionedObjects)

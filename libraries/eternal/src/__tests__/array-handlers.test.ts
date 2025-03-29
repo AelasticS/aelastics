@@ -35,7 +35,7 @@ test("Undo/Redo on array push operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.push("tag1");
     });
 
@@ -66,7 +66,7 @@ test("Undo/Redo on array element set by index operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags[0] = "tag1 updated";
     });
 
@@ -101,7 +101,7 @@ test("Undo/Redo on array pop operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.pop();
     });
 
@@ -131,7 +131,7 @@ test("Undo/Redo on array shift operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.shift();
     });
 
@@ -163,7 +163,7 @@ test("Undo/Redo on array unshift operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.unshift("tag1");
     });
 
@@ -194,7 +194,7 @@ test("Undo/Redo on array splice operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.splice(1, 1, "tag4");
     });
 
@@ -232,7 +232,7 @@ test("Undo/Redo on array reverse operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.reverse();
     });
 
@@ -261,7 +261,7 @@ test("Undo/Redo on array sort operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.sort();
     });
 
@@ -290,7 +290,7 @@ test("Undo/Redo on array fill operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.fill("tag4", 1, 2);
     });
 
@@ -325,7 +325,7 @@ test("array concat operation", () => {
      //expect(store.getObject<Person>(user.uuid)?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     let concatArray:string[] = []
-    store.updateState(() => {
+    store.updateStore(() => {
         concatArray = user.tags.concat(["tag2", "tag3"]);
     });
 
@@ -667,7 +667,7 @@ test("Undo/Redo on array copyWithin operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         user.tags.copyWithin(1, 0, 2);
     });
 
@@ -761,7 +761,7 @@ test("Undo/Redo on array delete operation", () => {
     }, user);
 
     // apply operation
-    store.updateState(() => {
+    store.updateStore(() => {
         delete user.tags[1];
     });
 
