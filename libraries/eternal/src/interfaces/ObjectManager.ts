@@ -34,24 +34,32 @@ export interface ObjectManager {
    * @param target - The target object or its identifier.
    * @returns The object from the specified historical state if found, otherwise undefined.
    */
-  fromState<T>(stateIndex: number, target: string | T): T | undefined
+  fromState<T extends object>(stateIndex: number, target: string | T): T | undefined
 
   /**
    * Converts a given object into an object under control of Store.
    */
-  immutable<T>(obj: T): T
+  immutable<T extends object>(obj: T): T
 
   /**
    * Converts an object back to a regular (mutable) object, removing it from the control of Store.
    */
-  mutable<T>(obj: T): T
+  mutable<T extends object>(obj: T): T
+
+  /**
+   * Subscribes to updates of an object.
+   * @param callback - A callback function that processes the updated object.
+   * @returns A function that can be called to unsubscribe from the store updates.
+   */
+  subscribe<T extends object>(obj: T, callback: (updatedObject: T) => void): () => void
+
 
   /**
    * Serializes an object into a string format.
    * @param obj - The object to serialize.
    * @returns The serialized string representation of the object.
    */
-  serialize<T>(obj: T): string
+  serialize<T extends object>(obj: T): string
 
   /**
    * Deserializes a string into an object of type T and puts it into the store.
@@ -60,12 +68,12 @@ export interface ObjectManager {
    * @param validate - Optional flag to validate the object against its type schema. Default is true.
    * @returns The deserialized object of type T.
    */
-  deserialize<T>(obj: string, type: string, validate?: boolean): T
+  deserialize<T extends object>(obj: string, type: string, validate?: boolean): T
 
   /**
    * Validates an object against its type schema.
    * @param obj - The object to validate.
    * @returns The result of the validation.
    */
-  validate<T>(obj: T): Result
+  validate<T extends object>(obj: T): Result
 }
