@@ -1,6 +1,6 @@
-import { StoreClass } from "./StoreClass"
+import { StoreClass } from "../store/StoreClass"
 import { EventPayload, Result } from "../events/EventTypes"
-import { Operation, Property, Timing, Type } from "../events/SubscriptionInterface"
+import { Operation, Property, Timing, Type } from "./SubscriptionInterface"
 
 /**
  * Interface representing a Store that manages objects and their states.
@@ -104,3 +104,5 @@ export interface Store {
    */
   getEternalStore(): StoreClass
 }
+
+export interface SubscriptionManager {}

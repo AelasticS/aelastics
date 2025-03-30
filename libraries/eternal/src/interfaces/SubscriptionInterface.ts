@@ -1,4 +1,4 @@
-import { EventPayload, Result } from './EventTypes';
+import { EventPayload, Result } from '../events/EventTypes';
 
 export type Timing = 'before' | 'after' | 'beforeCommit' | 'afterCommit' | '*';
 export type Operation = 'create' | 'update' | 'delete' | '*'; // "update" for both scalar and collection changes

@@ -1,8 +1,8 @@
 import { EventPayload, Result } from "../events/EventTypes";
-import { Timing, Operation, Type, Property } from "../events/SubscriptionInterface";
+import { Timing, Operation, Type, Property } from "../interfaces/SubscriptionInterface";
 import { TypeMeta, TypeSchema } from "../meta/InternalSchema";
 import { StoreClass } from "./StoreClass";
-import { Store } from "./StoreInterface";
+import { Store } from "../interfaces/StoreInterface";
 
 
 export function createStore(

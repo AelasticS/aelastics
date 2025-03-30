@@ -1,2 +1,2 @@
-export { Store } from './store/StoreInterface';
+export { Store } from './interfaces/StoreInterface';
 export { applyJsonPatch, generateJsonPatch} from "./events/ChangeLog"

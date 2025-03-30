@@ -1,6 +1,6 @@
 import { StoreClass } from "../store/StoreClass";
 import { StoreObject, uuid } from "../handlers/InternalTypes";
-import { Store } from "../store/StoreInterface";
+import { Store } from "../interfaces/StoreInterface";
 import { createStore } from "../store/createStore";
 
 interface Person extends StoreObject {
