@@ -12,7 +12,7 @@
     "proxy",
     "change-tracking",
     "serialization",
-    "lazy-loading"
+    "events"
   ],
   "author": "Sinisa Neskovic",
   "license": "MIT",
