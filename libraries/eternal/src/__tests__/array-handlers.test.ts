@@ -40,19 +40,19 @@ test("Undo/Redo on array push operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 });
 
 test("Undo/Redo on array element set by index operation", () => {
@@ -71,20 +71,20 @@ test("Undo/Redo on array element set by index operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1 updated");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1 updated");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1 updated");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1 updated");
 });
 
 test("Undo/Redo on array pop operation", () => {
@@ -106,18 +106,18 @@ test("Undo/Redo on array pop operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
 });
 
 test("Undo/Redo on array shift operation", () => {
@@ -136,21 +136,21 @@ test("Undo/Redo on array shift operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(2);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(2);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
 });
 
 test("Undo/Redo on array unshift operation", () => {
@@ -168,19 +168,19 @@ test("Undo/Redo on array unshift operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 });
 
 test("Undo/Redo on array splice operation", () => {
@@ -199,26 +199,26 @@ test("Undo/Redo on array splice operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag4");
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag4");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag4");
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag4");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
 });
 
 test("Undo/Redo on array reverse operation", () => {
@@ -237,17 +237,17 @@ test("Undo/Redo on array reverse operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag2", "tag1"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag2", "tag1"]);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag2", "tag1"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag2", "tag1"]);
 });
 
 test("Undo/Redo on array sort operation", () => {
@@ -266,17 +266,17 @@ test("Undo/Redo on array sort operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag1", "tag2"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag1", "tag2"]);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 });
 
 test("Undo/Redo on array fill operation", () => {
@@ -295,17 +295,17 @@ test("Undo/Redo on array fill operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag4", "tag3"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag4", "tag3"]);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag4", "tag3"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag4", "tag3"]);
 });
 
 test("array concat operation", () => {
@@ -330,7 +330,7 @@ test("array concat operation", () => {
     });
 
     // retrieve the latest version of user
-    user = store.getObjectByUUID<Person>(user[uuid])!;
+    user = store.findObjectByUUID<Person>(user[uuid])!;
 
     // check if operation was successful
     expect(concatArray).toEqual(["tag1", "tag2", "tag3"]);
@@ -433,7 +433,7 @@ test("array length operation", () => {
     }, user);
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
 });
 
 test("Undo/Redo on array find operation", () => {
@@ -672,17 +672,17 @@ test("Undo/Redo on array copyWithin operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag1", "tag2"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag1", "tag2"]);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag1", "tag2"]);
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag1", "tag2"]);
 });
 
 test("Undo/Redo on array entries operation", () => {
@@ -766,17 +766,17 @@ test("Undo/Redo on array delete operation", () => {
     });
 
     // check if operation was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag3");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag3");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag2");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag2");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.getObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag3");
+    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag3");
 });
 
 

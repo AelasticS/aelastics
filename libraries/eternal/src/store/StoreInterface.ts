@@ -33,7 +33,15 @@ export interface Store {
    * @param uuid - The UUID of the object to retrieve.
    * @returns The object if found, otherwise undefined.
    */
-  getObjectByUUID<T extends object>(uuid: string): T | undefined
+  findObjectByUUID<T extends object>(uuid: string): T | undefined
+
+  /**
+   * Retrieves an object from a specific historical state.
+   * @param stateIndex - The index of the historical state.
+   * @param target - The target object or its identifier.
+   * @returns The object from the specified historical state if found, otherwise undefined.
+   */
+  fromState<T>(stateIndex: number, target: string | T): T | undefined
 
   /**
    * Checks if the store is currently in update mode.
@@ -52,14 +60,6 @@ export interface Store {
    * @returns True if the redo was successful, otherwise false.
    */
   redo(): boolean
-
-  /**
-   * Retrieves an object from a specific historical state.
-   * @param stateIndex - The index of the historical state.
-   * @param target - The target object or its identifier.
-   * @returns The object from the specified historical state if found, otherwise undefined.
-   */
-  fromState<T>(stateIndex: number, target: string | T): T | undefined
 
   //
   /**
@@ -95,7 +95,7 @@ export interface Store {
     timing: Timing,
     operation: Operation,
     type: Type,
-    property?: Property,
+    property?: Property
   ): () => void
 
   /**
@@ -104,6 +104,3 @@ export interface Store {
    */
   getEternalStore(): StoreClass
 }
-
-
-

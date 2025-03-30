@@ -23,7 +23,7 @@ export function createStore(
     createObject: (type) => store.createObject(type), 
     updateObject: <T extends object>(recipe: (obj: T ) => void, obj: T) => store.produce(recipe, obj),
     updateStore: <R>(recipe: () => R) => store.produce(recipe) as R,
-    getObjectByUUID: (uuid) => store.getObjectByUUID(uuid),
+    findObjectByUUID: (uuid) => store.findObjectByUUID(uuid),
     isInUpdateMode: () => store.isInUpdateMode(),
     makeRegular: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
     undo: () => store.undo(),

@@ -41,7 +41,7 @@ const schemas: SchemaDescription[] = [
       userObject = store.createObject("User") as StoreObject;
   
       // Retrieve the latest version of the object
-      userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+      userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     });
 
     test("should emit events and track changes for add operation on roles set", () => {
@@ -73,7 +73,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Verify the final state of the set
         expect(userObject.roles.has("admin")).toBe(true);
@@ -89,7 +89,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -119,7 +119,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Verify the final state of the set
         expect(userObject.roles.has("admin")).toBe(false);
@@ -137,7 +137,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -181,7 +181,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Verify the final state of the set
         expect(userObject.roles.size).toBe(0);
@@ -198,7 +198,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn();
@@ -216,7 +216,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Verify the set remains unchanged
         expect(userObject.roles.size).toBe(1);
@@ -234,7 +234,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn();
@@ -252,7 +252,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Verify the set remains unchanged
         expect(userObject.roles.size).toBe(1);
@@ -270,7 +270,7 @@ const schemas: SchemaDescription[] = [
         }, userObject);
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler to cancel the operation
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -293,7 +293,7 @@ const schemas: SchemaDescription[] = [
         }).toThrowError("Operation was canceled by the handler.");
     
         // Update the object reference
-        userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
     
         // Verify the set remains unchanged
         expect(userObject.roles.size).toBe(1);
