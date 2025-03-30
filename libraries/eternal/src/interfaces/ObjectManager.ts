@@ -6,7 +6,7 @@ export interface ObjectManager {
    * @param type - The name of object type defined in type schema.
    * @returns The newly created object.
    */
-  createObject<T extends object>(type: string, initialState?: T): T
+  create<T extends object>(type: string, initialState?: T): T
 
   /**
    * Applies a recipe function to an object to update its state. A new state in store is automatically created
