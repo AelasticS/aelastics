@@ -1,6 +1,6 @@
 import { ChangeLogEntry, hasChanges } from "../events/ChangeLog"
 import { StoreClass } from "./StoreClass"
-import { StoreObject } from "../handlers/InternalTypes"
+import { createdAt, nextVersion, state, StoreObject, uuid } from "../handlers/InternalTypes"
 import { getClassName, isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
 import { EventPayload, Result } from "../events/EventTypes"
 
@@ -33,11 +33,11 @@ export class State implements StateView {
       throw new Error(`Cannot make a new version from a frozen object.`)
     }
     // check if object is from old state, then make a new version
-    if (obj.createdAt < this.timestamp) {
+    if (obj[createdAt] < this.timestamp) {
       const newInstance: StoreObject = obj.clone()
-      newInstance.createdAt = this.timestamp // Copy timestamp from state
+      newInstance[createdAt] = this.timestamp // Copy timestamp from state
       // Track the new version
-      obj.nextVersion = new WeakRef(newInstance)
+      obj[nextVersion] = new WeakRef(newInstance)
       this.addObject(newInstance, "versioned")
       // TODO check subscriptions - track for notifications !!!
       if (trackForNotification) {
@@ -74,7 +74,7 @@ export class State implements StateView {
     }
     const object = this.objectMap.get(uuid)
     // Ensure the object is not from a future state
-    if (object.createdAt > this.timestamp) {
+    if (object[createdAt] > this.timestamp) {
       throw new Error(`Cannot access object ${uuid} from a future state.`)
     }
     return object // Returns the object without fixing it
@@ -87,7 +87,7 @@ export class State implements StateView {
   }
 
   public isObjectFrozenInState(obj: StoreObject): boolean {
-    return obj.state === this
+    return obj[state] === this
   }
 
   /**
@@ -105,7 +105,7 @@ export class State implements StateView {
       // Create the change entry
       const change: ChangeLogEntry = {
         objectType: getClassName(obj),
-        objectId: obj.uuid,
+        objectId: obj[uuid],
         operation: "create",
         newValue: obj,
       }
@@ -116,7 +116,7 @@ export class State implements StateView {
         operation: "create",
         objectType: getClassName(obj),
         timestamp: uniqueTimestamp(),
-        objectId: obj.uuid,
+        objectId: obj[uuid],
         changes: [change],
       }
 
@@ -128,7 +128,7 @@ export class State implements StateView {
       }
 
       // Store the object in the state
-      this.objectMap.set(obj.uuid, obj)
+      this.objectMap.set(obj[uuid], obj)
 
       // Track the change
       this.trackChange(change)
@@ -139,7 +139,7 @@ export class State implements StateView {
         operation: "create",
         objectType: getClassName(obj),
         timestamp: uniqueTimestamp(),
-        objectId: obj.uuid,
+        objectId: obj[uuid],
         changes: [change],
       }
 
@@ -151,7 +151,7 @@ export class State implements StateView {
       }
     } else {
       // Store the object in the state without emitting events or tracking changes
-      this.objectMap.set(obj.uuid, obj)
+      this.objectMap.set(obj[uuid], obj)
     }
   }
 
@@ -229,17 +229,17 @@ export class State implements StateView {
   // Check if an object is older then this state
   public isFromOlderState(obj: StoreObject): boolean {
     // If object's timestamp is older than the current state
-    return obj.createdAt < this.timestamp
+    return obj[createdAt] < this.timestamp
   }
 
   public isCreatedInState(obj: StoreObject): boolean {
     // If object's timestamp is equal the current state
-    return obj.createdAt === this.timestamp
+    return obj[createdAt] === this.timestamp
   }
 
   // Check if an object is member of this state
   public isMemberOfState(obj: StoreObject): boolean {
-    const member = this.objectMap.get(obj.uuid)
+    const member = this.objectMap.get(obj[uuid])
     return member === obj
   }
 

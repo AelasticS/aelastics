@@ -1,6 +1,6 @@
 import { StoreClass } from '../store/StoreClass';
 import { TypeMeta } from '../meta/InternalSchema';
-import { StoreObject } from '../handlers/InternalTypes';
+import { StoreObject, uuid } from '../handlers/InternalTypes';
 
 // Define type metadata for the hierarchy
 const typeMetaA: TypeMeta = {
@@ -94,7 +94,7 @@ describe('EternalStore Dynamic Class Creation', () => {
     expect(clonedObjC.propArray.length).toBe(objC.propArray.length);
 
     // Check if the cloned object has same UUID
-    expect(clonedObjC.uuid).toBe(objC.uuid);
+    expect(clonedObjC[uuid]).toBe(objC[uuid]);
     // Check if the cloned object if different
     expect(clonedObjC).not.toBe(objC);
 

@@ -1,6 +1,6 @@
 import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "../meta/InternalSchema"
 import { StoreClass } from "./StoreClass"
-import { __StoreSuperClass__, StoreObject } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, nextVersion, StoreObject, uuid } from "../handlers/InternalTypes"
 import {
   getClassName,
   isObjectFrozen,
@@ -23,23 +23,23 @@ export function checkReadAccess(obj: StoreObject, store: StoreClass): StoreObjec
   const isInUpdateMode = store.isInUpdateMode()
 
   if (isInUpdateMode) {
-    if (obj.nextVersion) {
-      const nextVersion = obj.nextVersion.deref()
-      if (!isFrozen && state.isCreatedInState(nextVersion)) {
-        return nextVersion
+    if (obj[nextVersion]) {
+      const objNextVersion = obj[nextVersion].deref()
+      if (!isFrozen && state.isCreatedInState(objNextVersion)) {
+        return objNextVersion
       }
       if (!isFrozen) {
         throw new Error(
-          `Invalid reference to object ${obj.constructor.name}: ${obj.uuid} from a past state.\n` +
+          `Invalid reference to object ${obj.constructor.name}: ${obj[uuid]} from a past state.\n` +
             `Use 'store.getObject(uuid)' to retrieve the current version of the object, or 'store.getFromState(stateIndex, uuid)' to access it from an old state.`
         )
       }
     }
     return obj
   }
-  if (!isFrozen && obj.nextVersion && !state.isMemberOfState(obj)) {
+  if (!isFrozen && obj[nextVersion] && !state.isMemberOfState(obj)) {
     throw new Error(
-      `Invalid reference to object ${obj.constructor.name}: ${obj.uuid} from a past state.\n` +
+      `Invalid reference to object ${obj.constructor.name}: ${obj[uuid]} from a past state.\n` +
         `Use 'store.getObject(uuid)' to retrieve the current version of the object, or 'store.getFromState(stateIndex, uuid)' to access it from an old state.`
     )
   }
@@ -58,15 +58,15 @@ export function checkWriteAccess(obj: StoreObject, store: StoreClass, key: strin
 
   // if obj is from old state
   if (store.getState().isFromOlderState(obj)) {
-    if (!obj.nextVersion) {
+    if (!obj[nextVersion]) {
       // has no new version, create and return new version
       return store.getState().createNewVersion(obj)
     } else {
       // has new version, return new version
-      const nextVersion = obj.nextVersion.deref()
+      const objNextVersion = obj[nextVersion].deref()
       // return only if new version belongs to the current state
-      if (store.getState().isCreatedInState(nextVersion)) {
-        return nextVersion
+      if (store.getState().isCreatedInState(objNextVersion)) {
+        return objNextVersion
       } else {
         throw new Error(`Illegal reference to an object not from the current state.`)
       }
@@ -136,17 +136,18 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           throw new Error(`Invalid value for property "${key}". Expected an object, null, or undefined.`);
         }
         // Prevent redundant updates
-        if (this[privateKey] === value?.uuid && store.isInUpdateMode()) {
+        // if (this[privateKey] === value[uuid] && store.isInUpdateMode()) {
+          if (value && this[privateKey] === value[uuid] && store.isInUpdateMode()) {
           return
         }
 
         // Emit before.update event and check for cancellation
         const oldUUID = this[privateKey]
-        const newUUID = value?.uuid
+        const newUUID = value? value[uuid] : undefined
         const changes: ChangeLogEntry[] = [
           {
             objectType: getClassName(this),
-            objectId: this.uuid,
+            objectId: this[uuid],
             operation: "update" as const,
             changeType: "replace" as const,
             property: key,
@@ -161,7 +162,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           objectType: typeMeta.qName,
           property: propertyMeta.qName,
           timestamp: uniqueTimestamp(),
-          objectId: this.uuid,
+          objectId: this[uuid],
           changes: changes,
         }
 
@@ -199,7 +200,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           objectType: typeMeta.qName,
           property: propertyMeta.qName,
           timestamp: uniqueTimestamp(),
-          objectId: this.uuid,
+          objectId: this[uuid],
           changes: changes,
         }
 
@@ -239,7 +240,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         const changes: ChangeLogEntry[] = [
           {
             objectType: getClassName(this),
-            objectId: this.uuid,
+            objectId: this[uuid],
             operation: "update" as const,
             changeType: "replace" as const,
             property: key,
@@ -254,7 +255,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           objectType: typeMeta.qName,
           property: propertyMeta.qName,
           timestamp: uniqueTimestamp(),
-          objectId: this.uuid,
+          objectId: this[uuid],
           changes: changes,
         }
 
@@ -283,7 +284,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           objectType: typeMeta.qName,
           property: propertyMeta.qName,
           timestamp: uniqueTimestamp(),
-          objectId: this.uuid,
+          objectId: this[uuid],
           changes: changes,
         }
 

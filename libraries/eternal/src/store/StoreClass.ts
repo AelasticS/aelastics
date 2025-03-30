@@ -7,7 +7,7 @@ import {
 } from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
-import { __StoreSuperClass__, StoreObject } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, createdAt, StoreObject, uuid } from "../handlers/InternalTypes"
 import { createImmutableMap } from "../handlers/MapHandlers"
 import { createImmutableSet } from "../handlers/SetHandlers"
 import { TypeMeta } from "../meta/InternalSchema"
@@ -112,8 +112,8 @@ export class StoreClass {
     const DynamicClass = this.typeToClassMap.get(type)
     const newObject = new DynamicClass()
     // Generate unique values for each instance
-    newObject.uuid = randomUUID()
-
+    newObject[uuid] = randomUUID()
+    newObject[createdAt] = this.getState().timestamp 
     // Immediately add to the latest state
     this.getState().addObject(newObject, "created")
 
@@ -136,11 +136,11 @@ export class StoreClass {
       return state.getObject(target, true)
     }
     // If target is an object with a UUID
-    if (target && typeof target === "object" && "uuid" in target) {
-      return state.getObject((target as { uuid: string }).uuid, true)
+    if (target instanceof __StoreSuperClass__) {
+      return state.getObject(target[uuid], true)
     }
     // If target is not a string or object with a UUID
-    throw new Error("Invalid target object.")
+    throw new Error("Invalid target object: it must be an object from the store.")
   }
 
   /** Retrieves a specific historical state */
@@ -179,7 +179,7 @@ export class StoreClass {
           this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/) // Notify all updated objects
 
           // If `obj` itself was versioned, return the latest version
-          const updatedObj = this.versionedObjects.find((o) => o.uuid === newObj.uuid)
+          const updatedObj = this.versionedObjects.find((o) => o[uuid] === newObj[uuid])
           if (updatedObj) {
             newObj = updatedObj
           }

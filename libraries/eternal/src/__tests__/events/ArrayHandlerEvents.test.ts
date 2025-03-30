@@ -2,7 +2,7 @@ import { createStore } from "../../store/createStore";
 import { initializeSchemaRegistry } from "../../meta/SchemaRegistry";
 import { SchemaRegistry } from "../../meta/InternalSchema";
 import { SchemaDescription } from "../../meta/ExternalSchema";
-import { StoreObject } from "../../handlers/InternalTypes";
+import { StoreObject, uuid } from "../../handlers/InternalTypes";
 import { EventPayload, Result } from "../../events/EventTypes";
 import { getEventPattern } from "../../events/SubscriptionManager";
 
@@ -28,10 +28,6 @@ const schemas: SchemaDescription[] = [
   },
 ];
 
-interface SimpleArrayType {
-  numbers: number[];
-}
-
 describe("ArrayHandler Events", () => {
   let store: ReturnType<typeof createStore>;
   let simpleArrayObject: StoreObject;
@@ -45,7 +41,7 @@ describe("ArrayHandler Events", () => {
     simpleArrayObject = store.createObject("SimpleArrayType") as StoreObject;
 
     // Retrieve the latest version of the object
-    simpleArrayObject = store.getObject((simpleArrayObject as StoreObject).uuid)!;
+    simpleArrayObject = store.getObject((simpleArrayObject as StoreObject)[uuid])!;
   });
 
   test("should emit events and track changes for push operation on array of simple values", () => {
@@ -395,7 +391,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
       objectArrayObject = store.createObject("ObjectArrayType") as StoreObject;
   
       // Retrieve the latest version of the object
-      objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
+      objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
     });
   
     test("should emit events and update inverse properties for push operation on array of objects", () => {
@@ -403,7 +399,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         let relatedObject = store.createObject("RelatedObject") as StoreObject;
     
         // Get the UUID of the related object
-        const relatedObjectUUID = (relatedObject as StoreObject).uuid;
+        const relatedObjectUUID = (relatedObject as StoreObject)[uuid];
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -435,8 +431,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the variables with their latest versions
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
-        relatedObject = store.getObject((relatedObject as StoreObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.getObject((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject]);
@@ -455,11 +451,11 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
-        relatedObject = store.getObject((relatedObject as StoreObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.getObject((relatedObject as StoreObject)[uuid])!;
     
         // Get the UUID of the related object
-        const relatedObjectUUID = (relatedObject as StoreObject).uuid;
+        const relatedObjectUUID = (relatedObject as StoreObject)[uuid];
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -491,8 +487,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
-        relatedObject = store.getObject((relatedObject as StoreObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.getObject((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([]);
@@ -512,13 +508,13 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
-        relatedObject1 = store.getObject((relatedObject1 as StoreObject).uuid)!;
-        relatedObject2 = store.getObject((relatedObject2 as StoreObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.getObject((relatedObject1 as StoreObject)[uuid])!;
+        relatedObject2 = store.getObject((relatedObject2 as StoreObject)[uuid])!;
     
         // Get the UUIDs of the related objects
-        const relatedObject1UUID = (relatedObject1 as StoreObject).uuid;
-        const relatedObject2UUID = (relatedObject2 as StoreObject).uuid;
+        const relatedObject1UUID = (relatedObject1 as StoreObject)[uuid];
+        const relatedObject2UUID = (relatedObject2 as StoreObject)[uuid];
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -550,8 +546,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
-        relatedObject1 = store.getObject((relatedObject1 as StoreObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.getObject((relatedObject1 as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject2]);
@@ -570,7 +566,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
           expect(getEventPattern(event)).toBe("before.update.ObjectArrayType.items");
           expect(event.changes?.[0].changeType).toBe("add");
           expect(event.changes?.[0].index).toBe(0); // First index
-          expect(event.changes?.[0].newValue).toBe((relatedObject as StoreObject).uuid); // New value is UUID
+          expect(event.changes?.[0].newValue).toBe((relatedObject as StoreObject)[uuid]); // New value is UUID
           return { success: true }; // Simulate a successful result
         });
     
@@ -580,7 +576,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
           expect(getEventPattern(event)).toBe("after.update.ObjectArrayType.items");
           expect(event.changes?.[0].changeType).toBe("add");
           expect(event.changes?.[0].index).toBe(0); // First index
-          expect(event.changes?.[0].newValue).toBe((relatedObject as StoreObject).uuid); // New value is UUID
+          expect(event.changes?.[0].newValue).toBe((relatedObject as StoreObject)[uuid]); // New value is UUID
           return { success: true }; // Simulate a successful result
         });
     
@@ -594,8 +590,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
-        relatedObject = store.getObject((relatedObject as StoreObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.getObject((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject]);
@@ -615,12 +611,12 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
-        relatedObject1 = store.getObject((relatedObject1 as StoreObject).uuid)!;
-        relatedObject2 = store.getObject((relatedObject2 as StoreObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.getObject((relatedObject1 as StoreObject)[uuid])!;
+        relatedObject2 = store.getObject((relatedObject2 as StoreObject)[uuid])!;
     
         // Get the UUID of the first related object
-        const relatedObject1UUID = (relatedObject1 as StoreObject).uuid;
+        const relatedObject1UUID = (relatedObject1 as StoreObject)[uuid];
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -652,8 +648,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject).uuid)!;
-        relatedObject1 = store.getObject((relatedObject1 as StoreObject).uuid)!;
+        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.getObject((relatedObject1 as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject2]);

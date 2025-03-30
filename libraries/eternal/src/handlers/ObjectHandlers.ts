@@ -1,8 +1,8 @@
 import { ObjectHandlers, createObservableObject } from "@aelastics/observables";
 import { State } from "../store/State";
 import { PropertyMeta } from "../meta/InternalSchema";
-import { isUUIDReference } from "../store/utils"; // Import the utility function
-import { StoreObject } from "./InternalTypes";
+import { isStoreObject } from "../store/utils"; // Import the utility function
+import { StoreObject, uuid } from "./InternalTypes";
 import { StoreClass } from "../store/StoreClass";
 
 /** Creates typed object handlers to track UUID references and enforce immutability */
@@ -15,7 +15,7 @@ export const createObjectHandlers = <T extends object>(
         const meta = propertyMeta.get(key.toString());
 
         // Convert object reference to UUID if necessary
-        (target as any)[key] = isUUIDReference(value) ? value.uuid : value;
+        (target as any)[key] = isStoreObject(value) ? value[uuid] : value;
 
         return true;
     },

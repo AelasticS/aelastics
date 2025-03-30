@@ -3,8 +3,12 @@ export function generateUUID(): string {
 }
 
 /** Utility function to check if a value is an object with a UUID */
-export function isUUIDReference(value: any): value is { uuid: string } {
-  return value !== null && typeof value === "object" && "uuid" in value && typeof value.uuid === "string"
+export function isStoreObject(value: any): value is StoreObject {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    (("uuid" in value && typeof value.uuid === "string") || value instanceof __StoreSuperClass__)
+  )
 }
 
 /**
@@ -25,14 +29,14 @@ export function copyProperties(target: any, source: any) {
   }
 }
 
-import { StoreObject } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, state, StoreObject } from "../handlers/InternalTypes"
 
 export const isObjectFrozen = (obj: StoreObject) => {
-  return obj.state !== undefined
+  return obj[state] !== undefined
 }
 
 export function getClassName(obj: StoreObject): string {
-  return obj.constructor.name;
+  return obj.constructor.name
 }
 
 // Generate a unique timestamp
@@ -81,5 +85,3 @@ export function makeDisconnectKey() {
 }
 
 // export type Role = 'prop' | 'arrayElement' | 'setMember' | 'mapKey' | 'mapValue';
-
-

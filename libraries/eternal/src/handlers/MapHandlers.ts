@@ -8,6 +8,7 @@ import { PropertyMeta } from "../meta/InternalSchema"
 import * as invUpd from "../store/inverseUpdaters"
 import { ChangeLogEntry } from "../events/ChangeLog"
 import { EventPayload, Result } from "../events/EventTypes"
+import { uuid } from "./InternalTypes"
 
 // Convert value UUID to Object
 const toValueObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
@@ -19,11 +20,11 @@ const toKeyObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
 
 // Convert value object to UUID if needed
 const valueToUUID = (value: any, propDes: PropertyMeta): any =>
-  propDes.itemType === "object" && value ? value.uuid : value
+  propDes.itemType === "object" && value ? value[uuid] : value
 
 // Convert key object to UUID if needed
 const keyToUUID = (value: any, propDes: PropertyMeta): any =>
-  propDes.keyType === "object" && value ? value.uuid : value
+  propDes.keyType === "object" && value ? value[uuid] : value
 
 export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: ObservableExtra): MapHandlers<K, V> => {
   const privateKey = makePrivatePropertyKey(propDes.qName)
@@ -48,7 +49,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       if(obj[privateKey].has(newKey)) {
       changes.push({
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: "update" as const,
         changeType: "remove" as const,
         property: propDes.qName,
@@ -57,7 +58,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       })}
       changes.push({
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: "update" as const,
         changeType: "add" as const,
         property: propDes.qName,
@@ -70,7 +71,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -103,7 +104,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -148,7 +149,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       const changes: ChangeLogEntry[] = [
         {
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: "update" as const,
           changeType: "remove" as const,
           property: propDes.qName,
@@ -163,7 +164,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -196,7 +197,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -224,7 +225,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       obj[privateKey].forEach((valueUUID: any, keyUUID: any) => {
         changes.push({
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: "update" as const,
           changeType: "remove" as const,
           property: propDes.qName,
@@ -239,7 +240,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -274,7 +275,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 

@@ -2,7 +2,7 @@ import { createStore } from "../../store/createStore"
 import { initializeSchemaRegistry } from "../../meta/SchemaRegistry"
 import { SchemaRegistry } from "../../meta/InternalSchema"
 import { SchemaDescription } from "../../meta/ExternalSchema"
-import { StoreObject } from "../../handlers/InternalTypes"
+import { StoreObject, uuid } from "../../handlers/InternalTypes"
 import { EventPayload, Result } from "../../events/EventTypes"
 import { getEventPattern } from "../../events/SubscriptionManager"
 
@@ -51,7 +51,7 @@ describe("Primitive Property Updates", () => {
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
   })
 
   it("should update a primitive property and emit events", () => {
@@ -84,7 +84,7 @@ describe("Primitive Property Updates", () => {
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
 
     // Verify that the beforeUpdateHandler was called
     expect(beforeUpdateHandler).toHaveBeenCalled()
@@ -122,7 +122,7 @@ describe("Primitive Property Updates", () => {
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
 
     // Verify the state remains unchanged
     expect(person.age).toBe(30)
@@ -162,7 +162,7 @@ describe("Primitive Property Updates", () => {
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
 
     // Verify the state
     expect(person.description).toBeNull()
@@ -235,7 +235,7 @@ describe("Primitive Property Updates", () => {
     }).toThrow("Update not allowed")
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
 
     // Verify the state remains unchanged
     expect(person.name).toBe("John")
@@ -287,7 +287,7 @@ describe("Primitive Property Updates", () => {
     }).toThrow(/Invalid value for property/)
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
 
     // Verify the state remains unchanged
     expect(person.age).toBe(30)
@@ -328,7 +328,7 @@ describe("Primitive Property Updates", () => {
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
 
     // Verify the property was set to undefined
     expect(person.description).toBeUndefined()
@@ -414,7 +414,7 @@ describe("Primitive Property Updates", () => {
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
 
     // Verify the state reflects the updates
     expect(person.name).toBe("Doe")
@@ -510,7 +510,7 @@ describe("Primitive Property Updates", () => {
     store.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
 
     // Retrieve the original object reference
-    const originalReference = store.getObject<Person>((person as StoreObject).uuid)!
+    const originalReference = store.getObject<Person>((person as StoreObject)[uuid])!
 
     // Attempt to update the Person object
     expect(() => {
@@ -521,7 +521,7 @@ describe("Primitive Property Updates", () => {
     }).toThrow(/Update not allowed for age/) // Use regex to check the error message
 
     // Retrieve the current object reference
-    const currentReference = store.getObject<Person>((person as StoreObject).uuid)!
+    const currentReference = store.getObject<Person>((person as StoreObject)[uuid])!
 
     // Verify that the object reference remains the same
     expect(currentReference).toBe(originalReference)
@@ -594,7 +594,7 @@ describe("Primitive Property Updates", () => {
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.getObject((person as StoreObject).uuid)!
+    person = store.getObject((person as StoreObject)[uuid])!
 
     // Verify the state reflects the updates
     expect(person.age).toBe(35)

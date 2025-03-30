@@ -1,4 +1,4 @@
-import { StoreObject } from "../handlers/InternalTypes";
+import { StoreObject, uuid } from "../handlers/InternalTypes";
 import { StoreClass } from "../store/StoreClass";
 
 describe("Undo/Redo Functionality", () => {
@@ -33,11 +33,11 @@ describe("Undo/Redo Functionality", () => {
             person.name = "Bob";
         }, userAlice);
 
-        expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Bob");
+        expect(store.getState().getObject<Person>(userAlice[uuid])?.name).toBe("Bob");
 
         store.undo();
 
-        expect(store.getState().getObject<Person>(userAlice.uuid)?.name).toBe("Alice");
+        expect(store.getState().getObject<Person>(userAlice[uuid])?.name).toBe("Alice");
     });
 
     test("Redo should reapply a reverted state", () => {
@@ -54,10 +54,10 @@ describe("Undo/Redo Functionality", () => {
         }, user)!;
 
         store.undo();
-        expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Alice");
+        expect(store.getState().getObject<Person>(user[uuid])?.name).toBe("Alice");
 
         store.redo();
-        expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Bob");
+        expect(store.getState().getObject<Person>(user[uuid])?.name).toBe("Bob");
     });
 
     test("New changes after undo should clear redo history", () => {
@@ -74,14 +74,14 @@ describe("Undo/Redo Functionality", () => {
         }, user)!;
 
         store.undo();
-        expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Alice");
+        expect(store.getState().getObject<Person>(user[uuid])?.name).toBe("Alice");
 
         user = store.produce((user: StoreObject) => {
             const person = user as Person;
             person.name = "Charlie";
         }, user)!;
 
-        expect(store.getState().getObject<Person>(user.uuid)?.name).toBe("Charlie");
+        expect(store.getState().getObject<Person>(user[uuid])?.name).toBe("Charlie");
 
         expect(store.redo()).toBe(false); // Redo history should be cleared
     });
@@ -115,14 +115,14 @@ describe("Undo/Redo Functionality", () => {
             user.tags.push("tag1");
         })!;
 
-        expect(store.getState().getObject<Person>(user.uuid)?.tags.length).toBe(1);
-        expect(store.getState().getObject<Person>(user.uuid)?.tags).toContain("tag1");
+        expect(store.getState().getObject<Person>(user[uuid])?.tags.length).toBe(1);
+        expect(store.getState().getObject<Person>(user[uuid])?.tags).toContain("tag1");
 
         store.undo();
-        expect(store.getState().getObject<Person>(user.uuid)?.tags.length).toBe(0);
+        expect(store.getState().getObject<Person>(user[uuid])?.tags.length).toBe(0);
 
         store.redo();
-        expect(store.getState().getObject<Person>(user.uuid)?.tags.length).toBe(1);
-        expect(store.getState().getObject<Person>(user.uuid)?.tags).toContain("tag1");
+        expect(store.getState().getObject<Person>(user[uuid])?.tags.length).toBe(1);
+        expect(store.getState().getObject<Person>(user[uuid])?.tags).toContain("tag1");
     });
 });

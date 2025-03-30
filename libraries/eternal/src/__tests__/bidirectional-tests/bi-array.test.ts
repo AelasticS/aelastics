@@ -3,7 +3,7 @@ import { initializeSchemaRegistry } from "../../meta/SchemaRegistry";
 import { SchemaRegistry } from "../../meta/InternalSchema";
 //import jsonSchemaWithArrays from "../data/jsonSchemaWithArrays";
 import { SchemaDescription } from "../../meta/ExternalSchema";
-import { StoreObject } from "../../handlers/InternalTypes";
+import { StoreObject, uuid } from "../../handlers/InternalTypes";
 
 const schemas: SchemaDescription[] = [
     {
@@ -166,8 +166,8 @@ describe("Bidirectional Relationships", () => {
             a.books.push(book1, book2);
         }, author);
 
-        book1 = store.getObject<Book>((book1 as unknown as StoreObject) .uuid)!;
-        book2 = store.getObject<Book>((book2 as unknown as StoreObject).uuid)!;
+        book1 = store.getObject<Book>((book1 as unknown as StoreObject) [uuid])!;
+        book2 = store.getObject<Book>((book2 as unknown as StoreObject)[uuid])!;
         
         expect(author.books.includes(book1)).toBeTruthy;
         expect(author.books.includes(book2)).toBeTruthy();
@@ -184,7 +184,7 @@ describe("Bidirectional Relationships", () => {
             a.books.push(book1, book2);
         }, author);
 
-        book1 = store.getObject<Book>((book1 as unknown as StoreObject).uuid)!;
+        book1 = store.getObject<Book>((book1 as unknown as StoreObject)[uuid])!;
         let filteredBooks: Book[] = [];
 
         store.updateObject((a) => {
@@ -194,9 +194,9 @@ describe("Bidirectional Relationships", () => {
             filteredBooks = a.books.filter(book => book !== book1);
         }, author);
 
-        book1 = store.getObject<Book>((book1 as unknown as StoreObject).uuid)!;
-        book2 = store.getObject<Book>((book2 as unknown as StoreObject).uuid)!;
-        author = store.getObject<Author>((author as unknown as StoreObject).uuid)!;
+        book1 = store.getObject<Book>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.getObject<Book>((book2 as unknown as StoreObject)[uuid])!;
+        author = store.getObject<Author>((author as unknown as StoreObject)[uuid])!;
 
         expect(filteredBooks.includes(book1)).toBeFalsy();
         expect(author.books.includes(book2)).toBe
@@ -215,9 +215,9 @@ describe("Bidirectional Relationships", () => {
             p.books.push(book1, book2);
         }, publisher);
 
-        book1 = store.getObject<PublishedBook>((book1 as unknown as StoreObject).uuid)!;
-        book2 = store.getObject<PublishedBook>((book2 as unknown as StoreObject).uuid)!;
-        publisher = store.getObject<Publisher>((publisher as unknown as StoreObject).uuid)!;
+        book1 = store.getObject<PublishedBook>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.getObject<PublishedBook>((book2 as unknown as StoreObject)[uuid])!;
+        publisher = store.getObject<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
         expect(publisher.books.includes(book1)).toBeTruthy();
         expect(publisher.books.includes(book2)).toBeTruthy();
@@ -234,7 +234,7 @@ describe("Bidirectional Relationships", () => {
             p.books.push(book1, book2);
         }, publisher);
 
-        publisher = store.getObject<Publisher>((publisher as unknown as StoreObject).uuid)!;
+        publisher = store.getObject<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
         store.updateObject((p) => { //= p.books.filter(book => book !== book1);
             const i = p.books.findIndex(book => book !== book1);
@@ -242,9 +242,9 @@ describe("Bidirectional Relationships", () => {
                 p.books.splice(i,1) 
         }, publisher);
 
-        book1 = store.getObject<PublishedBook>((book1 as unknown as StoreObject).uuid)!;
-        book2 = store.getObject<PublishedBook>((book2 as unknown as StoreObject).uuid)!;
-        publisher = store.getObject<Publisher>((publisher as unknown as StoreObject).uuid)!;
+        book1 = store.getObject<PublishedBook>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.getObject<PublishedBook>((book2 as unknown as StoreObject)[uuid])!;
+        publisher = store.getObject<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
         expect(publisher.books.includes(book1)).toBeFalsy();
         expect(publisher.books.includes(book2)).toBeTruthy();
@@ -266,10 +266,10 @@ describe("Bidirectional Relationships", () => {
             s.courses.push(course1, course2);
         }, student2);
 
-        student1 = store.getObject<Student>((student1 as unknown as StoreObject).uuid)!;
-        student2 = store.getObject<Student>((student2 as unknown as StoreObject).uuid)!;
-        course1 = store.getObject<Course>((course1 as unknown as StoreObject).uuid)!;
-        course2 = store.getObject<Course>((course2 as unknown as StoreObject).uuid)!;
+        student1 = store.getObject<Student>((student1 as unknown as StoreObject)[uuid])!;
+        student2 = store.getObject<Student>((student2 as unknown as StoreObject)[uuid])!;
+        course1 = store.getObject<Course>((course1 as unknown as StoreObject)[uuid])!;
+        course2 = store.getObject<Course>((course2 as unknown as StoreObject)[uuid])!;
 
         expect(student1.courses.includes(course1)).toBeTruthy();
         expect(student1.courses.includes(course2)).toBeTruthy();
@@ -295,17 +295,17 @@ describe("Bidirectional Relationships", () => {
             s.courses.push(course1, course2);
         }, student2);
 
-        student1 = store.getObject<Student>((student1 as unknown as StoreObject).uuid)!;
+        student1 = store.getObject<Student>((student1 as unknown as StoreObject)[uuid])!;
 
         store.updateObject((s) => {
             // s.courses = s.courses.filter(course => course !== course1);
             s.courses.shift()
         }, student1);
 
-        student1 = store.getObject<Student>((student1 as unknown as StoreObject).uuid)!;
-        student2 = store.getObject<Student>((student2 as unknown as StoreObject).uuid)!;
-        course1 = store.getObject<Course>((course1 as unknown as StoreObject).uuid)!;
-        course2 = store.getObject<Course>((course2 as unknown as StoreObject).uuid)!;
+        student1 = store.getObject<Student>((student1 as unknown as StoreObject)[uuid])!;
+        student2 = store.getObject<Student>((student2 as unknown as StoreObject)[uuid])!;
+        course1 = store.getObject<Course>((course1 as unknown as StoreObject)[uuid])!;
+        course2 = store.getObject<Course>((course2 as unknown as StoreObject)[uuid])!;
 
         expect(student1.courses.includes(course1)).toBeFalsy();
         expect(student1.courses.includes(course2)).toBeTruthy();

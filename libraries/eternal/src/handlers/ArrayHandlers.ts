@@ -1,7 +1,7 @@
 import { ArrayHandlers, createObservableArray } from "@aelastics/observables"
-import { getClassName, isUUIDReference, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../store/utils" // Import the utility function
+import { getClassName, isStoreObject, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../store/utils" // Import the utility function
 import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
-import { StoreObject } from "./InternalTypes"
+import { StoreObject, uuid } from "./InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
 import { PropertyMeta } from "../meta/InternalSchema"
 import { StoreClass } from "../store/StoreClass"
@@ -20,11 +20,11 @@ const mapToObjects = (items: any[], store: StoreClass, propDes: PropertyMeta): a
   items.map((item) => toObject(item, store, propDes))
 
 // Convert object to UUID if needed
-const toUUID = (value: any, propDes: PropertyMeta): any => (propDes.itemType === "object" && value ? value.uuid : value)
+const toUUID = (value: any, propDes: PropertyMeta): any => (propDes.itemType === "object" && value ? value[uuid] : value)
 
 /** Map Objects to UUIDs */
 const mapToUUIDs = (items: any[], propDes: PropertyMeta): any[] =>
-  propDes.itemType === "object" && items ? items.map((item) => item.uuid) : items
+  propDes.itemType === "object" && items ? items.map((item) => item[uuid]) : items
 
 /** Creates typed array handlers to track UUIDs and object references */
 export const createArrayHandlers = <T extends StoreObject>({
@@ -67,7 +67,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
   if (oldValueUUID !== undefined) {
     changes.push({
       objectType: getClassName(object),
-      objectId: object.uuid,
+      objectId: object[uuid],
       operation: 'update' as const,
       changeType: 'remove' as const,
       property: propDes.qName,
@@ -77,7 +77,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
   if (newValueUUID !== undefined) {
     changes.push({
       objectType: getClassName(object),
-      objectId: object.uuid,
+      objectId: object[uuid],
       operation: 'update' as const,
       changeType: 'add' as const,
       property: propDes.qName,
@@ -92,7 +92,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       objectType: getClassName(object),
       property: propDes.qName,
       timestamp: uniqueTimestamp(),
-      objectId: object.uuid,
+      objectId: object[uuid],
       changes: changes,
     };
 
@@ -124,7 +124,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       objectType: getClassName(object),
       property: propDes.qName,
       timestamp: uniqueTimestamp(),
-      objectId: object.uuid,
+      objectId: object[uuid],
       changes: changes,
     };
 
@@ -149,7 +149,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'remove' as const,
         property: propDes.qName,
@@ -162,7 +162,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -192,7 +192,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -216,7 +216,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'add' as const,
         property: propDes.qName,
@@ -230,7 +230,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -264,7 +264,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -289,7 +289,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'remove' as const,
         property: propDes.qName,
@@ -303,7 +303,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -333,7 +333,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -358,7 +358,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'remove' as const,
         property: propDes.qName,
@@ -372,7 +372,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -402,7 +402,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -427,7 +427,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'add' as const,
         property: propDes.qName,
@@ -441,7 +441,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -475,7 +475,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -503,7 +503,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       if (deletedItems.length > 0) {
         changes.push(...deletedItems.map((oldValue, index) => ({
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: 'update' as const,
           changeType: 'remove' as const,
           property: propDes.qName,
@@ -514,7 +514,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       if (itemsUUIDs.length > 0) {
         changes.push(...itemsUUIDs.map((newValue, index) => ({
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: 'update' as const,
           changeType: 'add' as const,
           property: propDes.qName,
@@ -529,7 +529,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -567,7 +567,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -587,7 +587,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'reorder' as const,
         property: propDes.qName,
@@ -601,7 +601,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -627,7 +627,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -647,7 +647,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = [{
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'reorder' as const,
         property: propDes.qName,
@@ -661,7 +661,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -687,7 +687,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -718,7 +718,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       for (let i = actualStart; i < actualEnd; i++) {
         changes.push({
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: 'update' as const,
           changeType: 'add' as const,
           property: propDes.qName,
@@ -734,7 +734,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -760,7 +760,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -787,7 +787,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Emit before.update event and check for cancellation
       const changes: ChangeLogEntry[] = itemsUUIDs.map((newValue, index) => ({
         objectType: getClassName(object),
-        objectId: object.uuid,
+        objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'add' as const,
         property: propDes.qName,
@@ -801,7 +801,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -835,7 +835,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -858,7 +858,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     /** Handle indexOf */
     indexOf: (target: T[], value: T, fromIndex: number) => {
       const obj = checkReadAccess(object, store)
-      const newValue = isUUIDReference(value) ? (value.uuid as unknown as T) : value
+      const newValue = isStoreObject(value) ? (value[uuid] as unknown as T) : value
       const result = obj[privateKey].indexOf(newValue, fromIndex)
       return [false, result]
     },
@@ -1012,7 +1012,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         const newValue = obj[privateKey][i];
         changes.push({
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: 'update' as const,
           changeType: 'add' as const,
           property: propDes.qName,
@@ -1027,7 +1027,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     
@@ -1053,7 +1053,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       };
     

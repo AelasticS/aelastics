@@ -14,7 +14,7 @@ export interface SchemaDescription extends SchemaElement {
 }
 
 export interface TypeDescription extends SchemaElement {
-  extends?: string // Name of the base class (if subclassing is used)
+  extends?: string // Name of the base class (if sub-classing is used)
   properties: Record<string, PropertyDescription>
   roles?: string[]
 }

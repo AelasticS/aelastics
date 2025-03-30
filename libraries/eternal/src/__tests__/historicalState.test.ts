@@ -1,5 +1,6 @@
 import { createStore } from "../store/createStore";
 import { TypeMeta } from "../meta/InternalSchema";
+import { StoreObject, uuid } from "../handlers/InternalTypes";
 
 describe("Store API: Historical State Access", () => {
     let store: ReturnType<typeof createStore>;
@@ -17,7 +18,7 @@ describe("Store API: Historical State Access", () => {
         store = createStore(metaInfo);
     });
 
-    interface User {
+    interface User extends StoreObject{
         uuid: string;
         name: string;
         age: number;
@@ -34,10 +35,10 @@ describe("Store API: Historical State Access", () => {
             u.name = "Bob";
         }, user);
 
-        const oldUser = store.fromState<User>(1, user.uuid);
+        const oldUser = store.fromState<User>(1, user[uuid]);
         expect(oldUser?.name).toBe("Alice");
 
-        const newUser = store.getObject<User>(user.uuid);
+        const newUser = store.getObject<User>(user[uuid]);
         expect(newUser?.name).toBe("Bob");
     });
 

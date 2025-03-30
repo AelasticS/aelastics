@@ -8,13 +8,14 @@ import { StoreClass } from "../store/StoreClass"
 import * as invUpd from "../store/inverseUpdaters"
 import { EventPayload, Result } from "../events/EventTypes"
 import { ChangeLogEntry } from "../events/ChangeLog"
+import { uuid } from "./InternalTypes"
 
 // Convert UUID to Object
 const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
   propDes.itemType === "object" && item ? store.getObject(item) : item
 
 // Convert object to UUID if needed
-const toUUID = (value: any, propDes: PropertyMeta): any => (propDes.itemType === "object" && value ? value.uuid : value)
+const toUUID = (value: any, propDes: PropertyMeta): any => (propDes.itemType === "object" && value ? value[uuid] : value)
 
 /** Creates handlers for observable sets */
 export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra): SetHandlers<V> => {
@@ -40,7 +41,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       const changes: ChangeLogEntry[] = [
         {
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: "update" as const,
           changeType: "add" as const,
           property: propDes.qName,
@@ -54,7 +55,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -87,7 +88,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -115,7 +116,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       const changes: ChangeLogEntry[] = [
         {
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: "update" as const,
           changeType: "remove" as const,
           property: propDes.qName,
@@ -129,7 +130,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -162,7 +163,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -190,7 +191,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       obj[privateKey].forEach((valueUUID: any) => {
         changes.push({
           objectType: getClassName(object),
-          objectId: object.uuid,
+          objectId: object[uuid],
           operation: "update" as const,
           changeType: "remove" as const,
           property: propDes.qName,
@@ -204,7 +205,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
@@ -239,7 +240,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
         objectType: getClassName(object),
         property: propDes.qName,
         timestamp: uniqueTimestamp(),
-        objectId: object.uuid,
+        objectId: object[uuid],
         changes: changes,
       }
 
