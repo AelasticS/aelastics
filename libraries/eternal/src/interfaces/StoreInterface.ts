@@ -106,3 +106,10 @@ export interface Store {
 }
 
 export interface SubscriptionManager {}
+export interface SchemaManager {}
+
+export interface StoreManager  {
+  serialize():string
+  deserialize(json: string, validate?: boolean): void
+  validate(): Result
+}
