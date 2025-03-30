@@ -86,9 +86,9 @@ describe("Bidirectional Relationships & Cyclic References", () => {
       parent.children.push(child2)
     })
 
-    parent = store.getObject((parent as unknown as StoreObject)[uuid]) as Parent
-    child1 = store.getObject((child1 as unknown as StoreObject)[uuid]) as Child
-    child2 = store.getObject((child2 as unknown as StoreObject)[uuid]) as Child
+    parent = store.getObjectByUUID((parent as unknown as StoreObject)[uuid]) as Parent
+    child1 = store.getObjectByUUID((child1 as unknown as StoreObject)[uuid]) as Child
+    child2 = store.getObjectByUUID((child2 as unknown as StoreObject)[uuid]) as Child
 
     expect(parent.children).toHaveLength(2)
     expect(child1.parent).toBe(parent)
@@ -106,8 +106,8 @@ describe("Bidirectional Relationships & Cyclic References", () => {
       parent.children.push(child)
     })
 
-    parent = store.getObject((parent as unknown as StoreObject)[uuid]) as Parent
-    child = store.getObject((child as unknown as StoreObject)[uuid]) as Child
+    parent = store.getObjectByUUID((parent as unknown as StoreObject)[uuid]) as Parent
+    child = store.getObjectByUUID((child as unknown as StoreObject)[uuid]) as Child
 
     expect(parent.children[0]).toBe(child)
     expect(child.parent).toBe(parent)
@@ -120,9 +120,9 @@ describe("Bidirectional Relationships & Cyclic References", () => {
       child.parent = newParent
     })
 
-    parent = store.getObject((parent as unknown as StoreObject)[uuid]) as Parent
-    child = store.getObject((child as unknown as StoreObject)[uuid]) as Child
-    newParent = store.getObject((newParent as unknown as StoreObject)[uuid]) as Parent
+    parent = store.getObjectByUUID((parent as unknown as StoreObject)[uuid]) as Parent
+    child = store.getObjectByUUID((child as unknown as StoreObject)[uuid]) as Child
+    newParent = store.getObjectByUUID((newParent as unknown as StoreObject)[uuid]) as Parent
 
     expect(child.parent).toBe(newParent)
     expect(newParent.children[0]).toBe(child)
@@ -142,8 +142,8 @@ describe("Bidirectional Relationships & Cyclic References", () => {
       child.parent = parent
     })
 
-    parent = store.getObject((parent as unknown as StoreObject)[uuid]) as Parent
-    child = store.getObject((child as unknown as StoreObject)[uuid]) as Child
+    parent = store.getObjectByUUID((parent as unknown as StoreObject)[uuid]) as Parent
+    child = store.getObjectByUUID((child as unknown as StoreObject)[uuid]) as Child
 
     expect(parent.children[0]).toBe(child)
     expect(child.parent).toBe(parent)

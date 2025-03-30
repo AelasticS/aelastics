@@ -33,7 +33,7 @@ export interface Store {
    * @param uuid - The UUID of the object to retrieve.
    * @returns The object if found, otherwise undefined.
    */
-  getObject<T extends object>(uuid: string): T | undefined
+  getObjectByUUID<T extends object>(uuid: string): T | undefined
 
   /**
    * Checks if the store is currently in update mode.

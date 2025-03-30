@@ -121,7 +121,7 @@ export class StoreClass {
   }
 
   /** Retrieves an object dynamically from the latest state */
-  public getObject<T>(uuid: string): T | undefined {
+  public getObjectByUUID<T>(uuid: string): T | undefined {
     return this.getState().getDynamicObject(uuid)
   }
 

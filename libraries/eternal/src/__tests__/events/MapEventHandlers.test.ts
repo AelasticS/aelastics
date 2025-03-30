@@ -73,7 +73,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject)
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!
 
     // Verify the final state of the map
     expect(userObject.preferences.get("theme")).toBe("dark")
@@ -90,7 +90,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Get the UUID of the map entry key
     const keyToDelete = "theme";
@@ -125,7 +125,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Verify the final state of the map
     expect(userObject.preferences.has(keyToDelete)).toBe(false);
@@ -143,7 +143,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -191,7 +191,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Verify the final state of the map
     expect(userObject.preferences.size).toBe(0);
@@ -208,7 +208,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -256,7 +256,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Verify the final state of the map
     expect(userObject.preferences.get("theme")).toBe("light");
@@ -283,7 +283,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Verify the map remains unchanged
     expect(userObject.preferences.size).toBe(0);
@@ -299,7 +299,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn();
@@ -317,7 +317,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Verify the map remains unchanged
     expect(userObject.preferences.get("theme")).toBe("dark");
@@ -334,7 +334,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }, userObject);
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Mock before.update handler to cancel the operation
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -357,7 +357,7 @@ describe("Map Event Handlers - User Preferences", () => {
     }).toThrowError("Operation was canceled by the handler.");
 
     // Update the object reference
-    userObject = store.getObject((userObject as StoreObject)[uuid])!;
+    userObject = store.getObjectByUUID((userObject as StoreObject)[uuid])!;
 
     // Verify the map remains unchanged
     expect(userObject.preferences.get("theme")).toBe("dark");

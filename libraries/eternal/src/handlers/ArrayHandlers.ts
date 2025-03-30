@@ -13,7 +13,7 @@ import { State } from "../store/State"
 
 // Convert UUID to Object
 const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  propDes.itemType === "object" && item ? store.getObject(item) : item
+  propDes.itemType === "object" && item ? store.getObjectByUUID(item) : item
 
 /** Convert UUIDs to Objects */
 const mapToObjects = (items: any[], store: StoreClass, propDes: PropertyMeta): any[] =>

@@ -172,9 +172,9 @@ describe("Bidirectional Relationships with Maps", () => {
             a.books.set(book2[uuid], book2);
         }, author);
 
-        author = store.getObject<Author>(author[uuid])!;
-        book1 = store.getObject<Book>(book1[uuid])!;
-        book2 = store.getObject<Book>(book2[uuid])!;
+        author = store.getObjectByUUID<Author>(author[uuid])!;
+        book1 = store.getObjectByUUID<Book>(book1[uuid])!;
+        book2 = store.getObjectByUUID<Book>(book2[uuid])!;
 
         expect(author.books.get(book1[uuid])).toBe(book1);
         expect(author.books.get(book2[uuid])).toBe(book2);
@@ -192,15 +192,15 @@ describe("Bidirectional Relationships with Maps", () => {
             a.books.set(book2[uuid], book2);
         }, author);
 
-        author = store.getObject<Author>(author[uuid])!;
+        author = store.getObjectByUUID<Author>(author[uuid])!;
 
         store.updateObject((a) => {
             a.books.delete(book1[uuid]);
         }, author);
 
-        author = store.getObject<Author>(author[uuid])!;
-        book1 = store.getObject<Book>(book1[uuid])!;
-        book2 = store.getObject<Book>(book2[uuid])!;
+        author = store.getObjectByUUID<Author>(author[uuid])!;
+        book1 = store.getObjectByUUID<Book>(book1[uuid])!;
+        book2 = store.getObjectByUUID<Book>(book2[uuid])!;
 
         expect(author.books.has(book1[uuid])).toBe(false);
         expect(author.books.get(book2[uuid])).toBe(book2);
@@ -218,9 +218,9 @@ describe("Bidirectional Relationships with Maps", () => {
             p.books.set(book2[uuid], book2);
         }, publisher);
 
-        publisher = store.getObject<Publisher>(publisher[uuid])!;
-        book1 = store.getObject<PublishedBook>(book1[uuid])!;
-        book2 = store.getObject<PublishedBook>(book2[uuid])!;
+        publisher = store.getObjectByUUID<Publisher>(publisher[uuid])!;
+        book1 = store.getObjectByUUID<PublishedBook>(book1[uuid])!;
+        book2 = store.getObjectByUUID<PublishedBook>(book2[uuid])!;
 
         expect(publisher.books.get(book1[uuid])).toBe(book1);
         expect(publisher.books.get(book2[uuid])).toBe(book2);
@@ -238,15 +238,15 @@ describe("Bidirectional Relationships with Maps", () => {
             p.books.set(book2[uuid], book2);
         }, publisher);
 
-        publisher = store.getObject<Publisher>(publisher[uuid])!;
+        publisher = store.getObjectByUUID<Publisher>(publisher[uuid])!;
 
         store.updateObject((p) => {
             p.books.delete(book1[uuid]);
         }, publisher);
 
-        publisher = store.getObject<Publisher>(publisher[uuid])!;
-        book1 = store.getObject<PublishedBook>(book1[uuid])!;
-        book2 = store.getObject<PublishedBook>(book2[uuid])!;
+        publisher = store.getObjectByUUID<Publisher>(publisher[uuid])!;
+        book1 = store.getObjectByUUID<PublishedBook>(book1[uuid])!;
+        book2 = store.getObjectByUUID<PublishedBook>(book2[uuid])!;
 
         expect(publisher.books.has(book1[uuid])).toBe(false);
         expect(publisher.books.get(book2[uuid])).toBe(book2);
@@ -265,19 +265,19 @@ describe("Bidirectional Relationships with Maps", () => {
             s.courses.set(course2[uuid], course2);
         }, student1);
 
-        student1 = store.getObject<Student>(student1[uuid])!;
-        course1 = store.getObject<Course>(course1[uuid])!;
-        course2 = store.getObject<Course>(course2[uuid])!;
+        student1 = store.getObjectByUUID<Student>(student1[uuid])!;
+        course1 = store.getObjectByUUID<Course>(course1[uuid])!;
+        course2 = store.getObjectByUUID<Course>(course2[uuid])!;
 
         store.updateObject((s) => {
             s.courses.set(course1[uuid], course1);
             s.courses.set(course2[uuid], course2);
         }, student2);
 
-        student2 = store.getObject<Student>(student2[uuid])!;
-        student1 = store.getObject<Student>(student1[uuid])!;
-        course1 = store.getObject<Course>(course1[uuid])!;
-        course2 = store.getObject<Course>(course2[uuid])!;
+        student2 = store.getObjectByUUID<Student>(student2[uuid])!;
+        student1 = store.getObjectByUUID<Student>(student1[uuid])!;
+        course1 = store.getObjectByUUID<Course>(course1[uuid])!;
+        course2 = store.getObjectByUUID<Course>(course2[uuid])!;
 
         expect(student1.courses.get(course1[uuid])).toBe(course1);
         expect(student1.courses.get(course2[uuid])).toBe(course2);
@@ -300,25 +300,25 @@ describe("Bidirectional Relationships with Maps", () => {
             s.courses.set(course2[uuid], course2);
         }, student1);
 
-        student1 = store.getObject<Student>(student1[uuid])!;
-        course1 = store.getObject<Course>(course1[uuid])!;
-        course2 = store.getObject<Course>(course2[uuid])!;
+        student1 = store.getObjectByUUID<Student>(student1[uuid])!;
+        course1 = store.getObjectByUUID<Course>(course1[uuid])!;
+        course2 = store.getObjectByUUID<Course>(course2[uuid])!;
 
         store.updateObject((s) => {
             s.courses.set(course1[uuid], course1);
             s.courses.set(course2[uuid], course2);
         }, student2);
 
-        student1 = store.getObject<Student>(student1[uuid])!;
+        student1 = store.getObjectByUUID<Student>(student1[uuid])!;
 
         store.updateObject((s) => {
             s.courses.delete(course1[uuid]);
         }, student1);
 
-        student1 = store.getObject<Student>(student1[uuid])!;
-        student2 = store.getObject<Student>(student2[uuid])!;
-        course1 = store.getObject<Course>(course1[uuid])!;
-        course2 = store.getObject<Course>(course2[uuid])!;
+        student1 = store.getObjectByUUID<Student>(student1[uuid])!;
+        student2 = store.getObjectByUUID<Student>(student2[uuid])!;
+        course1 = store.getObjectByUUID<Course>(course1[uuid])!;
+        course2 = store.getObjectByUUID<Course>(course2[uuid])!;
 
         expect(student1.courses.has(course1[uuid])).toBe(false);
         expect(student1.courses.get(course2[uuid])).toBe(course2);

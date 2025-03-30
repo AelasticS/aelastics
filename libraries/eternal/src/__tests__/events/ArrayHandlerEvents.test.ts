@@ -41,7 +41,7 @@ describe("ArrayHandler Events", () => {
     simpleArrayObject = store.createObject("SimpleArrayType") as StoreObject;
 
     // Retrieve the latest version of the object
-    simpleArrayObject = store.getObject((simpleArrayObject as StoreObject)[uuid])!;
+    simpleArrayObject = store.getObjectByUUID((simpleArrayObject as StoreObject)[uuid])!;
   });
 
   test("should emit events and track changes for push operation on array of simple values", () => {
@@ -391,7 +391,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
       objectArrayObject = store.createObject("ObjectArrayType") as StoreObject;
   
       // Retrieve the latest version of the object
-      objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
+      objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
     });
   
     test("should emit events and update inverse properties for push operation on array of objects", () => {
@@ -431,8 +431,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the variables with their latest versions
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject = store.getObject((relatedObject as StoreObject)[uuid])!;
+        objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.getObjectByUUID((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject]);
@@ -451,8 +451,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject = store.getObject((relatedObject as StoreObject)[uuid])!;
+        objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.getObjectByUUID((relatedObject as StoreObject)[uuid])!;
     
         // Get the UUID of the related object
         const relatedObjectUUID = (relatedObject as StoreObject)[uuid];
@@ -487,8 +487,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject = store.getObject((relatedObject as StoreObject)[uuid])!;
+        objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.getObjectByUUID((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([]);
@@ -508,9 +508,9 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject1 = store.getObject((relatedObject1 as StoreObject)[uuid])!;
-        relatedObject2 = store.getObject((relatedObject2 as StoreObject)[uuid])!;
+        objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.getObjectByUUID((relatedObject1 as StoreObject)[uuid])!;
+        relatedObject2 = store.getObjectByUUID((relatedObject2 as StoreObject)[uuid])!;
     
         // Get the UUIDs of the related objects
         const relatedObject1UUID = (relatedObject1 as StoreObject)[uuid];
@@ -546,8 +546,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject1 = store.getObject((relatedObject1 as StoreObject)[uuid])!;
+        objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.getObjectByUUID((relatedObject1 as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject2]);
@@ -590,8 +590,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject = store.getObject((relatedObject as StoreObject)[uuid])!;
+        objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.getObjectByUUID((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject]);
@@ -611,9 +611,9 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject1 = store.getObject((relatedObject1 as StoreObject)[uuid])!;
-        relatedObject2 = store.getObject((relatedObject2 as StoreObject)[uuid])!;
+        objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.getObjectByUUID((relatedObject1 as StoreObject)[uuid])!;
+        relatedObject2 = store.getObjectByUUID((relatedObject2 as StoreObject)[uuid])!;
     
         // Get the UUID of the first related object
         const relatedObject1UUID = (relatedObject1 as StoreObject)[uuid];
@@ -648,8 +648,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.getObject((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject1 = store.getObject((relatedObject1 as StoreObject)[uuid])!;
+        objectArrayObject = store.getObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.getObjectByUUID((relatedObject1 as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject2]);
