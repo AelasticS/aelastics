@@ -57,13 +57,13 @@ export interface ObjectManager {
   /**
    * Serializes an object into a string format.
    * @param obj - The object to serialize.
-   * @returns The serialized string representation of the object.
+   * @returns The JSON-formatted string representation of the object.
    */
   serialize<T extends object>(obj: T): string
 
   /**
    * Deserializes a string into an object of type T and puts it into the store.
-   * @param obj - The string to deserialize.
+   * @param json - The JSON-formatted string to be deserialized.
    * @param type - The type of the object to deserialize.
    * @param validate - Optional flag to validate the object against its type schema. Default is true.
    * @returns The deserialized object of type T.
