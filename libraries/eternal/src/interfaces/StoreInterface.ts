@@ -105,8 +105,8 @@ export interface Store {
   getEternalStore(): StoreClass
 }
 
-export interface SubscriptionManager {}
-export interface SchemaManager {}
+export interface SubscriptionManager {} // subscriptions
+export interface SchemaManager {} // schemas
 
 export interface StoreManager  {
   serialize():string
