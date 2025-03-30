@@ -39,6 +39,14 @@
       "allowedCategories": [ "production", "prototypes" ]
     },
     {
+      "name": "@rushstack/heft-lint-plugin",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@rushstack/heft-typescript-plugin",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@testing-library/dom",
       "allowedCategories": [ "production" ]
     },
@@ -164,6 +172,10 @@
     },
     {
       "name": "whatwg-fetch",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "zod",
       "allowedCategories": [ "production" ]
     }
   ]
