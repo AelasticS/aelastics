@@ -91,7 +91,7 @@ import { wrapZod } from "./ZodWrapper"
 export const z /*: IZodWrapper */ = {
   ...originalZod,
   object: (shape: any) => wrapZod(originalZod.object(shape)) as originalZod.ZodObject<typeof shape>,
-  array: (schema) => wrapZod(originalZod.array(schema)) as originalZod.ZodArray<typeof schema>,
+  array: (schema:any) => wrapZod(originalZod.array(schema)) as originalZod.ZodArray<typeof schema>,
   union: <T extends [originalZod.ZodTypeAny, originalZod.ZodTypeAny, ...originalZod.ZodTypeAny[]]>(...options: T) =>
     wrapZod(originalZod.union(options)) as originalZod.ZodUnion<T>,
   intersection: <T extends originalZod.ZodTypeAny, U extends originalZod.ZodTypeAny>(left: T, right: U) =>
@@ -136,11 +136,14 @@ export const z /*: IZodWrapper */ = {
   ) =>
     wrapZod(originalZod.discriminatedUnion(discriminator, options, params)) as originalZod.ZodDiscriminatedUnion<K, T>,
 
-  effects(schema, effect) {
-    return wrapZod(originalZod.effect(schema, effect)) as originalZod.ZodEffects<typeof schema>
+  effects: <T extends originalZod.ZodTypeAny>(
+    schema: T,
+    effect: originalZod.ZodEffects<any>
+  ): originalZod.ZodEffects<T> => {
+    return wrapZod(originalZod.effect(schema, effect as any)) as originalZod.ZodEffects<T>;
   },
   default: <T extends originalZod.ZodTypeAny>(schema: T, defaultValue: originalZod.input<T>) =>
-    wrapZod(originalZod.default(schema, defaultValue)) as originalZod.ZodDefault<T>,
+    wrapZod((originalZod as any).default(schema, defaultValue)) as originalZod.ZodDefault<T>,
 
   preprocess: <T extends originalZod.ZodTypeAny>(preprocess: (arg: unknown) => unknown, schema: T) => {
     return originalZod.preprocess(preprocess, wrapZod(schema)) as originalZod.ZodEffects<T>
