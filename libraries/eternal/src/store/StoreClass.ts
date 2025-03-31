@@ -15,6 +15,7 @@ import { State } from "./State"
 import { SubscriptionManager } from "../events/SubscriptionManager"
 import { randomUUID } from "crypto"
 import { makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
+import { isSimplePropType } from "../meta/PropertyDefinitions"
 
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
@@ -262,8 +263,11 @@ export class StoreClass {
         throw new Error(`Unknown type: ${type}. Cannot create object.`)
       }
       return this.createObject(type, value, processed)
+    } else if (isSimplePropType(type)) {
+      // If the type is a simple property type, return the value directly
+      return value
     } else {
-      throw new Error("Invalid value: Only objects or store objects are allowed.")
+      throw new Error(`Invalid value '${value}' for type '${type}'.`)
     }
   }
 
@@ -427,15 +431,15 @@ export class StoreClass {
                 break
 
               case "string":
-                this[privateKey] = propertyMeta.defaultValue || ""
+                this[privateKey] = propertyMeta.defaultValue //|| ""
                 break
 
               case "number":
-                this[privateKey] = propertyMeta.defaultValue || 0
+                this[privateKey] = propertyMeta.defaultValue //|| 0
                 break
 
               case "boolean":
-                this[privateKey] = propertyMeta.defaultValue || false
+                this[privateKey] = propertyMeta.defaultValue //|| false
                 break
 
               case "object":

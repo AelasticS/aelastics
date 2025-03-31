@@ -2,6 +2,8 @@ import { StoreClass } from "../../store/StoreClass" // Adjust the path if necess
 import { __StoreSuperClass__ } from "../../handlers/InternalTypes" // Corrected path for __StoreSuperClass__
 import { TypeMeta } from "../../meta/InternalSchema"
 import { State } from "../../store/State"
+import { EventPayload, Result } from "../../events/EventTypes"
+import { getEventPattern } from "../../events/SubscriptionManager"
 
 describe("StoreClass - createObject", () => {
   let store: StoreClass
@@ -243,4 +245,202 @@ describe('Handling Null or Undefined initialState in createObject', () => {
         expect(createdObject.setProp instanceof Set).toBe(true); // Set should still be initialized
         expect(createdObject.setProp.size).toBe(0); // Set should remain empty
       });
+  });
+
+
+  describe('Handling Invalid initialState Values in createObject', () => {
+    /** Interface for InvalidTestType */
+    interface InvalidTestType {
+      arrayProp: string[]; // Array property
+      mapProp: Map<string, string>; // Map property
+      setProp: Set<string>; // Set property
+    }
+  
+    // Static metadata for InvalidTestType
+    const invalidMetaInfo = new Map<string, TypeMeta>([
+      [
+        'InvalidTestType',
+        {
+          qName: 'InvalidTestType',
+          properties: new Map([
+            ['arrayProp', { type: 'array', domainType: 'string', qName: 'arrayProp' }],
+            ['mapProp', { type: 'map', domainType: 'string', qName: 'mapProp' }],
+            ['setProp', { type: 'set', domainType: 'string', qName: 'setProp' }],
+          ]),
+        },
+      ],
+    ]);
+  
+    // Initialize the store once for all tests in this describe block
+    let store: StoreClass = new StoreClass(invalidMetaInfo);
+  
+    it('should throw an error if arrayProp is not an array', () => {
+      const invalidState = { arrayProp: 'notAnArray' } as unknown as Partial<InvalidTestType>;
+  
+      expect(() => store.createObject<InvalidTestType>('InvalidTestType', invalidState))
+        .toThrow('Expected an array for property arrayProp, but got string.');
+    });
+  
+    it('should throw an error if mapProp is not a Map', () => {
+      const invalidState = { mapProp: 'notAMap' } as unknown as Partial<InvalidTestType>;
+  
+      expect(() => store.createObject<InvalidTestType>('InvalidTestType', invalidState))
+        .toThrow('Expected a Map for property mapProp, but got string.');
+    });
+  
+    it('should throw an error if setProp is not a Set', () => {
+      const invalidState = { setProp: 'notASet' } as unknown as Partial<InvalidTestType>;
+  
+      expect(() => store.createObject<InvalidTestType>('InvalidTestType', invalidState))
+        .toThrow('Expected a Set for property setProp, but got string.');
+    });
+  });
+
+  describe('Handling Initial State with Store Objects in createObject', () => {
+    /** Interface for StoreObjectTestType */
+    interface StoreObjectTestType {
+      simpleProp: string; // Simple property
+      arrayProp: NestedType[]; // Array of NestedType objects
+      mapProp: Map<string, NestedType>; // Map with string keys and NestedType values
+      setProp: Set<NestedType>; // Set of NestedType objects
+    }
+  
+    /** Interface for NestedType */
+    interface NestedType {
+      nestedProp: string; // Simple property in NestedType
+    }
+  
+    // Static metadata for StoreObjectTestType
+    const storeObjectMetaInfo = new Map<string, TypeMeta>([
+      [
+        'StoreObjectTestType',
+        {
+          qName: 'StoreObjectTestType',
+          properties: new Map([
+            ['simpleProp', { type: 'string', defaultValue: 'defaultString', qName: 'simpleProp' }],
+            ['arrayProp', { type: 'array', domainType: 'NestedType', qName: 'arrayProp' }],
+            [
+              'mapProp',
+              {
+                type: 'map',
+                keyType: 'string', // Keys are strings
+                itemType: 'object', // Values are objects of type NestedType
+                domainType: 'NestedType',
+                qName: 'mapProp',
+              },
+            ],
+            ['setProp', { type: 'set', domainType: 'NestedType', qName: 'setProp' }],
+          ]),
+        },
+      ],
+      [
+        'NestedType',
+        {
+          qName: 'NestedType',
+          properties: new Map([
+            ['nestedProp', { type: 'string', defaultValue: 'nestedDefault', qName: 'nestedProp' }],
+          ]),
+        },
+      ],
+    ]);
+  
+    // Initialize the store once for all tests in this describe block
+    let store: StoreClass = new StoreClass(storeObjectMetaInfo);
+  
+    it('should directly assign store objects to properties without recreating them', () => {
+      // Create a NestedType object in the store
+      const nestedObject = store.createObject<NestedType>('NestedType', { nestedProp: 'nestedValue' });
+  
+      // Use the existing store object in the initialState
+      const initialState = {
+        simpleProp: 'customValue',
+        arrayProp: [nestedObject],
+        mapProp: new Map([['key1', nestedObject]]),
+        setProp: new Set([nestedObject]),
+      };
+  
+      // Create the object
+      const createdObject = store.createObject<StoreObjectTestType>('StoreObjectTestType', initialState);
+  
+      // Assertions for simple properties
+      expect(createdObject.simpleProp).toBe('customValue');
+  
+      // Assertions for array properties
+      expect(Array.isArray(createdObject.arrayProp)).toBe(true);
+      expect(createdObject.arrayProp).toHaveLength(1);
+      expect(createdObject.arrayProp[0]).toBe(nestedObject); // Verify the same object is used
+  
+      // Assertions for map properties
+      expect(createdObject.mapProp instanceof Map).toBe(true);
+      expect(createdObject.mapProp.size).toBe(1);
+      expect(createdObject.mapProp.get('key1')).toBe(nestedObject); // Verify the same object is used
+  
+      // Assertions for set properties
+      expect(createdObject.setProp instanceof Set).toBe(true);
+      expect(createdObject.setProp.size).toBe(1);
+      expect([...createdObject.setProp][0]).toBe(nestedObject); // Verify the same object is used
+    });
+  });
+
+  describe('Event Triggering During Property Initialization in createObject', () => {
+    /** Interface for EventTestType */
+    interface EventTestType {
+      simpleProp: string; // Simple property
+      arrayProp: string[]; // Array of simple values
+    }
+  
+    // Static metadata for EventTestType
+    const eventMetaInfo = new Map<string, TypeMeta>([
+      [
+        'EventTestType',
+        {
+          qName: 'EventTestType',
+          properties: new Map([
+            ['simpleProp', { type: 'string', qName: 'simpleProp' }],
+            ['arrayProp', { type: 'array', domainType: 'string', qName: 'arrayProp' }],
+          ]),
+        },
+      ],
+    ]);
+  
+    // Initialize the store once for all tests in this describe block
+    let store: StoreClass = new StoreClass(eventMetaInfo);
+  
+    it('should emit events for setting properties during object creation', () => {
+      // Mock before.update handler for simpleProp
+      const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
+        expect(getEventPattern(event)).toBe("before.update.EventTestType.simpleProp");
+        expect(event.changes?.[0].property).toBe("simpleProp");
+        expect(event.changes?.[0].oldValue).toBeUndefined(); // No previous value
+        expect(event.changes?.[0].newValue).toBe("customValue");
+        return { success: true }; // Simulate a successful result
+      });
+  
+      // Mock after.update handler for simpleProp
+      const afterUpdateHandler = jest.fn((event: EventPayload): Result => {
+        expect(getEventPattern(event)).toBe("after.update.EventTestType.simpleProp");
+        expect(event.changes?.[0].property).toBe("simpleProp");
+        expect(event.changes?.[0].oldValue).toBeUndefined(); // No previous value
+        expect(event.changes?.[0].newValue).toBe("customValue");
+        return { success: true }; // Simulate a successful result
+      });
+  
+      // Subscribe to events for simpleProp
+      store.getSubscriptionManager().subscribe(beforeUpdateHandler, "before", "update", "EventTestType", "simpleProp");
+      store.getSubscriptionManager().subscribe(afterUpdateHandler, "after", "update", "EventTestType", "simpleProp");
+  
+      // Perform the createObject operation
+      const initialState = {
+        simpleProp: "customValue",
+        arrayProp: ["value1", "value2"],
+      };
+      const createdObject = store.createObject<EventTestType>("EventTestType", initialState);
+  
+      // Verify that the handlers were called for simpleProp
+      expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);
+      expect(afterUpdateHandler).toHaveBeenCalledTimes(1);
+  
+      // Verify the final state of the created object
+      expect(createdObject.simpleProp).toBe("customValue");
+    });
   });
