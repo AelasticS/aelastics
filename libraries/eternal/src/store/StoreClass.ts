@@ -103,21 +103,168 @@ export class StoreClass {
   }
 
   /** Creates an empty object of a given type */
-  public createObject<T>(type: string): T {
-    // TODO: check if is in update mode
+  // public createObject<T>(type: string,  initialState?: T): T {
+  //   // TODO: check if is in update mode
+  //   if (!this.typeToClassMap.has(type)) {
+  //     throw new Error(`Unknown type: ${type}. Cannot create object.`)
+  //   }
+
+  //   const DynamicClass = this.typeToClassMap.get(type)
+  //   const newObject = new DynamicClass()
+  //   // Generate unique values for each instance
+  //   newObject[uuid] = randomUUID()
+  //   newObject[createdAt] = this.getState().timestamp
+  //   // Immediately add to the latest state
+  //   this.getState().addObject(newObject, "created")
+
+  //   return newObject
+  // }
+  public createObject<T>(type: string, initialState?: T, processed: Map<any, any> = new Map()): T {
     if (!this.typeToClassMap.has(type)) {
       throw new Error(`Unknown type: ${type}. Cannot create object.`)
     }
 
-    const DynamicClass = this.typeToClassMap.get(type)
-    const newObject = new DynamicClass()
-    // Generate unique values for each instance
-    newObject[uuid] = randomUUID()
-    newObject[createdAt] = this.getState().timestamp 
-    // Immediately add to the latest state
-    this.getState().addObject(newObject, "created")
+    const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
+    if (!wasInUpdateMode) {
+      this.inUpdateMode = true // Enter update mode if not already in it
+      this.makeNewState() // Create a new state for the transaction
+    }
 
-    return newObject
+    try {
+      const DynamicClass = this.typeToClassMap.get(type)
+      const newObject = new DynamicClass()
+
+      // Generate unique values for each instance
+      newObject[uuid] = randomUUID()
+      newObject[createdAt] = this.getState().timestamp
+
+      // Add the new object to the processed map to prevent infinite recursion
+      processed.set(initialState, newObject)
+
+      // If no initialState is provided, skip property initialization
+      if (!initialState) {
+        // Immediately add to the latest state
+        this.getState().addObject(newObject, "created")
+        return newObject
+      }
+
+      // Retrieve type metadata
+      const typeMeta = this.metaInfo.get(type)
+      if (!typeMeta) {
+        throw new Error(`Metadata for type ${type} not found.`)
+      }
+
+      // Initialize properties based on metadata
+      for (const [propName, propMeta] of typeMeta.properties) {
+        let initialValue = initialState ? (initialState as any)[propName] : undefined
+
+        // If the initial value is undefined, use the default value as the initial value
+        if (initialValue === undefined && propMeta.defaultValue !== undefined) {
+          initialValue = propMeta.defaultValue
+        }
+
+        // Skip if the initial value is null or undefined
+        if (initialValue === null || initialValue === undefined) {
+          continue
+        }
+
+        // Handle property initialization based on its type
+        switch (propMeta.type) {
+          case "array":
+            if (!Array.isArray(initialValue)) {
+              throw new Error(`Expected an array for property ${propName}, but got ${typeof initialValue}.`)
+            }
+            const targetArray = newObject[propName]
+            if (!Array.isArray(targetArray)) {
+              throw new Error(`Property ${propName} is not initialized as an array.`)
+            }
+            for (const item of initialValue) {
+              targetArray.push(this.ensureStoreObject(item, propMeta.domainType, processed))
+            }
+            break
+
+          case "map":
+            if (!(initialValue instanceof Map)) {
+              throw new Error(`Expected a Map for property ${propName}, but got ${typeof initialValue}.`)
+            }
+            const targetMap = newObject[propName]
+            if (!(targetMap instanceof Map)) {
+              throw new Error(`Property ${propName} is not initialized as a Map.`)
+            }
+            for (const [mapKey, mapValue] of initialValue.entries()) {
+              targetMap.set(mapKey, this.ensureStoreObject(mapValue, propMeta.domainType, processed))
+            }
+            break
+
+          case "set":
+            if (!(initialValue instanceof Set)) {
+              throw new Error(`Expected a Set for property ${propName}, but got ${typeof initialValue}.`)
+            }
+            const targetSet = newObject[propName]
+            if (!(targetSet instanceof Set)) {
+              throw new Error(`Property ${propName} is not initialized as a Set.`)
+            }
+            for (const setValue of initialValue) {
+              targetSet.add(this.ensureStoreObject(setValue, propMeta.domainType, processed))
+            }
+            break
+
+          case "object":
+            newObject[propName] = this.ensureStoreObject(initialValue, propMeta.domainType, processed)
+            break
+
+          default:
+            // Handle primitive types
+            newObject[propName] = initialValue
+            break
+        }
+      }
+
+      // Immediately add to the latest state
+      this.getState().addObject(newObject, "created")
+
+      return newObject
+    } catch (error) {
+      console.error("An error occurred while creating the object:", error)
+      if (!wasInUpdateMode) {
+        this.revertToPreviousState() // Revert the state if this method started the transaction
+      }
+      throw error // Re-throw the error after logging and reverting
+    } finally {
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = false // Exit update mode if it was set by this method
+      }
+    }
+  }
+
+  /**
+   * Ensures that a value is either an object from the store or creates a new one if necessary.
+   * Prevents infinite recursion by using a processed map.
+   * @param value - The value to ensure is a store object.
+   * @param type - The type of the object to create if necessary.
+   * @param processed - A map of already processed values to their corresponding store objects.
+   */
+  private ensureStoreObject(value: any, type?: string, processed: Map<any, any> = new Map()): any {
+    if (processed.has(value)) {
+      // Return the already processed object to prevent infinite recursion
+      return processed.get(value)
+    }
+
+    if (value instanceof __StoreSuperClass__) {
+      // If the value is already a store object, return it directly
+      return value
+    } else if (typeof value === "object" && value !== null) {
+      // If the value is a plain object, create a new store object
+      if (!type) {
+        throw new Error("Type information is required to create a new object.")
+      }
+      if (!this.typeToClassMap.has(type)) {
+        throw new Error(`Unknown type: ${type}. Cannot create object.`)
+      }
+      return this.createObject(type, value, processed)
+    } else {
+      throw new Error("Invalid value: Only objects or store objects are allowed.")
+    }
   }
 
   /** Retrieves an object dynamically from the latest state */
@@ -152,7 +299,7 @@ export class StoreClass {
   }
 
   /** Produces a new state with modifications */
-  public produce<T>(recipe: (obj: T) => void, obj?: T): T{
+  public produce<T>(recipe: (obj: T) => void, obj?: T): T {
     if (this.inUpdateMode) {
       throw new Error("Nested produce() calls are not allowed.")
     }
@@ -164,7 +311,7 @@ export class StoreClass {
 
     if (obj) {
       if (!(obj instanceof __StoreSuperClass__)) {
-        throw new Error("The provided object is not created or .");
+        throw new Error("The provided object is not created or .")
       }
       // Versioning logic when an object is passed
       // Use State's method to create a new object version
