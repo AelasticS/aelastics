@@ -119,7 +119,7 @@ export class StoreClass {
 
   //   return newObject
   // }
-  public createObject<T>(type: string, initialState?: T, processed: Map<any, any> = new Map()): T {
+  public createObject<T>(type: string, initialState: Partial<T> = {}, processed: Map<any, any> = new Map()): T {
     if (!this.typeToClassMap.has(type)) {
       throw new Error(`Unknown type: ${type}. Cannot create object.`)
     }
@@ -141,12 +141,12 @@ export class StoreClass {
       // Add the new object to the processed map to prevent infinite recursion
       processed.set(initialState, newObject)
 
-      // If no initialState is provided, skip property initialization
-      if (!initialState) {
-        // Immediately add to the latest state
-        this.getState().addObject(newObject, "created")
-        return newObject
-      }
+      // // If no initialState is provided, skip property initialization
+      // if (!initialState) {
+      //   // Immediately add to the latest state
+      //   this.getState().addObject(newObject, "created")
+      //   return newObject
+      // }
 
       // Retrieve type metadata
       const typeMeta = this.metaInfo.get(type)
@@ -427,15 +427,15 @@ export class StoreClass {
                 break
 
               case "string":
-                this[privateKey] = ""
+                this[privateKey] = propertyMeta.defaultValue || ""
                 break
 
               case "number":
-                this[privateKey] = 0
+                this[privateKey] = propertyMeta.defaultValue || 0
                 break
 
               case "boolean":
-                this[privateKey] = false
+                this[privateKey] = propertyMeta.defaultValue || false
                 break
 
               case "object":
