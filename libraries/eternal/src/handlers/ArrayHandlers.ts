@@ -1,7 +1,7 @@
 import { ArrayHandlers, createObservableArray } from "@aelastics/observables"
 import { getClassName, isStoreObject, makePrivatePropertyKey, makePrivateProxyKey, makeUpdateInverseKey, uniqueTimestamp } from "../store/utils" // Import the utility function
 import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
-import { StoreObject, uuid } from "./InternalTypes"
+import { StoreObject, uuid } from "../store/InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
 import { PropertyMeta } from "../meta/InternalSchema"
 import { StoreClass } from "../store/StoreClass"

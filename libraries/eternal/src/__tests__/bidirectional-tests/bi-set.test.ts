@@ -2,7 +2,7 @@ import { createStore } from "../../store/createStore"
 import { initializeSchemaRegistry } from "../../meta/SchemaRegistry"
 import { SchemaRegistry } from "../../meta/InternalSchema"
 import { SchemaDescription } from "../../meta/ExternalSchema"
-import { StoreObject, uuid } from "../../handlers/InternalTypes"
+import { StoreObject, uuid } from "../../store/InternalTypes"
 
 // import jsonSchemas from "../data/jsonSchemaWithArrays";
 

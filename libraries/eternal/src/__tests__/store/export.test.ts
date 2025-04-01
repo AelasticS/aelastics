@@ -1,4 +1,4 @@
-import { uuid, createdAt } from "../../handlers/InternalTypes";
+import { uuid, createdAt } from "../../store/InternalTypes";
 import { TypeMeta } from "../../meta/InternalSchema";
 import { StoreClass } from "../../store/StoreClass";
 

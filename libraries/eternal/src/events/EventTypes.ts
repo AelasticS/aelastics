@@ -1,5 +1,5 @@
 import { StoreClass } from '../store/StoreClass';
-import { StoreObject } from '../handlers/InternalTypes';
+import { StoreObject } from '../store/InternalTypes';
 import { PropertyMeta } from '../meta/InternalSchema';
 import { ChangeLogEntry } from './ChangeLog';
 

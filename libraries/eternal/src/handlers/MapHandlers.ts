@@ -8,7 +8,7 @@ import { PropertyMeta } from "../meta/InternalSchema"
 import * as invUpd from "../store/inverseUpdaters"
 import { ChangeLogEntry } from "../events/ChangeLog"
 import { EventPayload, Result } from "../events/EventTypes"
-import { uuid } from "./InternalTypes"
+import { uuid } from "../store/InternalTypes"
 
 // Convert value UUID to Object
 const toValueObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>

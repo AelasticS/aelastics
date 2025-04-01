@@ -1,6 +1,6 @@
 import { createStore } from "../store/createStore";
 import { TypeMeta } from "../meta/InternalSchema";
-import { StoreObject, uuid } from "../handlers/InternalTypes";
+import { StoreObject, uuid } from "../store/InternalTypes";
 
 describe("Store API: Historical State Access", () => {
     let store: ReturnType<typeof createStore>;

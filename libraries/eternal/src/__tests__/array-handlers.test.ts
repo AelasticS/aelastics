@@ -1,5 +1,5 @@
 import { StoreClass } from "../store/StoreClass";
-import { StoreObject, uuid } from "../handlers/InternalTypes";
+import { StoreObject, uuid } from "../store/InternalTypes";
 import { Store } from "../interfaces/StoreInterface";
 import { createStore } from "../store/createStore";
 

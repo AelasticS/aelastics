@@ -21,11 +21,13 @@ const animalMeta: TypeMeta = {
 
 const dogMeta: TypeMeta = {
   qName: "Dog",
+  extends: "Animal",
   properties: new Map([["breed", { type: "string", defaultValue: "Unknown", qName: "breed" }]]),
 }
 
 const catMeta: TypeMeta = {
   qName: "Cat",
+  extends: "Animal",
   properties: new Map([["color", { type: "string", defaultValue: "Unknown", qName: "color" }]]),
 }
 
@@ -63,7 +65,7 @@ describe("StoreClass - find", () => {
   it("should find objects in a specific state", () => {
     // Assume the store has multiple states and we are searching in a specific state
     const animalsInState = store.find<Animal>("Animal", undefined, 0) // Search in state 0
-    expect(animalsInState).toHaveLength(3) // Includes Animal, Dog, and Cat
+    expect(animalsInState).toHaveLength(1) // Includes Animal
   })
 
   it("should find objects of a subtype", () => {

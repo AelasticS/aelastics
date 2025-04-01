@@ -8,7 +8,7 @@ import { StoreClass } from "../store/StoreClass"
 import * as invUpd from "../store/inverseUpdaters"
 import { EventPayload, Result } from "../events/EventTypes"
 import { ChangeLogEntry } from "../events/ChangeLog"
-import { uuid } from "./InternalTypes"
+import { uuid } from "../store/InternalTypes"
 
 // Convert UUID to Object
 const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>

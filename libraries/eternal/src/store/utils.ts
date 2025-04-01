@@ -29,7 +29,7 @@ export function copyProperties(target: any, source: any) {
   }
 }
 
-import { __StoreSuperClass__, state, StoreObject } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, state, StoreObject } from "./InternalTypes"
 
 export const isObjectFrozen = (obj: StoreObject) => {
   return obj[state] !== undefined

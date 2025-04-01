@@ -2,7 +2,7 @@ import { ObjectHandlers, createObservableObject } from "@aelastics/observables";
 import { State } from "../store/State";
 import { PropertyMeta } from "../meta/InternalSchema";
 import { isStoreObject } from "../store/utils"; // Import the utility function
-import { StoreObject, uuid } from "./InternalTypes";
+import { StoreObject, uuid } from "../store/InternalTypes";
 import { StoreClass } from "../store/StoreClass";
 
 /** Creates typed object handlers to track UUID references and enforce immutability */

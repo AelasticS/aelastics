@@ -1,6 +1,6 @@
 import { ChangeLogEntry, hasChanges } from "../events/ChangeLog"
 import { StoreClass } from "./StoreClass"
-import { createdAt, nextVersion, state, StoreObject, uuid } from "../handlers/InternalTypes"
+import { createdAt, nextVersion, state, StoreObject, uuid } from "./InternalTypes"
 import { getClassName, isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
 import { EventPayload, Result } from "../events/EventTypes"
 

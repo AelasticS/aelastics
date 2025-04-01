@@ -1,6 +1,6 @@
 import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "../meta/InternalSchema"
 import { StoreClass } from "./StoreClass"
-import { __StoreSuperClass__, nextVersion, StoreObject, uuid } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, nextVersion, StoreObject, uuid } from "./InternalTypes"
 import {
   getClassName,
   isObjectFrozen,
@@ -91,8 +91,8 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
   if (!typeMeta.properties || !(typeMeta.properties instanceof Map)) {
     throw new Error(`Invalid properties for typeMeta: ${typeMeta.qName}`)
   }
-
-  for (const [key, propertyMeta] of typeMeta.properties) {
+  const allProps = store.getAllProperties(typeMeta.qName)
+  for (const [key, propertyMeta] of allProps) {
     const privateKey = makePrivatePropertyKey(key)
     const proxyKey = makePrivateProxyKey(key)
     const inverseUpdaterKey = makeUpdateInverseKey(key)
@@ -380,7 +380,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     }
   }
   // Add disconnect method to the class
-  addDisconnectMethod(prototype, typeMeta, store)
+  addDisconnectMethod(prototype, typeMeta)
 }
 
 // add dynamically method to shallow copy props (including observables) from one instance to another
@@ -411,7 +411,7 @@ export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
   }
 }
 
-function addDisconnectMethod(prototype: any, typeMeta: TypeMeta, store: StoreClass) {
+function addDisconnectMethod(prototype: any, typeMeta: TypeMeta) {
   const disconnectKey = makeDisconnectKey()
 
   // Precalculate properties that are references, including collections
@@ -419,6 +419,7 @@ function addDisconnectMethod(prototype: any, typeMeta: TypeMeta, store: StoreCla
   let currentMeta: TypeMeta | undefined = typeMeta
 
   // while (currentMeta) {
+  
   for (const prop of currentMeta.properties.values()) {
     if (isReference(prop) || isCollectionOfReferences(prop)) {
       referenceProps.push(prop)

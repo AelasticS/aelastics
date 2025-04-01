@@ -1,5 +1,5 @@
-import { State } from "../store/State";
-import { isObjectFrozen } from "../store/utils";
+import { State } from "./State";
+import { isObjectFrozen } from "./utils";
 
 
 // src/handlers/InternalTypes.ts (or MetaDefinitions.ts)

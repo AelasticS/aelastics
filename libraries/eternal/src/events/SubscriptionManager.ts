@@ -3,7 +3,7 @@ import { EventEmitter2 } from "eventemitter2";
 import { EventPayload, Result } from "./EventTypes";
 import { SubscriptionInterface, Timing, Operation, Type, Property } from "../interfaces/SubscriptionInterface";
 import { ChangeLogEntry } from "./ChangeLog";
-import { StoreObject, uuid } from "../handlers/InternalTypes";
+import { StoreObject, uuid } from "../store/InternalTypes";
 
 export class SubscriptionManager implements SubscriptionInterface {
   private objectSubscriptions: Map<string, Set<(updatedObject: any) => void>> = new Map();

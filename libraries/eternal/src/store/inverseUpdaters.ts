@@ -1,5 +1,5 @@
 import { StoreClass } from "./StoreClass";
-import { StoreObject, uuid } from "../handlers/InternalTypes";
+import { StoreObject, uuid } from "./InternalTypes";
 import { checkWriteAccess } from "./PropertyAccessors";
 import { makePrivatePropertyKey, removeElement } from "./utils";
 import { PropertyMeta } from "../meta/InternalSchema";

@@ -1,6 +1,6 @@
 import { StoreClass } from '../store/StoreClass';
 import { TypeMeta } from '../meta/InternalSchema';
-import { StoreObject, uuid } from '../handlers/InternalTypes';
+import { StoreObject, uuid } from '../store/InternalTypes';
 
 // Define type metadata for the hierarchy
 const typeMetaA: TypeMeta = {

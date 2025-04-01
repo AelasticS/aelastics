@@ -33,6 +33,8 @@ export interface TypeMeta {
     roles?: string[]; // List of allowed role names for this type
 }
 
+
+
 /** Metadata for a role */
 export interface RoleMeta {
     qName: string; // Name of the role
@@ -79,3 +81,4 @@ export function getPropertyType(schema: TypeSchema, typeName: string, propName: 
 
 // extract local name from fully qualified name
 export const localName = (fqName:string) => fqName.split('/').pop();
+

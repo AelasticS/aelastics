@@ -1,7 +1,7 @@
 /**
  * The `StoreClass` is a core class that implements the functionality for managing objects
  *  in a dynamic and immutable store.
- * 
+ *
  * It supports features such as state history, undo/redo operations, dynamic class creation, and
  * object versioning. The class is designed to handle complex object structures with support for
  * arrays, maps, sets, and nested objects, while ensuring immutability and tracking changes.
@@ -24,10 +24,10 @@ import {
 } from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
-import { __StoreSuperClass__, createdAt, nextVersion, StoreObject, uuid } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, createdAt, nextVersion, StoreObject, uuid } from "./InternalTypes"
 import { createImmutableMap } from "../handlers/MapHandlers"
 import { createImmutableSet } from "../handlers/SetHandlers"
-import { TypeMeta } from "../meta/InternalSchema"
+import { PropertyMeta, TypeMeta } from "../meta/InternalSchema"
 import { State } from "./State"
 import { SubscriptionManager } from "../events/SubscriptionManager"
 import { randomUUID } from "crypto"
@@ -38,9 +38,6 @@ import { ObjectManager } from "../interfaces/ObjectManager"
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
 export class StoreClass implements ObjectManager {
-
-
-
   private stateHistory: State[] = [] // Stores the history of states
   private subscriptionManager = new SubscriptionManager(this) // Create a subscription manager
   private currentStateIndex: number = -1 // Track active state index
@@ -76,27 +73,27 @@ export class StoreClass implements ObjectManager {
 
   public get<T extends object>(obj: string | T, stateIndex?: number): T | undefined {
     if (stateIndex !== undefined) {
-        return this.fromState<T>(stateIndex, obj);
+      return this.fromState<T>(stateIndex, obj)
     } else {
       if (typeof obj === "string") {
-        return this.findObjectByUUID<T>(obj);
+        return this.findObjectByUUID<T>(obj)
       } else if (obj instanceof __StoreSuperClass__) {
-        const uuidValue = (obj as any)[uuid];
-        return this.findObjectByUUID<T>(uuidValue);
+        const uuidValue = (obj as any)[uuid]
+        return this.findObjectByUUID<T>(uuidValue)
       }
     }
-    return undefined;
+    return undefined
   }
 
-    /** Finds objects of a specific type that match a given predicate */
-    public find<T extends object>(objectType: string, predicate?: (obj: T) => boolean, state?: number): T[] {
-      const targetState = state !== undefined ? this.getStateByIndex(state) : this.getState();
-      const DynamicClass = this.typeToClassMap.get(objectType);
-      if(!DynamicClass) { 
-        throw new Error(`Unknown type: ${objectType}. Cannot search for objects.`);
-      }
-      return targetState.findObjects(DynamicClass, predicate) as T[];
+  /** Finds objects of a specific type that match a given predicate */
+  public find<T extends object>(objectType: string, predicate?: (obj: T) => boolean, state?: number): T[] {
+    const targetState = state !== undefined ? this.getStateByIndex(state) : this.getState()
+    const DynamicClass = this.typeToClassMap.get(objectType)
+    if (!DynamicClass) {
+      throw new Error(`Unknown type: ${objectType}. Cannot search for objects.`)
     }
+    return targetState.findObjects(DynamicClass, predicate) as T[]
+  }
 
   /** Returns the latest (i.e. current) state */
   public getState(): State {
@@ -112,7 +109,6 @@ export class StoreClass implements ObjectManager {
   public isInUpdateMode(): boolean {
     return this.inUpdateMode
   }
-
 
   public makeNewState(): void {
     // Clear future states if undo() was called before this change
@@ -186,7 +182,8 @@ export class StoreClass implements ObjectManager {
       }
 
       // Initialize properties based on metadata
-      for (const [propName, propMeta] of typeMeta.properties) {
+      const allProps = this.getAllProperties(type)
+      for (const [propName, propMeta] of allProps) {
         let initialValue = initialState ? (initialState as any)[propName] : undefined
 
         // If the initial value is undefined, use the default value as the initial value
@@ -308,6 +305,8 @@ export class StoreClass implements ObjectManager {
     const currentState = this.getState()
     currentState.deleteObject(objUUID)
   }
+
+  /// Converts an object to an immutable version and adds it to the store
   public toImmutable<T extends object>(obj: T, type?: string, processed = new Map<any, any>()): T {
     const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
     try {
@@ -368,7 +367,8 @@ export class StoreClass implements ObjectManager {
       processed.set(obj, newObject)
 
       // Initialize properties
-      for (const [propName, propMeta] of typeMeta.properties) {
+      const allProps = this.getAllProperties(typeName)
+      for (const [propName, propMeta] of allProps) {
         const value = (obj as any)[propName] // Get the value from the input object
 
         if (value === undefined) {
@@ -456,7 +456,8 @@ export class StoreClass implements ObjectManager {
     }
 
     // Iterate over properties
-    for (const [propName, propMeta] of typeMeta.properties) {
+    const allProps = this.getAllProperties(typeName)
+    for (const [propName, propMeta] of allProps) {
       const value = (storeObject as any)[propName] // Access the private property value
 
       if (value === undefined) {
@@ -523,13 +524,14 @@ export class StoreClass implements ObjectManager {
   /** Produces a new state with modifications */
   public update<T>(recipe: (obj: T) => void, obj?: T): T {
     let hasError = false
-    const wasInUpdateMode = this.inUpdateMode 
+    const wasInUpdateMode = this.inUpdateMode
     try {
       if (!wasInUpdateMode) {
         this.inUpdateMode = true // Enter update mode if not already in it
         this.makeNewState() // Create a new state for the update
       }
-      if (obj) { // If an object is provided, apply the recipe to it
+      if (obj) {
+        // If an object is provided, apply the recipe to it
         if (!(obj instanceof __StoreSuperClass__)) {
           throw new Error("Invalid object: Ensure it was created or imported using the store.")
         }
@@ -537,9 +539,10 @@ export class StoreClass implements ObjectManager {
         let newObj = this.getState().getObject(obj[uuid]) // get the latest version
         this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/) // Notify all updated objects
         return newObj as T
-      } else { // If no object is provided, apply the recipe to the store
-        const result = (recipe as () => T)() 
-        return result 
+      } else {
+        // If no object is provided, apply the recipe to the store
+        const result = (recipe as () => T)()
+        return result
       }
     } catch (error) {
       hasError = true // Set error flag
@@ -557,8 +560,7 @@ export class StoreClass implements ObjectManager {
     }
   }
 
-
-/** Creates a dynamic class based on the provided type metadata */
+  /** Creates a dynamic class based on the provided type metadata */
   private createDynamicClass(typeMeta: TypeMeta, store: StoreClass) {
     const className = typeMeta.qName // Use the type name as the class name
     // TODO: support creation of subclasses recursively, so that order is not important
@@ -644,6 +646,37 @@ export class StoreClass implements ObjectManager {
   /** Returns the dynamic class for a given type name */
   public getClassByName(type: string): any {
     return this.typeToClassMap.get(type)
+  }
+
+
+  /**
+   * Function to find all properties of a type, including properties from its supertypes.
+   * @param typeName - The name of the type whose properties are to be found.
+   * @param metaInfo - Metadata information for each type.
+   * @returns A Map containing all properties of the type, with properties from supertypes first.
+   */
+  public getAllProperties(typeName: string): Map<string, PropertyMeta> {
+    const result = new Map<string, PropertyMeta>()
+    const metaInfo: Map<string, TypeMeta> = this.metaInfo
+
+    // Recursive function to collect properties from the type and its supertypes
+    function collectProperties(currentTypeName: string) {
+      const typeMeta = metaInfo.get(currentTypeName)
+      if (!typeMeta) {
+        throw new Error(`Type ${currentTypeName} not found in metadata.`)
+      }
+      // Recursively collect properties from the supertype first
+      if (typeMeta.extends) {
+        collectProperties(typeMeta.extends)
+      }
+      // Add properties from the current type (overrides will replace existing entries)
+      for (const [propName, propMeta] of typeMeta.properties) {
+        result.set(propName, propMeta)
+      }
+    }
+    // Start collecting properties from the specified type
+    collectProperties(typeName)
+    return result
   }
 
   public getChangeLog(): ChangeLogEntry[] {

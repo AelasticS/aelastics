@@ -1,4 +1,4 @@
-import { StoreObject, uuid } from "../../handlers/InternalTypes"
+import { StoreObject, uuid } from "../../store/InternalTypes"
 import { createStore } from "../../store/createStore"
 
 describe("Bidirectional Relationships & Cyclic References", () => {

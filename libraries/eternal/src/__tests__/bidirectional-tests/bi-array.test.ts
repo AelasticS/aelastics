@@ -3,7 +3,7 @@ import { initializeSchemaRegistry } from "../../meta/SchemaRegistry";
 import { SchemaRegistry } from "../../meta/InternalSchema";
 //import jsonSchemaWithArrays from "../data/jsonSchemaWithArrays";
 import { SchemaDescription } from "../../meta/ExternalSchema";
-import { StoreObject, uuid } from "../../handlers/InternalTypes";
+import { StoreObject, uuid } from "../../store/InternalTypes";
 
 const schemas: SchemaDescription[] = [
     {

@@ -1,5 +1,5 @@
 import { StoreClass } from "../../store/StoreClass" // Adjust the path if necessary
-import { __StoreSuperClass__ } from "../../handlers/InternalTypes" // Corrected path for __StoreSuperClass__
+import { __StoreSuperClass__ } from "../../store/InternalTypes" // Corrected path for __StoreSuperClass__
 import { TypeMeta } from "../../meta/InternalSchema"
 import { State } from "../../store/State"
 import { EventPayload, Result } from "../../events/EventTypes"

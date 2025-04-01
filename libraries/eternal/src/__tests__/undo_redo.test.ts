@@ -1,4 +1,4 @@
-import { StoreObject, uuid } from "../handlers/InternalTypes";
+import { StoreObject, uuid } from "../store/InternalTypes";
 import { StoreClass } from "../store/StoreClass";
 
 describe("Undo/Redo Functionality", () => {
