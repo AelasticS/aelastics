@@ -7,7 +7,7 @@ import {
 } from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
-import { __StoreSuperClass__, createdAt, StoreObject, uuid } from "../handlers/InternalTypes"
+import { __StoreSuperClass__, createdAt, nextVersion, StoreObject, uuid } from "../handlers/InternalTypes"
 import { createImmutableMap } from "../handlers/MapHandlers"
 import { createImmutableSet } from "../handlers/SetHandlers"
 import { TypeMeta } from "../meta/InternalSchema"
@@ -379,13 +379,13 @@ export class StoreClass {
     }
 
     // Check for cyclic structures
-    if (processed.has(storeObject)) {
-      return processed.get(storeObject) // Return the previously processed literal object
+    if (processed.has(storeObject[uuid])) {
+      return processed.get(storeObject[uuid]) // Return the previously processed literal object
     }
 
     // Create a literal object
     const literalObject: any = {}
-    processed.set(storeObject, literalObject) // Add to the processed map to handle cyclic references
+    processed.set(storeObject[uuid], literalObject) // Add to the processed map to handle cyclic references
 
     // Add metadata properties
     const typeName = storeObject.constructor.name // Use the constructor name to determine the type
@@ -401,8 +401,7 @@ export class StoreClass {
 
     // Iterate over properties
     for (const [propName, propMeta] of typeMeta.properties) {
-      const privateKey = makePrivatePropertyKey(propName) // Get the private property name
-      const value = (storeObject as any)[privateKey] // Access the private property value
+      const value = (storeObject as any)[propName] // Access the private property value
 
       if (value === undefined) {
         continue // Skip undefined properties
@@ -410,7 +409,9 @@ export class StoreClass {
 
       // Handle collections and nested objects
       if (propMeta.type === "array") {
-        literalObject[propName] = value.map((item: any) => this.fromImmutable(item, processed))
+        const a = value.map((item: any) => 
+          this.fromImmutable(item, processed))
+        literalObject[propName] = a
       } else if (propMeta.type === "map") {
         literalObject[propName] = Array.from(value.entries() as [any, any][]).reduce(
           (acc: any, [key, val]: [any, any]) => {
