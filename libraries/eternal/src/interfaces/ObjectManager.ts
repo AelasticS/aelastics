@@ -52,17 +52,18 @@ export interface ObjectManager {
   get<T extends object>(obj: string | T, state?: number /*| string */): T | undefined  // TODO add state tags 
 
   /**
-   * Finds objects of a specific type that match a given predicate function.
+   * Finds objects of a specific type, including all its subtypes, that match a given predicate function.
+   * If no predicate is provided, all objects of the specified type and its subtypes will be returned.
    *
    * @template T - The type of the objects to search for.
    * @param objectType - The name of the object type as defined in the type schema.
-   * @param predicate - A function that evaluates each object and returns true for matches.
+   * @param predicate - Optional function that evaluates each object and returns true for matches.
    * @param state - Optional parameter to specify the state to search in.
    *               Can be a state index (number) or a state tag (string).
    *               If not provided, the current state of the store is searched.
-   * @returns An array of objects that match the predicate.
+   * @returns An array of objects that match the predicate or all objects of the specified type and its subtypes if no predicate is provided.
    */
-  find?<T extends object>(objectType: string, predicate: (obj: T) => boolean, state?: number | string): T[]
+  find<T extends object>(objectType: string, predicate?: (obj: T) => boolean, state?: number /*| string */): T[]
 
   /* Get unique identifier (UUID) of an object
    * @template T - The type of the object to get the UUID for.
