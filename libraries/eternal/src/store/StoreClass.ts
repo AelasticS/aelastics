@@ -38,6 +38,7 @@ import { ObjectManager } from "../interfaces/ObjectManager"
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
 export class StoreClass implements ObjectManager {
+
   private stateHistory: State[] = [] // Stores the history of states
   private subscriptionManager = new SubscriptionManager(this) // Create a subscription manager
   private currentStateIndex: number = -1 // Track active state index
@@ -69,6 +70,20 @@ export class StoreClass implements ObjectManager {
       throw new Error("The provided object is not a valid store object.")
     }
     return (obj as any)[uuid]
+  }
+
+  public get<T extends object>(obj: string | T, stateIndex?: number): T | undefined {
+    if (stateIndex !== undefined) {
+        return this.fromState<T>(stateIndex, obj);
+    } else {
+      if (typeof obj === "string") {
+        return this.findObjectByUUID<T>(obj);
+      } else if (obj instanceof __StoreSuperClass__) {
+        const uuidValue = (obj as any)[uuid];
+        return this.findObjectByUUID<T>(uuidValue);
+      }
+    }
+    return undefined;
   }
 
   /** Returns the latest (i.e. current) state */
