@@ -53,7 +53,9 @@ export function checkWriteAccess(obj: StoreObject, store: StoreClass, key: strin
   }
   // if not in update mode throw error
   if (!store.isInUpdateMode()) {
-    throw new Error(`Cannot modify the object outside of update mode`)
+    throw new Error(
+      `Cannot modify the object directly. Use the 'update()' method to make changes to objects.`
+    )
   }
 
   // if obj is from old state
