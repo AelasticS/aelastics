@@ -19,7 +19,6 @@ import {
   ChangeLogEntry,
   consolidateChangeLogs,
   generateJsonPatch,
-  hasChanges,
   JSONPatchOperation,
 } from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
@@ -536,8 +535,7 @@ export class StoreClass implements ObjectManager {
           throw new Error("Invalid object: Ensure it was created or imported using the store.")
         }
         recipe(obj) // Apply modifications
-        let newObj = this.getState().getObject(obj[uuid]) // get the latest version
-        this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/) // Notify all updated objects
+        let newObj = this.getState().getObject(obj[uuid]); // get the latest version
         return newObj as T
       } else {
         // If no object is provided, apply the recipe to the store
@@ -554,8 +552,7 @@ export class StoreClass implements ObjectManager {
         this.inUpdateMode = false // Exit update mode if it was set by this method
       }
       if (!hasError) {
-        this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/) // Notify global changes
-        this.subscriptionManager.notifyStoreSubscribers() // Notify all subscribers of the store
+        this.subscriptionManager.notifySubscribers() // Notify all subscribers of the store and objects
       }
     }
   }
@@ -679,15 +676,21 @@ export class StoreClass implements ObjectManager {
     return result
   }
 
-  public getChangeLog(): ChangeLogEntry[] {
-    return this.getState().getChangeLog()
+  // TODO tests
+  public getAllChanges(option: "all" | "only_modifications" = "all"): ChangeLogEntry[] {
+    const changeLogs: ChangeLogEntry[] = []
+    for (const state of this.stateHistory) {
+      changeLogs.push(...state.getChangeLog(option))
+    }
+    return changeLogs
   }
 
-  public getConsolidatedChangeLog(): ChangeLogEntry[] {
-    return consolidateChangeLogs(this.stateHistory.map((state) => state.getChangeLog()))
+  // TODO tests
+  public consolidateStates(): void {
+    // return consolidateChangeLogs(this.stateHistory.map((state) => state.getChangeLog()))
   }
 
-  public getJsonPatch(): JSONPatchOperation[] {
-    return generateJsonPatch(this.getConsolidatedChangeLog())
-  }
+  // public getJsonPatch(): JSONPatchOperation[] {
+  //   return generateJsonPatch(this.getConsolidatedChangeLog())
+  // }
 }

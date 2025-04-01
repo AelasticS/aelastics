@@ -22,10 +22,6 @@ export interface JSONPatchOperation {
   
 
 
-export function  hasChanges(changeLog: ChangeLogEntry[], uuid: string): boolean {
-    return changeLog.some(entry => entry.objectId === uuid);
-}
-
 /**
  * Consolidates the change logs across multiple states while preserving history.
  * Ensures valid ordering and removes redundant operations.

@@ -1,4 +1,4 @@
-import { ChangeLogEntry, hasChanges } from "../events/ChangeLog"
+import { ChangeLogEntry } from "../events/ChangeLog"
 import { StoreClass } from "./StoreClass"
 import { createdAt, nextVersion, state, StoreObject, uuid } from "./InternalTypes"
 import { getClassName, isObjectFrozen, makeDisconnectKey, uniqueTimestamp } from "./utils"
@@ -56,14 +56,14 @@ export class State implements StateView {
     return obj as T
   }
 
-    /** Retrieves objects of a specific type from the state which satisfy predicate*/
-    public findObjects<T>(objectType: new (...args: any[]) => T, predicate?: (obj: T) => boolean): T[] {
-      const arr = Array.from(this.objectMap.values());
-      const res = arr.filter((obj) => {
-      return obj instanceof objectType && (!predicate || predicate(obj as T));
-      }) as T[];
-      return res;
-    }
+  /** Retrieves objects of a specific type from the state which satisfy predicate*/
+  public findObjects<T>(objectType: new (...args: any[]) => T, predicate?: (obj: T) => boolean): T[] {
+    const arr = Array.from(this.objectMap.values())
+    const res = arr.filter((obj) => {
+      return obj instanceof objectType && (!predicate || predicate(obj as T))
+    }) as T[]
+    return res
+  }
 
   /** Retrieves an object which can be changed */
   public getDynamicObject<T>(uuid: string): T | undefined {
@@ -254,7 +254,16 @@ export class State implements StateView {
     }
   }
 
-  public getChangeLog(): ChangeLogEntry[] {
+  public getChangeLog(option: "all" | "only_modifications" = "all"): ChangeLogEntry[] {
+    if (option === "only_modifications") {
+      return this.changeLog.filter(
+        (entry) => entry.operation === "update" || entry.operation === "delete" || entry.operation === "create"
+      )
+    }
     return this.changeLog
+  }
+
+  public getObjectLog(changeLog: ChangeLogEntry[], uuid: string): ChangeLogEntry[] {
+    return changeLog.filter((entry) => entry.objectId === uuid)
   }
 }
