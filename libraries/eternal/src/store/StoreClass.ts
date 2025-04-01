@@ -39,6 +39,8 @@ export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
 export class StoreClass implements ObjectManager {
 
+
+
   private stateHistory: State[] = [] // Stores the history of states
   private subscriptionManager = new SubscriptionManager(this) // Create a subscription manager
   private currentStateIndex: number = -1 // Track active state index
@@ -85,6 +87,12 @@ export class StoreClass implements ObjectManager {
     }
     return undefined;
   }
+
+    /** Finds objects of a specific type that match a given predicate */
+    public find<T extends object>(objectType: string, predicate?: (obj: T) => boolean, state?: number): T[] {
+      const targetState = state !== undefined ? this.getStateByIndex(state) : this.getState();
+      return targetState.findObjects(objectType, predicate) as T[];
+    }
 
   /** Returns the latest (i.e. current) state */
   public getState(): State {

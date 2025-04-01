@@ -56,6 +56,13 @@ export class State implements StateView {
     return obj as T
   }
 
+    /** Retrieves objects of a specific type from the state which satisfy predicate*/
+    public findObjects<T>(objectType: string, predicate?: (obj: T) => boolean): T[] {
+      return Array.from(this.objectMap.values()).filter((obj) => {
+      return getClassName(obj) === objectType && (!predicate || predicate(obj as T));
+      }) as T[];
+    }
+
   /** Retrieves an object which can be changed */
   public getDynamicObject<T>(uuid: string): T | undefined {
     if (uuid === undefined || uuid === null) {
