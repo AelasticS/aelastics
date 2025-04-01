@@ -4,7 +4,7 @@ import { State } from "../store/State";
     objectType: string; // The TypeMeta qName of the object being modified (e.g., "Person")
     objectId: string; // The ID of the object being modified
     property?: string; // The property being modified (if applicable)
-    operation: 'create' | 'update' | 'delete'; // Operation type
+    operation: 'create' | 'update' | 'delete' | 'import'; // Operation type
     changeType?: 'add' | 'remove' | 'replace' | 'reorder'; // Type of change
     index?: number; // For arrays (e.g., add/remove/reorder)
     key?: string; // For Maps (e.g., replace/add/remove)

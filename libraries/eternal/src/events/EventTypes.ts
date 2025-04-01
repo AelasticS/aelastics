@@ -5,7 +5,7 @@ import { ChangeLogEntry } from './ChangeLog';
 
 export type EventPayload = {
   timing: 'before' | 'after' | 'beforeCommit' | 'afterCommit'; // Specific timing of the event
-  operation: 'create' | 'update' | 'delete'; // Specific operation type
+  operation: 'create' | 'update' | 'delete' | "import"; // Specific operation type
   objectType: string; // The TypeMeta qName of the object being modified (e.g., "Person")
   property?: string; // The specific property being modified (optional, e.g., "name")
   timestamp: number; // The time when the event occurred in milliseconds since epoch

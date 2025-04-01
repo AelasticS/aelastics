@@ -96,7 +96,8 @@ export class State implements StateView {
    * - Tracks insertion in the change log.
    */
   public addObject<T extends StoreObject>(obj: T, reason: "created" | "imported" | "versioned"): void {
-    if (reason === "created") {
+    if (reason === "created" || reason === "imported") {
+      const operationType = reason === "created" ? "create" : "import"
       const subscriptionManager = this.store.deref()?.getSubscriptionManager()
       if (!subscriptionManager) {
         throw new Error("Subscription manager not found.")
@@ -106,14 +107,14 @@ export class State implements StateView {
       const change: ChangeLogEntry = {
         objectType: getClassName(obj),
         objectId: obj[uuid],
-        operation: "create",
+        operation: operationType,
         newValue: obj,
       }
 
       // Emit before.create.object event and check for cancellation
       const beforeEvent: EventPayload = {
         timing: "before",
-        operation: "create",
+        operation: operationType,
         objectType: getClassName(obj),
         timestamp: uniqueTimestamp(),
         objectId: obj[uuid],
@@ -136,7 +137,7 @@ export class State implements StateView {
       // Emit after.create.object event and check for cancellation
       const afterEvent: EventPayload = {
         timing: "after",
-        operation: "create",
+        operation: operationType,
         objectType: getClassName(obj),
         timestamp: uniqueTimestamp(),
         objectId: obj[uuid],
