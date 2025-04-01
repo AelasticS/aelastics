@@ -74,9 +74,9 @@ export class State implements StateView {
     }
     const object = this.objectMap.get(uuid)
     // Ensure the object is not from a future state
-    if (object[createdAt] > this.timestamp) {
-      throw new Error(`Cannot access object ${uuid} from a future state.`)
-    }
+    // if (object[createdAt] > this.timestamp) {
+    //   throw new Error(`Cannot access object ${uuid} from a future state.`)
+    // }
     return object // Returns the object without fixing it
   }
 

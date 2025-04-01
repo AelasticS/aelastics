@@ -294,10 +294,15 @@ export class StoreClass {
       // Check if the object with this UUID already exists in the store
       const exObj = this.getState().getObject(uuidValue)
       if (exObj) {
+        if (exObj.constructor.name !== typeName) {
+          throw new Error(
+            `Type mismatch detected: The provided object has UUID '${uuidValue}' and type '${typeName}', but an existing object with the same UUID belongs to type '${exObj.constructor.name}'. Ensure that the UUIDs are unique across different types or verify the object's type.`
+          )
+        }
         return exObj as T // Return the existing object from the store
       }
 
-      // Step 8: Create a new instance of the store object using the type
+      // Create a new instance of the store object using the type
       const DynamicClass = this.typeToClassMap.get(typeName)
       if (!DynamicClass) {
         throw new Error(`No constructor found for type: ${typeName}. Cannot create object.`)
@@ -314,13 +319,14 @@ export class StoreClass {
           continue // Skip undefined properties
         }
 
-        // Step 11: Handle collections and nested objects
+        // Handle collections and nested objects
         const privateKey = makePrivatePropertyKey(propName) // Get the private property name
 
         if (propMeta.type === "array") {
           value.forEach((item: any) => {
-            const itemType = item["@AelasticsType"] || propMeta.domainType // Use the special property or fallback to metadata
-            ;(newObject as any)[privateKey].push(this.toImmutable(item, itemType, processed))
+            const itemType = item["@AelasticsType"] || propMeta.domainType; // Use the special property or fallback to metadata
+            const element = this.toImmutable(item, itemType, processed);
+            (newObject as any)[privateKey].push(element)
           })
         } else if (propMeta.type === "map") {
           value.forEach((val: any, key: any) => {
@@ -369,59 +375,62 @@ export class StoreClass {
   public fromImmutable<T extends object>(storeObject: T, processed = new Map<any, any>()): any {
     // Check if the object is a store object
     if (!(storeObject instanceof __StoreSuperClass__)) {
-      throw new Error(`The provided object is not a valid store object.`);
+      throw new Error(`The provided object is not a valid store object.`)
     }
-  
+
     // Check for cyclic structures
     if (processed.has(storeObject)) {
-      return processed.get(storeObject); // Return the previously processed literal object
+      return processed.get(storeObject) // Return the previously processed literal object
     }
-  
+
     // Create a literal object
-    const literalObject: any = {};
-    processed.set(storeObject, literalObject); // Add to the processed map to handle cyclic references
-  
+    const literalObject: any = {}
+    processed.set(storeObject, literalObject) // Add to the processed map to handle cyclic references
+
     // Add metadata properties
-    const typeName = storeObject.constructor.name; // Use the constructor name to determine the type
-    literalObject['@AelasticsType'] = typeName; // Add the special property for the type
-    literalObject["@AelasticsUUID"] = (storeObject as any)[uuid]; // Add the UUID
-    literalObject["@AelasticsCreatedAt"] = (storeObject as any)[createdAt]; // Add the createdAt timestamp
-  
+    const typeName = storeObject.constructor.name // Use the constructor name to determine the type
+    literalObject["@AelasticsType"] = typeName // Add the special property for the type
+    literalObject["@AelasticsUUID"] = (storeObject as any)[uuid] // Add the UUID
+    literalObject["@AelasticsCreatedAt"] = (storeObject as any)[createdAt] // Add the createdAt timestamp
+
     // Retrieve metadata for the object's type
-    const typeMeta = this.metaInfo.get(typeName);
+    const typeMeta = this.metaInfo.get(typeName)
     if (!typeMeta) {
-      throw new Error(`Unknown type: ${typeName}. Cannot export object.`);
+      throw new Error(`Unknown type: ${typeName}. Cannot export object.`)
     }
-  
+
     // Iterate over properties
     for (const [propName, propMeta] of typeMeta.properties) {
-      const privateKey = makePrivatePropertyKey(propName); // Get the private property name
-      const value = (storeObject as any)[privateKey]; // Access the private property value
-  
+      const privateKey = makePrivatePropertyKey(propName) // Get the private property name
+      const value = (storeObject as any)[privateKey] // Access the private property value
+
       if (value === undefined) {
-        continue; // Skip undefined properties
+        continue // Skip undefined properties
       }
-  
-      // Step 7: Handle collections and nested objects
-      if (propMeta.type === 'array') {
-        literalObject[propName] = value.map((item: any) => this.fromImmutable(item, processed));
-      } else if (propMeta.type === 'map') {
-        literalObject[propName] = Array.from(value.entries() as [any, any][]).reduce((acc: any, [key, val]: [any, any]) => {
-          acc[key] = this.fromImmutable(val, processed);
-          return acc;
-        }, {});
-      } else if (propMeta.type === 'set') {
-        literalObject[propName] = Array.from(value).map((item: any) => this.fromImmutable(item, processed));
-      } else if (propMeta.type === 'object') {
-        literalObject[propName] = this.fromImmutable(value, processed);
+
+      // Handle collections and nested objects
+      if (propMeta.type === "array") {
+        literalObject[propName] = value.map((item: any) => this.fromImmutable(item, processed))
+      } else if (propMeta.type === "map") {
+        literalObject[propName] = Array.from(value.entries() as [any, any][]).reduce(
+          (acc: any, [key, val]: [any, any]) => {
+            acc[key] = this.fromImmutable(val, processed)
+            return acc
+          },
+          {}
+        )
+      } else if (propMeta.type === "set") {
+        literalObject[propName] = Array.from(value).map((item: any) => this.fromImmutable(item, processed))
+      } else if (propMeta.type === "object") {
+        literalObject[propName] = this.fromImmutable(value, processed)
       } else {
         // Simple property
-        literalObject[propName] = value;
+        literalObject[propName] = value
       }
     }
-  
+
     // Return the literal object
-    return literalObject;
+    return literalObject
   }
 
   /** Retrieves an object dynamically from the latest state */
