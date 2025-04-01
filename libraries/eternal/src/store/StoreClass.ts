@@ -103,36 +103,24 @@ export class StoreClass {
     return false // Cannot redo beyond latest state
   }
 
-  /** Creates an empty object of a given type */
-  // public createObject<T>(type: string,  initialState?: T): T {
-  //   // TODO: check if is in update mode
-  //   if (!this.typeToClassMap.has(type)) {
-  //     throw new Error(`Unknown type: ${type}. Cannot create object.`)
-  //   }
-
-  //   const DynamicClass = this.typeToClassMap.get(type)
-  //   const newObject = new DynamicClass()
-  //   // Generate unique values for each instance
-  //   newObject[uuid] = randomUUID()
-  //   newObject[createdAt] = this.getState().timestamp
-  //   // Immediately add to the latest state
-  //   this.getState().addObject(newObject, "created")
-
-  //   return newObject
-  // }
+  /** Creates a new object of a specified type and initializes it with the given state. */
   public createObject<T>(type: string, initialState: Partial<T> = {}, processed: Map<any, any> = new Map()): T {
     if (!this.typeToClassMap.has(type)) {
       throw new Error(`Unknown type: ${type}. Cannot create object.`)
     }
 
     const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
-    if (!wasInUpdateMode) {
-      this.inUpdateMode = true // Enter update mode if not already in it
-      this.makeNewState() // Create a new state for the transaction
-    }
 
     try {
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = true // Enter update mode if not already in it
+        this.makeNewState() // Create a new state for the transaction
+      }
+
       const DynamicClass = this.typeToClassMap.get(type)
+      if (!DynamicClass) {
+        throw new Error(`No constructor found for type: ${type}. Cannot create object.`)
+      }
       const newObject = new DynamicClass()
 
       // Generate unique values for each instance
@@ -141,13 +129,6 @@ export class StoreClass {
 
       // Add the new object to the processed map to prevent infinite recursion
       processed.set(initialState, newObject)
-
-      // // If no initialState is provided, skip property initialization
-      // if (!initialState) {
-      //   // Immediately add to the latest state
-      //   this.getState().addObject(newObject, "created")
-      //   return newObject
-      // }
 
       // Retrieve type metadata
       const typeMeta = this.metaInfo.get(type)
@@ -271,6 +252,118 @@ export class StoreClass {
     }
   }
 
+  public toImmutable<T extends object>(obj: T, type?: string, processed = new Map<any, any>()): T {
+    const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
+    try {
+      // Check if update mode is already active
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = true // Enter update mode if not already in it
+        this.makeNewState() // Create a new state for the transaction
+      }
+
+      // Check if the object is already a store object
+      if (obj instanceof __StoreSuperClass__) {
+        return obj // If already a store object, return it
+      }
+
+      // Check for cyclic structures
+      if (processed.has(obj)) {
+        return processed.get(obj) // Return the previously processed object
+      }
+
+      //  Determine the type
+      const typeName = (obj as any)["@AelasticsType"] || type // Use the special property or the optional argument
+      if (!typeName) {
+        throw new Error(
+          `The provided object does not have a valid '@AelasticsType' property, and no type argument was provided.`
+        )
+      }
+
+      // Retrieve metadata
+      const typeMeta = this.metaInfo.get(typeName)
+      if (!typeMeta) {
+        throw new Error(`Unknown type: ${typeName}. Cannot import object.`)
+      }
+
+      // Retrieve the UUID from the provided object
+      const uuidValue = (obj as any)["@AelasticsUUID"]
+      if (!uuidValue) {
+        throw new Error(`The provided object does not have a valid UUID.`)
+      }
+
+      // Check if the object with this UUID already exists in the store
+      const exObj = this.getState().getObject(uuidValue)
+      if (exObj) {
+        return exObj as T // Return the existing object from the store
+      }
+
+      // Step 8: Create a new instance of the store object using the type
+      const DynamicClass = this.typeToClassMap.get(typeName)
+      if (!DynamicClass) {
+        throw new Error(`No constructor found for type: ${typeName}. Cannot create object.`)
+      }
+      const newObject = new DynamicClass()
+      // Add the object to the processed map to handle cyclic references
+      processed.set(obj, newObject)
+
+      // Initialize properties
+      for (const [propName, propMeta] of typeMeta.properties) {
+        const value = (obj as any)[propName] // Get the value from the input object
+
+        if (value === undefined) {
+          continue // Skip undefined properties
+        }
+
+        // Step 11: Handle collections and nested objects
+        const privateKey = makePrivatePropertyKey(propName) // Get the private property name
+
+        if (propMeta.type === "array") {
+          value.forEach((item: any) => {
+            const itemType = item["@AelasticsType"] || propMeta.domainType // Use the special property or fallback to metadata
+            ;(newObject as any)[privateKey].push(this.toImmutable(item, itemType, processed))
+          })
+        } else if (propMeta.type === "map") {
+          value.forEach((val: any, key: any) => {
+            const valType = val["@AelasticsType"] || propMeta.domainType // Use the special property or fallback to metadata
+            ;(newObject as any)[privateKey].set(key, this.toImmutable(val, valType, processed))
+          })
+        } else if (propMeta.type === "set") {
+          value.forEach((item: any) => {
+            const itemType = item["@AelasticsType"] || propMeta.domainType // Use the special property or fallback to metadata
+            ;(newObject as any)[privateKey].add(this.toImmutable(item, itemType, processed))
+          })
+        } else if (propMeta.type === "object") {
+          const objectType = value["@AelasticsType"] || propMeta.domainType // Use the special property or fallback to metadata
+          ;(newObject as any)[privateKey] = this.toImmutable(value, objectType, processed)
+        } else {
+          // Simple property
+          ;(newObject as any)[privateKey] = value
+        }
+      }
+
+      // Copy UUID and other internal properties using symbols
+      ;(newObject as any)[uuid] = uuidValue // Use the UUID from the input object
+      ;(newObject as any)[createdAt] = (obj as any)["@AelasticsCreatedAtSymbol"] // Use the original creation timestamp
+
+      // dd the object to the store
+      this.getState().addObject(newObject, "imported")
+
+      // Return the immutable object
+      return newObject
+    } catch (error) {
+      // Handle errors and revert the state if necessary
+      if (!wasInUpdateMode) {
+        this.revertToPreviousState() // Revert the state if this method started the transaction
+      }
+      throw error // Rethrow the error
+    } finally {
+      // if it was started by this method
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = false // Exit update mode if it was set by this method
+      }
+    }
+  }
+
   /** Retrieves an object dynamically from the latest state */
   public findObjectByUUID<T>(uuid: string): T | undefined {
     return this.getState().getDynamicObject(uuid)
@@ -311,7 +404,6 @@ export class StoreClass {
     this.accessedObjects.clear() // Start tracking
     this.versionedObjects = [] // Reset list at start
     this.makeNewState()
-    const currentState = this.getState()
 
     if (obj) {
       if (!(obj instanceof __StoreSuperClass__)) {
