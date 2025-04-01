@@ -119,7 +119,7 @@ export class SubscriptionManager implements SubscriptionInterface {
 
   // Notifies all object subscribers
   public notifyObjectSubscribers(): void {
-    // throw new Error("Method not implemented.")
+    // TODO throw new Error("Method not implemented.")
   }
 }
 

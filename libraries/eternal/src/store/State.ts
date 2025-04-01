@@ -39,18 +39,10 @@ export class State implements StateView {
       // Track the new version
       obj[nextVersion] = new WeakRef(newInstance)
       this.addObject(newInstance, "versioned")
-      // TODO check subscriptions - track for notifications !!!
-      if (trackForNotification) {
-        this.store.deref()?.trackVersionedObject(newInstance) // Track for notifications
-      }
       return newInstance as T
     }
     // If object is already from this state, return the object itself
     return obj
-  }
-  // Track an object for versioning
-  public trackVersionedObject(obj: StoreObject): void {
-    this.store?.deref()?.trackVersionedObject(obj)
   }
 
   /** Retrieves an object from this specific state */

@@ -20,9 +20,9 @@ export function createStore(
   const store = new StoreClass(types);
 
   const publicAPI: Store = {
-    createObject: (type) => store.createObject(type), 
-    updateObject: <T extends object>(recipe: (obj: T ) => void, obj: T) => store.produce(recipe, obj),
-    updateStore: <R>(recipe: () => R) => store.produce(recipe) as R,
+    createObject: (type) => store.create(type), 
+    updateObject: <T extends object>(recipe: (obj: T ) => void, obj: T) => store.update(recipe, obj),
+    updateStore: <R>(recipe: () => R) => store.update(recipe) as R,
     findObjectByUUID: (uuid) => store.findObjectByUUID(uuid),
     isInUpdateMode: () => store.isInUpdateMode(),
     makeRegular: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation

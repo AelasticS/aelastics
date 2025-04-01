@@ -1,3 +1,20 @@
+/**
+ * The `StoreClass` is a core class that implements the functionality for managing objects
+ *  in a dynamic and immutable store.
+ * 
+ * It supports features such as state history, undo/redo operations, dynamic class creation, and
+ * object versioning. The class is designed to handle complex object structures with support for
+ * arrays, maps, sets, and nested objects, while ensuring immutability and tracking changes.
+ *
+ * ### Key Features:
+ * - **State Management**: Maintains a history of states with undo/redo capabilities.
+ * - **Dynamic Class Creation**: Dynamically generates classes based on metadata.
+ * - **Object Versioning**: Tracks changes to objects and creates new versions when necessary.
+ * - **Subscription Management**: Notifies subscribers of changes to objects or the store.
+ * - **Immutable Object Handling**: Converts objects to and from immutable representations.
+ * - **Change Tracking**: Tracks accessed and modified objects for efficient updates.
+ * */
+
 import {
   ChangeLogEntry,
   consolidateChangeLogs,
@@ -16,20 +33,17 @@ import { SubscriptionManager } from "../events/SubscriptionManager"
 import { randomUUID } from "crypto"
 import { makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 import { isSimplePropType } from "../meta/PropertyDefinitions"
+import { ObjectManager } from "../interfaces/ObjectManager"
 
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
-export class StoreClass {
+export class StoreClass implements ObjectManager {
   private stateHistory: State[] = [] // Stores the history of states
   private subscriptionManager = new SubscriptionManager(this) // Create a subscription manager
   private currentStateIndex: number = -1 // Track active state index
   private inUpdateMode: boolean = false // Flag to indicate if the store is in update mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
-
-  private accessedObjects: Set<StoreObject> = new Set() // Track accessed object
-  private versionedObjects: StoreObject[] = [] // Track versioned objects
-
-  private metaInfo: Map<string, TypeMeta>
+  private metaInfo: Map<string, TypeMeta> // Metadata information for each type
 
   constructor(metaInfo: Map<string, TypeMeta>) {
     this.metaInfo = metaInfo
@@ -49,6 +63,14 @@ export class StoreClass {
     return this.subscriptionManager
   }
 
+  /** Returns the UUID of a store object */
+  public getUUID<T extends object>(obj: T): string {
+    if (!(obj instanceof __StoreSuperClass__)) {
+      throw new Error("The provided object is not a valid store object.")
+    }
+    return (obj as any)[uuid]
+  }
+
   /** Returns the latest (i.e. current) state */
   public getState(): State {
     if (this.stateHistory.length === 0) {
@@ -64,8 +86,7 @@ export class StoreClass {
     return this.inUpdateMode
   }
 
-  /** Creates a new state before entering update mode */
-  // TODO return private after testing
+
   public makeNewState(): void {
     // Clear future states if undo() was called before this change
     // TODO check if objects from previous state which has nextVersion objects will be hanging
@@ -83,6 +104,7 @@ export class StoreClass {
     }
     return false // unsuccessful
   }
+
   /** Undo the last change */
   public undo(): boolean {
     if (this.inUpdateMode) {
@@ -104,7 +126,7 @@ export class StoreClass {
   }
 
   /** Creates a new object of a specified type and initializes it with the given state. */
-  public createObject<T>(type: string, initialState: Partial<T> = {}, processed: Map<any, any> = new Map()): T {
+  public create<T>(type: string, initialState: Partial<T> = {}, processed: Map<any, any> = new Map()): T {
     if (!this.typeToClassMap.has(type)) {
       throw new Error(`Unknown type: ${type}. Cannot create object.`)
     }
@@ -222,9 +244,6 @@ export class StoreClass {
   /**
    * Ensures that a value is either an object from the store or creates a new one if necessary.
    * Prevents infinite recursion by using a processed map.
-   * @param value - The value to ensure is a store object.
-   * @param type - The type of the object to create if necessary.
-   * @param processed - A map of already processed values to their corresponding store objects.
    */
   private ensureStoreObject(value: any, type?: string, processed: Map<any, any> = new Map()): any {
     if (processed.has(value)) {
@@ -243,7 +262,7 @@ export class StoreClass {
       if (!this.typeToClassMap.has(type)) {
         throw new Error(`Unknown type: ${type}. Cannot create object.`)
       }
-      return this.createObject(type, value, processed)
+      return this.create(type, value, processed)
     } else if (isSimplePropType(type)) {
       // If the type is a simple property type, return the value directly
       return value
@@ -252,6 +271,16 @@ export class StoreClass {
     }
   }
 
+  /* deletes an object from the store
+   */
+  public delete<T extends object>(obj: T): void {
+    if (!(obj instanceof __StoreSuperClass__)) {
+      throw new Error("The provided object is not a valid store object.")
+    }
+    const objUUID = (obj as any)[uuid]
+    const currentState = this.getState()
+    currentState.deleteObject(objUUID)
+  }
   public toImmutable<T extends object>(obj: T, type?: string, processed = new Map<any, any>()): T {
     const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
     try {
@@ -324,9 +353,9 @@ export class StoreClass {
 
         if (propMeta.type === "array") {
           value.forEach((item: any) => {
-            const itemType = item["@AelasticsType"] || propMeta.domainType; // Use the special property or fallback to metadata
-            const element = this.toImmutable(item, itemType, processed);
-            (newObject as any)[privateKey].push(element)
+            const itemType = item["@AelasticsType"] || propMeta.domainType // Use the special property or fallback to metadata
+            const element = this.toImmutable(item, itemType, processed)
+            ;(newObject as any)[privateKey].push(element)
           })
         } else if (propMeta.type === "map") {
           value.forEach((val: any, key: any) => {
@@ -409,8 +438,7 @@ export class StoreClass {
 
       // Handle collections and nested objects
       if (propMeta.type === "array") {
-        const a = value.map((item: any) => 
-          this.fromImmutable(item, processed))
+        const a = value.map((item: any) => this.fromImmutable(item, processed))
         literalObject[propName] = a
       } else if (propMeta.type === "map") {
         literalObject[propName] = Array.from(value.entries() as [any, any][]).reduce(
@@ -466,84 +494,44 @@ export class StoreClass {
   }
 
   /** Produces a new state with modifications */
-  public produce<T>(recipe: (obj: T) => void, obj?: T): T {
-    if (this.inUpdateMode) {
-      throw new Error("Nested produce() calls are not allowed.")
-    }
-    this.inUpdateMode = true
-    this.accessedObjects.clear() // Start tracking
-    this.versionedObjects = [] // Reset list at start
-    this.makeNewState()
-
-    if (obj) {
-      if (!(obj instanceof __StoreSuperClass__)) {
-        throw new Error("The provided object is not created or .")
+  public update<T>(recipe: (obj: T) => void, obj?: T): T {
+    let hasError = false
+    const wasInUpdateMode = this.inUpdateMode 
+    try {
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = true // Enter update mode if not already in it
+        this.makeNewState() // Create a new state for the update
       }
-      // Versioning logic when an object is passed
-      // Use State's method to create a new object version
-      let newObj = obj as StoreObject
-      try {
-        recipe(newObj as T) // Apply modifications
-        // Track changed objects
-        const additionalVersionedObjects = this.markVersionedObjects()
-        this.versionedObjects.push(...additionalVersionedObjects)
-
-        if (this.versionedObjects.length > 0) {
-          this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/) // Notify all updated objects
-
-          // If `obj` itself was versioned, return the latest version
-          const updatedObj = this.versionedObjects.find((o) => o[uuid] === newObj[uuid])
-          if (updatedObj) {
-            newObj = updatedObj
-          }
+      if (obj) { // If an object is provided, apply the recipe to it
+        if (!(obj instanceof __StoreSuperClass__)) {
+          throw new Error("Invalid object: Ensure it was created or imported using the store.")
         }
-      } catch (error) {
-        console.error("An error occurred while applying the recipe:", error)
-        this.revertToPreviousState()
-        throw error // Re-throw the error after logging it
-      } finally {
-        this.inUpdateMode = false
-        this.accessedObjects.clear() // Stop tracking
+        recipe(obj) // Apply modifications
+        let newObj = this.getState().getObject(obj[uuid]) // get the latest version
+        this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/) // Notify all updated objects
+        return newObj as T
+      } else { // If no object is provided, apply the recipe to the store
+        const result = (recipe as () => T)() 
+        return result 
       }
-      return newObj as T
-    } else {
-      try {
-        const result = (recipe as () => T)() // Capture return value
-        this.markVersionedObjects()
+    } catch (error) {
+      hasError = true // Set error flag
+      console.error("An error occurred while applying the recipe:", error)
+      this.revertToPreviousState()
+      throw error // Re-throw the error after logging it
+    } finally {
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = false // Exit update mode if it was set by this method
+      }
+      if (!hasError) {
         this.subscriptionManager.notifyObjectSubscribers(/*this.versionedObjects*/) // Notify global changes
-        return result // Return the result from recipe()
-      } finally {
-        this.inUpdateMode = false
-        this.accessedObjects.clear() // Stop tracking
+        this.subscriptionManager.notifyStoreSubscribers() // Notify all subscribers of the store
       }
     }
   }
 
-  // Track changed objects
-  public trackVersionedObject(obj: StoreObject): void {
-    if (!this.versionedObjects.includes(obj)) {
-      this.versionedObjects.push(obj)
-    }
-  }
-  private markVersionedObjects(): StoreObject[] {
-    const versionedObjects: StoreObject[] = []
 
-    for (const obj of this.accessedObjects) {
-      if (hasChanges(this.getChangeLog(), obj["uuid"])) {
-        const newVersion = this.getState().createNewVersion(obj)
-        versionedObjects.push(newVersion)
-      }
-    }
-
-    return versionedObjects
-  }
-
-  public trackAccess(obj: StoreObject): void {
-    if (this.inUpdateMode) {
-      this.accessedObjects.add(obj)
-    }
-  }
-
+/** Creates a dynamic class based on the provided type metadata */
   private createDynamicClass(typeMeta: TypeMeta, store: StoreClass) {
     const className = typeMeta.qName // Use the type name as the class name
     // TODO: support creation of subclasses recursively, so that order is not important

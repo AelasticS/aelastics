@@ -15,7 +15,7 @@ export interface ObjectManager {
    * @param initialState - Optional initial state to assign to the object.
    * @returns The newly created and managed object of type T.
    */
-  create<T extends object>(type: string, initialState?: T): T
+  create<T extends object>(type: string, initialState?: Partial<T>): T
 
   /**
    * Updates the state of an object by applying a recipe function.
@@ -49,7 +49,7 @@ export interface ObjectManager {
    *                If not provided, the current (last) state is used and the latest state of the object is returned.
    * @returns The object in the requested state, or undefined if not found.
    */
-  get<T extends object>(obj: string | T, state?: number | string): T | undefined
+  get?<T extends object>(obj: string | T, state?: number | string): T | undefined
 
   /**
    * Finds objects of a specific type that match a given predicate function.
@@ -62,7 +62,7 @@ export interface ObjectManager {
    *               If not provided, the current state of the store is searched.
    * @returns An array of objects that match the predicate.
    */
-  find<T extends object>(objectType: string, predicate: (obj: T) => boolean, state?: number | string): T[]
+  find?<T extends object>(objectType: string, predicate: (obj: T) => boolean, state?: number | string): T[]
 
   /* Get unique identifier (UUID) of an object
    * @template T - The type of the object to get the UUID for.
@@ -99,7 +99,7 @@ export interface ObjectManager {
    * @param obj - The object to be serialized.
    * @returns A JSON-formatted string representation of the object.
    */
-  serialize<T extends object>(obj: T): string
+  serialize?<T extends object>(obj: T): string
 
   /**
    * Deserializes a JSON-formatted string based on UUIDs into an object of a specified type and adds it to the store.
@@ -112,7 +112,7 @@ export interface ObjectManager {
    * @returns The deserialized object of type T.
    * @throws Error if the json iis not UUID based format.
    */
-  deserialize<T extends object>(json: string, type: string, validate?: boolean): T
+  deserialize?<T extends object>(json: string, type: string, validate?: boolean): T
 
   /**
    * Validates an object against its type schema to ensure it conforms to the expected structure and rules.
@@ -121,5 +121,5 @@ export interface ObjectManager {
    * @param obj - The object to validate.
    * @returns The result of the validation, indicating success or failure.
    */
-  validate<T extends object>(obj: T): Result
+  validate?<T extends object>(obj: T): Result
 }
