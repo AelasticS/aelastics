@@ -49,7 +49,7 @@ export interface ObjectManager {
    *                If not provided, the current (last) state is used and the latest state of the object is returned.
    * @returns The object in the requested state, or undefined if not found.
    */
-  get?<T extends object>(obj: string | T, state?: number | string): T | undefined
+  get<T extends object>(obj: string | T, state?: number /*| string */): T | undefined  // TODO add state tags 
 
   /**
    * Finds objects of a specific type that match a given predicate function.
