@@ -91,7 +91,11 @@ export class StoreClass implements ObjectManager {
     /** Finds objects of a specific type that match a given predicate */
     public find<T extends object>(objectType: string, predicate?: (obj: T) => boolean, state?: number): T[] {
       const targetState = state !== undefined ? this.getStateByIndex(state) : this.getState();
-      return targetState.findObjects(objectType, predicate) as T[];
+      const DynamicClass = this.typeToClassMap.get(objectType);
+      if(!DynamicClass) { 
+        throw new Error(`Unknown type: ${objectType}. Cannot search for objects.`);
+      }
+      return targetState.findObjects(DynamicClass, predicate) as T[];
     }
 
   /** Returns the latest (i.e. current) state */

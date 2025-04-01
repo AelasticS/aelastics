@@ -57,10 +57,12 @@ export class State implements StateView {
   }
 
     /** Retrieves objects of a specific type from the state which satisfy predicate*/
-    public findObjects<T>(objectType: string, predicate?: (obj: T) => boolean): T[] {
-      return Array.from(this.objectMap.values()).filter((obj) => {
-      return getClassName(obj) === objectType && (!predicate || predicate(obj as T));
+    public findObjects<T>(objectType: new (...args: any[]) => T, predicate?: (obj: T) => boolean): T[] {
+      const arr = Array.from(this.objectMap.values());
+      const res = arr.filter((obj) => {
+      return obj instanceof objectType && (!predicate || predicate(obj as T));
       }) as T[];
+      return res;
     }
 
   /** Retrieves an object which can be changed */
