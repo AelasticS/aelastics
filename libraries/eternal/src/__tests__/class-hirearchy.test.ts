@@ -44,9 +44,9 @@ describe('EternalStore Dynamic Class Creation', () => {
 
   it('should dynamically create a hierarchy of classes', () => {
     // Create objects of each type
-    const objA = store.createObject<StoreObject>('TypeA');
-    const objB = store.createObject<StoreObject>('TypeB');
-    const objC = store.createObject<StoreObject>('TypeC');
+    const objA = store.create<StoreObject>('TypeA');
+    const objB = store.create<StoreObject>('TypeB');
+    const objC = store.create<StoreObject>('TypeC');
 
     // Check if objects are instances of their respective classes
     expect(objA).toBeInstanceOf(store.getClassByName('TypeA'));
@@ -69,8 +69,8 @@ describe('EternalStore Dynamic Class Creation', () => {
 
   it('should clone objects correctly in a hierarchy of classes', () => {
     // Create an object of type 'TypeC'
-    let objC = store.createObject<StoreObject>('TypeC');
-    objC = store.produce((o) => {
+    let objC = store.create<StoreObject>('TypeC');
+    objC = store.update((o) => {
       o.propA = 'valueA';
       o.propB = 42;
       o.propC = true;

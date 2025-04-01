@@ -44,7 +44,7 @@ describe("StoreClass - fromImmutable", () => {
 
     it("should export a store object with simple and collection properties to a literal object", () => {
         // Create a store object
-        const storeObject = store.createObject<TestType>("TestType", {
+        const storeObject = store.create<TestType>("TestType", {
           simpleProp: "customValue",
           arrayProp: [
             { nestedProp: "arrayValue1" },
@@ -97,12 +97,12 @@ describe("StoreClass - fromImmutable", () => {
         store = new StoreClass(mockMetaInfo);
       
         // Step 1: Create the Person object
-        let person = store.createObject<{ name: string; friends: any[] }>("Person", {
+        let person = store.create<{ name: string; friends: any[] }>("Person", {
           name: "Alice",
         });
       
         // Step 2: Add a cyclic reference using updateObject and reassign the result to person
-        person = store.produce((p: any) => {
+        person = store.update((p: any) => {
           p.friends.push(p); // Add a cyclic reference to the friends array
         }, person);
       
