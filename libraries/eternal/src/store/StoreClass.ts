@@ -30,7 +30,7 @@ import { PropertyMeta, TypeMeta } from "../meta/InternalSchema"
 import { State } from "./State"
 import { SubscriptionManager } from "../events/SubscriptionManager"
 import { randomUUID } from "crypto"
-import { makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
+import { isStoreObject, makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 import { isSimplePropType } from "../meta/PropertyDefinitions"
 import { ObjectManager } from "../interfaces/ObjectManager"
 
@@ -488,6 +488,211 @@ export class StoreClass implements ObjectManager {
     // Return the literal object
     return literalObject
   }
+
+
+/**
+ * Serializes an object from the store into a custom JSON format.
+ * Handles cyclic references by ensuring each object is serialized only once.
+ * Collections (arrays, maps, sets) store only UUIDs of objects.
+ * @param rootObject - The root object to serialize.
+ * @returns A JSON string representing the serialized object graph.
+ */
+public serializeObject(rootObject: any): string {
+  const processed = new Map<string, any>(); // Map to track serialized objects by UUID
+  const serializedObjects: any[] = []; // Array to store serialized objects
+
+  // Helper function to serialize an object
+  const serializeObject = (obj: any): any => {
+    if (!isStoreObject(obj)) {
+      throw new Error("The provided object is not a valid store object.");
+    }
+
+    const objectUUID = this.getUUID(obj);
+
+    // If the object is already processed, return its UUID directly
+    if (processed.has(objectUUID)) {
+      return objectUUID; // Return only the UUID
+    }
+
+    // Create a serialized representation with UUID and object type
+    const serialized: any = {
+      "@AelasticsUUID": objectUUID,
+      "@AelasticsType": obj.constructor.name, // Add object type
+    };
+
+    // Add the object to the processed map
+    processed.set(objectUUID, serialized);
+    serializedObjects.push(serialized); // Add to the serialized objects array
+
+    // Retrieve all properties from metadata
+    const properties = this.getAllProperties(obj.constructor.name);
+
+    // Iterate over the properties using metadata
+    for (const [key, meta] of properties.entries()) {
+      const value = obj[key];
+
+      if (meta.type === "object") {
+        // If the property is an object, serialize it as a UUID
+        serialized[key] = isStoreObject(value)
+          ? serializeObject(value) // Continue serialization recursively
+          : null;
+      } else if (meta.type === "array") {
+        // If the property is an array, store UUIDs of objects
+        serialized[key] = Array.isArray(value)
+          ? value.map((item) => {
+              if (isStoreObject(item)) {
+                serializeObject(item); // Continue serialization recursively
+                return this.getUUID(item); // Store only the UUID
+              }
+              return item; // For primitives or non-store objects
+            })
+          : [];
+      } else if (meta.type === "map") {
+        // If the property is a map, store UUIDs for keys and values
+        serialized[key] = value instanceof Map
+          ? Array.from(value.entries()).map(([mapKey, mapValue]) => {
+              if (isStoreObject(mapKey)) {
+                serializeObject(mapKey); // Continue serialization recursively
+              }
+              if (isStoreObject(mapValue)) {
+                serializeObject(mapValue); // Continue serialization recursively
+              }
+              return {
+                key: isStoreObject(mapKey) ? this.getUUID(mapKey) : mapKey, // Store only the UUID for keys
+                value: isStoreObject(mapValue) ? this.getUUID(mapValue) : mapValue, // Store only the UUID for values
+              };
+            })
+          : [];
+      } else if (meta.type === "set") {
+        // If the property is a set, store UUIDs of objects
+        serialized[key] = value instanceof Set
+          ? Array.from(value).map((item) => {
+              if (isStoreObject(item)) {
+                serializeObject(item); // Continue serialization recursively
+                return this.getUUID(item); // Store only the UUID
+              }
+              return item; // For primitives or non-store objects
+            })
+          : [];
+      } else {
+        // For primitive types or other non-reference properties, include as-is
+        serialized[key] = value;
+      }
+    }
+
+    return serialized;
+  };
+
+  // Start serialization from the root object
+  serializeObject(rootObject);
+
+  // Return the serialized objects as a JSON string
+  return JSON.stringify(serializedObjects, null, 2); // Pretty-printed JSON
+}
+
+/**
+ * Deserializes a JSON string into a graph of objects.
+ * @param jsonString - The JSON string to deserialize.
+ * @returns The root object of the deserialized graph.
+ */
+public deserializeObject(jsonString: string): any {
+  const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
+  try {
+    // Check if update mode is already active
+    if (!wasInUpdateMode) {
+      this.inUpdateMode = true // Enter update mode if not already in it
+      this.makeNewState() // Create a new state for the transaction
+    }
+
+  // Parse the JSON string
+  const serializedObjects = JSON.parse(jsonString);
+
+  // Validate that the parsed JSON is an array
+  if (!Array.isArray(serializedObjects)) {
+    throw new Error("Deserialization error: Expected an array of serialized objects.");
+  }
+
+  // Create and initialize objects in a single pass
+  const createdObjects = serializedObjects.map((serialized, index) => {
+    // Validate that @AelasticsUUID and @AelasticsType are properly initialized
+    const uuid = serialized["@AelasticsUUID"];
+    const type = serialized["@AelasticsType"];
+    if (typeof uuid !== "string") {
+      throw new Error(
+        `Deserialization error: Missing or invalid '@AelasticsUUID' in object at index ${index}.`
+      );
+    }
+    if (typeof type !== "string") {
+      throw new Error(
+        `Deserialization error: Missing or invalid '@AelasticsType' in object at index ${index}.`
+      );
+    }
+
+    // Dynamically instantiate the object using its type
+    const objectClass = this.getClassByName(type); // Retrieve the class constructor
+    if (!objectClass) {
+      throw new Error(`Unknown type '${type}' for object with UUID '${uuid}'`);
+    }
+    const createdObject = new objectClass(); // Create an empty instance of the class
+
+    // Retrieve meta information for the object's type
+    const metaInfo = this.getAllProperties(type);
+
+    // Populate the object's private properties using meta information
+    for (const [key, meta] of metaInfo.entries()) {
+      const privateKey = makePrivatePropertyKey(key); // Convert the key to a private property key
+      const value = serialized[key];
+
+      if (meta.type === "object") {
+        // Handle object references: Insert UUID directly
+        if (typeof value !== "string") {
+          throw new Error(`Expected a UUID (string) for property '${key}', but got ${typeof value}`);
+        }
+        createdObject[privateKey] = value;
+      } else if (meta.type === "array") {
+        // Handle arrays: Use `push` to populate the array
+        if (!Array.isArray(value)) {
+          throw new Error(`Expected an array for property '${key}', but got ${typeof value}`);
+        }
+        value.forEach((item) => createdObject[privateKey].push(item));
+      } else if (meta.type === "map") {
+        // Handle maps: Use `set` to populate the map
+        if (!(value instanceof Array)) {
+          throw new Error(`Expected an array of key-value pairs for property '${key}', but got ${typeof value}`);
+        }
+        value.forEach(({ key: mapKey, value: mapValue }) => {
+          createdObject[privateKey].set(mapKey, mapValue);
+        });
+      } else if (meta.type === "set") {
+        // Handle sets: Use `add` to populate the set
+        if (!(value instanceof Array)) {
+          throw new Error(`Expected an array for property '${key}', but got ${typeof value}`);
+        }
+        value.forEach((item) => createdObject[privateKey].add(item));
+      } else {
+        // Default case: Handle primitive types
+        createdObject[privateKey] = value;
+      }
+    }
+
+    return createdObject;
+  });
+
+  // Return the root object (first object in the array)
+  return createdObjects[0];
+  } catch (error) {
+    // Handle errors and revert the state if necessary
+    if (!wasInUpdateMode) {
+      this.revertToPreviousState() // Revert the state if this method started the transaction
+    }
+    throw error // Rethrow the error
+  } finally {
+    // if it was started by this method
+    if (!wasInUpdateMode) {
+      this.inUpdateMode = false // Exit update mode if it was set by this method
+    }
+  }
+}
 
   /** Retrieves an object dynamically from the latest state */
   public findObjectByUUID<T>(uuid: string): T | undefined {
