@@ -4,11 +4,7 @@ export function generateUUID(): string {
 
 /** Utility function to check if a value is an object with a UUID */
 export function isStoreObject(value: any): value is StoreObject {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    (("uuid" in value && typeof value.uuid === "string") || value instanceof __StoreSuperClass__)
-  )
+  return value instanceof __StoreSuperClass__
 }
 
 /**
