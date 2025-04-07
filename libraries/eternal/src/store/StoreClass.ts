@@ -535,7 +535,7 @@ public serializeObject(rootObject: any): string {
         // If the property is an object, serialize it as a UUID
         serialized[key] = isStoreObject(value)
           ? serializeObject(value) // Continue serialization recursively
-          : null;
+          : undefined;
       } else if (meta.type === "array") {
         // If the property is an array, store UUIDs of objects
         serialized[key] = Array.isArray(value)
@@ -566,7 +566,7 @@ public serializeObject(rootObject: any): string {
       } else if (meta.type === "set") {
         // If the property is a set, store UUIDs of objects
         serialized[key] = value instanceof Set
-          ? Array.from(value).map((item) => {
+          ? Array.from(value.values()).map((item) => {
               if (isStoreObject(item)) {
                 serializeObject(item); // Continue serialization recursively
                 return this.getUUID(item); // Store only the UUID
@@ -575,7 +575,8 @@ public serializeObject(rootObject: any): string {
             })
           : [];
       } else {
-        // For primitive types or other non-reference properties, include as-is
+        // For primitive types or oth
+        // er non-reference properties, include as-is
         serialized[key] = value;
       }
     }
@@ -587,7 +588,7 @@ public serializeObject(rootObject: any): string {
   serializeObject(rootObject);
 
   // Return the serialized objects as a JSON string
-  return JSON.stringify(serializedObjects, null, 2); // Pretty-printed JSON
+  return JSON.stringify(serializedObjects); // Pretty-printed JSON
 }
 
 /**
