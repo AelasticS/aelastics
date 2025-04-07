@@ -502,7 +502,7 @@ public serializeObject(rootObject: any): string {
   const serializedObjects: any[] = []; // Array to store serialized objects
 
   // Helper function to serialize an object
-  const serializeObject = (obj: any): any => {
+  const serializeObject = (obj: any): void => {
     if (!isStoreObject(obj)) {
       throw new Error("The provided object is not a valid store object.");
     }
@@ -511,7 +511,7 @@ public serializeObject(rootObject: any): string {
 
     // If the object is already processed, return its UUID directly
     if (processed.has(objectUUID)) {
-      return objectUUID; // Return only the UUID
+      return // objectUUID; // Return only the UUID
     }
 
     // Create a serialized representation with UUID and object type
@@ -522,7 +522,7 @@ public serializeObject(rootObject: any): string {
 
     // Add the object to the processed map
     processed.set(objectUUID, serialized);
-    serializedObjects.push(serialized); // Add to the serialized objects array
+
 
     // Retrieve all properties from metadata
     const properties = this.getAllProperties(obj.constructor.name);
@@ -533,9 +533,12 @@ public serializeObject(rootObject: any): string {
 
       if (meta.type === "object") {
         // If the property is an object, serialize it as a UUID
-        serialized[key] = isStoreObject(value)
-          ? serializeObject(value) // Continue serialization recursively
-          : undefined;
+        if (isStoreObject(value)) {
+          serializeObject(value); // Continue serialization recursively
+          serialized[key] = this.getUUID(value)
+        } else {
+          serialized[key] = undefined;
+        }
       } else if (meta.type === "array") {
         // If the property is an array, store UUIDs of objects
         serialized[key] = Array.isArray(value)
@@ -575,13 +578,13 @@ public serializeObject(rootObject: any): string {
             })
           : [];
       } else {
-        // For primitive types or oth
-        // er non-reference properties, include as-is
+        // For primitive types or 
+        // non-reference properties, include as-is
         serialized[key] = value;
       }
     }
-
-    return serialized;
+    serializedObjects.push(serialized); // Add to the serialized objects array
+    return // serialized;
   };
 
   // Start serialization from the root object

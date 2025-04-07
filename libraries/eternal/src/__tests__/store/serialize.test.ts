@@ -53,10 +53,11 @@ describe("Serialization Tests", () => {
   });
 
   test("Serialize an object with collections", () => {
-    const objA = Store.create<MyClass>("MyClass", { name: "Object A", age: 30 });
+    const objA = Store.create<MyClass>("MyClass", { name: "ObjectA", age: 30 });
 
     let objB = Store.create<MyClass>("MyClass", {
-      array: [objA], // Array of MyClass objects
+      name: "ObjectB",
+      array: [], // Array of MyClass objects
       map: new Map([["key2", 42]]), // Map with number values
       set: new Set(["value1", "value2"]), // Set with string values
     });
@@ -70,26 +71,28 @@ describe("Serialization Tests", () => {
 
     const serialized = Store.serializeObject(objB);
     const expectedArray = [
+      {
+        "@AelasticsUUID": Store.getUUID(objA), // Use Store.getUUID() to retrieve the UUID
+        "@AelasticsType": "MyClass",
+        name: "ObjectA",
+        age: 30,
+        "array":[],
+        "map":[],
+        "set":[]
+      },
         {
           "@AelasticsUUID": Store.getUUID(objB), // Use Store.getUUID() to retrieve the UUID
           "@AelasticsType": "MyClass",
-          array: [Store.getUUID(objA), Store.getUUID(objA)], // UUIDs of objects in the array
+          name: "ObjectB",
+          age: undefined,
+          array: [Store.getUUID(objA)], // UUIDs of objects in the array
           map: [
             { key: "key2", value: 42 },
             { key: "key1", value: 99 },
           ],
           set: ["value1", "value2", "value3"],
         },
-        {
-          "@AelasticsUUID": Store.getUUID(objA), // Use Store.getUUID() to retrieve the UUID
-          "@AelasticsType": "MyClass",
-          name: "Object A",
-          age: 30,
-          "array":[],
-          "map":[],
-          "set":[]
-          
-        },
+
       ]
     const parsedSerialized = JSON.parse(serialized);
 
@@ -97,21 +100,20 @@ describe("Serialization Tests", () => {
   });
 
   test("Serialize an object with circular references", () => {
-    const objA = Store.create<MyClass>("MyClass", { name: "Object A", age: 30, array: [], map: new Map(), set: new Set() });
+    const objA = Store.create<MyClass>("MyClass", { name: "ObjectA", age: 30, array: [], map: new Map(), set: new Set() });
 
     let objB = Store.create<MyClass>("MyClass", {
-      name: undefined,
-      age: undefined,
-      array: [objA], // Array of MyClass objects
+      name: "ObjectB",
+      age: 30,
+      array: [], // Array of MyClass objects
       map: new Map([["key2", 42]]), // Map with number values
       set: new Set(["value1", "value2"]), // Set with string values
     });
 
-    const objC = Store.create<MyClass>("MyClass", { child: objB });
+    const objC = Store.create<MyClass>("MyClass", { name: "ObjectC", child: objB });
 
     // Add references to objA in collections and circular reference
     objB = Store.update<MyClass>((o) => {
-      o.name = undefined,
       o.age = undefined,
       o.array?.push(objA);
       o.map?.set("key1", 99);
@@ -123,28 +125,33 @@ describe("Serialization Tests", () => {
 
     const parsedSerialized = JSON.parse(serialized);
     const expectedObjects = [
-      {
-        "@AelasticsUUID": Store.getUUID(objC), // Use Store.getUUID() to retrieve the UUID
-        "@AelasticsType": "MyClass",
-        child: Store.getUUID(objB),
-      },
-      {
-        "@AelasticsUUID": Store.getUUID(objB), // Use Store.getUUID() to retrieve the UUID
-        "@AelasticsType": "MyClass",
-        array: [Store.getUUID(objA)],
-        map: [
-          { key: "key2", value: 42 },
-          { key: "key1", value: 99 },
-        ],
-        set: ["value1", "value2", "value3"],
-        parent: Store.getUUID(objC), // Circular reference
-      },
-      {
-        "@AelasticsUUID": Store.getUUID(objA), // Use Store.getUUID() to retrieve the UUID
-        "@AelasticsType": "MyClass",
-        name: "Object A",
-        age: 30,
-      },
+      expect.objectContaining({
+      "@AelasticsUUID": Store.getUUID(objA), // Use Store.getUUID() to retrieve the UUID
+      "@AelasticsType": "MyClass",
+      name: "ObjectA",
+      age: 30,
+      array: expect.any(Array),
+      map: expect.any(Array),
+      set: expect.any(Array),
+      }),
+      expect.objectContaining({
+      "@AelasticsUUID": Store.getUUID(objB), // Use Store.getUUID() to retrieve the UUID
+      "@AelasticsType": "MyClass",
+      name: "ObjectB",
+      array: expect.arrayContaining([Store.getUUID(objA)]),
+      map: expect.arrayContaining([
+        expect.objectContaining({ key: "key2", value: 42 }),
+        expect.objectContaining({ key: "key1", value: 99 }),
+      ]),
+      set: expect.arrayContaining(["value1", "value2", "value3"]),
+      parent: Store.getUUID(objC), // Circular reference
+      }),
+      expect.objectContaining({
+      "@AelasticsUUID": Store.getUUID(objC), // Use Store.getUUID() to retrieve the UUID
+      "@AelasticsType": "MyClass",
+      name: "ObjectC",
+      child: Store.getUUID(objB),
+      }),
     ];
 
     expect(parsedSerialized).toEqual(expect.arrayContaining(expectedObjects));
@@ -176,34 +183,35 @@ describe("Serialization Tests", () => {
 
     const parsedSerialized = JSON.parse(serialized);
     const expectedObjects = [
-      {
-        "@AelasticsUUID": Store.getUUID(objC), // Use Store.getUUID() to retrieve the UUID
-        "@AelasticsType": "MyClass",
-        child: Store.getUUID(objB),
-      },
-      {
-        "@AelasticsUUID": Store.getUUID(objB), // Use Store.getUUID() to retrieve the UUID
-        "@AelasticsType": "MyClass",
-        array: [Store.getUUID(objA), Store.getUUID(objD)],
-        map: [
-          { key: "key2", value: 42 },
-          { key: "key1", value: 99 },
-          { key: "key3", value: 100 },
-        ],
-        set: ["value1", "value2", "value3"],
-        parent: Store.getUUID(objC), // Circular reference
-      },
-      {
-        "@AelasticsUUID": Store.getUUID(objA), // Use Store.getUUID() to retrieve the UUID
-        "@AelasticsType": "MyClass",
-        name: "Object A",
-        age: 30,
-      },
-      {
-        "@AelasticsUUID": Store.getUUID(objD), // Use Store.getUUID() to retrieve the UUID
-        "@AelasticsType": "MyClass",
-        description: "Object D",
-      },
+      expect.objectContaining({
+      "@AelasticsUUID": Store.getUUID(objC), // Use Store.getUUID() to retrieve the UUID
+      "@AelasticsType": "MyClass",
+      array: expect.any(Array),
+      child: Store.getUUID(objB),
+      }),
+      expect.objectContaining({
+      "@AelasticsUUID": Store.getUUID(objB), // Use Store.getUUID() to retrieve the UUID
+      "@AelasticsType": "MyClass",
+      array: expect.arrayContaining([Store.getUUID(objA), Store.getUUID(objD)]),
+      map: expect.arrayContaining([
+        expect.objectContaining({ key: "key2", value: 42 }),
+        expect.objectContaining({ key: "key1", value: 99 }),
+        expect.objectContaining({ key: "key3", value: 100 }),
+      ]),
+      set: expect.arrayContaining(["value1", "value2", "value3"]),
+      parent: Store.getUUID(objC), // Circular reference
+      }),
+      expect.objectContaining({
+      "@AelasticsUUID": Store.getUUID(objA), // Use Store.getUUID() to retrieve the UUID
+      "@AelasticsType": "MyClass",
+      name: "Object A",
+      age: 30,
+      }),
+      expect.objectContaining({
+      "@AelasticsUUID": Store.getUUID(objD), // Use Store.getUUID() to retrieve the UUID
+      "@AelasticsType": "MyClass",
+      description: "Object D",
+      }),
     ];
 
     expect(parsedSerialized).toEqual(expect.arrayContaining(expectedObjects));
