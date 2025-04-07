@@ -601,6 +601,7 @@ public serializeObject(rootObject: any): string {
  */
 public deserializeObject(jsonString: string): any {
   const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
+  const notProcessed = new Set<string>() // Set to track unprocessed objects 
   try {
     // Check if update mode is already active
     if (!wasInUpdateMode) {
@@ -619,28 +620,41 @@ public deserializeObject(jsonString: string): any {
   // Create and initialize objects in a single pass
   const createdObjects = serializedObjects.map((serialized, index) => {
     // Validate that @AelasticsUUID and @AelasticsType are properly initialized
-    const uuid = serialized["@AelasticsUUID"];
-    const type = serialized["@AelasticsType"];
-    if (typeof uuid !== "string") {
+    const uuidValue = serialized["@AelasticsUUID"];
+    const typeName = serialized["@AelasticsType"];
+    if (typeof uuidValue !== "string") {
       throw new Error(
         `Deserialization error: Missing or invalid '@AelasticsUUID' in object at index ${index}.`
       );
     }
-    if (typeof type !== "string") {
+    if (typeof typeName !== "string") {
       throw new Error(
         `Deserialization error: Missing or invalid '@AelasticsType' in object at index ${index}.`
       );
     }
 
+    // Check if the object with this UUID already exists in the store
+    const existingObject = this.getState().getObject(uuidValue);
+    if (existingObject) {
+      throw new Error(`Deserialization error: Object '${typeName}' with UUID '${uuidValue}' already exists in the store.`);
+      // If the object already exists, return it
+      // return existingObject;
+    }
+    // Check if the object is already processed
+    if (notProcessed.has(uuidValue)) {
+      notProcessed.delete(uuidValue); // Remove from the processed set
+    }
+
     // Dynamically instantiate the object using its type
-    const objectClass = this.getClassByName(type); // Retrieve the class constructor
+    const objectClass = this.getClassByName(typeName); // Retrieve the class constructor
     if (!objectClass) {
-      throw new Error(`Unknown type '${type}' for object with UUID '${uuid}'`);
+      throw new Error(`Unknown type '${typeName}' for object with UUID '${uuidValue}'`);
     }
     const createdObject = new objectClass(); // Create an empty instance of the class
+    createdObject[uuid] = uuidValue; // Set the UUID
 
     // Retrieve meta information for the object's type
-    const metaInfo = this.getAllProperties(type);
+    const metaInfo = this.getAllProperties(typeName);
 
     // Populate the object's private properties using meta information
     for (const [key, meta] of metaInfo.entries()) {
@@ -649,16 +663,32 @@ public deserializeObject(jsonString: string): any {
 
       if (meta.type === "object") {
         // Handle object references: Insert UUID directly
+        if (value === undefined || value === null) {
+          createdObject[privateKey] = undefined;
+          continue;
+        }
         if (typeof value !== "string") {
           throw new Error(`Expected a UUID (string) for property '${key}', but got ${typeof value}`);
         }
         createdObject[privateKey] = value;
+        // Check if the referenced object is already processed
+        if (!notProcessed.has(value)) {  
+          notProcessed.add(value); // Add to the unprocessed set
+        }
       } else if (meta.type === "array") {
         // Handle arrays: Use `push` to populate the array
         if (!Array.isArray(value)) {
           throw new Error(`Expected an array for property '${key}', but got ${typeof value}`);
         }
-        value.forEach((item) => createdObject[privateKey].push(item));
+        value.forEach((item) => {
+          createdObject[privateKey].push(item)
+          if (meta.itemType === "object") {
+          // If the item is an object, add to unprocessed set if necessary
+            if (!notProcessed.has(item)) {
+            notProcessed.add(item); // Add to the unprocessed set
+            }
+          }
+        });
       } else if (meta.type === "map") {
         // Handle maps: Use `set` to populate the map
         if (!(value instanceof Array)) {
@@ -666,13 +696,33 @@ public deserializeObject(jsonString: string): any {
         }
         value.forEach(({ key: mapKey, value: mapValue }) => {
           createdObject[privateKey].set(mapKey, mapValue);
+          if (meta.itemType === "object") {
+            // If the map value is an object,add to unprocessed set if necessary
+              if (!notProcessed.has(mapValue)) {
+              notProcessed.add(mapValue); // Add to the unprocessed set
+              }
+            }
+            if (meta.keyType === "object") {
+              // If the map key is an object,add to unprocessed set if necessary
+                if (!notProcessed.has(mapKey)) {
+                notProcessed.add(mapKey); // Add to the unprocessed set
+                }
+              }
         });
       } else if (meta.type === "set") {
         // Handle sets: Use `add` to populate the set
         if (!(value instanceof Array)) {
           throw new Error(`Expected an array for property '${key}', but got ${typeof value}`);
         }
-        value.forEach((item) => createdObject[privateKey].add(item));
+        value.forEach((item) => {
+          createdObject[privateKey].add(item)
+        if (meta.itemType === "object") {
+            // If the item is an object, add to unprocessed set if necessary
+              if (!notProcessed.has(item)) {
+              notProcessed.add(item); // Add to the unprocessed set
+              }
+            }
+        });
       } else {
         // Default case: Handle primitive types
         createdObject[privateKey] = value;
@@ -682,6 +732,13 @@ public deserializeObject(jsonString: string): any {
     return createdObject;
   });
 
+  // check if there are any unprocessed objects
+  if (notProcessed.size > 0) {
+    // Handle unprocessed objects
+    throw new Error(
+      `Deserialization error: The following objects were not processed: ${Array.from(notProcessed).join(", ")}`
+    );
+  }
   // Return the root object (first object in the array)
   return createdObjects[0];
   } catch (error) {
