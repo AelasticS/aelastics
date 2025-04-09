@@ -49,6 +49,10 @@ export class StoreClass implements ObjectManager {
     }
   }
 
+  public get objects(): ObjectManager {
+    return this
+  }
+
   public getMeta(type: string): TypeMeta {
     return this.typeToClassMap.get(type)
   }
@@ -491,7 +495,7 @@ export class StoreClass implements ObjectManager {
    * @param rootObject - The root object to serialize.
    * @returns A JSON string representing the serialized object graph.
    */
-  public serializeObject(rootObject: any): string {
+  public serialize(rootObject: any): string {
     const processed = new Map<string, any>() // Map to track serialized objects by UUID
     const serializedObjects: any[] = [] // Array to store serialized objects
 
@@ -594,7 +598,7 @@ export class StoreClass implements ObjectManager {
    * @param jsonString - The JSON string to deserialize.
    * @returns The root object of the deserialized graph.
    */
-  public deserializeObject(jsonString: string): any {
+  public deserialize(jsonString: string): any {
     const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
     const processed = new Set<string>() // Set to track processed objects
     const unResolved = new Set<string>() // Set to track unresolved references

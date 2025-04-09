@@ -35,7 +35,7 @@ describe("Serialization Tests", () => {
   test("Serialize a simple object", () => {
     const objA = Store.create<MyClass>("MyClass", { name: "Object A", age: 30 });
 
-    const serialized = Store.serializeObject(objA);
+    const serialized = Store.serialize(objA);
 
     expect(serialized).toEqual(
       JSON.stringify([
@@ -69,7 +69,7 @@ describe("Serialization Tests", () => {
       o.set?.add("value3");
     }, objB);
 
-    const serialized = Store.serializeObject(objB);
+    const serialized = Store.serialize(objB);
     const expectedArray = [
       {
         "@AelasticsUUID": Store.getUUID(objA), // Use Store.getUUID() to retrieve the UUID
@@ -121,7 +121,7 @@ describe("Serialization Tests", () => {
       o.parent = objC; // Circular reference
     }, objB);
 
-    const serialized = Store.serializeObject(objC);
+    const serialized = Store.serialize(objC);
 
     const parsedSerialized = JSON.parse(serialized);
     const expectedObjects = [
@@ -179,7 +179,7 @@ describe("Serialization Tests", () => {
       o.parent = objC; // Circular reference
     }, objB);
 
-    const serialized = Store.serializeObject(objC);
+    const serialized = Store.serialize(objC);
 
     const parsedSerialized = JSON.parse(serialized);
     const expectedObjects = [

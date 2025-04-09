@@ -100,7 +100,7 @@ export interface ObjectManager {
    * @param obj - The object to be serialized.
    * @returns A JSON-formatted string representation of the object.
    */
-  serialize?<T extends object>(obj: T): string
+  serialize<T extends object>(obj: T): string
 
   /**
    * Deserializes a JSON-formatted string based on UUIDs into an object of a specified type and adds it to the store.
@@ -113,7 +113,7 @@ export interface ObjectManager {
    * @returns The deserialized object of type T.
    * @throws Error if the json iis not UUID based format.
    */
-  deserialize?<T extends object>(json: string, type: string, validate?: boolean): T
+  deserialize<T extends object>(json: string, type: string, validate?: boolean): T
 
   /**
    * Validates an object against its type schema to ensure it conforms to the expected structure and rules.

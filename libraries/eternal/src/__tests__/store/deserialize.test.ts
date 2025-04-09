@@ -35,8 +35,8 @@ describe("Serialization Tests", () => {
 
     const objA = store1.create<MyClass>("MyClass", { name: "Object A", age: 30 });
 
-    const serialized = store1.serializeObject(objA);
-    const deserialized = store2.deserializeObject(serialized);
+    const serialized = store1.serialize(objA);
+    const deserialized = store2.deserialize(serialized);
 
     expect(deserialized.name).toBe("Object A");
     expect(deserialized.age).toBe(30);
@@ -60,8 +60,8 @@ describe("Serialization Tests", () => {
       o.set?.add("value3");
     }, objB);
 
-    const serialized = store1.serializeObject(objB);
-    const deserialized = store2.deserializeObject(serialized);
+    const serialized = store1.serialize(objB);
+    const deserialized = store2.deserialize(serialized);
 
     expect(deserialized.name).toBe("ObjectB");
     const el = deserialized.array[0];
@@ -92,8 +92,8 @@ describe("Serialization Tests", () => {
       o.parent = objC;
     }, objB);
 
-    const serialized = store1.serializeObject(objC);
-    const deserialized = store2.deserializeObject(serialized);
+    const serialized = store1.serialize(objC);
+    const deserialized = store2.deserialize(serialized);
 
     expect(deserialized.name).toBe("ObjectC");
     expect(deserialized.child?.name).toBe("ObjectB");
@@ -125,8 +125,8 @@ describe("Serialization Tests", () => {
       o.parent = objC;
     }, objB);
 
-    const serialized = store1.serializeObject(objC);
-    const deserialized = store2.deserializeObject(serialized);
+    const serialized = store1.serialize(objC);
+    const deserialized = store2.deserialize(serialized);
 
     expect(deserialized.child?.array?.[0].name).toBe("Object A");
     expect(deserialized.child?.array?.[1].description).toBe("Object D");
