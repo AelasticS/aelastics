@@ -15,12 +15,7 @@
  * - **Change Tracking**: Tracks accessed and modified objects for efficient updates.
  * */
 
-import {
-  ChangeLogEntry,
-  consolidateChangeLogs,
-  generateJsonPatch,
-  JSONPatchOperation,
-} from "../events/ChangeLog"
+import { ChangeLogEntry, consolidateChangeLogs, generateJsonPatch, JSONPatchOperation } from "../events/ChangeLog"
 import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
 import { __StoreSuperClass__, createdAt, nextVersion, StoreObject, uuid } from "./InternalTypes"
@@ -489,271 +484,270 @@ export class StoreClass implements ObjectManager {
     return literalObject
   }
 
+  /**
+   * Serializes an object from the store into a custom JSON format.
+   * Handles cyclic references by ensuring each object is serialized only once.
+   * Collections (arrays, maps, sets) store only UUIDs of objects.
+   * @param rootObject - The root object to serialize.
+   * @returns A JSON string representing the serialized object graph.
+   */
+  public serializeObject(rootObject: any): string {
+    const processed = new Map<string, any>() // Map to track serialized objects by UUID
+    const serializedObjects: any[] = [] // Array to store serialized objects
 
-/**
- * Serializes an object from the store into a custom JSON format.
- * Handles cyclic references by ensuring each object is serialized only once.
- * Collections (arrays, maps, sets) store only UUIDs of objects.
- * @param rootObject - The root object to serialize.
- * @returns A JSON string representing the serialized object graph.
- */
-public serializeObject(rootObject: any): string {
-  const processed = new Map<string, any>(); // Map to track serialized objects by UUID
-  const serializedObjects: any[] = []; // Array to store serialized objects
-
-  // Helper function to serialize an object
-  const serializeObject = (obj: any): void => {
-    if (!isStoreObject(obj)) {
-      throw new Error("The provided object is not a valid store object.");
-    }
-
-    const objectUUID = this.getUUID(obj);
-
-    // If the object is already processed, return its UUID directly
-    if (processed.has(objectUUID)) {
-      return // objectUUID; // Return only the UUID
-    }
-
-    // Create a serialized representation with UUID and object type
-    const serialized: any = {
-      "@AelasticsUUID": objectUUID,
-      "@AelasticsType": obj.constructor.name, // Add object type
-    };
-
-    // Add the object to the processed map
-    processed.set(objectUUID, serialized);
-
-
-    // Retrieve all properties from metadata
-    const properties = this.getAllProperties(obj.constructor.name);
-
-    // Iterate over the properties using metadata
-    for (const [key, meta] of properties.entries()) {
-      const value = obj[key];
-
-      if (meta.type === "object") {
-        // If the property is an object, serialize it as a UUID
-        if (isStoreObject(value)) {
-          serializeObject(value); // Continue serialization recursively
-          serialized[key] = this.getUUID(value)
-        } else {
-          serialized[key] = undefined;
-        }
-      } else if (meta.type === "array") {
-        // If the property is an array, store UUIDs of objects
-        serialized[key] = Array.isArray(value)
-          ? value.map((item) => {
-              if (isStoreObject(item)) {
-                serializeObject(item); // Continue serialization recursively
-                return this.getUUID(item); // Store only the UUID
-              }
-              return item; // For primitives or non-store objects
-            })
-          : [];
-      } else if (meta.type === "map") {
-        // If the property is a map, store UUIDs for keys and values
-        serialized[key] = value instanceof Map
-          ? Array.from(value.entries()).map(([mapKey, mapValue]) => {
-              if (isStoreObject(mapKey)) {
-                serializeObject(mapKey); // Continue serialization recursively
-              }
-              if (isStoreObject(mapValue)) {
-                serializeObject(mapValue); // Continue serialization recursively
-              }
-              return {
-                key: isStoreObject(mapKey) ? this.getUUID(mapKey) : mapKey, // Store only the UUID for keys
-                value: isStoreObject(mapValue) ? this.getUUID(mapValue) : mapValue, // Store only the UUID for values
-              };
-            })
-          : [];
-      } else if (meta.type === "set") {
-        // If the property is a set, store UUIDs of objects
-        serialized[key] = value instanceof Set
-          ? Array.from(value.values()).map((item) => {
-              if (isStoreObject(item)) {
-                serializeObject(item); // Continue serialization recursively
-                return this.getUUID(item); // Store only the UUID
-              }
-              return item; // For primitives or non-store objects
-            })
-          : [];
-      } else {
-        // For primitive types or 
-        // non-reference properties, include as-is
-        serialized[key] = value;
+    // Helper function to serialize an object
+    const serializeObject = (obj: any): void => {
+      if (!isStoreObject(obj)) {
+        throw new Error("The provided object is not a valid store object.")
       }
+
+      const objectUUID = this.getUUID(obj)
+
+      // If the object is already processed, return its UUID directly
+      if (processed.has(objectUUID)) {
+        return // objectUUID; // Return only the UUID
+      }
+
+      // Create a serialized representation with UUID and object type
+      const serialized: any = {
+        "@AelasticsUUID": objectUUID,
+        "@AelasticsType": obj.constructor.name, // Add object type
+      }
+
+      // Add the object to the processed map
+      processed.set(objectUUID, serialized)
+
+      // Retrieve all properties from metadata
+      const properties = this.getAllProperties(obj.constructor.name)
+
+      // Iterate over the properties using metadata
+      for (const [key, meta] of properties.entries()) {
+        const value = obj[key]
+
+        if (meta.type === "object") {
+          // If the property is an object, serialize it as a UUID
+          if (isStoreObject(value)) {
+            serializeObject(value) // Continue serialization recursively
+            serialized[key] = this.getUUID(value)
+          } else {
+            serialized[key] = undefined
+          }
+        } else if (meta.type === "array") {
+          // If the property is an array, store UUIDs of objects
+          serialized[key] = Array.isArray(value)
+            ? value.map((item) => {
+                if (isStoreObject(item)) {
+                  serializeObject(item) // Continue serialization recursively
+                  return this.getUUID(item) // Store only the UUID
+                }
+                return item // For primitives or non-store objects
+              })
+            : []
+        } else if (meta.type === "map") {
+          // If the property is a map, store UUIDs for keys and values
+          serialized[key] =
+            value instanceof Map
+              ? Array.from(value.entries()).map(([mapKey, mapValue]) => {
+                  if (isStoreObject(mapKey)) {
+                    serializeObject(mapKey) // Continue serialization recursively
+                  }
+                  if (isStoreObject(mapValue)) {
+                    serializeObject(mapValue) // Continue serialization recursively
+                  }
+                  return {
+                    key: isStoreObject(mapKey) ? this.getUUID(mapKey) : mapKey, // Store only the UUID for keys
+                    value: isStoreObject(mapValue) ? this.getUUID(mapValue) : mapValue, // Store only the UUID for values
+                  }
+                })
+              : []
+        } else if (meta.type === "set") {
+          // If the property is a set, store UUIDs of objects
+          serialized[key] =
+            value instanceof Set
+              ? Array.from(value.values()).map((item) => {
+                  if (isStoreObject(item)) {
+                    serializeObject(item) // Continue serialization recursively
+                    return this.getUUID(item) // Store only the UUID
+                  }
+                  return item // For primitives or non-store objects
+                })
+              : []
+        } else {
+          // For primitive types or
+          // non-reference properties, include as-is
+          serialized[key] = value
+        }
+      }
+      serializedObjects.push(serialized) // Add to the serialized objects array
+      return // serialized;
     }
-    serializedObjects.push(serialized); // Add to the serialized objects array
-    return // serialized;
-  };
 
-  // Start serialization from the root object
-  serializeObject(rootObject);
+    // Start serialization from the root object
+    serializeObject(rootObject)
 
-  // Return the serialized objects as a JSON string
-  return JSON.stringify(serializedObjects); // Pretty-printed JSON
-}
-
-/**
- * Deserializes a JSON string into a graph of objects.
- * @param jsonString - The JSON string to deserialize.
- * @returns The root object of the deserialized graph.
- */
-public deserializeObject(jsonString: string): any {
-  const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
-  const notProcessed = new Set<string>() // Set to track unprocessed objects 
-  try {
-    // Check if update mode is already active
-    if (!wasInUpdateMode) {
-      this.inUpdateMode = true // Enter update mode if not already in it
-      this.makeNewState() // Create a new state for the transaction
-    }
-
-  // Parse the JSON string
-  const serializedObjects = JSON.parse(jsonString);
-
-  // Validate that the parsed JSON is an array
-  if (!Array.isArray(serializedObjects)) {
-    throw new Error("Deserialization error: Expected an array of serialized objects.");
+    // Return the serialized objects as a JSON string
+    return JSON.stringify(serializedObjects) // Pretty-printed JSON
   }
 
-  // Create and initialize objects in a single pass
-  const createdObjects = serializedObjects.map((serialized, index) => {
-    // Validate that @AelasticsUUID and @AelasticsType are properly initialized
-    const uuidValue = serialized["@AelasticsUUID"];
-    const typeName = serialized["@AelasticsType"];
-    if (typeof uuidValue !== "string") {
-      throw new Error(
-        `Deserialization error: Missing or invalid '@AelasticsUUID' in object at index ${index}.`
-      );
-    }
-    if (typeof typeName !== "string") {
-      throw new Error(
-        `Deserialization error: Missing or invalid '@AelasticsType' in object at index ${index}.`
-      );
-    }
+  /**
+   * Deserializes a JSON string into a graph of objects.
+   * @param jsonString - The JSON string to deserialize.
+   * @returns The root object of the deserialized graph.
+   */
+  public deserializeObject(jsonString: string): any {
+    const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
+    const processed = new Set<string>() // Set to track processed objects
+    const unResolved = new Set<string>() // Set to track unresolved references
+    try {
+      // Check if update mode is already active
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = true // Enter update mode if not already in it
+        this.makeNewState() // Create a new state for the transaction
+      }
 
-    // Check if the object with this UUID already exists in the store
-    const existingObject = this.getState().getObject(uuidValue);
-    if (existingObject) {
-      throw new Error(`Deserialization error: Object '${typeName}' with UUID '${uuidValue}' already exists in the store.`);
-      // If the object already exists, return it
-      // return existingObject;
-    }
-    // Check if the object is already processed
-    if (notProcessed.has(uuidValue)) {
-      notProcessed.delete(uuidValue); // Remove from the processed set
-    }
+      // Parse the JSON string
+      const serializedObjects = JSON.parse(jsonString)
 
-    // Dynamically instantiate the object using its type
-    const objectClass = this.getClassByName(typeName); // Retrieve the class constructor
-    if (!objectClass) {
-      throw new Error(`Unknown type '${typeName}' for object with UUID '${uuidValue}'`);
-    }
-    const createdObject = new objectClass(); // Create an empty instance of the class
-    createdObject[uuid] = uuidValue; // Set the UUID
+      // Validate that the parsed JSON is an array
+      if (!Array.isArray(serializedObjects)) {
+        throw new Error("Deserialization error: Expected an array of serialized objects.")
+      }
 
-    // Retrieve meta information for the object's type
-    const metaInfo = this.getAllProperties(typeName);
-
-    // Populate the object's private properties using meta information
-    for (const [key, meta] of metaInfo.entries()) {
-      const privateKey = makePrivatePropertyKey(key); // Convert the key to a private property key
-      const value = serialized[key];
-
-      if (meta.type === "object") {
-        // Handle object references: Insert UUID directly
-        if (value === undefined || value === null) {
-          createdObject[privateKey] = undefined;
-          continue;
+      // Create and initialize objects in a single pass
+      const createdObjects = serializedObjects.map((serialized, index) => {
+        // Validate that @AelasticsUUID and @AelasticsType are properly initialized
+        const uuidValue = serialized["@AelasticsUUID"]
+        const typeName = serialized["@AelasticsType"]
+        if (typeof uuidValue !== "string") {
+          throw new Error(`Deserialization error: Missing or invalid '@AelasticsUUID' in object at index ${index}.`)
         }
-        if (typeof value !== "string") {
-          throw new Error(`Expected a UUID (string) for property '${key}', but got ${typeof value}`);
+        if (typeof typeName !== "string") {
+          throw new Error(`Deserialization error: Missing or invalid '@AelasticsType' in object at index ${index}.`)
         }
-        createdObject[privateKey] = value;
-        // Check if the referenced object is already processed
-        if (!notProcessed.has(value)) {  
-          notProcessed.add(value); // Add to the unprocessed set
+
+        // Check if the object with this UUID already exists in the store
+        const existingObject = this.getState().getObject(uuidValue)
+        if (existingObject) {
+          throw new Error(
+            `Deserialization error: Object '${typeName}' with UUID '${uuidValue}' already exists in the store.`
+          )
+          // If the object already exists, return it
+          // return existingObject;
         }
-      } else if (meta.type === "array") {
-        // Handle arrays: Use `push` to populate the array
-        if (!Array.isArray(value)) {
-          throw new Error(`Expected an array for property '${key}', but got ${typeof value}`);
+ 
+        // Dynamically instantiate the object using its type
+        const objectClass = this.getClassByName(typeName) // Retrieve the class constructor
+        if (!objectClass) {
+          throw new Error(`Unknown type '${typeName}' for object with UUID '${uuidValue}'`)
         }
-        value.forEach((item) => {
-          createdObject[privateKey].push(item)
-          if (meta.itemType === "object") {
-          // If the item is an object, add to unprocessed set if necessary
-            if (!notProcessed.has(item)) {
-            notProcessed.add(item); // Add to the unprocessed set
+        const createdObject = new objectClass() // Create an empty instance of the class
+        createdObject[uuid] = uuidValue // Set the UUID
+       // Add the UUID to the processed set
+       processed.add(uuidValue)
+       this.getState().addObject(createdObject, "imported") // Add the object to the current state
+
+        // Retrieve meta information for the object's type
+        const metaInfo = this.getAllProperties(typeName)
+
+        // Populate the object's private properties using meta information
+        for (const [key, meta] of metaInfo.entries()) {
+          const privateKey = makePrivatePropertyKey(key) // Convert the key to a private property key
+          const value = serialized[key]
+
+          if (meta.type === "object") {
+            // Handle object references: Insert UUID directly
+            if (value === undefined || value === null) {
+              createdObject[privateKey] = undefined
+              continue
             }
-          }
-        });
-      } else if (meta.type === "map") {
-        // Handle maps: Use `set` to populate the map
-        if (!(value instanceof Array)) {
-          throw new Error(`Expected an array of key-value pairs for property '${key}', but got ${typeof value}`);
-        }
-        value.forEach(({ key: mapKey, value: mapValue }) => {
-          createdObject[privateKey].set(mapKey, mapValue);
-          if (meta.itemType === "object") {
-            // If the map value is an object,add to unprocessed set if necessary
-              if (!notProcessed.has(mapValue)) {
-              notProcessed.add(mapValue); // Add to the unprocessed set
-              }
+            if (typeof value !== "string") {
+              throw new Error(`Expected a UUID (string) for property '${key}', but got ${typeof value}`)
             }
-            if (meta.keyType === "object") {
-              // If the map key is an object,add to unprocessed set if necessary
-                if (!notProcessed.has(mapKey)) {
-                notProcessed.add(mapKey); // Add to the unprocessed set
+            createdObject[privateKey] = value
+            // Check if the referenced object is already processed
+            if (!processed.has(value)) {
+              unResolved.add(value) // Add to the unresolved set
+            }
+          } else if (meta.type === "array") {
+            // Handle arrays: Use `push` to populate the array
+            if (!Array.isArray(value)) {
+              throw new Error(`Expected an array for property '${key}', but got ${typeof value}`)
+            }
+            value.forEach((item) => {
+              createdObject[privateKey].push(item)
+              if (meta.itemType === "object") {
+                // If the item is an object, add to unresolved set if necessary
+                if (!processed.has(item)) {
+                  unResolved.add(item) // Add to the unresolved set
                 }
               }
-        });
-      } else if (meta.type === "set") {
-        // Handle sets: Use `add` to populate the set
-        if (!(value instanceof Array)) {
-          throw new Error(`Expected an array for property '${key}', but got ${typeof value}`);
-        }
-        value.forEach((item) => {
-          createdObject[privateKey].add(item)
-        if (meta.itemType === "object") {
-            // If the item is an object, add to unprocessed set if necessary
-              if (!notProcessed.has(item)) {
-              notProcessed.add(item); // Add to the unprocessed set
-              }
+            })
+          } else if (meta.type === "map") {
+            // Handle maps: Use `set` to populate the map
+            if (!(value instanceof Array)) {
+              throw new Error(`Expected an array of key-value pairs for property '${key}', but got ${typeof value}`)
             }
-        });
-      } else {
-        // Default case: Handle primitive types
-        createdObject[privateKey] = value;
+            value.forEach(({ key: mapKey, value: mapValue }) => {
+              createdObject[privateKey].set(mapKey, mapValue)
+              if (meta.itemType === "object") {
+                // If the map value is an object,add to unresolved set if necessary
+                if (!processed.has(mapValue)) {
+                  unResolved.add(mapValue) // Add to the unresolved set
+                }
+              }
+              if (meta.keyType === "object") {
+                // If the map key is an object,add to unresolved set if necessary
+                if (!processed.has(mapKey)) {
+                  unResolved.add(mapKey) // Add to the unresolved set
+                }
+              }
+            })
+          } else if (meta.type === "set") {
+            // Handle sets: Use `add` to populate the set
+            if (!(value instanceof Array)) {
+              throw new Error(`Expected an array for property '${key}', but got ${typeof value}`)
+            }
+            value.forEach((item) => {
+              createdObject[privateKey].add(item)
+              if (meta.itemType === "object") {
+                // If the item is an object, add to unresolved set if necessary
+                if (!processed.has(item)) {
+                  unResolved.add(item) // Add to the unresolved set
+                }
+              }
+            })
+          } else {
+            // Default case: Handle primitive types
+            createdObject[privateKey] = value
+          }
+        }
+
+        return createdObject
+      })
+
+      // check if there are any unprocessed objects
+      const unresolvedNotProcessed = Array.from(unResolved).filter((item) => !processed.has(item))
+      if (unresolvedNotProcessed.length > 0) {
+        // Handle unresolved objects that are not in the processed set
+        throw new Error(
+          `Deserialization error: The following objects were not resolved: ${unresolvedNotProcessed.join(", ")}`
+        )
+      }
+      // Return the last object in the array
+      return createdObjects[createdObjects.length - 1]
+    } catch (error) {
+      // Handle errors and revert the state if necessary
+      if (!wasInUpdateMode) {
+        this.revertToPreviousState() // Revert the state if this method started the transaction
+      }
+      throw error // Rethrow the error
+    } finally {
+      // if it was started by this method
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = false // Exit update mode if it was set by this method
       }
     }
-
-    return createdObject;
-  });
-
-  // check if there are any unprocessed objects
-  if (notProcessed.size > 0) {
-    // Handle unprocessed objects
-    throw new Error(
-      `Deserialization error: The following objects were not processed: ${Array.from(notProcessed).join(", ")}`
-    );
   }
-  // Return the root object (first object in the array)
-  return createdObjects[0];
-  } catch (error) {
-    // Handle errors and revert the state if necessary
-    if (!wasInUpdateMode) {
-      this.revertToPreviousState() // Revert the state if this method started the transaction
-    }
-    throw error // Rethrow the error
-  } finally {
-    // if it was started by this method
-    if (!wasInUpdateMode) {
-      this.inUpdateMode = false // Exit update mode if it was set by this method
-    }
-  }
-}
 
   /** Retrieves an object dynamically from the latest state */
   public findObjectByUUID<T>(uuid: string): T | undefined {
@@ -801,7 +795,7 @@ public deserializeObject(jsonString: string): any {
           throw new Error("Invalid object: Ensure it was created or imported using the store.")
         }
         recipe(obj) // Apply modifications
-        let newObj = this.getState().getObject(obj[uuid]); // get the latest version
+        let newObj = this.getState().getObject(obj[uuid]) // get the latest version
         return newObj as T
       } else {
         // If no object is provided, apply the recipe to the store
@@ -910,7 +904,6 @@ public deserializeObject(jsonString: string): any {
   public getClassByName(type: string): any {
     return this.typeToClassMap.get(type)
   }
-
 
   /**
    * Function to find all properties of a type, including properties from its supertypes.
