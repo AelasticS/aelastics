@@ -34,7 +34,7 @@ export type WithRefProps<P> = RefProps | Partial<P>
 <Namespace/>
 
 */
-
+// todo remove partial from P when namespaces are implemented
 export type WithRefProps<P> = RefProps & Partial<P>;
 export type WithoutRefProps<P> = Exclude<P, RefProps>;
 export type InstanceCreation<P extends WithRefProps<g.IModelElement>> = (

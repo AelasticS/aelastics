@@ -8,25 +8,30 @@ export const NamespaceRelationship = t.object({
     propName: t.string // which collection property of namespace is used to store namespace element (instance of object from previous line)
 }, 'NamespaceRelationship', NamespaceDefSchema);
 
-export const ModelRelationship = t.object({
-    object: meta.Object, // which object is in this model
-    propName: t.string // which collection property of model is used to store model element (instance of object from previous line)
-}, "ModelRelationship", NamespaceDefSchema);
-
+// todo add support for namespace hierarchy
+// todo add support for derriving (defining) values properties of RepositoryObject and ModelElement
 export const NamespaceDef = t.entity({
     namespace: meta.Object, // which object is namespace
+    nameProp: t.string, // which property of namespace object corresponds to namespace name
     NSRelatioships: t.arrayOf(NamespaceRelationship), // which objects can be in this namespace
 }, ['id'] as const, 'NamespaceDef', NamespaceDefSchema);
 
+//
 export const ModelDef = t.subtype(NamespaceDef, {
-    MRelatioships: t.arrayOf(ModelRelationship), // which objects can be in this model
+
 }, "ModelDef", NamespaceDefSchema);
 
-export const Definitions = t.object({
+export const ImportedModel = t.object({
+    modelDef: ModelDef,
+    allowedTypes: t.arrayOf(meta.Object)
+}, 'ImprtedModel', NamespaceDefSchema);
+
+export const NamespaceDefinitionsContainer = t.object({
     schema: meta.TypeModel,
     namespaces: t.arrayOf(NamespaceDef),
     models: t.arrayOf(ModelDef),
-    exports: t.arrayOf(meta.Object) // objects that can be exported and imported from this schema (model)
+    exports: t.arrayOf(meta.Object),// objects that can be exported and imported from this schema (model)
+    imports: t.arrayOf(ImportedModel) // models that are imported in this model
 
 }, 'Definitions', NamespaceDefSchema);
 
@@ -34,13 +39,13 @@ export const Definitions = t.object({
 export type INamespaceDef = t.TypeOf<typeof NamespaceDef>;
 export type IModelDef = t.TypeOf<typeof ModelDef>;
 export type INamespaceRelationship = t.TypeOf<typeof NamespaceRelationship>;
-export type IModelRelationship = t.TypeOf<typeof ModelRelationship>;
-export type IDefinitions = t.TypeOf<typeof Definitions>;
+export type IDefinitions = t.TypeOf<typeof NamespaceDefinitionsContainer>;
 
-export type INamespaceDefCode = { namespace: t.ObjectType<any, any>, NSRelationships: Array<INamespaceRelationshipCode> }
+// ovi tipovi su potrebni da bi se referencirali definisani tipovi u drugim (meta)modelima ()
+
+export type INamespaceDefCode = { namespace: t.ObjectType<any, any>, NSRelationships: Array<INamespaceRelationshipCode>, nameProp: string };
 export type INamespaceRelationshipCode = { object: t.ObjectType<any, any>, propName: string };
-export type IModelRelationshipCode = { object: t.ObjectType<any, any>, propName: string };
-export type IModelDefCode = INamespaceDefCode & { MRelatioships: Array<IModelRelationshipCode> }
+export type IModelDefCode = INamespaceDefCode;
 export type IDefinitionsCode = {
     schema: t.TypeSchema,
     namespaces: Array<INamespaceDefCode>,
