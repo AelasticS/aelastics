@@ -18,7 +18,7 @@ export function doParseURL(url:string): [type: PathType, segments: string[]] {
     return [PathType.ABS_PROTOCOL, segments]
 
   if (segments[0].length === 0 && segments[1]?.length === 0)
-    return [PathType.ABS_PROTOCOL, segments]
+    return [PathType.ABS_NO_PROTOCOL, segments]
 
   if (segments[0].length === 1 && segments[0] === ".")
     return [PathType.REL_POINT, segments]
