@@ -110,7 +110,33 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     let renderedProps = {};
 
     for (const [key, value] of Object.entries(props)) {
-      let tmp = value instanceof Element ? value.render(ctx, isImport) : value;
+
+      let tmp = undefined;
+
+      if (Array.isArray(value)) {
+        tmp = value.map((v) => {
+          if (v instanceof Element) {
+            const modelElement = v.render(ctx, isImport);
+
+            if (ctx instanceof M2MContext) {
+              (ctx as M2MContext).resolveMap.set(v, modelElement);
+            }
+
+            return modelElement;
+          } else {
+            return v;
+          }
+        });
+      } else if (value instanceof Element) {
+        tmp = value.render(ctx, isImport);
+
+        if (ctx instanceof M2MContext) {
+          (ctx as M2MContext).resolveMap.set(value, tmp);
+        }
+      } else {
+        tmp = value;
+      }
+
       Object.defineProperty(renderedProps, key, {
         value: tmp,
         enumerable: true,
