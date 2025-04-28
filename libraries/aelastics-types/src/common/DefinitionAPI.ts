@@ -17,7 +17,7 @@ import { VoidType } from '../simple-types/Void';
 import { UndefinedType } from '../simple-types/Undefined';
 import { NullType } from '../simple-types/Null';
 import { LiteralType, LiteralValue } from '../simple-types/Literal';
-import { EntityReference } from '../special-types/EntityReference';
+import { ObjectReference } from '../special-types/ObjectReference';
 import { ServiceError } from 'aelastics-result';
 import { TaggedUnionType } from '../complex-types/TaggedUnionType';
 import { IntersectionType } from '../complex-types/IntersectionType';
@@ -130,18 +130,18 @@ export const intersectionOf = <P extends Array<Any>>(
 }
 
 /**
- * Reference to an Entity (i.e. an object with an identifier)
+ * Reference to an Object
  * @param t
  * @param name
  * @param schema
  */
-export const entityRef = <T extends ObjectType<any, readonly string[]>>(
+export const objectRef = <T extends ObjectType<any, readonly string[]>>(
   t: T,
   name?: string,
   schema: TypeSchema = DefaultSchema
 ) => {
   if (name === undefined || name === '') name = schema.generateName(`referenceTo${t.name}}>`);
-  let obj = new EntityReference<T>(name, t, schema);
+  let obj = new ObjectReference<T>(name, t, schema);
   return obj;
 };
 
@@ -236,7 +236,7 @@ export const link = (
   const absolutePathName = schema.absolutePathName + '/' + path;
   const getAbsolutePathName = (l: LinkType) => `${l.LinkSchema.absolutePathName}/${l.path}`;
 
-  if (name == undefined) 
+  if (name == undefined)
     name = `LinkTo_${absolutePathName}`;
   name = Type.sanitizeName(name);
 
