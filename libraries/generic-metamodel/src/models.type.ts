@@ -3,9 +3,8 @@
  *
  */
 
-import * as t from "aelastics-types"
+import * as t from "aelastics-types";
 import { Diagram } from "./diagram.type";
-import { IDType, NameType, DescriptionType } from "./basic.type";
 import { RepositoryObject } from "./repository.type";
 
 export const ModelSchema = t.schema("RepModelSchema");
