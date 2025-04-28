@@ -77,7 +77,7 @@ test('if property isEntity return false for an object', () => {
 )
 
   it('should be valid reference', () => {
-    const refPerson = t.entityRef(person, 'personRef')
+    const refPerson = t.objectRef(person, 'personRef')
     const o = { age: 12 }
     expect(isSuccess(refPerson.validate(o))).toBe(true)
   })
@@ -92,7 +92,7 @@ test('if property isEntity return false for an object', () => {
       'student1',
       undefined
     )
-    const refStudent = t.entityRef(student, 'refStudent')
+    const refStudent = t.objectRef(student, 'refStudent')
     const o = { id: '11Ad' }
     expect(isSuccess(refStudent.validate(o))).toBe(false)
   })
@@ -108,7 +108,7 @@ test('if property isEntity return false for an object', () => {
       'student2',
       undefined
     )
-    const refStudent1 = t.entityRef(student, 'refStudent1')
+    const refStudent1 = t.objectRef(student, 'refStudent1')
     const o = { name: 'John' }
     expect(isSuccess(refStudent1.validate((o as unknown) as any))).toBe(false)
   })
@@ -124,7 +124,7 @@ test('if property isEntity return false for an object', () => {
       'student3',
       undefined
     )
-    const refStudent2 = t.entityRef(student, 'refStudent2')
+    const refStudent2 = t.objectRef(student, 'refStudent2')
     const o = { id: '113A', name: 'John' }
     expect(isSuccess(refStudent2.validate(o))).toBe(true)
   })
@@ -140,7 +140,7 @@ test('if property isEntity return false for an object', () => {
       'student4',
       undefined
     )
-    const refStudent3 = t.entityRef(student, 'studentRef3')
+    const refStudent3 = t.objectRef(student, 'studentRef3')
     const o = { id: 12, name: 'John', age: 32 }
     expect(isSuccess(refStudent3.validate(o as any))).toBe(false)
   })
@@ -156,7 +156,7 @@ test('if property isEntity return false for an object', () => {
       'student5',
       undefined
     )
-    const refStudent4 = t.entityRef(student, 'studentRef4')
+    const refStudent4 = t.objectRef(student, 'studentRef4')
     const o = { id: '1231', name: 'John' }
     expect(isSuccess(refStudent4.validate(o))).toBe(true)
   })
