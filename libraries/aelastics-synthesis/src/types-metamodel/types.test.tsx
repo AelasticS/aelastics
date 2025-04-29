@@ -1,8 +1,8 @@
 /** @jsx hm */
 
-import { hm } from "../jsx/handle";
-import { Element } from "../jsx/element";
-import * as t from "./types-meta.model";
+import { hm } from "../jsx/handle"
+import { Element } from "../jsx/element"
+import * as t from "./types-meta.model"
 import {
   TypeObject,
   Property,
@@ -11,10 +11,10 @@ import {
   TypeSubtype,
   TypeOptional,
   TypeOfOptional,
-  PropertyDomain,
-} from "./types-components";
-import { Context } from "../jsx/context";
-import { ModelStore } from '../index';
+  PropertyDomain, TypeObjectReference, TypeArray, ArrayElementType,
+} from "./types-components"
+import { Context } from "../jsx/context"
+import { ModelStore } from "../index"
 
 // let a = <Object name="name"></Object>;
 // let b = <Object $ref={a}></Object>; // same as b = a
@@ -24,7 +24,7 @@ import { ModelStore } from '../index';
 
 // let g = c as t.IObject;
 
-const store = new ModelStore();
+const store = new ModelStore()
 
 // const exampleOfReferencing: Element<t.ITypeModel> = (
 //   <TypeModel name="TypeModel" store={store}>
@@ -37,7 +37,7 @@ const store = new ModelStore();
 //   </TypeModel>
 // );
 
-import { importPredefinedTypes } from "./predefined-model";
+import { importPredefinedTypes } from "./predefined-model"
 
 const typeModel: Element<t.ITypeModel> = (
   <TypeModel name="FirstTypeModel" store={store}>
@@ -102,16 +102,16 @@ const typeModel: Element<t.ITypeModel> = (
         </TypeObject>
       }
     ></TypeOptional> */}
-    
-  </TypeModel>
-);
 
-let model: t.ITypeModel = typeModel.render(new Context());
+  </TypeModel>
+)
+
+let model: t.ITypeModel = typeModel.render(new Context())
 
 describe("Type instance", () => {
   it("Test model instance", () => {
-    expect(model).toHaveProperty("name", "FirstTypeModel");
-  });
+    expect(model).toHaveProperty("name", "FirstTypeModel")
+  })
 
   it("Test object type", () => {
     expect(model).toEqual(
@@ -127,9 +127,9 @@ describe("Type instance", () => {
             ]),
           }),
         ]),
-      })
-    );
-  });
+      }),
+    )
+  })
 
   it("Test subtype type", () => {
     expect(model).toEqual(
@@ -144,9 +144,9 @@ describe("Type instance", () => {
             ]),
           }),
         ]),
-      })
-    );
-  });
+      }),
+    )
+  })
 
   it("Test optional type", () => {
     expect(model).toEqual(
@@ -157,9 +157,9 @@ describe("Type instance", () => {
             name: "OptionalCompany",
           }),
         ]),
-      })
-    );
-  });
+      }),
+    )
+  })
 
   it("Test optional property", () => {
     expect(model).toEqual(
@@ -173,23 +173,121 @@ describe("Type instance", () => {
             ]),
           }),
         ]),
-      })
-    );
+      }),
+    )
+  })
+
+  it("Test object reference", () => {
+
+    const typeModel: Element<t.ITypeModel> = (
+      <TypeModel name="ObjectTypeModel" store={store}>
+        {importPredefinedTypes("../ObjectTypeModel")}
+
+        <TypeObject name="Property">
+          <Property name="name">
+            <PropertyDomain $refByName="string" />
+          </Property>
+        </TypeObject>
+
+        <TypeArray name="ArrayOfProperties">
+          <ArrayElementType $refByName="Property" />
+        </TypeArray>
+
+        <TypeObject name="Object">
+          <Property name="properties">
+            <PropertyDomain $refByName="ArrayOfProperties" />
+          </Property>
+        </TypeObject>
+      </TypeModel>
+    )
+
+    const placeModel: Element<t.ITypeModel> = (
+      <TypeModel name="PlaceTypeModel" store={store}>
+        {importPredefinedTypes("../PlaceTypeModel")}
+        <TypeObject name="Place">
+          <Property name="name">
+            <PropertyDomain $refByName="string" />
+          </Property>
+          <Property name="zip">
+            <PropertyDomain $refByName="number" />
+          </Property>
+        </TypeObject>
+      </TypeModel>
+    )
+
+    const personModel: Element<t.ITypeModel> = (
+      <TypeModel name="PersonTypeModel" store={store}>
+        {importPredefinedTypes("../PersonTypeModel")}
+
+        <TypeObject name="Company">
+          <Property name="companyName">
+            <PropertyDomain $refByName="string" />
+          </Property>
+        </TypeObject>
+
+        <TypeObject name="Person">
+          <Property name="firstName">
+            <PropertyDomain $refByName="string" />
+          </Property>
+          <Property name="bornIn">
+            <PropertyDomain>
+              <TypeObjectReference name="ReferenceToPlace" referencedType={<TypeObject $refByName="//www.aelastics.org/ObjectTypeModel/Object" />}
+              />
+            </PropertyDomain>
+          </Property>
+          <Property name="age">
+            <PropertyDomain $refByName="number" />
+          </Property>
+          <Property name="worksIn">
+            <PropertyDomain>
+              <TypeObjectReference name="ReferenceToCompany" referencedType={<TypeObject $refByName="Company" />}
+              />
+            </PropertyDomain>
+          </Property>
+        </TypeObject>
+
+
+      </TypeModel>
+    )
+
+    const modelOfTypes = typeModel.render(new Context());
+    const model = personModel.render(new Context())
+
+
+    // TODO: this test is not correct, because the model is not created correctly
+    // there is no reference to the place model
+    expect(model).toEqual(
+      expect.objectContaining({
+        name: "PersonTypeModel",
+        // elements: expect.any(Array),
+        elements: expect.arrayContaining([
+          expect.objectContaining({
+            name: "Person",
+          }),
+          expect.objectContaining({
+            name: "ReferenceToPlace",
+            referencedType: expect.objectContaining({
+              name: "Object",
+            }),
+        ]),
+      }),
+    )
+    // expect(model.elements).toHaveLength(9);
   });
 
   it("Test optional property relation", () => {
-    let workerType = model.elements.find((e) => e.name == "Worker");
+    let workerType = model.elements.find((e) => e.name == "Worker")
     let optCompanyProperty = (workerType as t.IObject).properties.find(
-      (e) => e.name == "workingCompany"
-    );
+      (e) => e.name == "workingCompany",
+    )
 
     let optCompanyType = model.elements.find(
-      (e) => e.name == "OptionalCompany"
-    );
+      (e) => e.name == "OptionalCompany",
+    )
 
-    let companyType = model.elements.find((e) => e.name == "Company");
+    let companyType = model.elements.find((e) => e.name == "Company")
 
-    expect((optCompanyProperty as t.IProperty).domain).toBe(optCompanyType);
-    expect((optCompanyProperty as t.IProperty).domain).not.toBe(companyType);
-  });
-});
+    expect((optCompanyProperty as t.IProperty).domain).toBe(optCompanyType)
+    expect((optCompanyProperty as t.IProperty).domain).not.toBe(companyType)
+  })
+})

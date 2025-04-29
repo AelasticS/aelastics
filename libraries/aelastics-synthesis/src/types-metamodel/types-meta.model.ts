@@ -1,12 +1,12 @@
 /**
  *
  */
-import * as t from "aelastics-types";
-import { Model, ModelElement } from "generic-metamodel";
+import * as t from "aelastics-types"
+import { Model, ModelElement } from "generic-metamodel"
 
-export const TypesMM_TypeSchema = t.schema("TypesMM_TypeSchema");
+export const TypesMM_TypeSchema = t.schema("TypesMM_TypeSchema")
 
-export const Type = t.subtype(ModelElement, {}, "Type", TypesMM_TypeSchema);
+export const Type = t.subtype(ModelElement, {}, "Type", TypesMM_TypeSchema)
 
 export const TypeModel = t.subtype(
   Model,
@@ -14,8 +14,8 @@ export const TypeModel = t.subtype(
     types: t.arrayOf(Type),
   },
   "TypeModel",
-  TypesMM_TypeSchema
-);
+  TypesMM_TypeSchema,
+)
 
 export const Optional = t.subtype(
   Type,
@@ -23,8 +23,8 @@ export const Optional = t.subtype(
     optionalType: Type,
   },
   "Optional",
-  TypesMM_TypeSchema
-);
+  TypesMM_TypeSchema,
+)
 
 export const Property = t.subtype(
   ModelElement,
@@ -32,8 +32,8 @@ export const Property = t.subtype(
     domain: Type,
   },
   "Property",
-  TypesMM_TypeSchema
-);
+  TypesMM_TypeSchema,
+)
 
 export const Object = t.subtype(
   Type,
@@ -41,8 +41,17 @@ export const Object = t.subtype(
     properties: t.arrayOf(Property),
   },
   "Object",
-  TypesMM_TypeSchema
-);
+  TypesMM_TypeSchema,
+)
+
+export const ObjectReference = t.subtype(
+  Object,
+  {
+    referencedType: Object,
+  },
+  "ObjectReference",
+  TypesMM_TypeSchema,
+)
 
 export const Subtype = t.subtype(
   Object,
@@ -50,8 +59,8 @@ export const Subtype = t.subtype(
     superType: Object,
   },
   "Subtype",
-  TypesMM_TypeSchema
-);
+  TypesMM_TypeSchema,
+)
 
 // export const Entity = t.subtype(
 //   Object,
@@ -68,8 +77,8 @@ export const Array = t.subtype(
     elementType: Type,
   },
   "Array",
-  TypesMM_TypeSchema
-);
+  TypesMM_TypeSchema,
+)
 
 export const Union = t.subtype(
   Type,
@@ -78,15 +87,15 @@ export const Union = t.subtype(
     descriminator: t.string,
   },
   "Union",
-  TypesMM_TypeSchema
-);
+  TypesMM_TypeSchema,
+)
 
 // type ISimpleType = t.TypeOf<typeof SimpleType>;
-export const SimpleType = t.subtype(Type, {}, "SimpleType", TypesMM_TypeSchema);
+export const SimpleType = t.subtype(Type, {}, "SimpleType", TypesMM_TypeSchema)
 
-export const Number = t.subtype(SimpleType, {}, "Number", TypesMM_TypeSchema);
-export const String = t.subtype(SimpleType, {}, "String", TypesMM_TypeSchema);
-export const Boolean = t.subtype(SimpleType, {}, "Boolean", TypesMM_TypeSchema);
+export const Number = t.subtype(SimpleType, {}, "Number", TypesMM_TypeSchema)
+export const String = t.subtype(SimpleType, {}, "String", TypesMM_TypeSchema)
+export const Boolean = t.subtype(SimpleType, {}, "Boolean", TypesMM_TypeSchema)
 
 export type IObject = t.TypeOf<typeof Object>;
 export type IArray = t.TypeOf<typeof Array>;
@@ -101,3 +110,4 @@ export type ISimpleType = t.TypeOf<typeof SimpleType>;
 export type INumber = t.TypeOf<typeof Number>;
 export type IString = t.TypeOf<typeof String>;
 export type IBoolean = t.TypeOf<typeof Boolean>;
+export type IObjectReference = t.TypeOf<typeof ObjectReference>;
