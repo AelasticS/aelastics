@@ -215,24 +215,24 @@ describe("Type instance", () => {
           </Property>
         </TypeObject>
 
+        <TypeObjectReference name="ReferenceToPlace" referencedType={<TypeObject $refByName="//www.aelastics.org/ObjectTypeModel/Object" />}
+        />
+
+        <TypeObjectReference name="ReferenceToCompany" referencedType={<TypeObject $refByName="Company" />}
+        />
+
         <TypeObject name="Person">
           <Property name="firstName">
             <PropertyDomain $refByName="string" />
           </Property>
           <Property name="bornIn">
-            <PropertyDomain>
-              <TypeObjectReference name="ReferenceToPlace" referencedType={<TypeObject $refByName="//www.aelastics.org/ObjectTypeModel/Object" />}
-              />
-            </PropertyDomain>
+            <PropertyDomain $refByName="ReferenceToPlace" />
           </Property>
           <Property name="age">
             <PropertyDomain $refByName="number" />
           </Property>
           <Property name="worksIn">
-            <PropertyDomain>
-              <TypeObjectReference name="ReferenceToCompany" referencedType={<TypeObject $refByName="Company" />}
-              />
-            </PropertyDomain>
+            <PropertyDomain $refByName="ReferenceToCompany" />
           </Property>
         </TypeObject>
       </TypeModel>
@@ -251,21 +251,21 @@ describe("Type instance", () => {
             properties: expect.arrayContaining([
               expect.objectContaining({
                 name: "worksIn",
-                // domain: expect.objectContaining({
-                // name: "ReferenceToCompany"
-                // }),
+                domain: expect.objectContaining({
+                  name: "ReferenceToCompany"
+                }),
               }),
             ]),
           }),
-          // expect.objectContaining({
-          //   name: "'ReferenceToCompany'",
-          //   //   referencedType: expect.objectContaining({
-          //   //     name: "Company",
-          //   //     // properties: expect.arrayContaining([
-          //   //     //   expect.objectContaining({ name: "companyName" }),
-          //   //     // ]),
-          //   //   }),
-          // }),
+          expect.objectContaining({
+            name: "ReferenceToCompany",
+            referencedType: expect.objectContaining({
+              name: "Company",
+              properties: expect.arrayContaining([
+                expect.objectContaining({ name: "companyName" }),
+              ]),
+            }),
+          }),
           expect.objectContaining({
             name: "ReferenceToPlace",
             referencedType: expect.objectContaining({

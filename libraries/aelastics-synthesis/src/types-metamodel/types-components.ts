@@ -36,7 +36,7 @@ export const Property: Template<t.IProperty> = (props) => {
 }
 
 export const TypeObjectReference: Template<t.IObjectReference> = (props) => {
-  return new Element(t.ObjectReference, props, undefined)
+  return new Element(t.ObjectReference, props, 'types')
 }
 
 export const TypeArray: Template<t.IArray> = (props) => {
