@@ -62,14 +62,14 @@ export const Subtype = t.subtype(
   TypesMM_TypeSchema,
 )
 
-// export const Entity = t.subtype(
-//   Object,
-//   {
-//     identifiers: t.arrayOf(t.string),
-//   },
-//   "Subtype",
-//   TypesMM_TypeSchema
-// );
+export const Entity = t.subtype(
+  Object,
+  {
+    identifiers: t.arrayOf(t.string),
+  },
+  "Entity",
+  TypesMM_TypeSchema
+);
 
 export const Array = t.subtype(
   Type,
@@ -111,3 +111,4 @@ export type INumber = t.TypeOf<typeof Number>;
 export type IString = t.TypeOf<typeof String>;
 export type IBoolean = t.TypeOf<typeof Boolean>;
 export type IObjectReference = t.TypeOf<typeof ObjectReference>;
+export type IEntity = t.TypeOf<typeof Entity>;

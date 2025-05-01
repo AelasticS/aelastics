@@ -12,6 +12,7 @@ import {
   TypeOptional,
   TypeOfOptional,
   PropertyDomain, TypeObjectReference, TypeArray, ArrayElementType,
+  TypeEntity,
 } from "./types-components"
 import { Context } from "../jsx/context"
 import { ModelStore } from "../index"
@@ -50,11 +51,14 @@ const typeModel: Element<t.ITypeModel> = (
       <Property name="age" />
     </TypeObject>
 
-    <TypeObject name="Company">
+    <TypeEntity name="Company">
       <Property name="companyName">
         <PropertyDomain $refByName="string" />
       </Property>
-    </TypeObject>
+    </TypeEntity>
+
+    <TypeSubtype name="ITCompany" superType={<TypeEntity $refByName="Company" />}>
+    </TypeSubtype>
 
     <TypeOptional name="OptionalCompany">
       <TypeOfOptional $refByName="Company" />
@@ -201,20 +205,6 @@ describe("Type instance", () => {
       </TypeModel>
     )
 
-    const placeModel: Element<t.ITypeModel> = (
-      <TypeModel name="PlaceTypeModel" store={store}>
-        {importPredefinedTypes("../PlaceTypeModel")}
-        <TypeObject name="Place">
-          <Property name="name">
-            <PropertyDomain $refByName="string" />
-          </Property>
-          <Property name="zip">
-            <PropertyDomain $refByName="number" />
-          </Property>
-        </TypeObject>
-      </TypeModel>
-    )
-
     const personModel: Element<t.ITypeModel> = (
       <TypeModel name="PersonTypeModel" store={store}>
         {importPredefinedTypes("../PersonTypeModel")}
@@ -245,17 +235,12 @@ describe("Type instance", () => {
             </PropertyDomain>
           </Property>
         </TypeObject>
-
-
       </TypeModel>
     )
 
     const modelOfTypes = typeModel.render(new Context());
     const model = personModel.render(new Context())
 
-
-    // TODO: this test is not correct, because the model is not created correctly
-    // there is no reference to the place model
     expect(model).toEqual(
       expect.objectContaining({
         name: "PersonTypeModel",
@@ -263,12 +248,31 @@ describe("Type instance", () => {
         elements: expect.arrayContaining([
           expect.objectContaining({
             name: "Person",
+            properties: expect.arrayContaining([
+              expect.objectContaining({
+                name: "worksIn",
+                // domain: expect.objectContaining({
+                // name: "ReferenceToCompany"
+                // }),
+              }),
+            ]),
           }),
+          // expect.objectContaining({
+          //   name: "'ReferenceToCompany'",
+          //   //   referencedType: expect.objectContaining({
+          //   //     name: "Company",
+          //   //     // properties: expect.arrayContaining([
+          //   //     //   expect.objectContaining({ name: "companyName" }),
+          //   //     // ]),
+          //   //   }),
+          // }),
           expect.objectContaining({
             name: "ReferenceToPlace",
             referencedType: expect.objectContaining({
               name: "Object",
             }),
+          }),
+
         ]),
       }),
     )

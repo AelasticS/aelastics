@@ -19,6 +19,10 @@ export const TypeObject: Template<t.IObject> = (props) => {
   return new Element(t.Object, props, "types")
 }
 
+export const TypeEntity: Template<t.IEntity> = (props) => {
+  return new Element(t.Entity, props, "types")
+}
+
 export const TypeSupertype: Template<t.IObject> = (props) => {
   return new Element(t.Object, props, "superType")
 }
