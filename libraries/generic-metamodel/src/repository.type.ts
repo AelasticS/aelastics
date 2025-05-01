@@ -18,7 +18,7 @@ export const RepositoryObject =  t.entity({
     ownerPackage: IDType,
     category: t.string.derive("ObjectType").oneOf(['Item', 'Package', 'ObjAsPackage']),
     objectClassification:IDType
-}, ['id'] as const, 'RepositoryObject', RepositoryShema);
+}, ['name'] as const, 'RepositoryObject', RepositoryShema);
 
 
 export const Package = t.subtype(RepositoryObject,{
