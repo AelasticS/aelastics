@@ -1,6 +1,5 @@
 
 import * as t from "./types-meta.model";
-import { ModelStore } from '../index';
 import {
   Element,
   Template,

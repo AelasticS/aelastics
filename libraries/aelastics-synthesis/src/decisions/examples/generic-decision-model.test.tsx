@@ -4,7 +4,7 @@
 import { hm } from "../../jsx/handle";
 import { Element } from "../../jsx/element";
 import * as gdmT from "../generic-decision-model/generic-decision-meta.model";
-import { GenericDecisionModel, Group, Issue, Option, Link } from "../generic-decision-model/generic-decision-meta.model-components";
+import { GenericDecisionModel, Issue, Option } from "../generic-decision-model/generic-decision-meta.model-components";
 
 
 import { Context } from "../../jsx/context";
