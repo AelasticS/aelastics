@@ -45,11 +45,21 @@ export const Object = t.subtype(
 )
 
 export const ObjectReference = t.subtype(
-  Object,
+  Object, // TODO shuld be Type?
   {
     referencedType: Object,
   },
   "ObjectReference",
+  TypesMM_TypeSchema,
+)
+
+export const Link = t.subtype(
+  Type,
+  {
+    schema: TypeModel,
+    path: t.string,
+  },
+  "Link",
   TypesMM_TypeSchema,
 )
 
@@ -90,6 +100,18 @@ export const Union = t.subtype(
   TypesMM_TypeSchema,
 )
 
+export const InverseProperty = t.subtype(
+  ModelElement,
+  {
+    firstType: Object,
+    firstProperty: t.string,
+    secondType: Object,
+    secondProperty: t.string,
+  },
+  "InverseProperty",
+  TypesMM_TypeSchema,
+)
+
 // type ISimpleType = t.TypeOf<typeof SimpleType>;
 export const SimpleType = t.subtype(Type, {}, "SimpleType", TypesMM_TypeSchema)
 
@@ -112,3 +134,5 @@ export type IString = t.TypeOf<typeof String>;
 export type IBoolean = t.TypeOf<typeof Boolean>;
 export type IObjectReference = t.TypeOf<typeof ObjectReference>;
 export type IEntity = t.TypeOf<typeof Entity>;
+export type ILink = t.TypeOf<typeof Link>;
+export type IInverseProperty = t.TypeOf<typeof InverseProperty>;

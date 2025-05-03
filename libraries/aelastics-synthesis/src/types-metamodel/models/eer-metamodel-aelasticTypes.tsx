@@ -1,25 +1,24 @@
 /** @jsx hm */
 
-import { hm } from "../../jsx/handle"
+import { ModelStore } from "../../index"
 import { Element } from "../../jsx/element"
-import * as t from "../types-meta.model"
+import { hm } from "../../jsx/handle"
+import { TypeString } from "../predefined-types"
 import {
-    TypeObject,
+    InverseProperty,
     Property,
-    TypeSupertype,
+    PropertyDomain,
+    TypeArray,
+    TypeLink,
     TypeModel,
-    TypeSubtype,
+    TypeObject,
     TypeOptional,
-    TypeOfOptional,
-    PropertyDomain, TypeObjectReference, TypeArray, ArrayElementType,
-    TypeEntity,
+    TypeSubtype
 } from "../types-components"
-import { Context } from "../../jsx/context"
-import { ModelStore, P } from "../../index"
+import * as t from "../types-meta.model"
+import { importPredefinedTypes } from "./../predefined-model"
 
 const store = new ModelStore();
-import { importPredefinedTypes } from "./../predefined-model"
-import { TypeString } from "../predefined-types"
 
 const EERModel: Element<t.ITypeModel> = (
 
@@ -32,96 +31,165 @@ const EERModel: Element<t.ITypeModel> = (
             </Property>
         </TypeObject>
 
-        <TypeOptional name="OptionalString" optionalType={<TypeString $refByName="string" />} />
-
-
-        <TypeSubtype name="Domain" superType={<TypeObject $refByName="ERConcept" />} />
-
-        <TypeArray name="ArrayOfConcepts" elementType={<TypeObject $refByName="ERConcept" />} />
-
         <TypeSubtype name="Submodel" superType={<TypeObject $refByName="ERConcept" />} >
-            <Property name="concepts">
-                <PropertyDomain $refByName="ArrayOfConcepts" />
-            </Property>
+            <Property name="concepts"
+                domain={<TypeArray name="ArrayOfConcepts" elementType={<TypeObject $refByName="ERConcept" />} />}
+            />
         </TypeSubtype>
 
-        <TypeArray name="ArrayOfSubmodels" elementType={<TypeObject $refByName="Submodel" />} />
-
         <TypeObject name="EERSchema">
-            <Property name="submodels">
-                <PropertyDomain $refByName="ArrayOfSubmodels" />
-            </Property>
+            <Property name="submodels"
+                domain={<TypeArray name="ArrayOfSubmodels" elementType={<TypeObject $refByName="Submodel" />} />}
+            />
         </TypeObject>
 
         <TypeSubtype name="Attribute" superType={<TypeObject $refByName="ERConcept" />} >
-            <Property name="attrDomain">
-                <PropertyDomain $refByName="Domain" />
-            </Property>
+            <Property name="attrDomain"
+                domain={<TypeSubtype name="Domain" superType={<TypeObject $refByName="ERConcept" />} />}
+            />
             <Property name="isKey">
                 <PropertyDomain $refByName="boolean" />
             </Property>
-            <Property name="defaultValue">
-                <PropertyDomain $refByName="OptionalString" />
-            </Property>
-            <Property name="attrEntity">
-                {/* TODO: nije definisan Entity type. Ovde mora link kada se definise*/}
-                <PropertyDomain $refByName="Entity - NIJE DEFINISANO. MORA LINK" />
-            </Property>
+            <Property name="defaultValue"
+                domain={<TypeOptional name="OptionalString" optionalType={<TypeString $refByName="string" />} />}
+            />
+            <Property name="attrEntity" domain={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="Entity" />} />
         </TypeSubtype>
-
-        <TypeArray name="ArrayOfAttributes" elementType={<TypeObject $refByName="Attribute" />} />
-        {/* TODO: nije definisan Mapping. Ovde mora link kada se definise*/}
-        <TypeArray name="ArrayOfMappings" elementType={<TypeObject $refByName="Mapping NIJE DEFINISANO. MORA LINK" />} />
 
         <TypeSubtype name="Entity" superType={<TypeObject $refByName="ERConcept" />} >
-            <Property name="attributes">
-                <PropertyDomain $refByName="ArrayOfAttributes" />
-            </Property>
-            <Property name="mappings">
-                <PropertyDomain $refByName="ArrayOfMappings" />
-            </Property>
+            <Property name="attributes"
+                domain={<TypeArray name="ArrayOfAttributes"
+                    elementType={<TypeObject $refByName="Attribute" />} />}
+            />
+            <Property name="mappings"
+                domain={<TypeArray name="ArrayOfMappings"
+                    elementType={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="Mapping" />} />}
+            />
         </TypeSubtype>
 
-        <TypeSubtype name="Kernel" superType={<TypeObject $refByName="Entity" />} />
+        <TypeSubtype name="Kernel" superType={<TypeSubtype $refByName="Entity" />} />
 
-        {/* TODO: nije definisan WeakMapping. Ovde mora link kada se definise*/}
-        <TypeOptional name="OptionalWeakMapping" optionalType={<TypeObject $refByName="WeakMapping NIJE DEFINISANO. MORA LINK" />} />
-
-        <TypeSubtype name="Weak" superType={<TypeObject $refByName="Entity" />}>
-            <Property name="weakMap">
-                <PropertyDomain $refByName="OptionalWeakMapping" />
-            </Property>
+        <TypeSubtype name="Weak" superType={<TypeSubtype $refByName="Entity" />}>
+            <Property name="weakMap"
+                domain={<TypeOptional name="OptionalWeakMapping"
+                    optionalType={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="WeakMapping" />} />}
+            />
         </TypeSubtype>
 
-        {/* TODO: nije definisan AggregationMapping. Ovde mora link kada se definise*/}
-        <TypeArray name="ArrayOfAggregationMappings" elementType={<TypeObject $refByName="AggregationMapping NIJE DEFINISANO. MORA LINK" />} />
-
-        <TypeSubtype name="Aggregation" superType={<TypeObject $refByName="Entity" />}>
-            <Property name="agrMapp">
-                <PropertyDomain $refByName="ArrayOfAggregationMappings" />
-            </Property>
+        <TypeSubtype name="Aggregation" superType={<TypeSubtype $refByName="Entity" />}>
+            <Property name="agrMapp"
+                domain={<TypeArray name="ArrayOfAggregationMappings"
+                    elementType={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="AggregationMapping" />} />}
+            />
         </TypeSubtype>
 
-        {/* TODO: nije definisan Specialization. Ovde mora link kada se definise*/}
-        <TypeSubtype name="Subtype" superType={<TypeObject $refByName="Entity" />}>
-            <Property name="supertype">
-                <PropertyDomain $refByName="Specialization" />
-            </Property>
-            <Property name="cnSupertype">
-                <PropertyDomain $refByName="string" />
-            </Property>
-            <Property name="dcnSupertype">
-                <PropertyDomain $refByName="string" />
-            </Property>
-            <Property name="cnSubtype">
-                <PropertyDomain $refByName="string" />
-            </Property>
-            <Property name="dcnSubtype">
-                <PropertyDomain $refByName="string" />
-            </Property>
+        <TypeSubtype name="Subtype" superType={<TypeSubtype $refByName="Entity" />}>
+            <Property name="supertype"
+                domain={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="Specialization" />}
+            />
+            <Property name="cnSupertype" domain={<TypeString $refByName="string" />} />
+            <Property name="dcnSupertype" domain={<TypeString $refByName="string" />} />
+            <Property name="cnSubtype" domain={<TypeString $refByName="string" />} />
+            <Property name="dcnSubtype" domain={<TypeString $refByName="string" />} />
         </TypeSubtype>
 
+        <TypeSubtype name="Mapping" superType={<TypeObject $refByName="ERConcept" />} >
+            <Property name="domain" domain={<TypeSubtype $refByName="Entity" />} />
+            <Property name="lowerBound" domain={<TypeString $refByName="string" />} />
+            <Property name="upperBound" domain={<TypeString $refByName="string" />} />
+            <Property name="cnMapp" domain={<TypeString $refByName="string" />} />
+            <Property name="dcnMapp" domain={<TypeString $refByName="string" />} />
+        </TypeSubtype>
 
+        <TypeSubtype name="WeakMapping" superType={<TypeObject $refByName="Mapping" />} >
+            <Property name="codomain" domain={<TypeSubtype $refByName="Weak" />} />
+            <Property name="cnWeakOwner" domain={<TypeString $refByName="string" />} />
+            <Property name="dcnWeakOwner" domain={<TypeString $refByName="string" />} />
+        </TypeSubtype>
+
+        <TypeSubtype name="AggregationMapping" superType={<TypeObject $refByName="Mapping" />} >
+            <Property name="codomain" domain={<TypeSubtype $refByName="Aggregation" />} />
+            <Property name="cnAggrOwner" domain={<TypeString $refByName="string" />} />
+            <Property name="dcnAggrOwner" domain={<TypeString $refByName="string" />} />
+        </TypeSubtype>
+
+        <TypeSubtype name="OrdinaryMapping" superType={<TypeObject $refByName="Mapping" />} >
+            <Property name="relationship"
+                domain={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="Relationship" />} />
+        </TypeSubtype>
+
+        <TypeSubtype name="Relationship" superType={<TypeObject $refByName="ERConcept" />} >
+            <Property name="ordinaryMappings"
+                domain={<TypeArray name="ArrayOfOrdinaryMappings"
+                    elementType={<TypeSubtype $refByName="OrdinaryMapping" />} />} />
+        </TypeSubtype>
+
+        <TypeSubtype name="Specialization" superType={<TypeObject $refByName="ERConcept" />} >
+            <Property name="mapping"
+                domain={<TypeOptional name="OptionalSpecializationMapping"
+                    optionalType={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="SpecializationMapping" />} />}
+            />
+            <Property name="subtypes"
+                domain={<TypeArray name="ArrayOfSubtypes"
+                    elementType={<TypeSubtype $refByName="Subtype" />} />}
+            />
+        </TypeSubtype>
+
+        <TypeSubtype name="SpecializationMapping" superType={<TypeObject $refByName="Mapping" />} >
+            <Property name="specialization"
+                domain={<TypeOptional name="OptionalSpecialization"
+                    optionalType={<TypeSubtype $refByName="Specialization" />} />}
+            />
+        </TypeSubtype>
+
+        <InverseProperty
+            firstType={<TypeSubtype $refByName="Attribute" />}
+            firstProperty="attrEntity"
+            secondType={<TypeSubtype $refByName="Entity" />}
+            secondProperty="attributes"
+        />
+
+        <InverseProperty
+            firstType={<TypeSubtype $refByName="Relationship" />}
+            firstProperty="ordinaryMapping"
+            secondType={<TypeSubtype $refByName="OrdinaryMapping" />}
+            secondProperty="relationship"
+        />
+
+        <InverseProperty
+            firstType={<TypeSubtype $refByName="Entity" />}
+            firstProperty="mappings"
+            secondType={<TypeSubtype $refByName="Mapping" />}
+            secondProperty="domain"
+        />
+
+        <InverseProperty
+            firstType={<TypeSubtype $refByName="Weak" />}
+            firstProperty="weakMap"
+            secondType={<TypeSubtype $refByName="WeakMapping" />}
+            secondProperty="codomain"
+        />
+
+        <InverseProperty
+            firstType={<TypeSubtype $refByName="Aggregation" />}
+            firstProperty="agrMapp"
+            secondType={<TypeSubtype $refByName="AggregationMapping" />}
+            secondProperty="codomain"
+        />
+
+        <InverseProperty
+            firstType={<TypeSubtype $refByName="Subtype" />}
+            firstProperty="supertype"
+            secondType={<TypeSubtype $refByName="Specialization" />}
+            secondProperty="subtypes"
+        />
+
+        <InverseProperty
+            firstType={<TypeSubtype $refByName="Specialization" />}
+            firstProperty="mapping"
+            secondType={<TypeSubtype $refByName="SpecializationMapping" />}
+            secondProperty="specialization"
+        />
 
     </TypeModel>
 );

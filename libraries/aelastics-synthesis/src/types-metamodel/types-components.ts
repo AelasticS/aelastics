@@ -62,3 +62,11 @@ export const PropertyDomain: Template<t.IType> = (props) => {
 export const TypeOfOptional: Template<t.IType> = (props) => {
   return new Element(t.Type, props, "optionalType")
 }
+
+export const TypeLink: Template<t.ILink> = (props) => {
+  return new Element(t.Link, props, "types")
+}
+
+export const InverseProperty: Template<t.IInverseProperty> = (props) => {
+  return new Element(t.InverseProperty, props, "types")
+}

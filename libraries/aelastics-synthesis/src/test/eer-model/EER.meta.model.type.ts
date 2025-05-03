@@ -182,7 +182,7 @@ export const Specialization = t.subtype(
 export const Relationship = t.subtype(
   ERConcept,
   {
-    ordinaryMapping: t.arrayOf(OrdinaryMapping),
+    ordinaryMappings: t.arrayOf(OrdinaryMapping),
   },
   "Relationship",
   EERModel_TypeSchema
@@ -229,9 +229,9 @@ export const getCodomain = (mapping: IOrdinaryMapping): IEntity => {
 
 export const getInverse = (mapping: IOrdinaryMapping): IOrdinaryMapping => {
   const first: IOrdinaryMapping = (mapping.relationship as IRelationship)
-    .ordinaryMapping[0];
+    .ordinaryMappings[0];
   const second: IOrdinaryMapping = (mapping.relationship as IRelationship)
-    .ordinaryMapping[1];
+    .ordinaryMappings[1];
 
   return first === mapping ? second : first;
 };
