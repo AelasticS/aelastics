@@ -48,10 +48,10 @@ export const eerSchema1: Element<et.IEERSchema> = (
         </Relationship>
         <Kernel name="City">
             <Attribute name="cityId" isKey={true}>
-                <Domain name="number" />
+                <Domain $refByName="number" />
             </Attribute>
             <Attribute name="cityName" isKey={false}>
-                <Domain name="string" />
+                <Domain $refByName="string" />
             </Attribute>
         </Kernel>
         <Relationship name="livesIn">

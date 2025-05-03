@@ -44,7 +44,7 @@ export const Relationship: Template<e.IRelationship> = (props) => {
 };
 
 export const OrdinaryMapping: Template<e.IOrdinaryMapping> = (props) => {
-  return new Element(e.OrdinaryMapping, props, "ordinaryMapping");
+  return new Element(e.OrdinaryMapping, props, "ordinaryMappings");
 };
 
 export const WeakMapping: Template<e.IWeakMapping> = (props) => {

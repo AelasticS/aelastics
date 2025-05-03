@@ -1,6 +1,6 @@
 /** @jsx hm */
 
-import { ModelStore } from "../../index"
+import { Context, ModelStore } from "../../index"
 import { Element } from "../../jsx/element"
 import { hm } from "../../jsx/handle"
 import { TypeString } from "../predefined-types"
@@ -16,7 +16,7 @@ import {
     TypeSubtype
 } from "../types-components"
 import * as t from "../types-meta.model"
-import { importPredefinedTypes } from "./../predefined-model"
+import { importPredefinedTypes } from "../predefined-model"
 
 const store = new ModelStore();
 
@@ -53,7 +53,7 @@ const EERModel: Element<t.ITypeModel> = (
             <Property name="defaultValue"
                 domain={<TypeOptional name="OptionalString" optionalType={<TypeString $refByName="string" />} />}
             />
-            <Property name="attrEntity" domain={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="Entity" />} />
+            <Property name="attrEntity" domain={<TypeLink schema={<TypeModel $refByName="../EERModel" />} path="Entity" />} />
         </TypeSubtype>
 
         <TypeSubtype name="Entity" superType={<TypeObject $refByName="ERConcept" />} >
@@ -63,7 +63,7 @@ const EERModel: Element<t.ITypeModel> = (
             />
             <Property name="mappings"
                 domain={<TypeArray name="ArrayOfMappings"
-                    elementType={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="Mapping" />} />}
+                    elementType={<TypeLink schema={<TypeModel $refByName="../EERModel" />} path="Mapping" />} />}
             />
         </TypeSubtype>
 
@@ -72,20 +72,20 @@ const EERModel: Element<t.ITypeModel> = (
         <TypeSubtype name="Weak" superType={<TypeSubtype $refByName="Entity" />}>
             <Property name="weakMap"
                 domain={<TypeOptional name="OptionalWeakMapping"
-                    optionalType={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="WeakMapping" />} />}
+                    optionalType={<TypeLink schema={<TypeModel $refByName="../EERModel" />} path="WeakMapping" />} />}
             />
         </TypeSubtype>
 
         <TypeSubtype name="Aggregation" superType={<TypeSubtype $refByName="Entity" />}>
             <Property name="agrMapp"
                 domain={<TypeArray name="ArrayOfAggregationMappings"
-                    elementType={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="AggregationMapping" />} />}
+                    elementType={<TypeLink schema={<TypeModel $refByName="../EERModel" />} path="AggregationMapping" />} />}
             />
         </TypeSubtype>
 
         <TypeSubtype name="Subtype" superType={<TypeSubtype $refByName="Entity" />}>
             <Property name="supertype"
-                domain={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="Specialization" />}
+                domain={<TypeLink schema={<TypeModel $refByName="../EERModel" />} path="Specialization" />}
             />
             <Property name="cnSupertype" domain={<TypeString $refByName="string" />} />
             <Property name="dcnSupertype" domain={<TypeString $refByName="string" />} />
@@ -102,20 +102,20 @@ const EERModel: Element<t.ITypeModel> = (
         </TypeSubtype>
 
         <TypeSubtype name="WeakMapping" superType={<TypeObject $refByName="Mapping" />} >
-            <Property name="codomain" domain={<TypeSubtype $refByName="Weak" />} />
+            <Property name="weakCodomain" domain={<TypeSubtype $refByName="Weak" />} />
             <Property name="cnWeakOwner" domain={<TypeString $refByName="string" />} />
             <Property name="dcnWeakOwner" domain={<TypeString $refByName="string" />} />
         </TypeSubtype>
 
         <TypeSubtype name="AggregationMapping" superType={<TypeObject $refByName="Mapping" />} >
-            <Property name="codomain" domain={<TypeSubtype $refByName="Aggregation" />} />
+            <Property name="aggrCodomain" domain={<TypeSubtype $refByName="Aggregation" />} />
             <Property name="cnAggrOwner" domain={<TypeString $refByName="string" />} />
             <Property name="dcnAggrOwner" domain={<TypeString $refByName="string" />} />
         </TypeSubtype>
 
         <TypeSubtype name="OrdinaryMapping" superType={<TypeObject $refByName="Mapping" />} >
             <Property name="relationship"
-                domain={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="Relationship" />} />
+                domain={<TypeLink schema={<TypeModel $refByName="../EERModel" />} path="Relationship" />} />
         </TypeSubtype>
 
         <TypeSubtype name="Relationship" superType={<TypeObject $refByName="ERConcept" />} >
@@ -127,7 +127,7 @@ const EERModel: Element<t.ITypeModel> = (
         <TypeSubtype name="Specialization" superType={<TypeObject $refByName="ERConcept" />} >
             <Property name="mapping"
                 domain={<TypeOptional name="OptionalSpecializationMapping"
-                    optionalType={<TypeLink schema={<TypeModel $refByName="EERModel" />} path="SpecializationMapping" />} />}
+                    optionalType={<TypeLink schema={<TypeModel $refByName="../EERModel" />} path="SpecializationMapping" />} />}
             />
             <Property name="subtypes"
                 domain={<TypeArray name="ArrayOfSubtypes"
@@ -167,14 +167,14 @@ const EERModel: Element<t.ITypeModel> = (
             firstType={<TypeSubtype $refByName="Weak" />}
             firstProperty="weakMap"
             secondType={<TypeSubtype $refByName="WeakMapping" />}
-            secondProperty="codomain"
+            secondProperty="weakCodomain"
         />
 
         <InverseProperty
             firstType={<TypeSubtype $refByName="Aggregation" />}
             firstProperty="agrMapp"
             secondType={<TypeSubtype $refByName="AggregationMapping" />}
-            secondProperty="codomain"
+            secondProperty="aggrCodomain"
         />
 
         <InverseProperty
@@ -193,3 +193,12 @@ const EERModel: Element<t.ITypeModel> = (
 
     </TypeModel>
 );
+
+const model = EERModel.render(new Context());
+
+describe("Type instance", () => {
+    it("Test model instance", () => {
+        expect(model).toHaveProperty("name", "EERModel")
+    })
+});
+
