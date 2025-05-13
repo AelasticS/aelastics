@@ -49,8 +49,6 @@ export const PerformanceOptimizationGMD: Element<gdmT.IGenericDecisionModel> = (
                         <Option name="ByRole" description="Named After Role Name " isDefault={true} />
                         <Option name="ByPK" description="Named After Primary Key from Origin Table" />
                     </Issue>
-                    // <Link refModel={<GenericDecisionModel $refByName="//www.aelastics.org/Namingconvention-gdm" />} />,
-                    // <Link refModel={NamingConventionGDM. as unknown as gdmT.IGenericDecisionModel} />
                 ]} />
         </Issue>
     </GenericDecisionModel>

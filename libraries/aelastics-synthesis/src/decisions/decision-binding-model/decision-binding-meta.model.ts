@@ -8,7 +8,7 @@ export const DecisionBindingElement = t.subtype(
     ModelElement,
     {
         sourceModelElementRef: ModelElement,
-        genericDecisionModel: gdm.GenericDecisionModel,
+        decisionIssues: t.arrayOf(gdm.Issue),
         condition: t.string
     },
     "DecisionBindingElement",

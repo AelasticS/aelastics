@@ -16,7 +16,7 @@ export const Issue = t.subtype(
 export const GenericDecisionModel = t.subtype(
   Model,
   {
-    roots: t.arrayOf(Issue),
+    issues: t.arrayOf(Issue),
   },
   "GenericDecisionModel",
   GenericDecisionModel_TypeSchema

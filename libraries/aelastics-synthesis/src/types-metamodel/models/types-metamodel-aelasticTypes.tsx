@@ -19,7 +19,7 @@ import { ModelStore, P } from "../../index"
 
 const store = new ModelStore();
 
-const aelasticsTypesModel: Element<t.ITypeModel> = (
+export const aelasticsTypesModel: Element<t.ITypeModel> = (
 
     <TypeModel name="AelasticsTypes" store={store}>
         <TypeObject name="Type" />
