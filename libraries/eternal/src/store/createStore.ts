@@ -31,16 +31,20 @@ export function createStore(
     fromState: (stateIndex, target) => store.fromState(stateIndex, target),
     makeEternal: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
 
-    subscribeToObject: (obj, callback) => store.subscriptionManager().subscribeToObject(obj, callback),
-    subscribeToStore: (callback) => store.subscriptionManager().subscribeToStore(callback),
-    subscribe: (
+    // subscribeToObject: (obj, callback) => store.subscriptionManager.subscribeToObject(obj, callback),
+    // subscribeToStore: (callback) => store.subscriptionManager.subscribeToStore(callback),
+    
+/*     subscribe: (
       listener: (event: EventPayload) => Result,
       timing: Timing,
       operation: Operation,
       type: Type,
       property?: Property
-    ) => store.subscriptionManager().subscribe(listener, timing, operation, type, property),
+    ) => store.subscriptionManager.subscribe(listener, timing, operation, type, property), */
     getEternalStore: () => store,
+
+    objectManager: store.objectManager,
+    subscriptionManager: store.subscriptionManager,
   };
 
   return options.freeze ? Object.freeze(publicAPI) : publicAPI;

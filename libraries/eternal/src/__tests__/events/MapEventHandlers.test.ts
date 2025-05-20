@@ -64,8 +64,8 @@ describe("Map Event Handlers - User Preferences", () => {
     })
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences")
-    store.subscribe(afterUpdateHandler, "after", "update", "User", "preferences")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences")
 
     // Perform the set operation using updateObject
     userObject = store.updateObject((obj) => {
@@ -116,8 +116,8 @@ describe("Map Event Handlers - User Preferences", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
-    store.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the delete operation using updateObject
     userObject = store.updateObject((obj) => {
@@ -182,8 +182,8 @@ describe("Map Event Handlers - User Preferences", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
-    store.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the clear operation using updateObject
     userObject = store.updateObject((obj) => {
@@ -247,8 +247,8 @@ describe("Map Event Handlers - User Preferences", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
-    store.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the set operation using updateObject
     userObject = store.updateObject((obj) => {
@@ -274,8 +274,8 @@ describe("Map Event Handlers - User Preferences", () => {
     const afterUpdateHandler = jest.fn();
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
-    store.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the delete operation using updateObject
     userObject = store.updateObject((obj) => {
@@ -308,8 +308,8 @@ describe("Map Event Handlers - User Preferences", () => {
     const afterUpdateHandler = jest.fn();
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
-    store.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the set operation using updateObject
     userObject = store.updateObject((obj) => {
@@ -346,8 +346,8 @@ describe("Map Event Handlers - User Preferences", () => {
     const afterUpdateHandler = jest.fn();
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
-    store.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "preferences");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Attempt to perform the set operation using updateObject and expect an error
     expect(() => {

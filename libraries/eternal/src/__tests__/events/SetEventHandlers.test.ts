@@ -64,8 +64,8 @@ const schemas: SchemaDescription[] = [
         });
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
-        store.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Perform the add operation using updateObject
         userObject = store.updateObject((obj) => {
@@ -110,8 +110,8 @@ const schemas: SchemaDescription[] = [
         });
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
-        store.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Perform the delete operation using updateObject
         userObject = store.updateObject((obj) => {
@@ -172,8 +172,8 @@ const schemas: SchemaDescription[] = [
         });
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
-        store.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Perform the clear operation using updateObject
         userObject = store.updateObject((obj) => {
@@ -207,8 +207,8 @@ const schemas: SchemaDescription[] = [
         const afterUpdateHandler = jest.fn();
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
-        store.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Attempt to add a duplicate value using updateObject
         userObject = store.updateObject((obj) => {
@@ -243,8 +243,8 @@ const schemas: SchemaDescription[] = [
         const afterUpdateHandler = jest.fn();
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
-        store.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Attempt to delete a non-existent value using updateObject
         userObject = store.updateObject((obj) => {
@@ -282,8 +282,8 @@ const schemas: SchemaDescription[] = [
         const afterUpdateHandler = jest.fn();
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
-        store.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "User", "roles");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Attempt to perform the add operation using updateObject
         expect(() => {

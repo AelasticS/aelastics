@@ -1,11 +1,29 @@
 import { StoreClass } from "../store/StoreClass"
 import { EventPayload, Result } from "../events/EventTypes"
-import { Operation, Property, Timing, Type } from "./ISubscriptionManager"
+import { ISubscriptionManager, Operation, Property, Timing, Type } from "./ISubscriptionManager"
+import { IObjectManager } from "./IObjectManager"
 
 /**
  * Interface representing a Store that manages objects and their states.
  */
 export interface IStore {
+
+
+  /**
+   * The objectManager provides methods for creating, updating, retrieving, and managing the lifecycle of objects within the store.
+   * It acts as the primary interface for object-level operations, ensuring consistency and encapsulation of object management logic.
+   * @returns The object manager instance responsible for handling objects in the store.
+   */
+  get objectManager(): IObjectManager
+  
+
+  /**
+   * The subscriptionManager responsible for managing subscriptions to events and changes in the store.
+   * It allows for subscribing to specific events and notifying subscribers when those events occur.
+   * @returns The subscription manager instance.
+   */
+  get subscriptionManager(): ISubscriptionManager
+  
   /**
    * Creates a new object of a specific type.
    * @param type - The type of the object to create.
@@ -72,32 +90,7 @@ export interface IStore {
    */
   makeRegular<T>(obj: T): T
 
-  /**
-   *
-   * Subscribes/unsubscribe to updates of a specific object.
-   * @param obj - The object to subscribe/unsubscribe to.
-   * @param callback - The callback function to be called when the object is updated.
-   */
-  subscribeToObject(obj: object, callback: (updatedObj: object) => void): () => void
-  // unsubscribeFromObject(obj: object, callback: (updatedObj: object) => void): void
-
-  /**
-   *
-   * Subscribes/unsubscribe to updates of store.
-   * @param callback - The callback function to be called when store is updated.
-   */
-  subscribeToStore(callback: () => void): () => void
-  // unsubscribeFromStore(callback: () => void): void
-
-  // Subscribes to event patterns, returns a function that can be called to unsubscribe
-  subscribe(
-    listener: (event: EventPayload) => Result,
-    timing: Timing,
-    operation: Operation,
-    type: Type,
-    property?: Property
-  ): () => void
-
+  
   /**
    * Retrieves the internal EternalStore instance.
    * @returns The internal EternalStore instance.

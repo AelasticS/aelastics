@@ -69,13 +69,13 @@ describe("Bidirectional Relationships & Cyclic References", () => {
 
     let child2 = store.createObject<Child>("Child") as Child
 
-    store.subscribeToObject(parent, (p) => {
+    store.subscriptionManager.subscribeToObject(parent, (p) => {
       parent = p as Parent
     })
-    store.subscribeToObject(child1, (c) => {
+    store.subscriptionManager.subscribeToObject(child1, (c) => {
       child1 = c as Child
     })
-    store.subscribeToObject(child2, (c) => {
+    store.subscriptionManager.subscribeToObject(child2, (c) => {
       child2 = c as Child
     })
     store.updateStore(() => {

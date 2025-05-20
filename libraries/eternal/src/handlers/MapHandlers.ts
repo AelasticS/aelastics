@@ -29,7 +29,7 @@ const keyToUUID = (value: any, propDes: PropertyMeta): any =>
 export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: ObservableExtra): MapHandlers<K, V> => {
   const privateKey = makePrivatePropertyKey(propDes.qName)
   const inverseUpdaterKey = propDes.inverseProp ? makeUpdateInverseKey(propDes.qName) : ""
-  const subscriptionManager = store.subscriptionManager()
+  const subscriptionManager = store.subscriptionManager
 
   return {
     /** Ensure values stored in the map are UUIDs if applicable */

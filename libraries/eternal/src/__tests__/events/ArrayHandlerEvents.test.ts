@@ -66,8 +66,8 @@ describe("ArrayHandler Events", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
-    store.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the push operation using updateObject
     simpleArrayObject = store.updateObject((obj) => {
@@ -110,8 +110,8 @@ describe("ArrayHandler Events", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
-    store.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the pop operation using updateObject
     simpleArrayObject = store.updateObject((obj) => {
@@ -153,8 +153,8 @@ describe("ArrayHandler Events", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
-    store.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the pop operation using updateObject
     simpleArrayObject = store.updateObject((obj) => {
@@ -196,8 +196,8 @@ describe("ArrayHandler Events", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
-    store.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the unshift operation using updateObject
     simpleArrayObject = store.updateObject((obj) => {
@@ -245,8 +245,8 @@ describe("ArrayHandler Events", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
-    store.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the splice operation using updateObject
     simpleArrayObject = store.updateObject((obj) => {
@@ -284,8 +284,8 @@ describe("ArrayHandler Events", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
-    store.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the sort operation using updateObject
     simpleArrayObject = store.updateObject((obj) => {
@@ -323,8 +323,8 @@ describe("ArrayHandler Events", () => {
     });
 
     // Subscribe to events
-    store.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
-    store.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the reverse operation using updateObject
     simpleArrayObject = store.updateObject((obj) => {
@@ -422,8 +422,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         });
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
-        store.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the push operation using updateObject
         objectArrayObject = store.updateObject((obj) => {
@@ -478,8 +478,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         });
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
-        store.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the pop operation using updateObject
         objectArrayObject = store.updateObject((obj) => {
@@ -537,8 +537,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         });
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
-        store.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the splice operation using updateObject
         objectArrayObject = store.updateObject((obj) => {
@@ -581,8 +581,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         });
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
-        store.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the unshift operation using updateObject
         objectArrayObject = store.updateObject((obj) => {
@@ -639,8 +639,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         });
     
         // Subscribe to events
-        store.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
-        store.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "ObjectArrayType", "items");
+        store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the shift operation using updateObject
         objectArrayObject = store.updateObject((obj) => {

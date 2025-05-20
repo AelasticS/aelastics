@@ -49,7 +49,7 @@ export class StoreClass implements IObjectManager {
     }
   }
 
-  public get objects(): IObjectManager {
+  public get objectManager(): IObjectManager {
     return this
   }
 
@@ -57,7 +57,7 @@ export class StoreClass implements IObjectManager {
     return this.typeToClassMap.get(type)
   }
 
-  public subscriptionManager(): SubscriptionManager {
+  public get subscriptionManager(): SubscriptionManager {
     return this._subscriptionManager
   }
 

@@ -99,7 +99,7 @@ export class State implements StateView {
   public addObject<T extends StoreObject>(obj: T, reason: "created" | "imported" | "versioned"): void {
     if (reason === "created" || reason === "imported") {
       const operationType = reason === "created" ? "create" : "import"
-      const subscriptionManager = this.store.deref()?.subscriptionManager()
+      const subscriptionManager = this.store.deref()?.subscriptionManager
       if (!subscriptionManager) {
         throw new Error("Subscription manager not found.")
       }
@@ -164,7 +164,7 @@ export class State implements StateView {
    * - Tracks the deletion in the change log.
    */
   public deleteObject(objectId: string): void {
-    const subscriptionManager = this.store.deref()?.subscriptionManager()
+    const subscriptionManager = this.store.deref()?.subscriptionManager
     if (!subscriptionManager) {
       throw new Error("Subscription manager not found.")
     }

@@ -75,8 +75,8 @@ describe("Primitive Property Updates", () => {
     }
 
     // Subscribe to before.update and after.update events for the "name" property of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "name")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "name")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "name")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "name")
 
     // Update the Person object
     person = store.updateObject((p) => {
@@ -113,8 +113,8 @@ describe("Primitive Property Updates", () => {
     const afterUpdateHandler = jest.fn(() => ({ success: true, errors: [] }))
 
     // Subscribe to before.update and after.update events for the "age" property of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "age")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "age")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "age")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "age")
 
     // Update the Person object with the same value
     person = store.updateObject((p) => {
@@ -153,8 +153,8 @@ describe("Primitive Property Updates", () => {
     })
 
     // Subscribe to before.update and after.update events for the "description" property of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "description")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "description")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "description")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "description")
 
     // Update the Person object to set the "description" property to null
     person = store.updateObject((p) => {
@@ -224,8 +224,8 @@ describe("Primitive Property Updates", () => {
     })
 
     // Subscribe to before.update and after.update events for the "name" property of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "name")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "name")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "name")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "name")
 
     // Attempt to update the Person object
     expect(() => {
@@ -276,8 +276,8 @@ describe("Primitive Property Updates", () => {
     })
 
     // Subscribe to before.update and after.update events for the "age" property of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "age")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "age")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "age")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "age")
 
     // Attempt to update the Person object with an invalid value
     expect(() => {
@@ -319,8 +319,8 @@ describe("Primitive Property Updates", () => {
     })
 
     // Subscribe to before.update and after.update events for the "description" property of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "description")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "description")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "description")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "description")
 
     // Update the Person object to set the "description" property to undefined
     person = store.updateObject((p) => {
@@ -404,8 +404,8 @@ describe("Primitive Property Updates", () => {
     })
 
     // Subscribe to before.update and after.update events for all properties of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "*")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "*")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
 
     // Update the Person object to change both "name" and "age" in a single transaction
     person = store.updateObject((p) => {
@@ -506,8 +506,8 @@ describe("Primitive Property Updates", () => {
     })
 
     // Subscribe to before.update and after.update events for all properties of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "*")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "*")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
 
     // Retrieve the original object reference
     const originalReference = store.findObjectByUUID<Person>((person as StoreObject)[uuid])!
@@ -584,8 +584,8 @@ describe("Primitive Property Updates", () => {
     })
 
     // Subscribe to before.update and after.update events for all properties of the "Person" type
-    store.subscribe(beforeUpdateHandler, "before", "update", "Person", "*")
-    store.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
+    store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "Person", "*")
+    store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
 
     // Update the Person object to change both "age" and "name" in a single transaction
     person = store.updateObject((p) => {
