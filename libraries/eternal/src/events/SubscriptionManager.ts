@@ -1,11 +1,11 @@
 import { StoreClass } from "../store/StoreClass"
 import { EventEmitter2 } from "eventemitter2"
 import { EventPayload, Result } from "./EventTypes"
-import { SubscriptionInterface, Timing, Operation, Type, Property } from "../interfaces/SubscriptionInterface"
+import { ISubscriberManager, Timing, Operation, Type, Property } from "../interfaces/ISubscriberManager"
 import { ChangeLogEntry } from "./ChangeLog"
 import { StoreObject, uuid } from "../store/InternalTypes"
 
-export class SubscriptionManager implements SubscriptionInterface {
+export class SubscriptionManager implements ISubscriberManager {
   private objectSubscriptions: Map<string, Set<(updatedObject: any) => void>> = new Map()
   private storeSubscriptions: Set<() => void> = new Set()
   private eventEmitter: EventEmitter2

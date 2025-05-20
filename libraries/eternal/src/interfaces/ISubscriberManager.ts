@@ -8,7 +8,7 @@ export type Property = string | '*';
 /**
  * A subscription interface for subscribing to event patterns.
  */
-export interface SubscriptionInterface {
+export interface ISubscriberManager {
   /**
    * Subscribes to event patterns, returns a function that can be called to unsubscribe.
    * 
