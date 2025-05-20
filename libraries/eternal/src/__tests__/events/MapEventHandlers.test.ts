@@ -39,7 +39,7 @@ describe("Map Event Handlers - User Preferences", () => {
     store = createStore(schemaRegistry.schemas.get("/test")!)
 
     // Create a User object
-    userObject = store.createObject("User") as StoreObject
+    userObject = store.objectManager.create("User") as StoreObject
   })
 
   test("should emit events and track changes for set operation on preferences map", () => {
@@ -68,12 +68,12 @@ describe("Map Event Handlers - User Preferences", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences")
 
     // Perform the set operation using updateObject
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.set("theme", "dark")
     }, userObject)
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!
 
     // Verify the final state of the map
     expect(userObject.preferences.get("theme")).toBe("dark")
@@ -85,12 +85,12 @@ describe("Map Event Handlers - User Preferences", () => {
 
   test("should emit events and track changes for delete operation on preferences map", () => {
     // Initialize the map with a key-value pair
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.set("theme", "dark");
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Get the UUID of the map entry key
     const keyToDelete = "theme";
@@ -120,12 +120,12 @@ describe("Map Event Handlers - User Preferences", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the delete operation using updateObject
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.delete(keyToDelete);
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Verify the final state of the map
     expect(userObject.preferences.has(keyToDelete)).toBe(false);
@@ -137,13 +137,13 @@ describe("Map Event Handlers - User Preferences", () => {
 
   test("should emit events and track changes for clear operation on preferences map", () => {
     // Initialize the map with multiple key-value pairs
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.set("theme", "dark");
       obj.preferences.set("language", "en-US");
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -186,12 +186,12 @@ describe("Map Event Handlers - User Preferences", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the clear operation using updateObject
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.clear();
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Verify the final state of the map
     expect(userObject.preferences.size).toBe(0);
@@ -203,12 +203,12 @@ describe("Map Event Handlers - User Preferences", () => {
 
   test("should emit events and track changes for setting a value when the key already exists", () => {
     // Initialize the map with an existing key-value pair
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.set("theme", "dark");
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -251,12 +251,12 @@ describe("Map Event Handlers - User Preferences", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the set operation using updateObject
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.set("theme", "light"); // Overwrite the existing key
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Verify the final state of the map
     expect(userObject.preferences.get("theme")).toBe("light");
@@ -278,12 +278,12 @@ describe("Map Event Handlers - User Preferences", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the delete operation using updateObject
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.delete("nonExistentKey"); // Attempt to delete a non-existent key
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Verify the map remains unchanged
     expect(userObject.preferences.size).toBe(0);
@@ -294,12 +294,12 @@ describe("Map Event Handlers - User Preferences", () => {
   });
   test("should not emit events or change the map when setting the same value for an existing key", () => {
     // Initialize the map with an existing key-value pair
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.set("theme", "dark");
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn();
@@ -312,12 +312,12 @@ describe("Map Event Handlers - User Preferences", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "preferences");
 
     // Perform the set operation using updateObject
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.set("theme", "dark"); // Set the same value for the existing key
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Verify the map remains unchanged
     expect(userObject.preferences.get("theme")).toBe("dark");
@@ -329,12 +329,12 @@ describe("Map Event Handlers - User Preferences", () => {
 
   test("should throw an error and cancel the operation when before.update handler returns { success: false }", () => {
     // Initialize the map with an existing key-value pair
-    userObject = store.updateObject((obj) => {
+    userObject = store.objectManager.update((obj) => {
       obj.preferences.set("theme", "dark");
     }, userObject);
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Mock before.update handler to cancel the operation
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -351,13 +351,13 @@ describe("Map Event Handlers - User Preferences", () => {
 
     // Attempt to perform the set operation using updateObject and expect an error
     expect(() => {
-      userObject = store.updateObject((obj) => {
+      userObject = store.objectManager.update((obj) => {
         obj.preferences.set("theme", "light"); // Attempt to overwrite the value
       }, userObject);
     }).toThrowError("Operation was canceled by the handler.");
 
     // Update the object reference
-    userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+    userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
 
     // Verify the map remains unchanged
     expect(userObject.preferences.get("theme")).toBe("dark");

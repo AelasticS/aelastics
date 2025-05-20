@@ -27,7 +27,7 @@ export interface IObjectManager {
    * @returns The updated object reflecting the new state.
    * @throws Error if the update is canceled by event handlers.
    */
-  update<T extends object>(recipe: (obj: T) => void, obj: T): T
+  update<T extends object>(recipe: (obj: T) => void, obj?: T): T
 
   /**
    * Deletes an object from the current state.
@@ -49,7 +49,7 @@ export interface IObjectManager {
    *                If not provided, the current (last) state is used and the latest state of the object is returned.
    * @returns The object in the requested state, or undefined if not found.
    */
-  get<T extends object>(obj: string | T, state?: number /*| string */): T | undefined  // TODO add state tags 
+  findByUUID<T extends object>(obj: string | T, state?: number /*| string */): T | undefined  // TODO add state tags 
 
   /**
    * Finds objects of a specific type, including all its subtypes, that match a given predicate function.

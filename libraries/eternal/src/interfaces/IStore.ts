@@ -1,6 +1,6 @@
 import { StoreClass } from "../store/StoreClass"
-import { EventPayload, Result } from "../events/EventTypes"
-import { ISubscriptionManager, Operation, Property, Timing, Type } from "./ISubscriptionManager"
+import { Result } from "../events/EventTypes"
+import { ISubscriptionManager} from "./ISubscriptionManager"
 import { IObjectManager } from "./IObjectManager"
 
 /**
@@ -24,34 +24,14 @@ export interface IStore {
    */
   get subscriptionManager(): ISubscriptionManager
   
-  /**
-   * Creates a new object of a specific type.
-   * @param type - The type of the object to create.
-   * @returns The newly created object.
-   */
-  createObject<T extends object>(type: string): T
 
-  /**
-   * Applies a recipe function to an object to update its state. A new state in store is automatically created
-   * @param recipe - A function that takes the object and modifies it mutably.
-   * @param obj - The object to be updated.
-   * @returns The new version of the input object.
-   */
-  updateObject<T extends object>(recipe: (obj: T) => void, obj: T): T
-
-  /**
-   * Applies a recipe function to update the store. A new state in the store is automatically created
-   * @param recipe - A function that modifies the store's state.
-   * @returns The result of the recipe function.
-   */
-  updateStore<R>(recipe: () => R): R
 
   /**
    * Retrieves an object by its UUID.
    * @param uuid - The UUID of the object to retrieve.
    * @returns The object if found, otherwise undefined.
    */
-  findObjectByUUID<T extends object>(uuid: string): T | undefined
+  // findObjectByUUID<T extends object>(uuid: string): T | undefined
 
   /**
    * Retrieves an object from a specific historical state.

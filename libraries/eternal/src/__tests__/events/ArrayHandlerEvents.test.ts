@@ -38,10 +38,10 @@ describe("ArrayHandler Events", () => {
     store = createStore(schemaRegistry.schemas.get("/test")!);
 
     // Create an object of type SimpleArrayType
-    simpleArrayObject = store.createObject("SimpleArrayType") as StoreObject;
+    simpleArrayObject = store.objectManager.create("SimpleArrayType") as StoreObject;
 
     // Retrieve the latest version of the object
-    simpleArrayObject = store.findObjectByUUID((simpleArrayObject as StoreObject)[uuid])!;
+    simpleArrayObject = store.objectManager.findByUUID<StoreObject>((simpleArrayObject as StoreObject)[uuid])!;
   });
 
   test("should emit events and track changes for push operation on array of simple values", () => {
@@ -70,7 +70,7 @@ describe("ArrayHandler Events", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the push operation using updateObject
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.push(42);
     }, simpleArrayObject);
 
@@ -85,7 +85,7 @@ describe("ArrayHandler Events", () => {
   
   test("should emit events and track changes for pop operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.push(10, 20, 30);
     }, simpleArrayObject);
 
@@ -114,7 +114,7 @@ describe("ArrayHandler Events", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the pop operation using updateObject
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.pop();
     }, simpleArrayObject);
 
@@ -128,7 +128,7 @@ describe("ArrayHandler Events", () => {
 
   test("should emit events and track changes for pop operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.push(10, 20, 30);
     }, simpleArrayObject);
 
@@ -157,7 +157,7 @@ describe("ArrayHandler Events", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the pop operation using updateObject
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.pop();
     }, simpleArrayObject);
 
@@ -171,7 +171,7 @@ describe("ArrayHandler Events", () => {
 
   test("should emit events and track changes for unshift operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.push(20, 30);
     }, simpleArrayObject);
 
@@ -200,7 +200,7 @@ describe("ArrayHandler Events", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the unshift operation using updateObject
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.unshift(10);
     }, simpleArrayObject);
 
@@ -214,7 +214,7 @@ describe("ArrayHandler Events", () => {
 
   test("should emit events and track changes for splice operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.push(10, 20, 30, 40);
     }, simpleArrayObject);
 
@@ -249,7 +249,7 @@ describe("ArrayHandler Events", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the splice operation using updateObject
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.splice(1, 2); // Remove 2 elements starting from index 1
     }, simpleArrayObject);
 
@@ -263,7 +263,7 @@ describe("ArrayHandler Events", () => {
 
   test("should emit events and track changes for sort operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.push(30, 10, 20);
     }, simpleArrayObject);
 
@@ -288,7 +288,7 @@ describe("ArrayHandler Events", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the sort operation using updateObject
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.sort((a:number, b:number) => a - b); // Sort in ascending order
     }, simpleArrayObject);
 
@@ -302,7 +302,7 @@ describe("ArrayHandler Events", () => {
 
   test("should emit events and track changes for reverse operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.push(10, 20, 30);
     }, simpleArrayObject);
 
@@ -327,7 +327,7 @@ describe("ArrayHandler Events", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the reverse operation using updateObject
-    simpleArrayObject = store.updateObject((obj) => {
+    simpleArrayObject = store.objectManager.update((obj) => {
       obj.numbers.reverse(); // Reverse the array
     }, simpleArrayObject);
 
@@ -388,15 +388,15 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
       store = createStore(schemaRegistry.schemas.get("/test")!);
   
       // Create an object of type ObjectArrayType
-      objectArrayObject = store.createObject("ObjectArrayType") as StoreObject;
+      objectArrayObject = store.objectManager.create("ObjectArrayType") as StoreObject;
   
       // Retrieve the latest version of the object
-      objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
+      objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
     });
   
     test("should emit events and update inverse properties for push operation on array of objects", () => {
         // Create a related object
-        let relatedObject = store.createObject("RelatedObject") as StoreObject;
+        let relatedObject = store.objectManager.create("RelatedObject") as StoreObject;
     
         // Get the UUID of the related object
         const relatedObjectUUID = (relatedObject as StoreObject)[uuid];
@@ -426,13 +426,13 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the push operation using updateObject
-        objectArrayObject = store.updateObject((obj) => {
+        objectArrayObject = store.objectManager.update((obj) => {
           obj.items.push(relatedObject);
         }, objectArrayObject);
     
         // Update the variables with their latest versions
-        objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject = store.findObjectByUUID((relatedObject as StoreObject)[uuid])!;
+        objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.objectManager.findByUUID<StoreObject>((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject]);
@@ -443,16 +443,16 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for pop operation on array of objects", () => {
         // Create a related object and add it to the array
-        let relatedObject = store.createObject("RelatedObject") as StoreObject;
+        let relatedObject = store.objectManager.create("RelatedObject") as StoreObject;
     
         // Add the related object to the array
-        objectArrayObject = store.updateObject((obj) => {
+        objectArrayObject = store.objectManager.update((obj) => {
           obj.items.push(relatedObject);
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject = store.findObjectByUUID((relatedObject as StoreObject)[uuid])!;
+        objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.objectManager.findByUUID<StoreObject>((relatedObject as StoreObject)[uuid])!;
     
         // Get the UUID of the related object
         const relatedObjectUUID = (relatedObject as StoreObject)[uuid];
@@ -482,13 +482,13 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the pop operation using updateObject
-        objectArrayObject = store.updateObject((obj) => {
+        objectArrayObject = store.objectManager.update((obj) => {
           obj.items.pop();
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject = store.findObjectByUUID((relatedObject as StoreObject)[uuid])!;
+        objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.objectManager.findByUUID<StoreObject>((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([]);
@@ -499,18 +499,18 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for splice operation on array of objects", () => {
         // Create related objects and add them to the array
-        let relatedObject1 = store.createObject("RelatedObject") as StoreObject;
-        let relatedObject2 = store.createObject("RelatedObject") as StoreObject;
+        let relatedObject1 = store.objectManager.create("RelatedObject") as StoreObject;
+        let relatedObject2 = store.objectManager.create("RelatedObject") as StoreObject;
     
         // Add the related objects to the array
-        objectArrayObject = store.updateObject((obj) => {
+        objectArrayObject = store.objectManager.update((obj) => {
           obj.items.push(relatedObject1, relatedObject2);
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject1 = store.findObjectByUUID((relatedObject1 as StoreObject)[uuid])!;
-        relatedObject2 = store.findObjectByUUID((relatedObject2 as StoreObject)[uuid])!;
+        objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.objectManager.findByUUID<StoreObject>((relatedObject1 as StoreObject)[uuid])!;
+        relatedObject2 = store.objectManager.findByUUID<StoreObject>((relatedObject2 as StoreObject)[uuid])!;
     
         // Get the UUIDs of the related objects
         const relatedObject1UUID = (relatedObject1 as StoreObject)[uuid];
@@ -541,13 +541,13 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the splice operation using updateObject
-        objectArrayObject = store.updateObject((obj) => {
+        objectArrayObject = store.objectManager.update((obj) => {
           obj.items.splice(0, 1); // Remove the first element
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject1 = store.findObjectByUUID((relatedObject1 as StoreObject)[uuid])!;
+        objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.objectManager.findByUUID<StoreObject>((relatedObject1 as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject2]);
@@ -558,7 +558,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for unshift operation on array of objects", () => {
         // Create a related object
-        let relatedObject = store.createObject("RelatedObject") as StoreObject;
+        let relatedObject = store.objectManager.create("RelatedObject") as StoreObject;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -585,13 +585,13 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the unshift operation using updateObject
-        objectArrayObject = store.updateObject((obj) => {
+        objectArrayObject = store.objectManager.update((obj) => {
           obj.items.unshift(relatedObject);
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject = store.findObjectByUUID((relatedObject as StoreObject)[uuid])!;
+        objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject = store.objectManager.findByUUID<StoreObject>((relatedObject as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject]);
@@ -602,18 +602,18 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for shift operation on array of objects", () => {
         // Create related objects and add them to the array
-        let relatedObject1 = store.createObject("RelatedObject") as StoreObject;
-        let relatedObject2 = store.createObject("RelatedObject") as StoreObject;
+        let relatedObject1 = store.objectManager.create("RelatedObject") as StoreObject;
+        let relatedObject2 = store.objectManager.create("RelatedObject") as StoreObject;
     
         // Add the related objects to the array
-        objectArrayObject = store.updateObject((obj) => {
+        objectArrayObject = store.objectManager.update((obj) => {
           obj.items.push(relatedObject1, relatedObject2);
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject1 = store.findObjectByUUID((relatedObject1 as StoreObject)[uuid])!;
-        relatedObject2 = store.findObjectByUUID((relatedObject2 as StoreObject)[uuid])!;
+        objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.objectManager.findByUUID<StoreObject>((relatedObject1 as StoreObject)[uuid])!;
+        relatedObject2 = store.objectManager.findByUUID<StoreObject>((relatedObject2 as StoreObject)[uuid])!;
     
         // Get the UUID of the first related object
         const relatedObject1UUID = (relatedObject1 as StoreObject)[uuid];
@@ -643,13 +643,13 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "ObjectArrayType", "items");
     
         // Perform the shift operation using updateObject
-        objectArrayObject = store.updateObject((obj) => {
+        objectArrayObject = store.objectManager.update((obj) => {
           obj.items.shift(); // Remove the first element
         }, objectArrayObject);
     
         // Update the object references
-        objectArrayObject = store.findObjectByUUID((objectArrayObject as StoreObject)[uuid])!;
-        relatedObject1 = store.findObjectByUUID((relatedObject1 as StoreObject)[uuid])!;
+        objectArrayObject = store.objectManager.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
+        relatedObject1 = store.objectManager.findByUUID<StoreObject>((relatedObject1 as StoreObject)[uuid])!;
     
         // Verify the final state of the array
         expect(objectArrayObject.items).toEqual([relatedObject2]);

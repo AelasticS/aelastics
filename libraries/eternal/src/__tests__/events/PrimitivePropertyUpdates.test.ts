@@ -41,17 +41,17 @@ describe("Primitive Property Updates", () => {
     store = createStore(schemaRegistry.schemas.get("/test")!)
 
     // Create a Person object
-    person = store.createObject("Person") as StoreObject
+    person = store.objectManager.create("Person") as StoreObject
 
     // Update the Person object with initial values
-    person = store.updateObject((p) => {
+    person = store.objectManager.update((p) => {
       p.name = "John"
       p.age = 30
       p.description = "Some text"
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
   })
 
   it("should update a primitive property and emit events", () => {
@@ -79,12 +79,12 @@ describe("Primitive Property Updates", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "name")
 
     // Update the Person object
-    person = store.updateObject((p) => {
+    person = store.objectManager.update((p) => {
       p.name = "Doe"
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
 
     // Verify that the beforeUpdateHandler was called
     expect(beforeUpdateHandler).toHaveBeenCalled()
@@ -117,12 +117,12 @@ describe("Primitive Property Updates", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "age")
 
     // Update the Person object with the same value
-    person = store.updateObject((p) => {
+    person = store.objectManager.update((p) => {
       p.age = 30 // Same value as the initial state
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
 
     // Verify the state remains unchanged
     expect(person.age).toBe(30)
@@ -157,12 +157,12 @@ describe("Primitive Property Updates", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "description")
 
     // Update the Person object to set the "description" property to null
-    person = store.updateObject((p) => {
+    person = store.objectManager.update((p) => {
       p.description = null
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
 
     // Verify the state
     expect(person.description).toBeNull()
@@ -229,13 +229,13 @@ describe("Primitive Property Updates", () => {
 
     // Attempt to update the Person object
     expect(() => {
-      person = store.updateObject((p) => {
+      person = store.objectManager.update((p) => {
         p.name = "Doe"
       }, person)
     }).toThrow("Update not allowed")
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
 
     // Verify the state remains unchanged
     expect(person.name).toBe("John")
@@ -281,13 +281,13 @@ describe("Primitive Property Updates", () => {
 
     // Attempt to update the Person object with an invalid value
     expect(() => {
-      person = store.updateObject((p) => {
+      person = store.objectManager.update((p) => {
         p.age = "thirty" as any // Invalid value: age should be a number
       }, person)
     }).toThrow(/Invalid value for property/)
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
 
     // Verify the state remains unchanged
     expect(person.age).toBe(30)
@@ -323,12 +323,12 @@ describe("Primitive Property Updates", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "description")
 
     // Update the Person object to set the "description" property to undefined
-    person = store.updateObject((p) => {
+    person = store.objectManager.update((p) => {
       p.description = undefined // Set the property to undefined
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
 
     // Verify the property was set to undefined
     expect(person.description).toBeUndefined()
@@ -408,13 +408,13 @@ describe("Primitive Property Updates", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
 
     // Update the Person object to change both "name" and "age" in a single transaction
-    person = store.updateObject((p) => {
+    person = store.objectManager.update((p) => {
       p.name = "Doe"
       p.age = 35
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
 
     // Verify the state reflects the updates
     expect(person.name).toBe("Doe")
@@ -510,18 +510,18 @@ describe("Primitive Property Updates", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
 
     // Retrieve the original object reference
-    const originalReference = store.findObjectByUUID<Person>((person as StoreObject)[uuid])!
+    const originalReference = store.objectManager.findByUUID<Person>((person as StoreObject)[uuid])!
 
     // Attempt to update the Person object
     expect(() => {
-      person = store.updateObject((p) => {
+      person = store.objectManager.update((p) => {
         p.age = 35 // This will fail due to the before.update handler
         p.name = "Doe" // This update is valid but will not be committed
       }, person)
     }).toThrow(/Update not allowed for age/) // Use regex to check the error message
 
     // Retrieve the current object reference
-    const currentReference = store.findObjectByUUID<Person>((person as StoreObject)[uuid])!
+    const currentReference = store.objectManager.findByUUID<Person>((person as StoreObject)[uuid])!
 
     // Verify that the object reference remains the same
     expect(currentReference).toBe(originalReference)
@@ -588,13 +588,13 @@ describe("Primitive Property Updates", () => {
     store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "Person", "*")
 
     // Update the Person object to change both "age" and "name" in a single transaction
-    person = store.updateObject((p) => {
+    person = store.objectManager.update((p) => {
       p.age = 35 // Update age first
       p.name = "Doe" // Update name second
     }, person)
 
     // Retrieve the latest version of the Person object
-    person = store.findObjectByUUID((person as StoreObject)[uuid])!
+    person = store.objectManager.findByUUID<StoreObject>((person as StoreObject)[uuid])!
 
     // Verify the state reflects the updates
     expect(person.age).toBe(35)

@@ -69,7 +69,7 @@ export class StoreClass implements IObjectManager {
     return (obj as any)[uuid]
   }
 
-  public get<T extends object>(obj: string | T, stateIndex?: number): T | undefined {
+  public findByUUID<T extends object>(obj: string | T, stateIndex?: number): T | undefined {
     if (stateIndex !== undefined) {
       return this.fromState<T>(stateIndex, obj)
     } else {

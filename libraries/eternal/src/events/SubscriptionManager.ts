@@ -106,7 +106,7 @@ export class SubscriptionManager implements ISubscriptionManager {
             let updatedObject: any = null
 
             if (change.operation === "create" || change.operation === "update" || change.operation === "delete") {
-              updatedObject = this.store.get(change.objectId)
+              updatedObject = this.store.findByUUID(change.objectId)
             }
 
             handlers.forEach((handler) => handler(updatedObject))

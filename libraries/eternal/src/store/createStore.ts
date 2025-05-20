@@ -20,10 +20,10 @@ export function createStore(
   const store = new StoreClass(types);
 
   const publicAPI: IStore = {
-    createObject: (type) => store.create(type), 
-    updateObject: <T extends object>(recipe: (obj: T ) => void, obj: T) => store.update(recipe, obj),
-    updateStore: <R>(recipe: () => R) => store.update(recipe) as R,
-    findObjectByUUID: (uuid) => store.findObjectByUUID(uuid),
+    // createObject: (type) => store.create(type), 
+    // updateObject: <T extends object>(recipe: (obj: T ) => void, obj: T) => store.update(recipe, obj),
+    // updateStore: <R>(recipe: () => R) => store.update(recipe) as R,
+    // findObjectByUUID: (uuid) => store.objectManager.findByUUID(uuid),
     isInUpdateMode: () => store.isInUpdateMode(),
     makeRegular: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
     undo: () => store.undo(),
@@ -33,7 +33,7 @@ export function createStore(
 
     // subscribeToObject: (obj, callback) => store.subscriptionManager.subscribeToObject(obj, callback),
     // subscribeToStore: (callback) => store.subscriptionManager.subscribeToStore(callback),
-    
+
 /*     subscribe: (
       listener: (event: EventPayload) => Result,
       timing: Timing,

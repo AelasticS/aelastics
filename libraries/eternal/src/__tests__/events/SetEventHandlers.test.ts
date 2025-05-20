@@ -38,10 +38,10 @@ const schemas: SchemaDescription[] = [
       store = createStore(schemaRegistry.schemas.get("/test")!);
   
       // Create a User object
-      userObject = store.createObject("User") as StoreObject;
+      userObject = store.objectManager.create("User") as StoreObject;
   
       // Retrieve the latest version of the object
-      userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+      userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     });
 
     test("should emit events and track changes for add operation on roles set", () => {
@@ -68,12 +68,12 @@ const schemas: SchemaDescription[] = [
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Perform the add operation using updateObject
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.add("admin");
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Verify the final state of the set
         expect(userObject.roles.has("admin")).toBe(true);
@@ -84,12 +84,12 @@ const schemas: SchemaDescription[] = [
       });
       test("should emit events and track changes for delete operation on roles set", () => {
         // Initialize the set with a value
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.add("admin");
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -114,12 +114,12 @@ const schemas: SchemaDescription[] = [
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Perform the delete operation using updateObject
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.delete("admin");
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Verify the final state of the set
         expect(userObject.roles.has("admin")).toBe(false);
@@ -131,13 +131,13 @@ const schemas: SchemaDescription[] = [
 
       test("should emit events and track changes for clearing the roles set", () => {
         // Initialize the set with multiple values
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.add("admin");
           obj.roles.add("editor");
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -176,12 +176,12 @@ const schemas: SchemaDescription[] = [
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Perform the clear operation using updateObject
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.clear();
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Verify the final state of the set
         expect(userObject.roles.size).toBe(0);
@@ -193,12 +193,12 @@ const schemas: SchemaDescription[] = [
 
       test("should not emit events or change the set when adding a duplicate value", () => {
         // Initialize the set with a value
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.add("admin");
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn();
@@ -211,12 +211,12 @@ const schemas: SchemaDescription[] = [
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Attempt to add a duplicate value using updateObject
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.add("admin"); // Add the same value again
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Verify the set remains unchanged
         expect(userObject.roles.size).toBe(1);
@@ -229,12 +229,12 @@ const schemas: SchemaDescription[] = [
 
       test("should not emit events or change the set when deleting a non-existent value", () => {
         // Initialize the set with a value
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.add("admin");
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn();
@@ -247,12 +247,12 @@ const schemas: SchemaDescription[] = [
         store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "User", "roles");
     
         // Attempt to delete a non-existent value using updateObject
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.delete("editor"); // Attempt to delete a value that doesn't exist
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Verify the set remains unchanged
         expect(userObject.roles.size).toBe(1);
@@ -265,12 +265,12 @@ const schemas: SchemaDescription[] = [
 
       test("should cancel the operation when before.update handler returns { success: false }", () => {
         // Initialize the set with a value
-        userObject = store.updateObject((obj) => {
+        userObject = store.objectManager.update((obj) => {
           obj.roles.add("admin");
         }, userObject);
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Mock before.update handler to cancel the operation
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -287,13 +287,13 @@ const schemas: SchemaDescription[] = [
     
         // Attempt to perform the add operation using updateObject
         expect(() => {
-          userObject = store.updateObject((obj) => {
+          userObject = store.objectManager.update((obj) => {
             obj.roles.add("editor"); // Attempt to add a new value
           }, userObject);
         }).toThrowError("Operation was canceled by the handler.");
     
         // Update the object reference
-        userObject = store.findObjectByUUID((userObject as StoreObject)[uuid])!;
+        userObject = store.objectManager.findByUUID<StoreObject>((userObject as StoreObject)[uuid])!;
     
         // Verify the set remains unchanged
         expect(userObject.roles.size).toBe(1);

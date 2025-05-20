@@ -107,7 +107,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     if (propertyMeta.type === "object") {
       getter = function (this: StoreObject) {
         let obj = checkReadAccess(this, store)
-        return store.findObjectByUUID(obj[privateKey]) // Directly resolve UUIDs
+        return store.objectManager.findByUUID(obj[privateKey]) // Directly resolve UUIDs
       }
     } else {
       getter = function (this: any) {

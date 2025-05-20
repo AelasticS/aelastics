@@ -24,10 +24,10 @@ describe("Store API: Produce Mode Detection", () => {
     }
 
     test("isInProduceMode() should detect when produce() is active", () => {
-        const user = store.createObject<User>("User");
+        const user = store.objectManager.create<User>("User");
         let produceStatusDuringExecution = false;
 
-        store.updateObject((u) => {
+        store.objectManager.update((u) => {
             produceStatusDuringExecution = store.isInUpdateMode();
             u.name = "Updated Name";
         }, user);

@@ -158,16 +158,16 @@ describe("Bidirectional Relationships", () => {
     });
 
     test("One-to-Many: Adding Books to Author", () => {
-        let author = store.createObject<Author>("Author");
-        let book1 = store.createObject<Book>("Book");
-        let book2 = store.createObject<Book>("Book");
+        let author = store.objectManager.create<Author>("Author");
+        let book1 = store.objectManager.create<Book>("Book");
+        let book2 = store.objectManager.create<Book>("Book");
 
-        author = store.updateObject((a) => {
+        author = store.objectManager.update((a) => {
             a.books.push(book1, book2);
         }, author);
 
-        book1 = store.findObjectByUUID<Book>((book1 as unknown as StoreObject) [uuid])!;
-        book2 = store.findObjectByUUID<Book>((book2 as unknown as StoreObject)[uuid])!;
+        book1 = store.objectManager.findByUUID<Book>((book1 as unknown as StoreObject) [uuid])!;
+        book2 = store.objectManager.findByUUID<Book>((book2 as unknown as StoreObject)[uuid])!;
         
         expect(author.books.includes(book1)).toBeTruthy;
         expect(author.books.includes(book2)).toBeTruthy();
@@ -176,27 +176,27 @@ describe("Bidirectional Relationships", () => {
     });
 
     test("One-to-Many: Removing Books from Author", () => {
-        let author = store.createObject<Author>("Author");
-        let book1 = store.createObject<Book>("Book");
-        let book2 = store.createObject<Book>("Book");
+        let author = store.objectManager.create<Author>("Author");
+        let book1 = store.objectManager.create<Book>("Book");
+        let book2 = store.objectManager.create<Book>("Book");
 
-        author = store.updateObject((a) => {
+        author = store.objectManager.update((a) => {
             a.books.push(book1, book2);
         }, author);
 
-        book1 = store.findObjectByUUID<Book>((book1 as unknown as StoreObject)[uuid])!;
+        book1 = store.objectManager.findByUUID<Book>((book1 as unknown as StoreObject)[uuid])!;
         let filteredBooks: Book[] = [];
 
-        store.updateObject((a) => {
+        store.objectManager.update((a) => {
             // TODO enable set on collections: a.books = a.books.filter(book => book !== book1);
             // check if array os proxied
             // disconnect all old elements and connect new ones
             filteredBooks = a.books.filter(book => book !== book1);
         }, author);
 
-        book1 = store.findObjectByUUID<Book>((book1 as unknown as StoreObject)[uuid])!;
-        book2 = store.findObjectByUUID<Book>((book2 as unknown as StoreObject)[uuid])!;
-        author = store.findObjectByUUID<Author>((author as unknown as StoreObject)[uuid])!;
+        book1 = store.objectManager.findByUUID<Book>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.objectManager.findByUUID<Book>((book2 as unknown as StoreObject)[uuid])!;
+        author = store.objectManager.findByUUID<Author>((author as unknown as StoreObject)[uuid])!;
 
         expect(filteredBooks.includes(book1)).toBeFalsy();
         expect(author.books.includes(book2)).toBe
@@ -207,17 +207,17 @@ describe("Bidirectional Relationships", () => {
     });
 
     test("Many-to-One: Adding Books to Publisher", () => {
-        let publisher = store.createObject<Publisher>("Publisher");
-        let book1 = store.createObject<PublishedBook>("PublishedBook");
-        let book2 = store.createObject<PublishedBook>("PublishedBook");
+        let publisher = store.objectManager.create<Publisher>("Publisher");
+        let book1 = store.objectManager.create<PublishedBook>("PublishedBook");
+        let book2 = store.objectManager.create<PublishedBook>("PublishedBook");
 
-        store.updateObject((p) => {
+        store.objectManager.update((p) => {
             p.books.push(book1, book2);
         }, publisher);
 
-        book1 = store.findObjectByUUID<PublishedBook>((book1 as unknown as StoreObject)[uuid])!;
-        book2 = store.findObjectByUUID<PublishedBook>((book2 as unknown as StoreObject)[uuid])!;
-        publisher = store.findObjectByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
+        book1 = store.objectManager.findByUUID<PublishedBook>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.objectManager.findByUUID<PublishedBook>((book2 as unknown as StoreObject)[uuid])!;
+        publisher = store.objectManager.findByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
         expect(publisher.books.includes(book1)).toBeTruthy();
         expect(publisher.books.includes(book2)).toBeTruthy();
@@ -226,25 +226,25 @@ describe("Bidirectional Relationships", () => {
     });
 
     test("Many-to-One: Removing Books from Publisher", () => {
-        let publisher = store.createObject<Publisher>("Publisher");
-        let book1 = store.createObject<PublishedBook>("PublishedBook");
-        let book2 = store.createObject<PublishedBook>("PublishedBook");
+        let publisher = store.objectManager.create<Publisher>("Publisher");
+        let book1 = store.objectManager.create<PublishedBook>("PublishedBook");
+        let book2 = store.objectManager.create<PublishedBook>("PublishedBook");
 
-        store.updateObject((p) => {
+        store.objectManager.update((p) => {
             p.books.push(book1, book2);
         }, publisher);
 
-        publisher = store.findObjectByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
+        publisher = store.objectManager.findByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
-        store.updateObject((p) => { //= p.books.filter(book => book !== book1);
+        store.objectManager.update((p) => { //= p.books.filter(book => book !== book1);
             const i = p.books.findIndex(book => book !== book1);
             if(i >= 0)           
                 p.books.splice(i,1) 
         }, publisher);
 
-        book1 = store.findObjectByUUID<PublishedBook>((book1 as unknown as StoreObject)[uuid])!;
-        book2 = store.findObjectByUUID<PublishedBook>((book2 as unknown as StoreObject)[uuid])!;
-        publisher = store.findObjectByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
+        book1 = store.objectManager.findByUUID<PublishedBook>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.objectManager.findByUUID<PublishedBook>((book2 as unknown as StoreObject)[uuid])!;
+        publisher = store.objectManager.findByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
         expect(publisher.books.includes(book1)).toBeFalsy();
         expect(publisher.books.includes(book2)).toBeTruthy();
@@ -253,23 +253,23 @@ describe("Bidirectional Relationships", () => {
     });
 
     test("Many-to-Many: Adding Courses to Students", () => {
-        let student1 = store.createObject<Student>("Student");
-        let student2 = store.createObject<Student>("Student");
-        let course1 = store.createObject<Course>("Course");
-        let course2 = store.createObject<Course>("Course");
+        let student1 = store.objectManager.create<Student>("Student");
+        let student2 = store.objectManager.create<Student>("Student");
+        let course1 = store.objectManager.create<Course>("Course");
+        let course2 = store.objectManager.create<Course>("Course");
 
-        store.updateObject((s) => {
+        store.objectManager.update((s) => {
             s.courses.push(course1, course2);
         }, student1);
 
-        store.updateObject((s) => {
+        store.objectManager.update((s) => {
             s.courses.push(course1, course2);
         }, student2);
 
-        student1 = store.findObjectByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
-        student2 = store.findObjectByUUID<Student>((student2 as unknown as StoreObject)[uuid])!;
-        course1 = store.findObjectByUUID<Course>((course1 as unknown as StoreObject)[uuid])!;
-        course2 = store.findObjectByUUID<Course>((course2 as unknown as StoreObject)[uuid])!;
+        student1 = store.objectManager.findByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
+        student2 = store.objectManager.findByUUID<Student>((student2 as unknown as StoreObject)[uuid])!;
+        course1 = store.objectManager.findByUUID<Course>((course1 as unknown as StoreObject)[uuid])!;
+        course2 = store.objectManager.findByUUID<Course>((course2 as unknown as StoreObject)[uuid])!;
 
         expect(student1.courses.includes(course1)).toBeTruthy();
         expect(student1.courses.includes(course2)).toBeTruthy();
@@ -282,30 +282,30 @@ describe("Bidirectional Relationships", () => {
     });
 
     test("Many-to-Many: Removing Courses from Students", () => {
-        let student1 = store.createObject<Student>("Student");
-        let student2 = store.createObject<Student>("Student");
-        let course1 = store.createObject<Course>("Course");
-        let course2 = store.createObject<Course>("Course");
+        let student1 = store.objectManager.create<Student>("Student");
+        let student2 = store.objectManager.create<Student>("Student");
+        let course1 = store.objectManager.create<Course>("Course");
+        let course2 = store.objectManager.create<Course>("Course");
 
-        store.updateObject((s) => {
+        store.objectManager.update((s) => {
             s.courses.push(course1, course2);
         }, student1);
 
-        store.updateObject((s) => {
+        store.objectManager.update((s) => {
             s.courses.push(course1, course2);
         }, student2);
 
-        student1 = store.findObjectByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
+        student1 = store.objectManager.findByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
 
-        store.updateObject((s) => {
+        store.objectManager.update((s) => {
             // s.courses = s.courses.filter(course => course !== course1);
             s.courses.shift()
         }, student1);
 
-        student1 = store.findObjectByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
-        student2 = store.findObjectByUUID<Student>((student2 as unknown as StoreObject)[uuid])!;
-        course1 = store.findObjectByUUID<Course>((course1 as unknown as StoreObject)[uuid])!;
-        course2 = store.findObjectByUUID<Course>((course2 as unknown as StoreObject)[uuid])!;
+        student1 = store.objectManager.findByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
+        student2 = store.objectManager.findByUUID<Student>((student2 as unknown as StoreObject)[uuid])!;
+        course1 = store.objectManager.findByUUID<Course>((course1 as unknown as StoreObject)[uuid])!;
+        course2 = store.objectManager.findByUUID<Course>((course2 as unknown as StoreObject)[uuid])!;
 
         expect(student1.courses.includes(course1)).toBeFalsy();
         expect(student1.courses.includes(course2)).toBeTruthy();

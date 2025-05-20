@@ -27,292 +27,292 @@ beforeEach(() => {
 
 test("Undo/Redo on array push operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.push("tag1");
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(0);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 });
 
 test("Undo/Redo on array element set by index operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         user.tags.push("tag1");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags[0] = "tag1 updated";
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1 updated");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1 updated");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1 updated");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags[0]).toBe("tag1 updated");
 });
 
 test("Undo/Redo on array pop operation", () => {
     // create object
 
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
 
 
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.pop();
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(0);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(0);
 });
 
 test("Undo/Redo on array shift operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.shift();
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag2");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(2);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(2);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag2");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag2");
 });
 
 test("Undo/Redo on array unshift operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.unshift("tag1");
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(0);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(0);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(1);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(1);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
 });
 
 test("Undo/Redo on array splice operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.splice(1, 1, "tag4");
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag4");
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(3);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag4");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag3");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag2");
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(3);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag2");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag3");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag1");
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag4");
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toContain("tag3");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(3);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag1");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag4");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toContain("tag3");
 });
 
 test("Undo/Redo on array reverse operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.reverse();
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag2", "tag1"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag2", "tag1"]);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag2", "tag1"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag2", "tag1"]);
 });
 
 test("Undo/Redo on array sort operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag3", "tag1", "tag2");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.sort();
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag1", "tag2"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag3", "tag1", "tag2"]);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 });
 
 test("Undo/Redo on array fill operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.fill("tag4", 1, 2);
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag4", "tag3"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag4", "tag3"]);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag4", "tag3"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag4", "tag3"]);
 });
 
 test("array concat operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1");
         return obj;
@@ -325,12 +325,12 @@ test("array concat operation", () => {
      //expect(store.getObject<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     let concatArray:string[] = []
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         concatArray = user.tags.concat(["tag2", "tag3"]);
     });
 
     // retrieve the latest version of user
-    user = store.findObjectByUUID<Person>(user[uuid])!;
+    user = store.objectManager.findByUUID<Person>(user[uuid])!;
 
     // check if operation was successful
     expect(concatArray).toEqual(["tag1", "tag2", "tag3"]);
@@ -338,9 +338,9 @@ test("array concat operation", () => {
 
 test("array includes operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -355,9 +355,9 @@ test("array includes operation", () => {
 
 test("array indexOf operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -372,9 +372,9 @@ test("array indexOf operation", () => {
 
 test("array join operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -389,9 +389,9 @@ test("array join operation", () => {
 
 test("array lastIndexOf operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3", "tag2");
         return obj;
@@ -406,9 +406,9 @@ test("array lastIndexOf operation", () => {
 
 test("array slice operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -424,23 +424,23 @@ test("array slice operation", () => {
 
 test("array length operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags.length).toBe(3);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags.length).toBe(3);
 });
 
 test("Undo/Redo on array find operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -457,9 +457,9 @@ test("Undo/Redo on array find operation", () => {
 
 test("array findIndex operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2");
         return obj;
@@ -477,9 +477,9 @@ test("array findIndex operation", () => {
 
 test("array map operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2");
         return obj;
@@ -497,9 +497,9 @@ test("array map operation", () => {
 
 test("array filter operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -518,9 +518,9 @@ test("array filter operation", () => {
 
 test("array reduce operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -537,9 +537,9 @@ test("array reduce operation", () => {
 
 test("array reduceRight operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -555,9 +555,9 @@ test("array reduceRight operation", () => {
 
 test("array every operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -575,9 +575,9 @@ test("array every operation", () => {
 
 test("array some operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -595,9 +595,9 @@ test("array some operation", () => {
 
 test("array forEach operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -617,9 +617,9 @@ test("array forEach operation", () => {
 
 test("Undo/Redo on array flatMap operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2");
         return obj;
@@ -638,9 +638,9 @@ test("Undo/Redo on array flatMap operation", () => {
 
 test("Undo/Redo on array flat operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push(["tag1"], ["tag2"], ["tag3"]);
         return obj;
@@ -658,38 +658,38 @@ test("Undo/Redo on array flat operation", () => {
 
 test("Undo/Redo on array copyWithin operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         user.tags.copyWithin(1, 0, 2);
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag1", "tag2"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag1", "tag2"]);
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag2", "tag3"]);
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag1", "tag2"]);
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags).toEqual(["tag1", "tag1", "tag2"]);
 });
 
 test("Undo/Redo on array entries operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -708,9 +708,9 @@ test("Undo/Redo on array entries operation", () => {
 
 test("Array.keys operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -730,9 +730,9 @@ test("Array.keys operation", () => {
 
 test("values() method", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: StoreObject) => {
+    user = store.objectManager.update((obj: StoreObject) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
@@ -752,31 +752,31 @@ test("values() method", () => {
 
 test("Undo/Redo on array delete operation", () => {
     // create object
-    let user: Person = store.createObject("User");
+    let user: Person = store.objectManager.create("User");
     // initialize object
-    user = store.updateObject((obj: Person) => {
+    user = store.objectManager.update((obj: Person) => {
         obj.name = "Alice";
         obj.tags.push("tag1", "tag2", "tag3");
         return obj;
     }, user);
 
     // apply operation
-    store.updateStore(() => {
+    store.objectManager.update(() => {
         delete user.tags[1];
     });
 
     // check if operation was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag3");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags[1]).toBe("tag3");
 
     // undo operation
     store.undo();
     // check if undo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag2");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags[1]).toBe("tag2");
 
     // redo operation
     store.redo();
     // check if redo was successful
-    expect(store.findObjectByUUID<Person>(user[uuid])?.tags[1]).toBe("tag3");
+    expect(store.objectManager.findByUUID<Person>(user[uuid])?.tags[1]).toBe("tag3");
 });
 
 

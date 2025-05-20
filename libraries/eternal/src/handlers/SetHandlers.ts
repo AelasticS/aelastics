@@ -12,7 +12,7 @@ import { uuid } from "../store/InternalTypes"
 
 // Convert UUID to Object
 const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  propDes.itemType === "object" && item ? store.findObjectByUUID(item) : item
+  propDes.itemType === "object" && item ? store.objectManager.findByUUID(item) : item
 
 // Convert object to UUID if needed
 const toUUID = (value: any, propDes: PropertyMeta): any => (propDes.itemType === "object" && value ? value[uuid] : value)
