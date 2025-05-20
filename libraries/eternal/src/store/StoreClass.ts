@@ -27,11 +27,11 @@ import { SubscriptionManager } from "../events/SubscriptionManager"
 import { randomUUID } from "crypto"
 import { isStoreObject, makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 import { isSimplePropType } from "../meta/PropertyDefinitions"
-import { ObjectManager } from "../interfaces/ObjectManager"
+import { IObjectManager } from "../interfaces/IObjectManager"
 
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
-export class StoreClass implements ObjectManager {
+export class StoreClass implements IObjectManager {
   private stateHistory: State[] = [] // Stores the history of states
   private subscriptionManager = new SubscriptionManager(this) // Create a subscription manager
   private currentStateIndex: number = -1 // Track active state index
@@ -49,7 +49,7 @@ export class StoreClass implements ObjectManager {
     }
   }
 
-  public get objects(): ObjectManager {
+  public get objects(): IObjectManager {
     return this
   }
 

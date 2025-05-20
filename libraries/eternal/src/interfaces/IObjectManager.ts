@@ -5,7 +5,7 @@ import { Result } from "../events/EventTypes"
  * retrieving, and managing objects in a store. It also supports serialization, deserialization,
  * and validation of objects against their type schemas.
  */
-export interface ObjectManager {
+export interface IObjectManager {
   /**
    * Creates a new object of a specified type and optionally initializes it with a given state.
    * The created object is automatically managed by the store.
