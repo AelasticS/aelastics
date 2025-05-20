@@ -80,7 +80,7 @@ export function checkWriteAccess(obj: StoreObject, store: StoreClass, key: strin
 
 /** Adds optimized property accessors to a dynamically generated class prototype */
 export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: StoreClass) {
-  const subscriptionManager = store.getSubscriptionManager()
+  const subscriptionManager = store.subscriptionManager()
 
   if (!subscriptionManager) {
     throw new Error("Subscription manager not found.")

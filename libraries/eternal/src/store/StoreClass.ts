@@ -33,7 +33,7 @@ export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
 export class StoreClass implements IObjectManager {
   private stateHistory: State[] = [] // Stores the history of states
-  private subscriptionManager = new SubscriptionManager(this) // Create a subscription manager
+  private _subscriptionManager = new SubscriptionManager(this) // Create a subscription manager
   private currentStateIndex: number = -1 // Track active state index
   private inUpdateMode: boolean = false // Flag to indicate if the store is in update mode
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
@@ -57,8 +57,8 @@ export class StoreClass implements IObjectManager {
     return this.typeToClassMap.get(type)
   }
 
-  public getSubscriptionManager(): SubscriptionManager {
-    return this.subscriptionManager
+  public subscriptionManager(): SubscriptionManager {
+    return this._subscriptionManager
   }
 
   /** Returns the UUID of a store object */
@@ -816,7 +816,7 @@ export class StoreClass implements IObjectManager {
         this.inUpdateMode = false // Exit update mode if it was set by this method
       }
       if (!hasError) {
-        this.subscriptionManager.notifySubscribers() // Notify all subscribers of the store and objects
+        this._subscriptionManager.notifySubscribers() // Notify all subscribers of the store and objects
       }
     }
   }

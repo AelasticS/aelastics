@@ -23,7 +23,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
   const proxyKey = makePrivateProxyKey(propDes.qName)
   const inverseUpdaterKey = makeUpdateInverseKey(propDes.qName)
   const privateInverseKey = propDes.inverseProp ? makePrivatePropertyKey(propDes.inverseProp) : ""
-  const subscriptionManager = store.getSubscriptionManager()
+  const subscriptionManager = store.subscriptionManager()
 
 
   return {

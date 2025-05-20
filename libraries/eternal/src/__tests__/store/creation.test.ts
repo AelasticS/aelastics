@@ -426,8 +426,8 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       });
   
       // Subscribe to events for simpleProp
-      store.getSubscriptionManager().subscribe(beforeUpdateHandler, "before", "update", "EventTestType", "simpleProp");
-      store.getSubscriptionManager().subscribe(afterUpdateHandler, "after", "update", "EventTestType", "simpleProp");
+      store.subscriptionManager().subscribe(beforeUpdateHandler, "before", "update", "EventTestType", "simpleProp");
+      store.subscriptionManager().subscribe(afterUpdateHandler, "after", "update", "EventTestType", "simpleProp");
   
       // Perform the createObject operation
       const initialState = {

@@ -36,7 +36,7 @@ export const createArrayHandlers = <T extends StoreObject>({
   const proxyKey = makePrivateProxyKey(propDes.qName)
   const inverseUpdaterKey = makeUpdateInverseKey(propDes.qName)
   const privateInverseKey = propDes.inverseProp ? makePrivatePropertyKey(propDes.inverseProp) : ""
-  const subscriptionManager = store.getSubscriptionManager()
+  const subscriptionManager = store.subscriptionManager()
 
   if (!subscriptionManager) {
     throw new Error("Subscription manager not found.")
