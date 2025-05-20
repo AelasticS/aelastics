@@ -1,6 +1,6 @@
 import { StoreClass } from "../store/StoreClass"
 import { EventPayload, Result } from "../events/EventTypes"
-import { Operation, Property, Timing, Type } from "./ISubscriberManager"
+import { Operation, Property, Timing, Type } from "./SubscriptionManager"
 
 /**
  * Interface representing a Store that manages objects and their states.
