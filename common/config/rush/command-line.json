@@ -12,6 +12,16 @@
    */
   "commands": [
     {
+      "commandKind": "bulk",
+      "name": "test",
+      "summary": "Run tests for all projects",
+      "description": "Runs the test script in each project",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
+      "safeForSimultaneousRushProcesses": true,
+      "disableBuildCache": true
+    },
+    {
       /**
        * (Required) Determines the type of custom command.
        * Rush's "bulk" commands are invoked separately for each project.  By default, the command will run for
@@ -153,7 +163,7 @@
        * the folder that contains rush.json.  If custom parameters are associated with this command, their
        * values will be appended to the end of this string.
        */
-      "shellCommand": "node common/scripts/my-global-command.js",
+      "shellCommand": "node common/scripts/my-global-command.js"
 
       /**
        * If your "shellCommand" script depends on NPM packages, the recommended best practice is

@@ -38,7 +38,7 @@ export { TaggedUnionType } from './complex-types/TaggedUnionType'
 export { EntityType, findTypeCategory } from './complex-types/EntityType'
 
 export { OptionalType } from './special-types/Optional'
-export { EntityReference } from './special-types/EntityReference'
+export { ObjectReference as EntityReference } from './special-types/ObjectReference'
 export { LinkType } from './special-types/LinkType'
 
 export {AnnotationSchema, Annotation} from './annotations/Annotation'
