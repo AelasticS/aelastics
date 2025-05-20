@@ -5,7 +5,7 @@ import { Operation, Property, Timing, Type } from "./SubscriptionInterface"
 /**
  * Interface representing a Store that manages objects and their states.
  */
-export interface Store {
+export interface IStore {
   /**
    * Creates a new object of a specific type.
    * @param type - The type of the object to create.

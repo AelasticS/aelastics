@@ -1,6 +1,6 @@
 import { StoreClass } from "../store/StoreClass";
 import { StoreObject, uuid } from "../store/InternalTypes";
-import { Store } from "../interfaces/StoreInterface";
+import { IStore } from "../interfaces/IStore";
 import { createStore } from "../store/createStore";
 
 interface Person extends StoreObject {
@@ -9,7 +9,7 @@ interface Person extends StoreObject {
     tags: string[]
 }
 
-let store: Store;
+let store: IStore;
 let eternalStore: StoreClass;
 
 beforeEach(() => {

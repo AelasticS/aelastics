@@ -2,7 +2,7 @@ import { EventPayload, Result } from "../events/EventTypes";
 import { Timing, Operation, Type, Property } from "../interfaces/SubscriptionInterface";
 import { TypeMeta, TypeSchema } from "../meta/InternalSchema";
 import { StoreClass } from "./StoreClass";
-import { Store } from "../interfaces/StoreInterface";
+import { IStore } from "../interfaces/IStore";
 
 
 export function createStore(
@@ -12,14 +12,14 @@ export function createStore(
     freeze?: boolean;
     fetchFromExternalSource?: (type: string, uuid: string) => any;
   } = { freeze: true }
-): Store {
+): IStore {
   if (!metaInfo) {
     throw new Error("meta information is required to create a store");
   }
   const types: Map<string, TypeMeta> = (metaInfo as TypeSchema).types || (metaInfo as Map<string, TypeMeta>);
   const store = new StoreClass(types);
 
-  const publicAPI: Store = {
+  const publicAPI: IStore = {
     createObject: (type) => store.create(type), 
     updateObject: <T extends object>(recipe: (obj: T ) => void, obj: T) => store.update(recipe, obj),
     updateStore: <R>(recipe: () => R) => store.update(recipe) as R,
