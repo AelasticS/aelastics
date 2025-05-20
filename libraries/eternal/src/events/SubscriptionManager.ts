@@ -1,7 +1,7 @@
 import { StoreClass } from "../store/StoreClass"
 import { EventEmitter2 } from "eventemitter2"
 import { EventPayload, Result } from "./EventTypes"
-import { ISubscriptionManager, Timing, Operation, Type, Property } from "../interfaces/SubscriptionManager"
+import { ISubscriptionManager, Timing, Operation, Type, Property } from "../interfaces/ISubscriptionManager"
 import { ChangeLogEntry } from "./ChangeLog"
 import { StoreObject, uuid } from "../store/InternalTypes"
 

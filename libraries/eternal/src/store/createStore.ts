@@ -1,5 +1,5 @@
 import { EventPayload, Result } from "../events/EventTypes";
-import { Timing, Operation, Type, Property } from "../interfaces/SubscriptionManager";
+import { Timing, Operation, Type, Property } from "../interfaces/ISubscriptionManager";
 import { TypeMeta, TypeSchema } from "../meta/InternalSchema";
 import { StoreClass } from "./StoreClass";
 import { IStore } from "../interfaces/IStore";
