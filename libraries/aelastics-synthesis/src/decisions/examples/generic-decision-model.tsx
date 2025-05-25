@@ -54,7 +54,7 @@ export const PerformanceOptimizationGMD: Element<gdmT.IGenericDecisionModel> = (
     </GenericDecisionModel>
 );
 
-const m1: gdmT.IGenericDecisionModel = NamingConventionGDM.render(context);
-const m2: gdmT.IGenericDecisionModel = PerformanceOptimizationGMD.render(context);
+// const m1: gdmT.IGenericDecisionModel = NamingConventionGDM.render(context);
+// const m2: gdmT.IGenericDecisionModel = PerformanceOptimizationGMD.render(context);
 
-console.log("m1", m1);
+// console.log("m1", m1);
