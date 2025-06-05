@@ -1,6 +1,6 @@
 import * as dbm from './decision-binding-meta.model'
 
-import { ModelStore } from './../../index';
+import { ModelStore } from '../../index';
 import { CpxTemplate, Element, Template, WithRefProps } from "../../jsx/element";
 
 export type IModelProps = WithRefProps<dbm.IDecisionBindingModel> & {

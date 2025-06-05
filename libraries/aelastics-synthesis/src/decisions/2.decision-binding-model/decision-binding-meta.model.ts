@@ -1,6 +1,6 @@
 import * as t from "aelastics-types";
 import { Model, ModelElement } from "generic-metamodel";
-import * as gdm from "./../generic-decision-model/generic-decision-meta.model";
+import * as gdm from "../1.generic-decision-model/generic-decision-meta.model";
 
 export const DecisionBindingModel_TypeSchema = t.schema("DecisionBindingModel_TypeSchema");
 

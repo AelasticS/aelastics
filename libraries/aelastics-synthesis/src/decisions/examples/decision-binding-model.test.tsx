@@ -6,16 +6,16 @@ import { Element } from "../../jsx/element";
 import { Context } from "../../jsx/context";
 import { ModelStore } from '../../index';
 
-import * as gdmC from "../generic-decision-model/generic-decision-meta.model-components";
-import * as gdmT from "../generic-decision-model/generic-decision-meta.model";
+import * as gdmC from "../1.generic-decision-model/generic-decision-meta.model-components";
+import * as gdmT from "../1.generic-decision-model/generic-decision-meta.model";
 import * as gdmM from "./generic-decision-model"
 
 import * as etC from "../../types-metamodel/types-components"
 import * as etT from "../../types-metamodel/types-meta.model";
 import * as eerM from "../../types-metamodel/models/eer-metamodel-aelasticTypes";
 
-import * as dbmT from "../decision-binding-model/decision-binding-meta.model";
-import * as dbmC from "../decision-binding-model/decision-binding-meta.model-components";
+import * as dbmT from "../2.decision-binding-model/decision-binding-meta.model";
+import * as dbmC from "../2.decision-binding-model/decision-binding-meta.model-components";
 
 const context = new Context();
 const store = new ModelStore();
