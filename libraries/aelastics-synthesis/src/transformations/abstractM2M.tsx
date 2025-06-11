@@ -101,6 +101,7 @@ export interface IM2M<S extends IModel, D extends IModel> {
   transform(source: S): D;
 }
 
+// TODO: this class and intereface should be extended with optional Decision Model. 
 export abstract class abstractM2M<S extends IModel, D extends IModel>
   implements IM2M<S, D>
 {

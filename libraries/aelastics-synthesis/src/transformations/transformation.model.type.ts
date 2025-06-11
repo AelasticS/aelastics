@@ -23,6 +23,7 @@ export const M2M_Trace = t.subtype(Model, {
     instanceOf:M2M_Transformation
 }, "M2M_Trace", TrSchema);
 
+// TODO: enable to store decision models in trace
 export const E2E_Trace = t.subtype(ModelElement, {
     // from: t.arrayOf(t.entityRef(ModelElement)),  // identifires of source model elements
     // to: t.arrayOf(t.entityRef(ModelElement)), // // identifires of destination model elements

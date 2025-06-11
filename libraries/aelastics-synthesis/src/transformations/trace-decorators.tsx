@@ -151,6 +151,7 @@ export const M2M_v0 = ({ input, output }: IM2MDecorator) => {
 // }
 
 // method descriptor
+// TODO: enable rules to return array of JSXElements
 export const E2E = function ({ input, output, ruleName }: IE2EDecorator) {
   return function (
     target: abstractM2M<IModel, IModel>,

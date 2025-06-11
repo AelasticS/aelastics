@@ -1,6 +1,114 @@
 
 import * as t from "aelastics-types"
 
+
+// ############     PRIMER SA UNION OBJEKTIMA    ##############
+
+type IRelationship_0_1_HandlingUnion = {
+
+    NoIndex: true,
+    CreateIndex: false,
+} | {
+    NoIndex: false,
+    CreateIndex: {
+        RoleName: true
+        PKFromOriginTable: false
+    } | {
+        RoleName: false
+        PKFromOriginTable: true
+    } | {
+        RoleName: string
+        PKFromOriginTable: true
+    }
+};
+
+const alt1: IRelationship_0_1_HandlingUnion = { NoIndex: true, CreateIndex: false };
+const alt2: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: true, PKFromOriginTable: false } };
+const alt3: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: false, PKFromOriginTable: true } };
+
+
+function checkIfShouldBeCreatedByRoleName2(decision: IRelationship_0_1_HandlingUnion): boolean {
+    return decision.CreateIndex !== false && decision.CreateIndex.RoleName === true;
+
+}
+
+function checkIfShouldBeCreatedByPK2(decision: IRelationship_0_1_HandlingUnion): boolean {
+    return decision.CreateIndex !== false && decision.CreateIndex.PKFromOriginTable === true;
+}
+
+// ############     KRAJ PRIMERA SA UNION OBJEKTIMA    ##############
+
+
+// ############     PRIMER SA NIZOM OBJEKATA    ##############
+
+// type shouldCreateIndex = {
+//     NoIndex: true,
+//     CreateIndex: false
+// } | {
+//     NoIndex: false,
+//     CreateIndex: true
+// };
+
+enum createIndexDecision {
+    NoIndex,
+    CreateIndex
+}
+
+// type createIndex = {
+//     RoleName: true
+//     PKFromOriginTable: false
+// } | {
+//     RoleName: false
+//     PKFromOriginTable: true
+// };
+
+enum indexName {
+    RoleName,
+    PKFromOriginTable
+}
+
+type DecisionModel = {
+    createIndexDecision: "NoIndex" | "CreateIndex",
+    indexName: "RoleName" | "PKFromOriginTable"
+};
+
+const desicion: DecisionModel = {
+    createIndexDecision: "CreateIndex",
+    indexName: "RoleName"
+};
+
+
+// const collectionOfDecisions2: Record<string, createIndexDecision | indexName> = {
+//     'shouldCreateIndex': createIndexDecision.CreateIndex,
+//     'createIndex': indexName.RoleName,
+//     'createIndex22': indexName.RoleName
+// };
+
+
+function checkIfShouldBeCreatedByRoleNameArray(d: DecisionModel): boolean {
+
+    if (d.createIndexDecision === "CreateIndex") {
+        return d.indexName === "RoleName";
+    }
+
+    return false; // No index, so no need to check further
+
+}
+
+
+
+
+
+
+// ############     KRAJ PRIMERA SA NIZOM OBJEKATA    ##############
+
+
+
+
+
+
+// ############     PRIMER SA AELASTYC TIPOVIMA    ##############
+
 const PKNaming = t.object({
     NoPrefixSufix: t.boolean,
     Prefix: t.boolean,
@@ -31,41 +139,6 @@ const Relationship_0_1_Handling = t.object({
 //     UseSeparateTable: t.boolean
 // }, '0_1_RelationshipHandling', t.schema("0_1_RelationshipHandlingSchema"));
 
-type IRelationship_0_1_HandlingUnion = {
-
-    NoIndex: true,
-    CreateIndex: false,
-} | {
-    NoIndex: false,
-    CreateIndex: {
-        RoleName: true
-        PKFromOriginTable: false
-    } | {
-        RoleName: false
-        PKFromOriginTable: true
-    }| {
-        RoleName: string
-        PKFromOriginTable: true
-    }
-};
-
-
-const alt1: IRelationship_0_1_HandlingUnion = { NoIndex: true, CreateIndex: false };
-const alt2: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: true, PKFromOriginTable: false } };
-const alt3: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: false, PKFromOriginTable: true } };
-
-
-// const a = t.unio
-
-
-
-
-
-
-
-
-
-
 export type IIndexingStrategiesForFK = t.TypeOf<typeof IndexingStrategiesForFK>;
 export type IPKNaming = t.TypeOf<typeof PKNaming>;
 export type IFKNaming = t.TypeOf<typeof FKNaming>;
@@ -78,8 +151,6 @@ const concreteIndexingStrategiesForFK: IIndexingStrategiesForFK = {
     },
     NoIndexes: false
 };
-
-
 
 function checkIfShouldBeCreatedByRoleName(decision: IRelationship_0_1_Handling): boolean {
     return decision.UseFK?.RoleName;
@@ -107,11 +178,11 @@ const Relationship_0_1_Handling2 = t.object({
 export type IIndexingStrategiesForFK2 = t.TypeOf<typeof IndexingStrategiesForFK2>;
 export type IRelationship_0_1_Handling2 = t.TypeOf<typeof Relationship_0_1_Handling2>;
 
-function checkIfShouldBeCreatedByRoleName2(decision: IRelationship_0_1_Handling2): boolean {
+function checkIfShouldBeCreatedByRoleName3(decision: IRelationship_0_1_Handling2): boolean {
     return decision.UseFK?.RoleName;
 }
 
-function checkIfShouldBeCreatedByPK2(decision: IRelationship_0_1_Handling2): boolean {
+function checkIfShouldBeCreatedByPK3(decision: IRelationship_0_1_Handling2): boolean {
     return decision.UseFK?.PKFromOriginTable;
 }
 
@@ -120,3 +191,5 @@ function checkIfShouldBeCreatedByPK2(decision: IRelationship_0_1_Handling2): boo
 //     // jer ovde ne postoji UseSeparateTable ako nije odabrano
 //     return decision.UseSeparateTable;
 // }
+
+// ############     KRAJ PRIMERA SA AELASTYC TIPOVIMA    ##############
