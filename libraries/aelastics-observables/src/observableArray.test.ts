@@ -199,7 +199,7 @@ describe('createObservableArray', () => {
         const proxy = createObservableArray(target, handlers, true);
         proxy.sort();
 
-        expect(handlers.sort).toHaveBeenCalledWith(target);
+        expect(handlers.sort).toHaveBeenCalledWith(target, undefined);
         expect(target).toEqual([1, 2, 3]);
     });
 
