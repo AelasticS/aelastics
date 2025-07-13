@@ -8,8 +8,8 @@ export const createStoreSelector = (useStore: () => Store) => {
 
     return useSyncExternalStore(
       (onStoreChange) => {
-        store.subscribeToStore(onStoreChange); // ✅ Subscribe to store changes
-        return () => store.unsubscribeFromStore(onStoreChange); // ✅ Return an unsubscribe function
+        const unsubscribe = store.subscriptionManager.subscribeToStore(onStoreChange); // ✅ Subscribe to store changes
+        return unsubscribe; // ✅ Return an unsubscribe function
       },
       () => {
         const newSelectedValue = selector(store);
