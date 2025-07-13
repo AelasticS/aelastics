@@ -7,14 +7,21 @@ import { createObjectStoreProvider } from "./createObjectProvider";
 jest.mock("@aelastics/eternal", () => {
   return {
     Store: jest.fn().mockImplementation(() => ({
-      subscribeToStore: jest.fn(),
-      unsubscribeFromStore: jest.fn(),
-      subscribeToObj: jest.fn(),
-      unsubscribeFromObj: jest.fn(),
+      objectManager: {
+        findByUUID: jest.fn((uuid) => {
+          if (uuid === "user-123") {
+            return { uuid: "user-123", name: "Alice" };
+          }
+          return { uuid, name: `Mocked Object for ${uuid}` };
+        }),
+      },
+      subscriptionManager: {
+        subscribeToStore: jest.fn(() => jest.fn()), // Returns unsubscribe function
+        subscribeToObject: jest.fn(() => jest.fn()), // Returns unsubscribe function
+      },
       getState: jest.fn(() => ({
         users: { "user-123": { uuid: "user-123", name: "Alice" } },
       })),
-      getObject: jest.fn((uuid) => ({ uuid, name: `Mocked Object for ${uuid}` })), // ✅ Ensure `getObject()` exists
     })),
   };
 });
@@ -22,7 +29,7 @@ jest.mock("@aelastics/eternal", () => {
 
 describe("ObjectStoreProvider and useObjectSelector", () => {
   it("provides the store and object via context", () => {
-    const mockStore = {} as Store;
+    const mockStore = new (jest.requireMock("@aelastics/eternal").Store)();
     const mockObject = { uuid: "user-123", name: "Alice" };
     const { StoreProvider, useObject, useObjectSelector } = createObjectStoreProvider(mockStore, mockObject);
 
@@ -42,7 +49,7 @@ describe("ObjectStoreProvider and useObjectSelector", () => {
   });
 
   it("correctly selects object data using useObjectSelector", () => {
-    const mockStore = {} as Store;
+    const mockStore = new (jest.requireMock("@aelastics/eternal").Store)();
     const mockObject = { uuid: "user-123", name: "Alice" };
     const { StoreProvider, useObjectSelector } = createObjectStoreProvider(mockStore, mockObject);
 
