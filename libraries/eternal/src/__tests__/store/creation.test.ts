@@ -1,4 +1,4 @@
-import { StoreClass } from "../../store/StoreClass" // Adjust the path if necessary
+import { createStore } from "../../store/createStore" // Adjust the path if necessary
 import { __StoreSuperClass__ } from "../../store/InternalTypes" // Corrected path for __StoreSuperClass__
 import { TypeMeta } from "../../meta/InternalSchema"
 import { State } from "../../store/State"
@@ -6,7 +6,7 @@ import { EventPayload, Result } from "../../events/EventTypes"
 import { getEventPattern } from "../../events/SubscriptionManager"
 
 describe("StoreClass - createObject", () => {
-  let store: StoreClass
+  let store: ReturnType<typeof createStore>
 
   describe("Object Creation with Valid Schema", () => {
     const testTypeMeta: TypeMeta = {
@@ -30,7 +30,7 @@ describe("StoreClass - createObject", () => {
     mockMetaInfo.set("NestedType", nestedTypeMeta)
 
     // Initialize the store with the dynamically created metaInfo
-    store = new StoreClass(mockMetaInfo)
+    store = createStore(mockMetaInfo)
 
     /** Interface for TestType */
     interface TestType {
@@ -55,7 +55,7 @@ describe("StoreClass - createObject", () => {
       }
 
       // Create the object
-      const createdObject = store.create("TestType", initialState)
+      const createdObject = store.objects.create("TestType", initialState)
 
       // Assertions for simple properties
       expect(createdObject.simpleProp).toBe("customValue")
@@ -77,7 +77,7 @@ describe("StoreClass - createObject", () => {
       expect([...createdObject.setProp][0].nestedProp).toBe("setValue1")
 
       // Assertions for default values
-      const nestedObject = store.create<NestedType>("NestedType")
+      const nestedObject = store.objects.create<NestedType>("NestedType")
       expect(nestedObject.nestedProp).toBe("nestedDefault")
     })
 
@@ -88,7 +88,7 @@ describe("StoreClass - createObject", () => {
       }
 
       // Create the object
-      const createdObject = store.create<TestType>("TestType", initialState)
+      const createdObject = store.objects.create<TestType>("TestType", initialState)
 
       // Assertions for array properties
       expect(Array.isArray(createdObject.arrayProp)).toBe(true)
@@ -122,7 +122,7 @@ describe("StoreClass - createObject", () => {
     ])
 
     // Initialize the store once for all tests in this describe block
-    let store: StoreClass = new StoreClass(cyclicMetaInfo)
+    let store: ReturnType<typeof createStore> = createStore(cyclicMetaInfo)
 
     it("should handle cyclic references in initialState", () => {
       // Create an initialState with a cyclic reference
@@ -130,7 +130,7 @@ describe("StoreClass - createObject", () => {
       cyclicObject.selfRef = cyclicObject
 
       // Create the object
-      const createdObject = store.create<CyclicType>("CyclicType", cyclicObject)
+      const createdObject = store.objects.create<CyclicType>("CyclicType", cyclicObject)
 
       // Assertions
       expect(createdObject.selfRef).toBe(createdObject) // Verify cyclic reference
@@ -154,7 +154,7 @@ describe("StoreClass - createObject", () => {
       ])
 
       // Initialize the store once for all tests in this describe block
-      let store: StoreClass = new StoreClass(cyclicMetaInfo)
+      let store: ReturnType<typeof createStore> = createStore(cyclicMetaInfo)
 
       it("should handle cyclic references in initialState", () => {
         // Create an initialState with a cyclic reference
@@ -162,7 +162,7 @@ describe("StoreClass - createObject", () => {
         cyclicObject.selfRef = cyclicObject
 
         // Create the object
-        const createdObject = store.create<CyclicType>("CyclicType", cyclicObject)
+        const createdObject = store.objects.create<CyclicType>("CyclicType", cyclicObject)
 
         // Assertions
         expect(createdObject.selfRef).toBe(createdObject) // Verify cyclic reference
@@ -172,7 +172,7 @@ describe("StoreClass - createObject", () => {
 
     it('should throw an error for unknown types', () => {
         // Attempt to create an object of an unknown type
-        expect(() => store.create('UnknownType')).toThrow('Unknown type: UnknownType. Cannot create object.');
+        expect(() => store.objects.create('UnknownType')).toThrow('Unknown type: UnknownType. Cannot create object.');
       });
   })
 
@@ -213,11 +213,11 @@ describe('Handling Null or Undefined initialState in createObject', () => {
     ]);
   
     // Initialize the store once for all tests in this describe block
-    let store: StoreClass = new StoreClass(nullUndefinedMetaInfo);
+    let store: ReturnType<typeof createStore> = createStore(nullUndefinedMetaInfo);
   
     it('should initialize properties to default values when initialState is undefined', () => {
         // Create an object without providing initialState (undefined)
-        const createdObject = store.create<NullUndefinedTestType>('NullUndefinedTestType');
+        const createdObject = store.objects.create<NullUndefinedTestType>('NullUndefinedTestType');
       
         // Assertions for default values
         expect(createdObject.simpleProp).toBe('defaultString'); // Default value for simpleProp
@@ -232,7 +232,7 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       it('should explicitly set properties to null when initialState is null', () => {
         // Create an object with initialState explicitly set to null
         const initialState = { simpleProp: null } as Partial<NullUndefinedTestType>;
-        const createdObject = store.create<NullUndefinedTestType>('NullUndefinedTestType', initialState);
+        const createdObject = store.objects.create<NullUndefinedTestType>('NullUndefinedTestType', initialState);
       
         // Assertions for null values
         expect(createdObject.simpleProp).not.toBeNull(); // TODO: simpleProp should be explicitly set to null
@@ -272,26 +272,26 @@ describe('Handling Null or Undefined initialState in createObject', () => {
     ]);
   
     // Initialize the store once for all tests in this describe block
-    let store: StoreClass = new StoreClass(invalidMetaInfo);
+    let store: ReturnType<typeof createStore> = createStore(invalidMetaInfo);
   
     it('should throw an error if arrayProp is not an array', () => {
       const invalidState = { arrayProp: 'notAnArray' } as unknown as Partial<InvalidTestType>;
   
-      expect(() => store.create<InvalidTestType>('InvalidTestType', invalidState))
+      expect(() => store.objects.create<InvalidTestType>('InvalidTestType', invalidState))
         .toThrow('Expected an array for property arrayProp, but got string.');
     });
   
     it('should throw an error if mapProp is not a Map', () => {
       const invalidState = { mapProp: 'notAMap' } as unknown as Partial<InvalidTestType>;
   
-      expect(() => store.create<InvalidTestType>('InvalidTestType', invalidState))
+      expect(() => store.objects.create<InvalidTestType>('InvalidTestType', invalidState))
         .toThrow('Expected a Map for property mapProp, but got string.');
     });
   
     it('should throw an error if setProp is not a Set', () => {
       const invalidState = { setProp: 'notASet' } as unknown as Partial<InvalidTestType>;
   
-      expect(() => store.create<InvalidTestType>('InvalidTestType', invalidState))
+      expect(() => store.objects.create<InvalidTestType>('InvalidTestType', invalidState))
         .toThrow('Expected a Set for property setProp, but got string.');
     });
   });
@@ -345,11 +345,11 @@ describe('Handling Null or Undefined initialState in createObject', () => {
     ]);
   
     // Initialize the store once for all tests in this describe block
-    let store: StoreClass = new StoreClass(storeObjectMetaInfo);
+    let store: ReturnType<typeof createStore> = createStore(storeObjectMetaInfo);
   
     it('should directly assign store objects to properties without recreating them', () => {
       // Create a NestedType object in the store
-      const nestedObject = store.create<NestedType>('NestedType', { nestedProp: 'nestedValue' });
+      const nestedObject = store.objects.create<NestedType>('NestedType', { nestedProp: 'nestedValue' });
   
       // Use the existing store object in the initialState
       const initialState = {
@@ -360,7 +360,7 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       };
   
       // Create the object
-      const createdObject = store.create<StoreObjectTestType>('StoreObjectTestType', initialState);
+      const createdObject = store.objects.create<StoreObjectTestType>('StoreObjectTestType', initialState);
   
       // Assertions for simple properties
       expect(createdObject.simpleProp).toBe('customValue');
@@ -404,7 +404,7 @@ describe('Handling Null or Undefined initialState in createObject', () => {
     ]);
   
     // Initialize the store once for all tests in this describe block
-    let store: StoreClass = new StoreClass(eventMetaInfo);
+    let store: ReturnType<typeof createStore> = createStore(eventMetaInfo);
   
     it('should emit events for setting properties during object creation', () => {
       // Mock before.update handler for simpleProp
@@ -426,15 +426,15 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       });
   
       // Subscribe to events for simpleProp
-      store.subscriptionManager.subscribe(beforeUpdateHandler, "before", "update", "EventTestType", "simpleProp");
-      store.subscriptionManager.subscribe(afterUpdateHandler, "after", "update", "EventTestType", "simpleProp");
+      store.events.subscribe(beforeUpdateHandler, "before", "update", "EventTestType", "simpleProp");
+      store.events.subscribe(afterUpdateHandler, "after", "update", "EventTestType", "simpleProp");
   
       // Perform the createObject operation
       const initialState = {
         simpleProp: "customValue",
         arrayProp: ["value1", "value2"],
       };
-      const createdObject = store.create<EventTestType>("EventTestType", initialState);
+      const createdObject = store.objects.create<EventTestType>("EventTestType", initialState);
   
       // Verify that the handlers were called for simpleProp
       expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);

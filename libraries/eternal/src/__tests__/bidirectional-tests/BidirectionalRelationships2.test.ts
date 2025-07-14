@@ -63,22 +63,22 @@ describe("Bidirectional Relationships & Cyclic References", () => {
   }
 
   test("Bidirectional relationships should be correctly maintained", () => {
-    let parent = store.objectManager.create<Parent>("Parent") as Parent
+    let parent = store.objects.create<Parent>("Parent") as Parent
 
-    let child1 = store.objectManager.create<Child>("Child") as Child
+    let child1 = store.objects.create<Child>("Child") as Child
 
-    let child2 = store.objectManager.create<Child>("Child") as Child
+    let child2 = store.objects.create<Child>("Child") as Child
 
-    store.subscriptionManager.subscribeToObject(parent, (p) => {
+    store.events.subscribeToObject(parent, (p) => {
       parent = p as Parent
     })
-    store.subscriptionManager.subscribeToObject(child1, (c) => {
+    store.events.subscribeToObject(child1, (c) => {
       child1 = c as Child
     })
-    store.subscriptionManager.subscribeToObject(child2, (c) => {
+    store.events.subscribeToObject(child2, (c) => {
       child2 = c as Child
     })
-    store.objectManager.update(() => {
+    store.objects.update(() => {
       parent.name = "Root"
       child1.name = "Child 1"
       child2.name = "Child 2"
@@ -86,9 +86,9 @@ describe("Bidirectional Relationships & Cyclic References", () => {
       parent.children.push(child2)
     })
 
-    parent = store.objectManager.findByUUID((parent as unknown as StoreObject)[uuid]) as Parent
-    child1 = store.objectManager.findByUUID((child1 as unknown as StoreObject)[uuid]) as Child
-    child2 = store.objectManager.findByUUID((child2 as unknown as StoreObject)[uuid]) as Child
+    parent = store.objects.findByUUID((parent as unknown as StoreObject)[uuid]) as Parent
+    child1 = store.objects.findByUUID((child1 as unknown as StoreObject)[uuid]) as Child
+    child2 = store.objects.findByUUID((child2 as unknown as StoreObject)[uuid]) as Child
 
     expect(parent.children).toHaveLength(2)
     expect(child1.parent).toBe(parent)
@@ -96,33 +96,33 @@ describe("Bidirectional Relationships & Cyclic References", () => {
   })
 
   test("Updating parent-child relationship should not cause infinite loops", () => {
-    let parent = store.objectManager.create<Parent>("Parent") as Parent
+    let parent = store.objects.create<Parent>("Parent") as Parent
 
-    let child = store.objectManager.create<Child>("Child") as Child
+    let child = store.objects.create<Child>("Child") as Child
 
-    store.objectManager.update(() => {
+    store.objects.update(() => {
       parent.name = "Root"
       child.name = "Child 1"
       parent.children.push(child)
     })
 
-    parent = store.objectManager.findByUUID((parent as unknown as StoreObject)[uuid]) as Parent
-    child = store.objectManager.findByUUID((child as unknown as StoreObject)[uuid]) as Child
+    parent = store.objects.findByUUID((parent as unknown as StoreObject)[uuid]) as Parent
+    child = store.objects.findByUUID((child as unknown as StoreObject)[uuid]) as Child
 
     expect(parent.children[0]).toBe(child)
     expect(child.parent).toBe(parent)
 
     // Update child's parent to a new parent
-    let newParent = store.objectManager.create<Parent>("Parent") as Parent
+    let newParent = store.objects.create<Parent>("Parent") as Parent
 
-    store.objectManager.update(() => {
+    store.objects.update(() => {
       newParent.name = "New Root"
       child.parent = newParent
     })
 
-    parent = store.objectManager.findByUUID((parent as unknown as StoreObject)[uuid]) as Parent
-    child = store.objectManager.findByUUID((child as unknown as StoreObject)[uuid]) as Child
-    newParent = store.objectManager.findByUUID((newParent as unknown as StoreObject)[uuid]) as Parent
+    parent = store.objects.findByUUID((parent as unknown as StoreObject)[uuid]) as Parent
+    child = store.objects.findByUUID((child as unknown as StoreObject)[uuid]) as Child
+    newParent = store.objects.findByUUID((newParent as unknown as StoreObject)[uuid]) as Parent
 
     expect(child.parent).toBe(newParent)
     expect(newParent.children[0]).toBe(child)
@@ -130,20 +130,20 @@ describe("Bidirectional Relationships & Cyclic References", () => {
   })
 
   test("Cyclic relationships should not cause errors", () => {
-    let parent = store.objectManager.create<Parent>("Parent") as Parent
+    let parent = store.objects.create<Parent>("Parent") as Parent
 
-    let child = store.objectManager.create<Child>("Child") as Child
+    let child = store.objects.create<Child>("Child") as Child
 
     // Introduce a cycle: child becomes its own grandparent
-    store.objectManager.update(() => {
+    store.objects.update(() => {
       parent.name = "Root"
       child.name = "Child 1"
       parent.children.push(child)
       child.parent = parent
     })
 
-    parent = store.objectManager.findByUUID((parent as unknown as StoreObject)[uuid]) as Parent
-    child = store.objectManager.findByUUID((child as unknown as StoreObject)[uuid]) as Child
+    parent = store.objects.findByUUID((parent as unknown as StoreObject)[uuid]) as Parent
+    child = store.objects.findByUUID((child as unknown as StoreObject)[uuid]) as Child
 
     expect(parent.children[0]).toBe(child)
     expect(child.parent).toBe(parent)

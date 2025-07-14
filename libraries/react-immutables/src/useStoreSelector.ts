@@ -8,7 +8,7 @@ export const createStoreSelector = (useStore: () => Store) => {
 
     return useSyncExternalStore(
       (onStoreChange) => {
-        const unsubscribe = store.subscriptionManager.subscribeToStore(onStoreChange); // ✅ Subscribe to store changes
+        const unsubscribe = store.events.subscribeToStore(onStoreChange); // ✅ Subscribe to store changes
         return unsubscribe; // ✅ Return an unsubscribe function
       },
       () => {

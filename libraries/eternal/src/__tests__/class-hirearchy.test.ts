@@ -1,4 +1,4 @@
-import { StoreClass } from '../store/StoreClass';
+import { createStore } from '../store/createStore';
 import { TypeMeta } from '../meta/InternalSchema';
 import { StoreObject, uuid } from '../store/InternalTypes';
 
@@ -35,23 +35,23 @@ const metaInfo = new Map<string, TypeMeta>([
 ]);
 
 describe('EternalStore Dynamic Class Creation', () => {
-  let store: StoreClass;
+  let store: ReturnType<typeof createStore>;
 
   beforeAll(() => {
     // Initialize EternalStore with metaInfo
-    store = new StoreClass(metaInfo);
+    store = createStore(metaInfo);
   });
 
   it('should dynamically create a hierarchy of classes', () => {
     // Create objects of each type
-    const objA = store.create<StoreObject>('TypeA');
-    const objB = store.create<StoreObject>('TypeB');
-    const objC = store.create<StoreObject>('TypeC');
+    const objA = store.objects.create<StoreObject>('TypeA');
+    const objB = store.objects.create<StoreObject>('TypeB');
+    const objC = store.objects.create<StoreObject>('TypeC');
 
     // Check if objects are instances of their respective classes
-    expect(objA).toBeInstanceOf(store.getClassByName('TypeA'));
-    expect(objB).toBeInstanceOf(store.getClassByName('TypeB'));
-    expect(objC).toBeInstanceOf(store.getClassByName('TypeC'));
+    expect(objA).toBeInstanceOf(store.getEternalStore().getClassByName('TypeA'));
+    expect(objB).toBeInstanceOf(store.getEternalStore().getClassByName('TypeB'));
+    expect(objC).toBeInstanceOf(store.getEternalStore().getClassByName('TypeC'));
 
     // Check if objects have the correct properties
     expect(objA).toHaveProperty('propA');
@@ -69,8 +69,8 @@ describe('EternalStore Dynamic Class Creation', () => {
 
   it('should clone objects correctly in a hierarchy of classes', () => {
     // Create an object of type 'TypeC'
-    let objC = store.create<StoreObject>('TypeC');
-    objC = store.update((o) => {
+    let objC = store.objects.create<StoreObject>('TypeC');
+    objC = store.objects.update((o) => {
       o.propA = 'valueA';
       o.propB = 42;
       o.propC = true;
@@ -82,7 +82,7 @@ describe('EternalStore Dynamic Class Creation', () => {
     const clonedObjC = objC.clone();
 
     // Check if the cloned object is an instance of the correct class
-    expect(clonedObjC).toBeInstanceOf(store.getClassByName('TypeC'));
+    expect(clonedObjC).toBeInstanceOf(store.getEternalStore().getClassByName('TypeC'));
 
     // Check if the cloned object has the same properties as the original
     expect(clonedObjC).toHaveProperty('propA', 'valueA');

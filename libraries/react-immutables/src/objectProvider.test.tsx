@@ -7,7 +7,7 @@ import { createObjectStoreProvider } from "./createObjectProvider";
 jest.mock("@aelastics/eternal", () => {
   return {
     Store: jest.fn().mockImplementation(() => ({
-      objectManager: {
+      objects: {
         findByUUID: jest.fn((uuid) => {
           if (uuid === "user-123") {
             return { uuid: "user-123", name: "Alice" };
@@ -15,7 +15,7 @@ jest.mock("@aelastics/eternal", () => {
           return { uuid, name: `Mocked Object for ${uuid}` };
         }),
       },
-      subscriptionManager: {
+      events: {
         subscribeToStore: jest.fn(() => jest.fn()), // Returns unsubscribe function
         subscribeToObject: jest.fn(() => jest.fn()), // Returns unsubscribe function
       },

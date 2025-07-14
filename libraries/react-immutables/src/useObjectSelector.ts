@@ -10,22 +10,22 @@ export const createObjectSelector = (useStore: () => Store) => {
       (onObjectChange) => {
         const obj =
           typeof objectOrUuid === "string"
-            ? store.objectManager.findByUUID(objectOrUuid)
-            : store.objectManager.findByUUID(objectOrUuid.uuid);
+            ? store.objects.findByUUID(objectOrUuid)
+            : store.objects.findByUUID(objectOrUuid.uuid);
 
         if (!obj) {
           console.warn("useObjectSelector: Object not found in store.");
           return () => {}; // Return a no-op function if object is missing
         }
 
-        const unsubscribe = store.subscriptionManager.subscribeToObject(obj, onObjectChange); // ✅ Subscribe to object changes
+        const unsubscribe = store.events.subscribeToObject(obj, onObjectChange); // ✅ Subscribe to object changes
         return unsubscribe; // ✅ Unsubscribe on cleanup
       },
       () => {
         const obj =
           typeof objectOrUuid === "string"
-            ? store.objectManager.findByUUID(objectOrUuid)
-            : store.objectManager.findByUUID(objectOrUuid.uuid);
+            ? store.objects.findByUUID(objectOrUuid)
+            : store.objects.findByUUID(objectOrUuid.uuid);
 
         if (!obj) {
           return prevSelectedValue.current || ({} as T); // Return previous or empty state
@@ -40,7 +40,7 @@ export const createObjectSelector = (useStore: () => Store) => {
         prevSelectedValue.current = newSelectedValue;
         return newSelectedValue;
       },
-      () => selector(store.objectManager.findByUUID(objectOrUuid.uuid) || {}) // ✅ SSR hydration
+      () => selector(store.objects.findByUUID(objectOrUuid.uuid) || {}) // ✅ SSR hydration
     );
   };
 };

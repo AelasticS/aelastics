@@ -6,7 +6,7 @@ export interface Result {
 export interface IObjects {
   // Object lifecycle
   create<T>(type: string, initialState?: Partial<T>): T;
-  update<T>(recipe: (obj: T) => void, obj: T): T;
+  update<T>(recipe: (obj: T) => void, obj?: T): T;
   delete<T>(obj: T): void;
   
   // Object retrieval

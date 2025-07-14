@@ -1,17 +1,17 @@
-import { StoreClass } from '../store/StoreClass';
+import { createStore } from '../store/createStore';
 import {UserSchema} from './exampleTypeSchema';
 
 describe('EternalStore', () => {
-  let store: StoreClass;
+  let store: ReturnType<typeof createStore>;
 
   beforeEach(() => {
-    store = new StoreClass(UserSchema.types);
+    store = createStore(UserSchema.types);
   });
 
   it('should create a dynamic class with the correct name', () => {
     const typeMeta = UserSchema.types.get('User')!;
 
-    const DynamicClass = store['createDynamicClass']( typeMeta, store);
+    const DynamicClass = store.getEternalStore()['createDynamicClass']( typeMeta, store.getEternalStore());
     const instance = new DynamicClass();
 
     expect(instance.constructor.name).toBe('User');
