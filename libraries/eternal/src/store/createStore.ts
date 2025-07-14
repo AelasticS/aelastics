@@ -1,8 +1,7 @@
-import { EventPayload, Result } from "../events/EventTypes";
-import { Timing, Operation, Type, Property } from "../interfaces/ISubscriptionManager";
 import { TypeMeta, TypeSchema } from "../meta/InternalSchema";
 import { StoreClass } from "./StoreClass";
 import { IStore } from "../interfaces/IStore";
+import { ObjectsAdapter, HistoryAdapter, DataAdapter, EventsAdapter, RegistryAdapterForStore } from "./InterfaceAdapters";
 
 
 export function createStore(
@@ -19,32 +18,36 @@ export function createStore(
   const types: Map<string, TypeMeta> = (metaInfo as TypeSchema).types || (metaInfo as Map<string, TypeMeta>);
   const store = new StoreClass(types);
 
+  // Create adapters for each interface
+  const objectsAdapter = new ObjectsAdapter(store);
+  const historyAdapter = new HistoryAdapter(store);
+  const dataAdapter = new DataAdapter(store);
+  const eventsAdapter = new EventsAdapter(store);
+  const registryAdapterForStore = new RegistryAdapterForStore(store);
+
   const publicAPI: IStore = {
-    // createObject: (type) => store.create(type), 
-    // updateObject: <T extends object>(recipe: (obj: T ) => void, obj: T) => store.update(recipe, obj),
-    // updateStore: <R>(recipe: () => R) => store.update(recipe) as R,
-    // findObjectByUUID: (uuid) => store.objectManager.findByUUID(uuid),
-    isInUpdateMode: () => store.isInUpdateMode(),
-    makeRegular: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
-    undo: () => store.undo(),
-    redo: () => store.redo(),
-    fromState: (stateIndex, target) => store.fromState(stateIndex, target),
-    makeEternal: <T>(obj: T) => store.isInUpdateMode() as T, // TODO dummy implementation
+    // Namespace accessors
+    get objects() { return objectsAdapter; },
+    get history() { return historyAdapter; },
+    get registry() { return registryAdapterForStore.getRegistry(); },
+    get data() { return dataAdapter; },
+    get events() { return eventsAdapter; },
 
-    // subscribeToObject: (obj, callback) => store.subscriptionManager.subscribeToObject(obj, callback),
-    // subscribeToStore: (callback) => store.subscriptionManager.subscribeToStore(callback),
+    // Store-level operations
+    import: (storeStateJson: string) => {
+      // TODO: Implement full store import
+      store.deserialize(storeStateJson);
+    },
+    export: () => {
+      // TODO: Implement full store export
+      return JSON.stringify({ message: "Full store export not yet implemented" });
+    },
 
-/*     subscribe: (
-      listener: (event: EventPayload) => Result,
-      timing: Timing,
-      operation: Operation,
-      type: Type,
-      property?: Property
-    ) => store.subscriptionManager.subscribe(listener, timing, operation, type, property), */
+    // Utility methods
+    makeEternal: <T>(obj: T) => obj, // TODO: Implement proper makeEternal
+    makeRegular: <T>(obj: T) => obj, // TODO: Implement proper makeRegular
     getEternalStore: () => store,
-
-    objectManager: store.objectManager,
-    subscriptionManager: store.subscriptionManager,
+    validate: (obj: any) => ({ success: true }) // TODO: Implement validation
   };
 
   return options.freeze ? Object.freeze(publicAPI) : publicAPI;
