@@ -14,77 +14,78 @@ import {
     PropertyDomain, TypeObjectReference, TypeArray, ArrayElementType,
     TypeEntity,
     TypeUnion,
+    UnionElement,
 } from "../../types-metamodel/types-components"
 
 import { Context } from "../../jsx/context"
 import { ModelStore, P } from "../../index"
+import { IIssue, IOption, Issue } from "../1.generic-decision-model/generic-decision-meta.model"
+import { IModelElement } from "generic-metamodel"
+import { IDecisionBindingElement } from "../2.decision-binding-model/decision-binding-meta.model"
 
 const store = new ModelStore();
 
-export const typesForDecisionModel = (condition1: boolean): Element<t.ITypeModel> => (
+export const typeForDecisionModel = (store: ModelStore, element: IModelElement, bindings: IDecisionBindingElement[]): Element<t.ITypeModel> => {
 
-    <TypeModel name="AelasticsTypes" store={store}>
-        <TypeUnion name="PK Naming convention Union" elements={[
-            <TypeObject name="PK Naming convention No prefix or suffix">
-                <Property name="No prefix or suffix">
-                    <PropertyDomain $refByName="string" />
-                </Property>
-            </TypeObject>,
-            <TypeObject name="PK Naming convention Add prefix">
-                <Property name="Add prefix">
-                    <PropertyDomain $refByName="string" />
-                </Property>
-            </TypeObject>,
-            <TypeObject name="PK Naming convention Add suffix">
-                <Property name="Add suffix">
-                    <PropertyDomain $refByName="string" />
-                </Property>
-            </TypeObject>,
-        ]} />
+    const definedProperties: Map<string, boolean> = new Map(); // Map<propertyName, isOptional>
 
-        <TypeUnion name="FK Naming convention Union" elements={[
-            <TypeObject name="FK Naming convention ByRole">
-                <Property name="ByRole">
-                    <PropertyDomain $refByName="string" />
-                </Property>
-            </TypeObject>,
-            <TypeObject name="FK Naming convention ByPK">
-                <Property name="ByPK">
-                    <PropertyDomain $refByName="string" />
-                </Property>
-            </TypeObject>,
-        ]} />
 
-        <TypeUnion name="Foreign key or Separate Table Union" elements={[
-            <TypeObject name="Foreign key">
-                <Property name="Foreign key">
-                    <PropertyDomain $refByName="string" />
-                </Property>
-            </TypeObject>,
-            <TypeObject name="Separate Table">
-                <Property name="Separate Table">
-                    <PropertyDomain $refByName="string" />
-                </Property>
-            </TypeObject>,
-        ]} />
+    return <TypeModel name="AelasticsTypes" store={store}>
+        <TypeObject name={`${element.name}Type`}>
+            {
+                bindings.flatMap((binding: IDecisionBindingElement) => {
+                    const hasCondition: boolean = binding.condition !== undefined && binding.condition !== "";
+
+                    return binding.decisionIssues.map((issue: IIssue) => {
+                        if (!definedProperties.has(issue.name)) {
+                            definedProperties.set(issue.name, hasCondition);
+
+                            var propertyType: Element<t.IType> = getAllVariationsType(issue);
+                            if (hasCondition) {
+                                propertyType.props.name = `${issue.name}Base`;
+                                propertyType =
+                                    <TypeOptional name={`${issue.name}`}>
+                                        {propertyType}
+                                        <TypeOfOptional $refByName={propertyType.props.name} />;
+                                    </TypeOptional>;
+                            }
+
+                            return (
+                                <Property
+                                    name={issue.name}
+                                    description={issue.description}
+                                >
+                                    {propertyType}
+                                    <PropertyDomain $refByName={propertyType.props.name} />
+                                </Property>
+                            );
+
+
+                        } else {
+                            console.warn(`Property ${issue.name} is already defined for ${element.name}Type`);
+                        }
+                    });
 
 
 
-        <TypeObject name={`Relationship_${condition1}`}>
-            <Property name="PK Naming convention">
-                <PropertyDomain $refByName="PK Naming convention Union" />
-            </Property>
-
-            <Property name="FK Naming convention">
-                <PropertyDomain $refByName="PK Naming convention Union" />
-            </Property>
-
-            {condition1 && (
-                <Property name="Foreign key or Separate Table">
-                    <PropertyDomain $refByName="Foreign key or Separate Table Union" />
-                </Property>
-            )}
-
+                })
+            }
         </TypeObject>
+
+
     </TypeModel >
-);
+};
+
+function getAllVariationsType(issue: IIssue): Element<t.IType> {
+    return <TypeUnion name={`${issue.name}Union`}>
+        {issue.possibleOptions.map((option: IOption) => {
+            return <UnionElement>
+                <PropertyDomain $refByName="false" />
+                <PropertyDomain $refByName="true" />
+                {/* <Type name="SomeType"></Type> */}
+                <PropertyDomain $refByName="SomeType" />
+            </UnionElement>
+        })}
+
+    </TypeUnion>;
+};

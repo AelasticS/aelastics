@@ -47,6 +47,10 @@ export const TypeUnion: Template<t.IUnion> = (props) => {
   return new Element(t.Union, props, "types")
 }
 
+export const UnionElement: Template<t.IProperty> = (props) => {
+  return new Element(t.Property, props, "elements")
+}
+
 export const TypeOptional: Template<t.IOptional> = (props) => {
   return new Element(t.Optional, props, "types")
 }

@@ -4,32 +4,32 @@ import * as t from "aelastics-types"
 
 // ############     PRIMER SA UNION OBJEKTIMA    ##############
 
-type IRelationship_0_1_HandlingUnion = {
+// type IRelationship_0_1_HandlingUnion = {
 
-    NoIndex: true,
-    CreateIndex: false,
-} | {
-    NoIndex: false,
-    CreateIndex: {
-        Issue1: {
-            RoleName: {
+//     NoIndex: true,
+//     CreateIndex: false,
+// } | {
+//     NoIndex: false,
+//     CreateIndex: {
+//         Issue1: {
+//             RoleName: {
 
-            }
-            PKFromOriginTable: false
-        },
-        Issue2: {
-            RoleName: false
-            PKFromOriginTable: true
-        }
+//             }
+//             PKFromOriginTable: false
+//         },
+//         Issue2: {
+//             RoleName: false
+//             PKFromOriginTable: true
+//         }
 
-    } | {
-        RoleName: false
-        PKFromOriginTable: true
-    } | {
-        RoleName: string
-        PKFromOriginTable: false
-    }
-};
+//     } | {
+//         RoleName: false
+//         PKFromOriginTable: true
+//     } | {
+//         RoleName: string
+//         PKFromOriginTable: false
+//     }
+// };
 
 type IRelationship = {
     ForeignKeyOrSeparateTable: {
@@ -74,6 +74,14 @@ type IRelationship = {
     } | {
         ByRoleName: false,
         ByPKFromOriginTable: true
+    }
+} | { // Object bellow is the same as above. This is just to check if the type is correct
+    FKNamingConvention: {
+        ByRoleName: true,
+        ByPKFromOriginTable: false
+    } | {
+        ByRoleName: false,
+        ByPKFromOriginTable: true
     },
     PKNamingConvention: {
         AddPrefix: true,
@@ -90,6 +98,105 @@ type IRelationship = {
     }
 };
 
+const IrelObject1: IRelationship = {
+    ForeignKeyOrSeparateTable: {
+        ForeignKey: true,
+        SeparateTable: false
+    },
+    FKNamingConvention: {
+        ByRoleName: true,
+        ByPKFromOriginTable: false
+    },
+    PKNamingConvention: {
+        AddPrefix: true,
+        AddSufix: false,
+        NoPrefixSufix: false
+    }
+};
+
+const IrelObject2: IRelationship = {
+    FKNamingConvention: {
+        ByRoleName: true,
+        ByPKFromOriginTable: false
+    },
+    PKNamingConvention: {
+        AddPrefix: true,
+        AddSufix: false,
+        NoPrefixSufix: false
+    }
+};
+
+function checkIRelationType(decision: IRelationship): boolean {
+
+    // ################## WRONG EXAMPLE ##################
+    //  return decision.ForeignKeyOrSeparateTable?.ForeignKey === true &&
+    //         decision.FKNamingConvention?.ByRoleName === true &&
+    //         decision.PKNamingConvention?.AddPrefix === true;
+
+
+    // ################## CORRECT EXAMPLE ##################
+    return (
+        'ForeignKeyOrSeparateTable' in decision &&
+        (decision as any).ForeignKeyOrSeparateTable?.ForeignKey === true &&
+        decision.FKNamingConvention?.ByRoleName === true &&
+        decision.PKNamingConvention?.AddPrefix === true
+    );
+
+
+    // ################## WRONG EXAMPLE ##################
+    // return decision.ForeignKeyOrSeparateTable?.ForeignKey === true;
+
+}
+
+type IRelationship2 = {
+    ForeignKeyOrSeparateTable?: {
+        ForeignKey: true,
+        SeparateTable: false
+    } | {
+        ForeignKey: false,
+        SeparateTable: {
+            NamingConventionForTable: {
+                ByRoleName: true,
+                ByEntitiesName: false
+            } | {
+                ByRoleName: false,
+                ByEntitiesName: true
+            }
+        }
+    },
+    FKNamingConvention: {
+        ByRoleName: true,
+        ByPKFromOriginTable: false
+    } | {
+        ByRoleName: false,
+        ByPKFromOriginTable: true
+    },
+    PKNamingConvention: {
+        AddPrefix: true,
+        AddSufix: false,
+        NoPrefixSufix: false
+    } | {
+        AddPrefix: false,
+        AddSufix: false,
+        NoPrefixSufix: true
+    } | {
+        AddPrefix: false,
+        AddSufix: true,
+        NoPrefixSufix: false
+    }
+};
+
+function checkIRelationType2(decision: IRelationship2): boolean {
+
+    return decision.ForeignKeyOrSeparateTable?.ForeignKey === true &&
+        decision.FKNamingConvention?.ByRoleName === true &&
+        decision.PKNamingConvention?.AddPrefix === true;
+
+}
+
+
+
+
 /*
 
 const fnc Relat = (el: IRelat) => {
@@ -100,28 +207,28 @@ return <IRelationship_0_1_HandlingUnion>
 
 */
 
-const alt1: IRelationship_0_1_HandlingUnion = { NoIndex: true, CreateIndex: false };
-const alt2: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: 'rola', PKFromOriginTable: false } };
-const alt3: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: false, PKFromOriginTable: true } };
+// const alt1: IRelationship_0_1_HandlingUnion = { NoIndex: true, CreateIndex: false };
+// const alt2: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: 'rola', PKFromOriginTable: false } };
+// const alt3: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: false, PKFromOriginTable: true } };
 
 
-function checkIfShouldBeCreatedByRoleName2(decision: IRelationship_0_1_HandlingUnion): boolean {
-    return (
-        decision.CreateIndex !== false &&
-        typeof decision.CreateIndex === "object" &&
-        "RoleName" in decision.CreateIndex &&
-        decision.CreateIndex.RoleName === false
-    );
-}
+// function checkIfShouldBeCreatedByRoleName2(decision: IRelationship_0_1_HandlingUnion): boolean {
+//     return (
+//         decision.CreateIndex !== false &&
+//         typeof decision.CreateIndex === "object" &&
+//         "RoleName" in decision.CreateIndex &&
+//         decision.CreateIndex.RoleName === false
+//     );
+// }
 
-function checkIfShouldBeCreatedByPK2(decision: IRelationship_0_1_HandlingUnion): boolean {
-    return (
-        decision.CreateIndex !== false &&
-        typeof decision.CreateIndex === "object" &&
-        "PKFromOriginTable" in decision.CreateIndex &&
-        decision.CreateIndex.PKFromOriginTable === true
-    );
-}
+// function checkIfShouldBeCreatedByPK2(decision: IRelationship_0_1_HandlingUnion): boolean {
+//     return (
+//         decision.CreateIndex !== false &&
+//         typeof decision.CreateIndex === "object" &&
+//         "PKFromOriginTable" in decision.CreateIndex &&
+//         decision.CreateIndex.PKFromOriginTable === true
+//     );
+// }
 
 // ############     KRAJ PRIMERA SA UNION OBJEKTIMA    ##############
 
