@@ -34,7 +34,7 @@ export const Elem: Template<g.IModelElement> = (props) => {
 }
 
 export const ElemWithText: Template<g.IModelElement> = (props) => {
-    const connInfo:ConnectionInfo = defaultConnectionInfo(undefined)
+    const connInfo: ConnectionInfo = defaultConnectionInfo(undefined)
     connInfo.textContentAllowed = true
     connInfo.textPropName = "label"
     return new Element(g.ModelElement, props, connInfo)
@@ -42,7 +42,7 @@ export const ElemWithText: Template<g.IModelElement> = (props) => {
 
 export type IModelProps = WithRefProps<g.IModel> & { store: ModelStore }
 
-export const Model: CpxTemplate< IModelProps, g.IModel> = (props) => {
+export const Model: CpxTemplate<IModelProps, g.IModel> = (props) => {
     return new Element(g.Model, props, undefined)
 }
 
@@ -64,7 +64,7 @@ describe("Test jsx", () => {
         }
         ))
     })
-    
+
     it("should allow an element to have textual content if specifed so", () => {
         let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <ElemWithText name='el with text'>
@@ -75,7 +75,7 @@ describe("Test jsx", () => {
         expect(m).toEqual(expect.objectContaining({
             name: 'model1',
             elements: expect.arrayContaining(
-                [expect.objectContaining({ name: "elwithtext", label:"some text"})]
+                [expect.objectContaining({ name: "elwithtext", label: "some text" })]
             )
         }
         ))
@@ -87,7 +87,7 @@ describe("Test jsx", () => {
                 some text
             </Elem>
         </Model>
-        expect(()=>e.render(new Context())).toThrow(Error)
+        expect(() => e.render(new Context())).toThrow(Error)
     })
     it("should allow an element to have textual content if specifed so", () => {
         let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
@@ -106,7 +106,7 @@ describe("Test jsx", () => {
     })
 
     it("should create a model with 3 dynamic elements using model template", () => {
-        let ModelCpx:CpxTemplate<{ m: string, e: string, n: number }, g.IModel> = (p) => {
+        let ModelCpx: CpxTemplate<{ m: string, e: string, n: number }, g.IModel> = (p) => {
             return (
                 <Model name={p.m} store={new ModelStore()}>
                     {

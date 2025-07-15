@@ -10,32 +10,35 @@ export const SelectedOption = t.subtype(
         assumptions: t.string,
         justification: t.string,
         consequences: t.string,
-        relatedIssues: t.arrayOf(t.link(DecisionModel_TypeSchema, 'Issue'))
+        ref: gdm.Option,
+        newIssues: t.arrayOf(t.link(DecisionModel_TypeSchema, 'SelectedOption')), // todo selected options for new issues
     },
     'SelectedOption',
     DecisionModel_TypeSchema
 );
 
-export const Issue = t.subtype(
+export const DecisionForElement = t.subtype(
     ModelElement,
     {
-        ref: gdm.Issue,
-        selectedOption: SelectedOption
+        elementId: t.string,
+        selectedOptions: t.arrayOf(SelectedOption),
     },
-    'Issue',
+    'DecisionForElement',
     DecisionModel_TypeSchema
 );
 
 export const DecisionModel = t.subtype(
     Model,
     {
-        issues: t.arrayOf(Issue),
+        decisions: t.arrayOf(DecisionForElement),
+        relatedModel: Model,
     },
     'DecisionModel',
     DecisionModel_TypeSchema
 );
 
+
 export type IDecisionModel = t.TypeOf<typeof DecisionModel>;
 export type ISelectedOption = t.TypeOf<typeof SelectedOption>;
-export type IIssue = t.TypeOf<typeof Issue>;
+export type IDecisionForElement = t.TypeOf<typeof DecisionForElement>;
 

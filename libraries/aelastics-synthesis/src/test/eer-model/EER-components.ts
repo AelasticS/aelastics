@@ -22,6 +22,13 @@ export const Kernel: Template<e.IKernel> = (props) => {
   );
 };
 
+export const ERConcept: Template<e.IERConcept> = (props) => {
+  // If the props contain a $refByName, we assume it's a reference to an existing ERConcept
+  // if (props.$refByName) {
+  return new Element(e.ERConcept, props, "elements");
+  // }
+};
+
 export const Weak: Template<e.IWeak> = (props) => {
   return new Element(
     e.Weak,

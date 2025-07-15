@@ -45,7 +45,7 @@ export const Object = t.subtype(
 )
 
 export const ObjectReference = t.subtype(
-  Object, // TODO shuld be Type?
+  Object,
   {
     referencedType: Object,
   },
@@ -99,6 +99,8 @@ export const Union = t.subtype(
   "Union",
   TypesMM_TypeSchema,
 )
+
+// TODO: add literal type?
 
 export const InverseProperty = t.subtype(
   ModelElement,

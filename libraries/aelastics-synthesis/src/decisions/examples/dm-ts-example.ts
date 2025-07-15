@@ -11,29 +11,71 @@ type IRelationship_0_1_HandlingUnion = {
 } | {
     NoIndex: false,
     CreateIndex: {
-        RoleName: true
-        PKFromOriginTable: false
+        Issue1: {
+            RoleName: {
+
+            }
+            PKFromOriginTable: false
+        },
+        Issue2: {
+            RoleName: false
+            PKFromOriginTable: true
+        }
+
     } | {
         RoleName: false
         PKFromOriginTable: true
     } | {
         RoleName: string
-        PKFromOriginTable: true
+        PKFromOriginTable: false
     }
 };
 
+type IRelationship = {
+    ForeignKeyOrSeparateTable: true,
+    FKNamingConvention: "ByRoleName" | "ByPKFromOriginTable",
+    PKNamingConvention: "AddPrefix" | "AddSufix" | "NoPrefixSufix"
+} |
+{
+    FKNamingConvention: "ByRoleName" | "ByPKFromOriginTable",
+    PKNamingConvention: "AddPrefix" | "AddSufix" | "NoPrefixSufix"
+};
+
+/*
+
+const fnc Relat = (el: IRelat) => {
+return <IRelationship_0_1_HandlingUnion>
+    <NoIndex>true</NoIndex>
+    {uslov1(el) ? <CreateIndex>false</CreateIndex> : null }    
+<IRelationship_0_1_HandlingUnion/>}
+
+
+
+
+
+*/
+
 const alt1: IRelationship_0_1_HandlingUnion = { NoIndex: true, CreateIndex: false };
-const alt2: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: true, PKFromOriginTable: false } };
+const alt2: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: 'rola', PKFromOriginTable: false } };
 const alt3: IRelationship_0_1_HandlingUnion = { NoIndex: false, CreateIndex: { RoleName: false, PKFromOriginTable: true } };
 
 
 function checkIfShouldBeCreatedByRoleName2(decision: IRelationship_0_1_HandlingUnion): boolean {
-    return decision.CreateIndex !== false && decision.CreateIndex.RoleName === true;
-
+    return (
+        decision.CreateIndex !== false &&
+        typeof decision.CreateIndex === "object" &&
+        "RoleName" in decision.CreateIndex &&
+        decision.CreateIndex.RoleName === false
+    );
 }
 
 function checkIfShouldBeCreatedByPK2(decision: IRelationship_0_1_HandlingUnion): boolean {
-    return decision.CreateIndex !== false && decision.CreateIndex.PKFromOriginTable === true;
+    return (
+        decision.CreateIndex !== false &&
+        typeof decision.CreateIndex === "object" &&
+        "PKFromOriginTable" in decision.CreateIndex &&
+        decision.CreateIndex.PKFromOriginTable === true
+    );
 }
 
 // ############     KRAJ PRIMERA SA UNION OBJEKTIMA    ##############
@@ -72,6 +114,8 @@ type DecisionModel = {
     indexName: "RoleName" | "PKFromOriginTable"
 };
 
+type DecisionModel2 = "CreateIndex"
+
 const desicion: DecisionModel = {
     createIndexDecision: "CreateIndex",
     indexName: "RoleName"
@@ -87,9 +131,11 @@ const desicion: DecisionModel = {
 
 function checkIfShouldBeCreatedByRoleNameArray(d: DecisionModel): boolean {
 
-    if (d.createIndexDecision === "CreateIndex") {
+    if (d.createIndexDecision === "CreateIndex") { // if (d.CreateIndex)
         return d.indexName === "RoleName";
     }
+
+
 
     return false; // No index, so no need to check further
 

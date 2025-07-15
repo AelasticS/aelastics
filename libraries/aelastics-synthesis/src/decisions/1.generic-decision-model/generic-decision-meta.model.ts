@@ -24,7 +24,12 @@ export const GenericDecisionModel = t.subtype(
 
 export const Option = t.subtype(
   ModelElement,
-  { Pros: t.string, Cons: t.string, isDefault: t.boolean, newIssues: t.arrayOf(Issue) },
+  {
+    Pros: t.string,
+    Cons: t.string,
+    isDefault: t.optional(t.boolean), // if is not optional, default value is true
+    newIssues: t.arrayOf(Issue)
+  },
   "Option",
   GenericDecisionModel_TypeSchema
 );

@@ -9,7 +9,7 @@ export const DecisionBindingElement = t.subtype(
     {
         sourceModelElementRef: ModelElement,
         decisionIssues: t.arrayOf(gdm.Issue),
-        condition: t.string
+        condition: t.optional(t.string)
     },
     "DecisionBindingElement",
     DecisionBindingModel_TypeSchema
@@ -18,6 +18,8 @@ export const DecisionBindingElement = t.subtype(
 export const DecisionBindingModel = t.subtype(
     Model,
     {
+        sourceModel: Model,
+        genericDecisionModel: gdm.GenericDecisionModel,
         bindings: t.arrayOf(DecisionBindingElement),
     },
     "DecisionBindingModel",

@@ -7,80 +7,31 @@
 
 
 
-import { hm } from "../jsx/handle";
-import { VarPoint, VarOption } from "./../variability/var-decorators";
-import * as et from "../test/eer-model/EER.meta.model.type";
-import * as rt from "../test/relational-model/REL.meta.model.type.v2";
-import * as e from "../test/eer-model/EER-components";
-import * as r from "../test/relational-model/REL-components.v2";
-import { abstractM2M } from "./../transformations/abstractM2M";
-import { Element, Resolve } from "../jsx/element";
-import { Context } from "../jsx/context";
-import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../index";
+import { hm } from "./../../jsx/handle";
+import { VarPoint, VarOption } from "./../../variability/var-decorators";
+import * as et from "../../test/eer-model/EER.meta.model.type";
+import * as rt from "../../test/relational-model/REL.meta.model.type.v2";
+import * as e from "../../test/eer-model/EER-components";
+import * as r from "../../test/relational-model/REL-components.v2";
+import { abstractM2M } from "./../../transformations/abstractM2M";
+import { Element, Resolve } from "../../jsx/element";
+import { Context } from "../../jsx/context";
+import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../../index";
+import * as dm from "./../4.decision-model/decision-meta.model"; // import decision model types for decision model transformation
 
 const testStore = new ModelStore();
-
-const eerSchema1: Element<et.IEERSchema> = (
-  <e.EERSchema name="Persons" MDA_level="M1" store={testStore}>
-    <e.Kernel name="Person">
-      <e.Attribute name="personId" isKey={true}>
-        <e.Domain name="number" />
-      </e.Attribute>
-      <e.Attribute name="personName" isKey={false}>
-        <e.Domain name="string" />
-      </e.Attribute>
-    </e.Kernel>
-    <e.Kernel name="Organization">
-      <e.Attribute name="organizationId" isKey={true}>
-        <e.Domain $refByName="number" />
-      </e.Attribute>
-      <e.Attribute name="organizationName" isKey={false}>
-        <e.Domain $refByName="string" />
-      </e.Attribute>
-    </e.Kernel>
-    <e.Relationship name="worksIn">
-      <e.OrdinaryMapping
-        name="works_in"
-        lowerBound="0"
-        upperBound="1"
-        domain={<e.Kernel $refByName="Person"></e.Kernel>}
-      ></e.OrdinaryMapping>
-      <e.OrdinaryMapping
-        name="has_employees"
-        lowerBound="0"
-        upperBound="M"
-        domain={<e.Kernel $refByName="Organization"></e.Kernel>}
-      ></e.OrdinaryMapping>
-    </e.Relationship>
-    <e.Weak name="Child">
-      <e.Attribute name="ChildID" isKey={true}>
-        <e.Domain $refByName="number" />
-      </e.Attribute>
-      <e.Attribute name="ChildName" isKey={false}>
-        <e.Domain $refByName="string" />
-      </e.Attribute>
-    </e.Weak>
-    <e.WeakMapping
-      name="PersonToChild"
-      domain={<e.Kernel $refByName="Person"></e.Kernel>}
-      codomain={<e.Weak $refByName="Child"></e.Weak>}
-    ></e.WeakMapping>
-  </e.EERSchema>
-);
-
 const ctx = new Context();
-const s1: et.IEERSchema = eerSchema1.render(ctx);
 
 @M2M({ input: et.EERSchema, output: rt.RelSchema })
-class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
-  constructor(store: ModelStore) {
-    super(store);
+class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema, {}, dm.IDecisionModel> {
+  constructor(store: ModelStore, { }, decisionModel?: dm.IDecisionModel) {
+    super(store, {}, decisionModel);
   }
 
   template(s: et.IEERSchema) {
     return (
       <r.RelSchema
-        name={`${s.name}_Relational_Schema`}
+        name={`${s.name}_Relational_Schema_with_Decision_Model`}
         content=""
         MDA_level="M1"
       >
@@ -99,7 +50,11 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @E2E({ input: et.Entity, output: rt.Table })
+  // @E2E({
+  //   input: et.Entity,
+  //   output: rt.Table,
+  //   ruleName: "Entity2Table"
+  // })
   @SpecPoint()
   Entity2Table(e: et.IEntity): Element<rt.ITable> {
     return (
@@ -129,7 +84,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @E2E({ input: et.WeakMapping, output: rt.ForeignKey })
+  // @E2E({ input: et.WeakMapping, output: rt.ForeignKey })
   WeekMappingToFK(wm: et.IWeakMapping) {
 
     // override table name from super rule
@@ -170,17 +125,17 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     */}
   }
 
-  @E2E({ input: et.Attribute, output: rt.Column })
+  // @E2E({ input: et.Attribute, output: rt.Column })
   Attribute2Column(a: et.IAttribute): Element<rt.IColumn> {
     return <r.Column name={a.name} isKey={a.isKey}></r.Column>;
   }
 
-  @E2E({ input: et.Attribute, output: rt.Column })
+  // @E2E({ input: et.Attribute, output: rt.Column })
   Attribute2PKColumn(a: et.IAttribute, ownerTable: rt.ITable): Element<rt.IColumn> {
     return <r.Column name={`fk_${a.name}`} isKey={true} ownerTable={<r.Table $refByName={ownerTable.name}></r.Table>}></r.Column >;
   }
 
-  @E2E({ input: et.Attribute, output: rt.ForeignKeyColumn })
+  // @E2E({ input: et.Attribute, output: rt.ForeignKeyColumn })
   Attribute2FKColumn(a: et.IAttribute): Element<rt.IForeignKeyColumn> {
 
     return <Resolve input={a} ruleName="Attribute2Column">
@@ -206,8 +161,10 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     // return null as unknown as Element<rt.IForeignKey> | Element<rt.ITable>;
   }
 
-  @VarOption("RelationshipToElement", (trans) => {
-    return false;
+  // TODO Input for this rule expression should be DecisionForElement OR array of SelectedOption
+  @VarOption("RelationshipToElement", (decision: dm.IDecisionForElement): boolean => {
+
+    return !!decision.selectedOptions.find((o) => o.name == "RelToFK");
   })
   RelatioshipToFK(rel: et.IRelationship): Element<rt.IForeignKey> {
     // const aaa = this.context.resolve(rel.ordinaryMapping[0]);
@@ -219,7 +176,10 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @VarOption("RelationshipToElement", () => true)
+  // TODO Type of decision should be defined by type of element (e.g. Relationship, Entity, etc.) or by specific element (e.g. RelationshipWorksIn, etc.)
+  @VarOption("RelationshipToElement", (decision: dm.IDecisionForElement): boolean => {
+    return !!decision.selectedOptions.find((o) => o.name == "RelToTable");
+  })
   RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
     const codomain = et.getCodomain(rel.ordinaryMappings[0]);
     const domain = et.getInverse(rel.ordinaryMappings[0]);
@@ -227,26 +187,3 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     return <r.Table name="RelationshipToElement table"></r.Table >;
   }
 }
-
-describe("Test spec decorators", () => {
-  it("tests specialization of Entit2Table rule", () => {
-    let m = new EER2RelTransformation(testStore);
-    let r = m.transform(s1);
-    // expect(r).toHaveProperty("name", "PersonsRelationalSchema");
-    // expect(r.elements).toEqual(
-    //   expect.arrayContaining([
-    //     expect.objectContaining({
-    //       name: "Person",
-    //       columns: expect.arrayContaining([
-    //         expect.objectContaining({ name: "PersonID" }), // from Kernel2Table
-    //         expect.objectContaining({ name: "PersonName" }), // from Entity2Table
-    //       ]),
-    //     }),
-    //     expect.objectContaining({ name: "Weak_Child" }),
-    //     expect.objectContaining({ name: "ChildID" }),
-    //   ])
-    // );
-
-    expect(true).toBeTruthy();
-  });
-});

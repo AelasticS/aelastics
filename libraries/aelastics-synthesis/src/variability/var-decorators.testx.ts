@@ -9,7 +9,7 @@ describe("Test  variability decorators", () => {
 
             // }
 
-            @VarPoint("one")
+            @VarPoint()
             myVarMethod(a:number) {
                 return a+1;
             }

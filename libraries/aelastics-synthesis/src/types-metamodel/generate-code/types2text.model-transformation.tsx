@@ -13,6 +13,8 @@ import * as tmm from "./../types-meta.model";
 import { ModelStore, Context, Element, E2E, M2M } from "./../../index";
 import { abstractM2M } from "./../../transformations/abstractM2M";
 import { SpecPoint, SpecOption } from "./../../transformations/spec-decorators";
+import * as t from "aelastics-types"
+
 
 @M2M({
   input: tmm.TypeModel,
@@ -96,6 +98,12 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
+  @E2E(
+    {
+      input: tmm.TypeModel,
+      output: t.arrayOf(m2tmm.Paragraph),
+    }
+  )
   transformToModel(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> | null {
     return [
       <P parentSection={<Sec $refByName="typeDefinition"></Sec>}>

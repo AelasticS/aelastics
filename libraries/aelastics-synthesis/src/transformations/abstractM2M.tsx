@@ -17,6 +17,7 @@ import * as tm from "./transformation.model.type";
 import { CpxTemplate, Element, Super, Template } from "../jsx/element";
 import { ModelStore } from "./../index";
 import { Model } from "generic-metamodel/src/models.type";
+import { IDecisionModel } from "../decisions/4.decision-model/decision-meta.model";
 
 type IODescr = { type?: t.Any; instance?: IModel };
 type TransformationDescr = {
@@ -94,23 +95,29 @@ export class M2MContext extends Context {
   }
 }
 
-export interface IM2M<S extends IModel, D extends IModel> {
+export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends IDecisionModel = never> {
   context: M2MContext;
-  m2mTRansformation?: tm.IM2M_Transformation;
+  m2mTransformation?: tm.IM2M_Transformation;
   template(props: S): Element<S, D>;
   transform(source: S): D;
 }
 
 // TODO: this class and intereface should be extended with optional Decision Model. 
-export abstract class abstractM2M<S extends IModel, D extends IModel>
-  implements IM2M<S, D>
-{
-  // transformation type
-  public m2mTRansformation?: tm.IM2M_Transformation;
-  public context: M2MContext = new M2MContext();
 
-  public constructor(store?: ModelStore) {
+// TODO DM extends Record<string, IModel> = Record<never, never>
+// TODO Map<string, IModel> = Map<never, never>
+export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends IDecisionModel = never>
+  implements IM2M<S, D, EM> {
+  // transformation type
+  public m2mTransformation?: tm.IM2M_Transformation;
+  public context: M2MContext = new M2MContext();
+  public extra?: EM;
+  public decisionModel?: DM;
+
+  public constructor(store?: ModelStore, extra?: EM, decisionModel?: DM) {
     if (store) this.context.pushStore(store);
+    this.extra = extra;
+    this.decisionModel = decisionModel;
   }
 
   abstract template(props: S): Element<S, D>;

@@ -1,5 +1,5 @@
 import * as dm from './decision-meta.model';
-import { ModelStore } from './../../index';
+import { ModelStore } from '../../index';
 import { CpxTemplate, Element, Template, WithRefProps } from "../../jsx/element";
 
 export type IModelProps = WithRefProps<dm.IDecisionModel> & {
@@ -11,9 +11,9 @@ export const DecisionModel: CpxTemplate<IModelProps, dm.IDecisionModel> = (props
 }
 
 export const SelectedOption: Template<dm.ISelectedOption> = (props) => {
-    return new Element(dm.SelectedOption, props, undefined);
+    return new Element(dm.SelectedOption, props, 'selectedOptions');
 }
 
-export const Issue: Template<dm.IIssue> = (props) => {
-    return new Element(dm.Issue, props, 'issues');
+export const DecisionForElement: Template<dm.IDecisionForElement> = (props) => {
+    return new Element(dm.DecisionForElement, props, 'decisions');
 }

@@ -235,3 +235,8 @@ export const getInverse = (mapping: IOrdinaryMapping): IOrdinaryMapping => {
 
   return first === mapping ? second : first;
 };
+
+function asdf(r: IRelationship) {
+  return ((r.ordinaryMappings[0].lowerBound === "0" || r.ordinaryMappings[0].upperBound === "1") && r.ordinaryMappings[1].upperBound === "M") ||
+    ((r.ordinaryMappings[1].lowerBound === "0" || r.ordinaryMappings[1].upperBound === "1") && r.ordinaryMappings[0].upperBound === "M");
+}
