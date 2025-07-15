@@ -1,4 +1,68 @@
+I 
+  would like to concentrate 
+  now on. Registry. There is a
+   slash meta. Folder. Where 
+  there are current 
+  implementation of the 
+  registry. And we agreed. 
+  That the organization of 
+  interfaces will include this
+   old version. But now it's a
+   time that. Make a new 
+  version of the I registry 
+  interface and. The 
+  implementation. As you can 
+  see from the slash meta 
+  folder. There are two. 
+  Specifications of. Sheamus. 
+  Internal and external shame.
+   Eternal shame was used to 
+  represent the metadata 
+  within the. Store while 
+  external shema was a set of 
+  interfaces which are used to
+   structure the data metadata
+   that will be imported into 
+  the store and during this 
+  import process the metadata 
+  will be validated and 
+  converted to the internal 
+  schema. In the folder. 
+  Registry. You started to 
+  implement the new Registry 
+  interface and you 
+  implemented Registry adapter
+   class. Now I think it 
+  should in this registry we 
+  should continue with the 
+  implementation and. 
+  Definition of. Structure of 
+  metadata. Do you understand 
+  this? Our plane. How to do? 
+  In the following I would 
+  give more detailed 
+  instructions regarding the. 
+  Structural method data and 
+  then from that we can come 
+  to the definition of all 
+  interfaces and then we will 
+  come to the implementation 
+  of the. Methods of 
+  interfaces and maybe we will
+   change the interfaces. We 
+  will see.
+
+Now I want to change the approach that I don't have to sheamus. When I say sheamus, I mean. Definition of structure of data. So we don't have two. More 2. Different structural method that I want to have just one. That is important thing. And this. Is one single. Metadata. Structure will be actually imported, exported and so on. And the. The way how you create this structure is beyond the responsibility of the registry and the whole store, so it will be task or some other tools how to make. New integral. Schema. Then I say schema. Actually I should be more precise and talk about namespace. So namespace is actually what is important, exported and so on. And namespace again is a container of. Type definitions, interfaces, classes and so on. I will go into details very soon, but just to understand this. That we are talking about structure of namespaces, which can have of course hierarchy. They are hierarchically organized the same way how they are organizing Java or Typescript. Is it clear?
+
+We should have a unified. Does namespace structure. We will use the elements of existing schemas, but basically you can get rid of files, so don't copy. Uh, internal schema or external schema to registry? Cell phone there. But we will use elements from them. Regarding Iraqi, let's leave this question to answer later. At the moment we will deal only with the, let's say, flat namespaces.
+
+The difference between internal external shamma is not so big. Actually. The essential difference is that in internal schema collections are implemented as Typescript. Maps, while in external schema they are implemented as arrays. Otherwise, essentially the structure is the same.
+
+OK I agree. We will use for collections. Typescript maps. As an efficient data structure. In this integral. Metadata repository and namespaces and so on.
+
 I plan to use zod (https://github.com/colinhacks/zod as mechanizsam to define types in my schemas. Zod is licensed under the MIT license, making it:
+
+)".  Very similarly, the same way is. Supported by Zod. library.  As you can see the current. Structure of internal and external schemas. Are simplified. In the sense that they support just a part of possibilities which are supported by elastic types and Zot. Library. This is deliberately done. That the implementation initial implementation of the store is not too complex. But now it is time to fully support all possibilities by these libraries. So the idea is that our new. Registry and Namespaces structures are actually fully supported types which are defined by elastic types and zod.  There are some smaller differences between these two libraries, but. At the moment it is not. Of our concern. So I suggest that you basically can. Combine. Features of both libraries so that we can come to the definition of namespaces, new namespaces and registry which can support all concepts which are supported by these two libraries. There are some features in elastic types like bidirectional relationships. Which are not supported by ZOd. So I would like that we actually that you analyze. Maybe first elastic types? And we come to the  Proposal of new data structures, structural new metadata which will support  aelastic types and then we can come to. zod lib,  To maybe add some. Features which are not supported by elastic types.
 
 ✅ Free to use commercially and privately.
 
@@ -107,6 +171,237 @@ const PostSchema = z.object({
   authorId: z.string(),
 });
 After basic Zod validation, explicitly check if each User’s posts correctly reference back to the user.
+
+
+
+
+ Aelastic-Types Library 
+  Capabilities Analysis
+
+  Core Type System
+
+  1. Type Categories:
+  Organized into
+  SimpleTypeCategory (Boolean,
+   Number, String, Literal,
+  Date, etc.) and
+  ComplexTypeCategory (Object,
+   Array, Map, TaggedUnion,
+  Union, Intersection,
+  Function, Tuple, Reference)
+  2. Simple Types: Built-in
+  types with optional variants
+    - boolean, number, string,
+   date, voidType, nullType,
+  undefinedType
+    - literal<V>() for literal
+   value types
+    - optional<T>() wrapper
+  for any type
+
+  Complex Object Types
+
+  3. Object Types: Base
+  complex type with interface
+  declarations
+    - object<P>(props, name?, 
+  schema) - basic object
+  creation
+    - entity<P,I>(props, keys,
+   name?, schema) - objects
+  with identity keys
+    - Property access via
+  allProperties Map
+    - Automatic property type
+  resolution
+  4. Inheritance & 
+  Composition:
+    -
+  subtype<P,S,I>(superType, 
+  extraProps, name?, schema) -
+   type inheritance
+    -
+  intersectionOf<P>(elements, 
+  name?, schema) - type
+  intersection
+    - taggedUnion<P>(elements,
+   discriminator, name?,
+  schema) - discriminated
+  unions
+
+  Collection Types
+
+  5. Arrays:
+  arrayOf<T>(element, name?, 
+  schema) with element type
+  validation
+  NOte:Validations are suported for al types, defined at root Type class
+
+  Maps, Set shoud be supoptrted too, 
+  not curently implemted by aelastics type but supprtted by Zod
+
+  Reference System
+
+  6. Links & References:
+    - link(schema, path, 
+  name?, owner) - cross-schema
+   type references
+   NOTE: links are used as a kind of forward refernce, 
+   whne two mutaly relted types need to refernce other one, 
+   but that one is defind later.     -
+   THis is limitatinof Typescript , as vars canno tb eused before are declared.
+ LinkType class is used for this
+  deferred type resolution
+  END_NOTE
+
+    - objectRef<T>(type, 
+  name?, schema) - object
+  references with identity
+  tji sis real reference to a an object via identity (like Foreign ley i realational model)
+
+
+    - ObjectReference for
+  referencing entities by
+  identity
+
+  Bidirectional Relationships 
+  (Key Feature)
+
+  7. Inverse Properties: The
+  critical feature shown in
+  the Person/Child example
+    - inverseProps(firstType, 
+  firstProp, secondType,
+  secondProp)
+    - Automatic bidirectional
+  relationship management
+    - inverseCollection Map on
+   each ObjectType storing
+  inverse relationships
+    - Property type validation
+   (Object vs Array
+  relationships)
+    - Example:
+  t.inverseProps(Person, 
+  'children', Child, 'parent')
+   creates automatic sync
+  between parent.children
+  array and child.parent
+  reference
+
+  Schema Management
+
+  8. TypeSchema System:
+    - Hierarchical schema
+  organization with
+  inheritance
+  NOTE: schema coresponds to our namaspaces
+    - schema(name, 
+  superSchema?) - creates new
+  schema namespaces
+    - Type registration and
+  lookup by path
+    path shoud be unique (likein case of Java namesapces)
+
+    - Cross-schema linking
+  capabilities
+    - Validation and type
+  resolution
+
+  Type System Features
+
+  9. Advanced Type Support:
+  NOTE: This features are not so much realted to structyure of tyope system or
+  are tot advbance to be included in the intial proposal:
+    - Generic type definitions
+   with interface declarations
+    - Type category resolution
+   through links and optionals
+    - Automatic type name
+  generation
+    - Type identity and
+  uniqueness validation
+    - Polymorphic type
+  handling with runtime type
+  checking
+
+  Key Capabilities for Unified
+   Namespace:
+
+  - Collections as TypeScript 
+  Maps (as requested by user)
+  - Bidirectional relationship
+   management (unique to
+  aelastic-types)
+  - Cross-schema type linking
+  - Entity identity management
+  - Hierarchical schema 
+  inheritance
+  - Runtime type validation 
+  and resolution
+  - Polymorphic object 
+  handling
+
+  The most significant feature
+   is the bidirectional
+  relationship system where
+  inverseProps() automatically
+   maintains consistency
+  between related objects,
+  which Zod doesn't provide
+  natively. This will be
+  crucial for the unified
+  namespace design
+
+Link types. Are useful for the Forward references. .  Object references are used for cross references among. Concrete data structures defined by these type definitions. Cross references. In, type definitions are simply used by. Unique name whic a path of namespeces as packages in java.  There is another issue which I did mention to you, but maybe it is time that. A namespace can import. Other namespaces. So that concepts defined in such namespace can be referenced can be used. Also, concepts within the namespace can be exported. To be used by other namespaces. So it is very similar to the way how export and import statements are used in types Typescript. It's mirroring of these concepts. This should be also supported. In structures defining namespaces. Within the registry. But remember, we are. Registry is only read only used. To provide to support functionality of the store. It is not used for the definition of. Types, and so on. So no functionality for creation. And so on only look up. And retrieval. Traversing. Alongside the. Objects. And so on.
+
+Travelase Operations.  Means simply to follow the object links within the defined. Interfaces. So that I can. Iterate over properties over some. Complex type that they can investigate what is the element of array and so on. So nothing fancy. And also it is important to understand that TRA traversals is limited to the. Name spaces which are imported. And one of the tasks of the registry is actually to provide and check verify validation of of. Imported metadata, namespaces that all what is needed should be. Should be.  Provided.
+ALso look at INtenal schema tyoe definisation:
+
+export interface PropertyMeta {
+    qName: string; // Property name
+    label?: string; // Human-readable label for the property
+    optional?: boolean; // Whether the property is optional
+    type: PropertyType; // Data type of the property
+    itemType?: PropertyType; // Data type of the items (if array, map, or set): simplePropType or ComplexPropType
+    keyType?: PropertyType; // Data type of the keys (if map)
+    domainType?: string; // Name of the property domain of
+    minElements?: string; // Minimum elements for collection properties // TODO add collection of constrains as (self)=>boolean
+    maxElements?: string; // Maximum elements for collection properties
+    defaultValue?: any; // Default value for simple properties
+    inverseProp?: string; // Name of the inverse property (if bidirectional)
+    inverseType?: PropertyType; // Data type of the inverse property
+}
+
+export function isCollectionOfReferences(p: PropertyMeta): boolean {
+    return (p.type === "array" || p.type === "map" || p.type === "set") && p.itemType === "object";
+}
+export function isReference(p: PropertyMeta): boolean {    
+    return (p.type === "object")
+}
+
+/** Metadata for an object type, defining its properties */
+export interface TypeMeta {
+    qName: string; // Name of the object type
+    label?: string; // Human-readable label for the type
+    properties: Map<string, PropertyMeta>; // Property name -> PropertyMeta mapping
+    extends?: string; // Name of the base class (if subclass-ing is used)
+    roles?: string[]; // List of allowed role names for this type
+}
+
+NOTE: these intrfaces are dedijed with aim to suport STore operations so thay 
+are simplified and a bit "optimized"as gthe includ esom edereived data like o PropetyMeta interface: 
+    Optional?: boolean; // Whether the property is optional, whihc is a wraper type not a property in aelastics types a nd zod
+    type: PropertyType; // Data type of the property
+    itemType?: PropertyType; // derived Data type of the items (if array, map, or set): simplePropType or ComplexPropType
+    keyType?: PropertyType; // derived Data type of the keys (if map)
+    domainType?: string; // Name of the property domain of
+    minElements?: string; // Minimum elements for collection properties // TODO add collection of constrains as (self)=>boolean
+    maxElements?: string; // Maximum elements for collection properties
+
+Alos the definisions also supotrted new featrie , like roles, which arae not supportde by neither alelsatucc tyoes a or ZOD. 
+tHese can be at the momemt ignored.
+
 
 ⚙️ Alternative Approach (Zod Effects)
 Another simpler way is using ZodEffects to wrap schemas:

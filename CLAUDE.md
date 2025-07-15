@@ -4,6 +4,7 @@
 - Never mention Claude, AI assistance, or self-attribution in any generated content
 - Do not include "Generated with Claude Code" or "Co-Authored-By: Claude" in commits
 - Do not reference yourself in code comments, documentation, or any output
+- before generating or updating new files, always ask for permission, unless a permission is already given. In case you are not sure, ask !
 
 ## Development Environment
 - This is a Rush.js monorepo
