@@ -33,15 +33,61 @@ type IRelationship_0_1_HandlingUnion = {
 
 type IRelationship = {
     ForeignKeyOrSeparateTable: {
-        
-
+        ForeignKey: true,
+        SeparateTable: false
+    } | {
+        ForeignKey: false,
+        SeparateTable: {
+            NamingConventionForTable: {
+                ByRoleName: true,
+                ByEntitiesName: false
+            } | {
+                ByRoleName: false,
+                ByEntitiesName: true
+            }
+        }
     },
-    FKNamingConvention: "ByRoleName" | "ByPKFromOriginTable",
-    PKNamingConvention: "AddPrefix" | "AddSufix" | "NoPrefixSufix"
-} |
-{
-    FKNamingConvention: "ByRoleName" | "ByPKFromOriginTable",
-    PKNamingConvention: "AddPrefix" | "AddSufix" | "NoPrefixSufix"
+    FKNamingConvention: {
+        ByRoleName: true,
+        ByPKFromOriginTable: false
+    } | {
+        ByRoleName: false,
+        ByPKFromOriginTable: true
+    },
+    PKNamingConvention: {
+        AddPrefix: true,
+        AddSufix: false,
+        NoPrefixSufix: false
+    } | {
+        AddPrefix: false,
+        AddSufix: false,
+        NoPrefixSufix: true
+    } | {
+        AddPrefix: false,
+        AddSufix: true,
+        NoPrefixSufix: false
+    }
+} | {
+    FKNamingConvention: {
+        ByRoleName: true,
+        ByPKFromOriginTable: false
+    } | {
+        ByRoleName: false,
+        ByPKFromOriginTable: true
+    },
+    PKNamingConvention: {
+        AddPrefix: true,
+        AddSufix: false,
+        NoPrefixSufix: false
+    } | {
+        AddPrefix: false,
+        AddSufix: false,
+        NoPrefixSufix: true
+    } | {
+        AddPrefix: false,
+        AddSufix: true,
+        NoPrefixSufix: false
+    }
 };
 
 /*
