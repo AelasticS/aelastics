@@ -21,7 +21,7 @@ import { ModelStore, P } from "../../index"
 
 const store = new ModelStore();
 
-export const aelasticsTypesModel = (condition1: boolean): Element<t.ITypeModel> => (
+export const typesForDecisionModel = (condition1: boolean): Element<t.ITypeModel> => (
 
     <TypeModel name="AelasticsTypes" store={store}>
         <TypeUnion name="PK Naming convention Union" elements={[

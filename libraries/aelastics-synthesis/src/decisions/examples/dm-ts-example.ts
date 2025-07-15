@@ -32,7 +32,10 @@ type IRelationship_0_1_HandlingUnion = {
 };
 
 type IRelationship = {
-    ForeignKeyOrSeparateTable: true,
+    ForeignKeyOrSeparateTable: {
+        
+
+    },
     FKNamingConvention: "ByRoleName" | "ByPKFromOriginTable",
     PKNamingConvention: "AddPrefix" | "AddSufix" | "NoPrefixSufix"
 } |
@@ -48,10 +51,6 @@ return <IRelationship_0_1_HandlingUnion>
     <NoIndex>true</NoIndex>
     {uslov1(el) ? <CreateIndex>false</CreateIndex> : null }    
 <IRelationship_0_1_HandlingUnion/>}
-
-
-
-
 
 */
 

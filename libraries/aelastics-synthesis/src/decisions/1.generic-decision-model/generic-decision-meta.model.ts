@@ -27,7 +27,8 @@ export const Option = t.subtype(
   {
     Pros: t.string,
     Cons: t.string,
-    isDefault: t.optional(t.boolean), // if is not optional, default value is true
+    isDefault: t.optional(t.boolean), // if is not optional, default value is true 
+    // TODO: set default value for boolean to false
     newIssues: t.arrayOf(Issue)
   },
   "Option",
