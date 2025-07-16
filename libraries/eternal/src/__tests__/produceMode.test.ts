@@ -1,5 +1,5 @@
 import { createStore } from "../store/createStore";
-import { RegistryService } from "../registry/RegistryService";
+import { RegistryService, NamespaceImportError } from "../registry/RegistryService";
 import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata";
 import { ObjectTypeMeta, PropertyMeta } from "../registry/TypeDefinitions";
 
@@ -49,7 +49,13 @@ describe("Store API: Produce Mode Detection", () => {
         const registry = new RegistryService(registryMetadata);
         const namespace = createUserNamespace();
         
-        registry.importNamespace(namespace);
+        let error: NamespaceImportError | undefined;
+        try {
+            registry.importNamespace(namespace);
+        } catch (err) {
+            error = err as NamespaceImportError;
+        }
+        expect(error).toBeUndefined();
         store = createStore(registry);
     });
 

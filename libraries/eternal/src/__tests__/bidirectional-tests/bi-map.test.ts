@@ -1,6 +1,6 @@
 import { createStore } from "../../store/createStore";
 import { StoreObject, uuid } from "../../store/InternalTypes";
-import { RegistryService } from "../../registry/RegistryService";
+import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
 import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
 import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
 
@@ -197,7 +197,17 @@ describe("Bidirectional Relationships with Maps", () => {
         const registry = new RegistryService(registryMetadata);
         const namespace = createLibraryNamespace();
         
-        registry.importNamespace(namespace);
+        let error: NamespaceImportError | undefined;
+        try {
+            registry.importNamespace(namespace);
+        } catch (err) {
+            error = err as NamespaceImportError;
+        }
+        if (error) {
+            // If error is thrown, assert details
+            expect(error).toBeInstanceOf(NamespaceImportError);
+            throw error; // Fail the test setup
+        }
         store = createStore(registry);
     });
 

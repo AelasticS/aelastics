@@ -2,7 +2,7 @@ import { StoreClass } from "../store/StoreClass";
 import { StoreObject, uuid } from "../store/InternalTypes";
 import { IStore } from "../interfaces/IStore";
 import { createStore } from "../store/createStore";
-import { RegistryService } from "../registry/RegistryService";
+import { RegistryService, NamespaceImportError } from "../registry/RegistryService";
 import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata";
 import { ObjectTypeMeta, PropertyMeta } from "../registry/TypeDefinitions";
 
@@ -60,7 +60,13 @@ beforeEach(() => {
         imports: new Map()
     };
     
-    registry.importNamespace(namespace);
+    let error: NamespaceImportError | undefined;
+    try {
+        registry.importNamespace(namespace);
+    } catch (err) {
+        error = err as NamespaceImportError;
+    }
+    expect(error).toBeUndefined();
     store = createStore(registry);
     eternalStore = store.getEternalStore();
 });
