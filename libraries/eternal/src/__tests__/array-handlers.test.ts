@@ -4,7 +4,7 @@ import { IStore } from "../interfaces/IStore"
 import { createStore } from "../store/createStore"
 import { RegistryService, NamespaceImportError } from "../registry/RegistryService"
 import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata"
-import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta } from "../registry/TypeDefinitions"
+import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta, TypeMeta } from "../registry/TypeDefinitions"
 
 interface Person extends StoreObject {
   name: string
@@ -27,11 +27,11 @@ beforeEach(() => {
   const registry = new RegistryService(registryMetadata)
 
   // 1. Define the array type for strings
-  const stringArrayType: ArrayTypeMeta = {
-    qName: "/test/TagsArray",
+  const tagsArrayType: ArrayTypeMeta = {
+    qName: "TagsArray",
     category: "complex",
     kind: "array",
-    elementType: "/std/string",
+    elementType: "string",
   }
 
   // 2. Define the User object type, referencing the array type for 'tags'
@@ -46,7 +46,7 @@ beforeEach(() => {
         "name",
         {
           name: "name",
-          typeRef: "/std/string",
+          typeRef: "string",
           optional: false,
         } as PropertyMeta,
       ],
@@ -54,7 +54,7 @@ beforeEach(() => {
         "age",
         {
           name: "age",
-          typeRef: "/std/number",
+          typeRef: "number",
           optional: false,
         } as PropertyMeta,
       ],
@@ -72,7 +72,7 @@ beforeEach(() => {
   const namespace: Namespace = {
     qName: "/test",
     version: "1.0.0",
-    types: new Map([["User", userTypeMeta]]),
+    types: new Map<string, TypeMeta>([["User", userTypeMeta], ["TagsArray", tagsArrayType]]),
     exports: ["User"],
     imports: new Map(),
   }

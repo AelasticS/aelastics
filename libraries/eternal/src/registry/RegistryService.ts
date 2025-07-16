@@ -174,6 +174,10 @@ export class RegistryService {
 
     /** Import namespace into registry */
     public importNamespace(namespace: Namespace): void {
+        // Ensure "system" is present in namespace.imports
+        if (!namespace.imports.has("system")) {
+            namespace.imports.set("system", ["*"]);
+        }
         const result = this.validateNamespaceForImport(namespace);
         
         if (!result.isValid) {
@@ -294,8 +298,9 @@ export class RegistryService {
         const errors: string[] = [];
         const warnings: string[] = [];
 
-        // Validate qualified name format
-        if (!typeMeta.qName || !typeMeta.qName.includes('/')) {
+        // Validate qualified name format (must have at least one '/', no leading/trailing '/', no empty segments, only valid chars)
+        const qNamePattern = /^(?!\/)(?!.*\/$)(?!.*\/\/)([a-zA-Z0-9_\-]+\/)+[a-zA-Z0-9_\-]+$/;
+        if (!typeMeta.qName || !qNamePattern.test(typeMeta.qName)) {
             errors.push(`Invalid qualified name: ${typeMeta.qName}`);
         }
 
