@@ -150,7 +150,28 @@ export function resolveTypeReference(
     contextNamespace: Namespace, 
     registry: RegistryMetadata
 ): string | undefined {
-    // Check local types first
+    // Handle absolute paths (start with /)
+    if (typeName.startsWith('/')) {
+        const namespacePath = getNamespacePath(typeName);
+        const localName = getLocalName(typeName);
+        const targetNamespace = registry.namespaces.get(namespacePath);
+        if (targetNamespace && targetNamespace.types.has(localName)) {
+            return typeName; // Already qualified
+        }
+        return undefined;
+    }
+    
+    // Handle parent paths (contain ..)
+    if (typeName.includes('..')) {
+        return resolveParentPath(typeName, contextNamespace, registry);
+    }
+    
+    // Handle sub-namespace paths (contain / but don't start with /)
+    if (typeName.includes('/')) {
+        return resolveSubNamespacePath(typeName, contextNamespace, registry);
+    }
+    
+    // Handle simple names - check local types first
     if (contextNamespace.types.has(typeName)) {
         return buildQualifiedName(contextNamespace.qName, typeName);
     }
@@ -185,6 +206,88 @@ export function resolveTypeReference(
                 }
             }
         }
+    }
+    
+    return undefined;
+}
+
+/**
+ * Resolve parent path references (containing ..)
+ * @param typeName - Type reference like "../Company" or "../../base/Entity"
+ * @param contextNamespace - Current namespace context
+ * @param registry - Registry containing all namespaces
+ * @returns Qualified type name if found, undefined otherwise
+ */
+function resolveParentPath(
+    typeName: string,
+    contextNamespace: Namespace,
+    registry: RegistryMetadata
+): string | undefined {
+    const pathSegments = typeName.split('/');
+    const currentPathSegments = contextNamespace.qName.split('/').filter(s => s !== '');
+    
+    let resolvedPathSegments = [...currentPathSegments];
+    let typeNameToFind = '';
+    
+    for (const segment of pathSegments) {
+        if (segment === '..') {
+            // Go up one level
+            if (resolvedPathSegments.length > 0) {
+                resolvedPathSegments.pop();
+            }
+        } else if (segment !== '') {
+            // This should be the type name (last segment)
+            typeNameToFind = segment;
+            break;
+        }
+    }
+    
+    if (!typeNameToFind) {
+        return undefined;
+    }
+    
+    // Build the target namespace path
+    const targetNamespacePath = resolvedPathSegments.length > 0 
+        ? '/' + resolvedPathSegments.join('/') 
+        : '/';
+    
+    // Check if the target namespace exists and has the type
+    const targetNamespace = registry.namespaces.get(targetNamespacePath);
+    if (targetNamespace && targetNamespace.types.has(typeNameToFind)) {
+        return buildQualifiedName(targetNamespacePath, typeNameToFind);
+    }
+    
+    return undefined;
+}
+
+/**
+ * Resolve sub-namespace path references (like "department/Manager")
+ * @param typeName - Type reference like "department/Manager" or "utils/helpers/Helper"
+ * @param contextNamespace - Current namespace context
+ * @param registry - Registry containing all namespaces
+ * @returns Qualified type name if found, undefined otherwise
+ */
+function resolveSubNamespacePath(
+    typeName: string,
+    contextNamespace: Namespace,
+    registry: RegistryMetadata
+): string | undefined {
+    const pathSegments = typeName.split('/');
+    const typeNameToFind = pathSegments.pop(); // Last segment is the type name
+    
+    if (!typeNameToFind || pathSegments.length === 0) {
+        return undefined;
+    }
+    
+    // Build the target namespace path relative to current namespace
+    const currentPath = contextNamespace.qName === '/' ? '' : contextNamespace.qName;
+    const subPath = pathSegments.join('/');
+    const targetNamespacePath = currentPath + '/' + subPath;
+    
+    // Check if the target namespace exists and has the type
+    const targetNamespace = registry.namespaces.get(targetNamespacePath);
+    if (targetNamespace && targetNamespace.types.has(typeNameToFind)) {
+        return buildQualifiedName(targetNamespacePath, typeNameToFind);
     }
     
     return undefined;

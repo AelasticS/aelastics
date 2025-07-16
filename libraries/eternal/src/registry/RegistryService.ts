@@ -11,6 +11,7 @@ import {
     getAvailableTypes
 } from "./NamespaceMetadata";
 import { InternalNamespace } from "./InternalNamespace";
+import { systemNamespace } from "./system-namespace";
 
 /** Custom error for namespace import failures */
 export class NamespaceImportError extends Error {
@@ -32,6 +33,12 @@ export class RegistryService {
 
     constructor(registry: RegistryMetadata) {
         this.registry = registry;
+        
+        // Auto-import system namespace if not present
+        if (!this.registry.namespaces.has("system")) {
+            this.registry.namespaces.set("system", systemNamespace);
+        }
+        
         this.buildTypeIndex();
     }
 
@@ -115,7 +122,16 @@ export class RegistryService {
 
         // Try imported types
         const resolvedQName = resolveTypeReference(typeName, namespace, this.registry);
-        return resolvedQName ? this.getType(resolvedQName) : undefined;
+        if (resolvedQName) {
+            return this.getType(resolvedQName);
+        }
+
+        // Try system types by simple name (always available)
+        if (systemNamespace.types.has(typeName)) {
+            return systemNamespace.types.get(typeName);
+        }
+
+        return undefined;
     }
 
     /** Check if type exists */
@@ -129,17 +145,29 @@ export class RegistryService {
         return namespace ? Array.from(namespace.types.keys()) : [];
     }
 
-    /** Get all available types in namespace (local + imported) */
+    /** Get all available types in namespace (local + imported + system) */
     public getAvailableTypesInNamespace(namespacePath: string): Set<string> {
         // Use resolved types optimization if available (O(1) lookup)
         const internalNamespace = this.internalNamespaces.get(namespacePath);
         if (internalNamespace) {
-            return new Set(internalNamespace.getAvailableTypeNames());
+            const availableTypes = new Set<string>(internalNamespace.getAvailableTypeNames());
+            // Add system types (always available)
+            for (const systemTypeName of systemNamespace.types.keys()) {
+                availableTypes.add(systemTypeName);
+            }
+            return availableTypes;
         }
         
         // Fallback to old method for non-internal namespaces
         const namespace = this.getNamespace(namespacePath);
-        return namespace ? getAvailableTypes(namespace, this.registry) : new Set();
+        const availableTypes = namespace ? getAvailableTypes(namespace, this.registry) : new Set<string>();
+        
+        // Add system types (always available)
+        for (const systemTypeName of systemNamespace.types.keys()) {
+            availableTypes.add(systemTypeName);
+        }
+        
+        return availableTypes;
     }
 
     // ===== IMPORT/EXPORT OPERATIONS =====
@@ -197,6 +225,19 @@ export class RegistryService {
         // Check if namespace already exists
         if (this.hasNamespace(namespace.qName)) {
             errors.push(`Namespace '${namespace.qName}' already exists`);
+        }
+
+        // Prevent creating namespace named 'system'
+        if (namespace.qName === "system") {
+            errors.push(`Namespace 'system' is reserved for system types`);
+        }
+
+        // Prevent redefining system type names
+        const systemTypeNames = Array.from(systemNamespace.types.keys());
+        for (const [typeName, typeMeta] of namespace.types) {
+            if (systemTypeNames.includes(typeName)) {
+                errors.push(`Type name '${typeName}' conflicts with system type`);
+            }
         }
 
         // Validate parent namespace exists (if specified)

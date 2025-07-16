@@ -11,6 +11,7 @@ import {
     SimpleTypeMeta 
 } from "../../registry/TypeDefinitions";
 import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
+import { systemNamespace } from "../../registry/system-namespace";
 
 describe("Import/Export Optimization", () => {
     let registry: RegistryMetadata;
@@ -41,7 +42,13 @@ describe("Import/Export Optimization", () => {
                 imports: new Map()
             };
 
-            service.importNamespace(baseNamespace);
+            let baseError: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(baseNamespace);
+            } catch (err) {
+                baseError = err as NamespaceImportError;
+            }
+            expect(baseError).toBeUndefined();
 
             // This test verifies that optional properties arrive already optimized
             // i.e., no OptionalTypeMeta wrapper, just a flag on the property
@@ -177,7 +184,13 @@ describe("Import/Export Optimization", () => {
                 imports: new Map()
             };
             
-            service.importNamespace(baseNamespace);
+            let baseError: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(baseNamespace);
+            } catch (err) {
+                baseError = err as NamespaceImportError;
+            }
+            expect(baseError).toBeUndefined();
             
             // Add the posts namespace types first (without user references)
             const postType: ObjectTypeMeta = {
@@ -210,7 +223,13 @@ describe("Import/Export Optimization", () => {
                 ])
             };
             
-            service.importNamespace(postsNamespace);
+            let postsError: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(postsNamespace);
+            } catch (err) {
+                postsError = err as NamespaceImportError;
+            }
+            expect(postsError).toBeUndefined();
             
             const userType: ObjectTypeMeta = {
                 qName: "/company/users/User",
@@ -332,7 +351,14 @@ describe("Import/Export Optimization", () => {
                 imports: new Map([["/base", ["string"]]])
             };
 
-            service.importNamespace(baseNamespace);
+            let baseError: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(baseNamespace);
+            } catch (err) {
+                baseError = err as NamespaceImportError;
+            }
+            expect(baseError).toBeUndefined();
+            
             let error: NamespaceImportError | undefined;
             try {
                 service.importNamespace(appNamespace);
@@ -473,6 +499,206 @@ describe("Import/Export Optimization", () => {
         });
     });
 
+    describe("System Namespace Import/Export Rules", () => {
+        test("should automatically import system namespace in all imported namespaces", () => {
+            const userNamespace: Namespace = {
+                qName: "/company/users",
+                types: new Map([
+                    ["User", {
+                        qName: "/company/users/User",
+                        category: "complex",
+                        kind: "entity",
+                        properties: new Map([
+                            ["name", {
+                                name: "name",
+                                typeRef: "string", // System type reference
+                                optional: false
+                            }],
+                            ["age", {
+                                name: "age",
+                                typeRef: "number", // System type reference
+                                optional: false
+                            }]
+                        ]),
+                        identityKeys: ["id"]
+                    } as ObjectTypeMeta]
+                ]),
+                exports: ["User"],
+                imports: new Map() // No explicit system import
+            };
+
+            service.importNamespace(userNamespace);
+            
+            // System types should be automatically available
+            const stringType = service.getTypeInNamespace("string", "/company/users");
+            expect(stringType).toBeDefined();
+            expect(stringType?.qName).toBe("string");
+            
+            const numberType = service.getTypeInNamespace("number", "/company/users");
+            expect(numberType).toBeDefined();
+            expect(numberType?.qName).toBe("number");
+        });
+
+        test("should prevent exporting system namespace", () => {
+            // User should not be able to export system namespace
+            const userSystemNamespace: Namespace = {
+                qName: "system",
+                types: new Map([
+                    ["customType", {
+                        qName: "system/customType",
+                        category: "simple",
+                        kind: "string"
+                    } as SimpleTypeMeta]
+                ]),
+                exports: ["customType"],
+                imports: new Map()
+            };
+
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(userSystemNamespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.validationResult.errors).toContain("Namespace 'system' is reserved for system types");
+        });
+
+        test("should prevent importing system types with conflicting names", () => {
+            const conflictingNamespace: Namespace = {
+                qName: "/company/types",
+                types: new Map([
+                    ["string", {
+                        qName: "/company/types/string",
+                        category: "simple",
+                        kind: "string"
+                    } as SimpleTypeMeta],
+                    ["number", {
+                        qName: "/company/types/number",
+                        category: "simple",
+                        kind: "number"
+                    } as SimpleTypeMeta]
+                ]),
+                exports: ["string", "number"],
+                imports: new Map()
+            };
+
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(conflictingNamespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.validationResult.errors).toContain("Type name 'string' conflicts with system type");
+            expect(error!.validationResult.errors).toContain("Type name 'number' conflicts with system type");
+        });
+
+        test("should resolve system type references in cross-namespace imports", () => {
+            const baseNamespace: Namespace = {
+                qName: "/base",
+                types: new Map([
+                    ["Entity", {
+                        qName: "/base/Entity",
+                        category: "complex",
+                        kind: "entity",
+                        properties: new Map([
+                            ["id", {
+                                name: "id",
+                                typeRef: "string", // System type
+                                optional: false
+                            }]
+                        ]),
+                        identityKeys: ["id"]
+                    } as ObjectTypeMeta]
+                ]),
+                exports: ["Entity"],
+                imports: new Map()
+            };
+
+            const appNamespace: Namespace = {
+                qName: "/app",
+                types: new Map([
+                    ["User", {
+                        qName: "/app/User",
+                        category: "complex",
+                        kind: "entity",
+                        properties: new Map([
+                            ["name", {
+                                name: "name",
+                                typeRef: "string", // System type
+                                optional: false
+                            }]
+                        ]),
+                        identityKeys: ["id"],
+                        extends: "/base/Entity"
+                    } as ObjectTypeMeta]
+                ]),
+                exports: ["User"],
+                imports: new Map([["/base", ["Entity"]]])
+            };
+
+            service.importNamespace(baseNamespace);
+            service.importNamespace(appNamespace);
+
+            // Both namespaces should have access to system types
+            const baseStringType = service.getTypeInNamespace("string", "/base");
+            expect(baseStringType).toBeDefined();
+            
+            const appStringType = service.getTypeInNamespace("string", "/app");
+            expect(appStringType).toBeDefined();
+        });
+
+        test("should handle system type optimization in export adapters", () => {
+            // Test that system types are properly optimized in export scenarios
+            const optimizedNamespace: Namespace = {
+                qName: "/optimized",
+                types: new Map([
+                    ["OptimizedType", {
+                        qName: "/optimized/OptimizedType",
+                        category: "complex",
+                        kind: "object",
+                        properties: new Map([
+                            ["stringProp", {
+                                name: "stringProp",
+                                typeRef: "string", // Direct system type reference
+                                optional: false
+                            }],
+                            ["numberProp", {
+                                name: "numberProp", 
+                                typeRef: "number", // Direct system type reference
+                                optional: true
+                            }],
+                            ["booleanProp", {
+                                name: "booleanProp",
+                                typeRef: "boolean", // Direct system type reference
+                                optional: false
+                            }]
+                        ])
+                    } as ObjectTypeMeta]
+                ]),
+                exports: ["OptimizedType"],
+                imports: new Map()
+            };
+
+            service.importNamespace(optimizedNamespace);
+            
+            const optimizedType = service.getType("/optimized/OptimizedType") as ObjectTypeMeta;
+            expect(optimizedType).toBeDefined();
+            
+            // All system type references should be resolved
+            const stringProp = optimizedType.properties.get("stringProp");
+            expect(stringProp?.typeRef).toBe("string");
+            
+            const numberProp = optimizedType.properties.get("numberProp");
+            expect(numberProp?.typeRef).toBe("number");
+            expect(numberProp?.optional).toBe(true);
+            
+            const booleanProp = optimizedType.properties.get("booleanProp");
+            expect(booleanProp?.typeRef).toBe("boolean");
+        });
+    });
+
     describe("Registry Performance Optimization", () => {
         test("should maintain fast qualified name lookup", () => {
             // Test that the registry maintains its optimization index
@@ -535,6 +761,53 @@ describe("Import/Export Optimization", () => {
             for (let i = 0; i < 100; i++) {
                 const retrieved = service.getType(`/large/Type${i}`);
                 expect(retrieved).toBeDefined();
+            }
+        });
+
+        test("should maintain system namespace performance in large registries", () => {
+            // Test that system namespace doesn't degrade performance in large registries
+            const namespaces = [];
+            
+            // Create 50 namespaces, each with 10 types
+            for (let i = 0; i < 50; i++) {
+                const types = new Map();
+                const exports = [];
+                
+                for (let j = 0; j < 10; j++) {
+                    const typeName = `Type${j}`;
+                    types.set(typeName, {
+                        qName: `/ns${i}/${typeName}`,
+                        category: "complex",
+                        kind: "object",
+                        properties: new Map([
+                            ["id", {
+                                name: "id",
+                                typeRef: "string", // System type reference
+                                optional: false
+                            }]
+                        ])
+                    } as ObjectTypeMeta);
+                    exports.push(typeName);
+                }
+                
+                namespaces.push({
+                    qName: `/ns${i}`,
+                    types,
+                    exports,
+                    imports: new Map()
+                });
+            }
+
+            // Import all namespaces
+            namespaces.forEach(namespace => {
+                service.importNamespace(namespace);
+            });
+
+            // Verify system types are available in all namespaces
+            for (let i = 0; i < 50; i++) {
+                const stringType = service.getTypeInNamespace("string", `/ns${i}`);
+                expect(stringType).toBeDefined();
+                expect(stringType?.qName).toBe("string");
             }
         });
     });

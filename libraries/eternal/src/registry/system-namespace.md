@@ -71,3 +71,84 @@ Here, both `string` and `number` are resolved from the system namespace, and can
 
 - The system namespace provides a consistent, conflict-free set of standard types for all namespaces.
 - The rules above ensure reliable type resolution, prevent naming conflicts, and maintain clarity in type and namespace organization throughout the system.
+
+
+----
+
+Here’s a review of whether the rules from above satisfied in your RegistryService.ts implementation:
+
+1. System namespace is always present in every registry
+Current state:
+There is no code in the RegistryService constructor or anywhere else that ensures the system namespace is always present when a registry is created.
+Action needed:
+You should add logic to automatically add/import the system namespace (from system-namespace.ts) to the registry in the constructor if it is not already present.
+2. When importing any other namespace, the system namespace is automatically imported as well
+Current state:
+The importNamespace method does not automatically import the system namespace into the imported namespace or ensure its types are available for resolution.
+Action needed:
+You should update importNamespace to ensure that the system namespace is always available in the imported namespace’s imports (if not already present).
+3. Types from the system namespace can be referenced by their simple name in any other namespace, and cannot be redefined locally
+Current state:
+There is no explicit check in validateNamespaceForImport or type resolution logic to prevent a namespace from defining a type with the same name as a system type, nor to ensure that system types are always available by simple name.
+Action needed:
+Add a check in validateNamespaceForImport to prevent local type names from clashing with system type names.
+Ensure type resolution logic (e.g., in getTypeInNamespace or resolveTypeReference) always checks the system namespace for simple names if not found locally.
+4. Uniqueness and fast access using maps
+Current state:
+The typeIndex map and internalNamespaces map are used for fast lookup and uniqueness of types by qualified name.
+The buildTypeIndex method builds a map of all types by qualified name.
+There is a check for duplicate namespaces in validateNamespaceForImport.
+Action needed:
+For type uniqueness, ensure that the combination of namespace and type name is unique, and that system type names are not duplicated in user namespaces.
+5. No user-defined namespace can have the name system
+Current state:
+There is no explicit check in validateNamespaceForImport to prevent a user from creating a namespace named system.
+Action needed:
+Add a check in validateNamespaceForImport to reject any namespace with the name system (except the actual system namespace).
+Summary:
+
+The current implementation does not fully enforce the system namespace rules described in your documentation.
+You need to:
+Ensure the system namespace is always present in the registry.
+Automatically import the system namespace when importing any other namespace.
+Prevent type name clashes with system types.
+Prevent user-defined namespaces named system.
+Ensure type resolution always considers system types by simple name.
+
+---
+Based on the code in RegistryService.ts, here’s how path resolution is handled for type references in interfaces (e.g., property types, subtypes, etc.):
+
+Path Forms Supported
+1. Absolute Path (/company/worker)
+Supported:
+The code checks if a type reference starts with / and treats it as an absolute qualified name.
+In validateObjectType, if propMeta.typeRef.startsWith('/'), it checks the registry and the namespace for the type.
+In validateType, the same logic applies for extends (subtype).
+2. Relative Path (person)
+Supported:
+If the type reference does not start with /, it is treated as a local name and resolved using resolveTypeReference, which is expected to handle relative resolution within the current namespace.
+3. Parent Path (../person)
+Supported (Assumed):
+The function resolveTypeReference is called for non-absolute paths. If this function is implemented to handle .. segments (as described in your docs), then parent path resolution is supported.
+The code itself delegates to resolveTypeReference for this logic.
+4. Relative Path with Sub-namespace (department/manager)
+Supported (Assumed):
+Again, as long as resolveTypeReference is implemented to handle paths like department/manager relative to the current namespace, this is supported.
+Where Path Resolution is Used
+Property Types:
+In validateObjectType, for each property, the type reference is resolved using the above logic.
+Subtype Inheritance:
+In validateObjectType, for extends, the type reference is resolved using the same logic.
+Inverse Relationships:
+In validateObjectType, for inverseCollection, the target type reference is resolved using the same logic.
+What to Check
+The actual support for .. and sub-namespace resolution depends on the implementation of resolveTypeReference in your NamespaceMetadata module.
+If resolveTypeReference is robust and follows the path rules described in your documentation, then all forms of paths are supported in type references for interfaces, subtypes, and properties.
+Summary:
+
+The code in RegistryService.ts is structured to support all forms of paths for type references, as long as resolveTypeReference is implemented according to your path rules (absolute, relative, parent, sub-namespace).
+You should review or test resolveTypeReference to ensure it handles all these cases as described in your documentation.
+
+Can you verify if everything said above is  valid in and defined rueks respected in of RegistryServices.ts 
+
+THen verify and updayte the follwing test files #file:new-registry-service.test.ts , #file:type-definitions.test.ts , #file:import-export-optimization.test.ts , #file:namespace-metadata.test.ts , so that they asert respect of defined rules

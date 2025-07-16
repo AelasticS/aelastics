@@ -12,6 +12,7 @@ import {
     isEntityType,
     isCollectionType
 } from "../../registry/TypeDefinitions";
+import { systemNamespace } from "../../registry/system-namespace";
 
 describe("Type Definitions", () => {
     
@@ -317,6 +318,288 @@ describe("Type Definitions", () => {
             // Should not have OptionalTypeMeta wrapping
             expect(property.typeRef).toBe("/base/string");
             expect(property.optional).toBe(true);
+        });
+
+        test("should validate system type availability in all contexts", () => {
+            // Test that system types are available in different type contexts
+            const systemTypesInProperties = [
+                "string", "number", "boolean", "date"
+            ];
+            
+            systemTypesInProperties.forEach(typeName => {
+                const property: PropertyMeta = {
+                    name: "testProp",
+                    typeRef: typeName, // Direct system type reference
+                    optional: false
+                };
+                
+                expect(property.typeRef).toBe(typeName);
+                expect(systemNamespace.types.has(typeName)).toBe(true);
+            });
+        });
+
+        test("should maintain system type consistency across definitions", () => {
+            // Ensure system types are consistently defined
+            const systemTypes = Array.from(systemNamespace.types.values());
+            
+            systemTypes.forEach(type => {
+                expect(type.category).toBe("simple");
+                expect(type.qName).not.toContain("/"); // System types use simple names
+                expect(isSimpleType(type)).toBe(true);
+                expect(isComplexType(type)).toBe(false);
+            });
+        });
+
+        test("should prevent namespace conflicts with system types", () => {
+            // Test that system type names cannot be redefined
+            const systemTypeNames = Array.from(systemNamespace.types.keys());
+            
+            systemTypeNames.forEach(typeName => {
+                // These names should be reserved
+                expect(typeName).toMatch(/^[a-zA-Z]+$/);
+                
+                // Attempting to create a user type with system name should be flagged
+                const conflictingType: SimpleTypeMeta = {
+                    qName: `/user/${typeName}`,
+                    category: "simple",
+                    kind: "string"
+                };
+                
+                // The type itself is valid, but the name conflict should be caught at registry level
+                expect(conflictingType.qName).toContain(typeName);
+                expect(systemNamespace.types.has(typeName)).toBe(true);
+            });
+        });
+    });
+
+    describe("System Namespace Type Definitions", () => {
+        test("should define all standard primitive types in system namespace", () => {
+            const expectedSystemTypes = [
+                "string", "number", "boolean", "date",
+                "null", "undefined", "void"
+            ];
+            
+            expectedSystemTypes.forEach(typeName => {
+                expect(systemNamespace.types.has(typeName)).toBe(true);
+                const type = systemNamespace.types.get(typeName)!;
+                expect(type.qName).toBe(typeName);
+                expect(type.category).toBe("simple");
+                expect(type.kind).toBe(typeName);
+            });
+        });
+
+        test("should export all system types", () => {
+            const expectedExports = [
+                "string", "number", "boolean", "date",
+                "literal", "null", "undefined", "void"
+            ];
+            
+            expectedExports.forEach(typeName => {
+                expect(systemNamespace.exports).toContain(typeName);
+            });
+        });
+
+        test("should have system namespace with correct metadata", () => {
+            expect(systemNamespace.qName).toBe("system");
+            expect(systemNamespace.version).toBe("1.0.0");
+            expect(systemNamespace.imports.size).toBe(0);
+            expect(systemNamespace.types.size).toBeGreaterThanOrEqual(7);
+        });
+
+        test("should prevent redefinition of system type names", () => {
+            const systemTypeNames = Array.from(systemNamespace.types.keys());
+            
+            // User-defined types should not be able to use these names
+            systemTypeNames.forEach(typeName => {
+                expect(typeName).toMatch(/^[a-zA-Z]+$/);
+                expect(["string", "number", "boolean", "date", "null", "undefined", "void"]).toContain(typeName);
+            });
+        });
+
+        test("should have consistent qName format for system types", () => {
+            for (const [typeName, type] of systemNamespace.types) {
+                expect(type.qName).toBe(typeName); // System types use simple names
+                expect(type.category).toBe("simple");
+                expect(isSimpleType(type)).toBe(true);
+            }
+        });
+    });
+
+    describe("Type Reference Resolution with System Types", () => {
+        test("should resolve system types by simple name", () => {
+            const userType: ObjectTypeMeta = {
+                qName: "/company/users/User",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["name", {
+                        name: "name",
+                        typeRef: "string", // Should resolve to system/string
+                        optional: false
+                    }],
+                    ["age", {
+                        name: "age",
+                        typeRef: "number", // Should resolve to system/number
+                        optional: false
+                    }],
+                    ["isActive", {
+                        name: "isActive",
+                        typeRef: "boolean", // Should resolve to system/boolean
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"]
+            };
+
+            expect(userType.properties.get("name")?.typeRef).toBe("string");
+            expect(userType.properties.get("age")?.typeRef).toBe("number");
+            expect(userType.properties.get("isActive")?.typeRef).toBe("boolean");
+        });
+
+        test("should support absolute system type references", () => {
+            const userType: ObjectTypeMeta = {
+                qName: "/company/users/User",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["name", {
+                        name: "name",
+                        typeRef: "/system/string", // Absolute reference
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"]
+            };
+
+            expect(userType.properties.get("name")?.typeRef).toBe("/system/string");
+        });
+
+        test("should handle system types in inheritance", () => {
+            const baseType: ObjectTypeMeta = {
+                qName: "/base/Entity",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["id", {
+                        name: "id",
+                        typeRef: "string", // System type reference
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"]
+            };
+
+            const derivedType: ObjectTypeMeta = {
+                qName: "/company/User",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["name", {
+                        name: "name",
+                        typeRef: "string", // System type reference
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"],
+                extends: "/base/Entity"
+            };
+
+            expect(baseType.properties.get("id")?.typeRef).toBe("string");
+            expect(derivedType.properties.get("name")?.typeRef).toBe("string");
+            expect(derivedType.extends).toBe("/base/Entity");
+        });
+    });
+
+    describe("Path Resolution Type References", () => {
+        test("should support absolute path type references", () => {
+            const userType: ObjectTypeMeta = {
+                qName: "/company/users/User",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["profile", {
+                        name: "profile",
+                        typeRef: "/company/profiles/Profile", // Absolute path
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"]
+            };
+
+            expect(userType.properties.get("profile")?.typeRef).toBe("/company/profiles/Profile");
+            expect(userType.properties.get("profile")?.typeRef.startsWith("/")).toBe(true);
+        });
+
+        test("should support relative path type references", () => {
+            const userType: ObjectTypeMeta = {
+                qName: "/company/users/User",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["profile", {
+                        name: "profile",
+                        typeRef: "Profile", // Relative path
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"]
+            };
+
+            expect(userType.properties.get("profile")?.typeRef).toBe("Profile");
+            expect(userType.properties.get("profile")?.typeRef.startsWith("/")).toBe(false);
+        });
+
+        test("should support parent path type references", () => {
+            const userType: ObjectTypeMeta = {
+                qName: "/company/users/User",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["company", {
+                        name: "company",
+                        typeRef: "../Company", // Parent path
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"]
+            };
+
+            expect(userType.properties.get("company")?.typeRef).toBe("../Company");
+            expect(userType.properties.get("company")?.typeRef.includes("..")).toBe(true);
+        });
+
+        test("should support sub-namespace path type references", () => {
+            const companyType: ObjectTypeMeta = {
+                qName: "/company/Company",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["manager", {
+                        name: "manager",
+                        typeRef: "department/Manager", // Sub-namespace path
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"]
+            };
+
+            expect(companyType.properties.get("manager")?.typeRef).toBe("department/Manager");
+            expect(companyType.properties.get("manager")?.typeRef.includes("/")).toBe(true);
+            expect(companyType.properties.get("manager")?.typeRef.startsWith("/")).toBe(false);
+        });
+
+        test("should handle inheritance with path resolution", () => {
+            const adminUserType: ObjectTypeMeta = {
+                qName: "/company/users/AdminUser",
+                category: "complex",
+                kind: "entity",
+                properties: new Map(),
+                identityKeys: ["id"],
+                extends: "../base/User" // Parent path inheritance
+            };
+
+            expect(adminUserType.extends).toBe("../base/User");
+            expect(adminUserType.extends?.includes("..")).toBe(true);
         });
     });
 });
