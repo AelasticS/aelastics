@@ -2,9 +2,9 @@
 export type TypeCategory = 'simple' | 'complex' | 'special';
 
 /** Property types for inverse relationship metadata */
-export type SimplePropType = 'string' | 'number' | 'boolean' | 'date';
-export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
-export type PropertyType = SimplePropType | ComplexPropType;
+//export type SimplePropType = 'string' | 'number' | 'boolean' | 'date';
+// export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
+export type PropertyType = SimpleTypeKind | ComplexTypeKind;
 
 /** Simple type kinds */
 export type SimpleTypeKind = 
@@ -15,7 +15,12 @@ export type SimpleTypeKind =
     | 'literal'
     | 'null'
     | 'undefined'
-    | 'void';
+    | 'void'
+    | 'bigint'
+    | 'symbol'
+    | 'unknown'
+    | 'any'
+    | 'never';
 
 /** Complex type kinds */
 export type ComplexTypeKind = 
@@ -29,7 +34,8 @@ export type ComplexTypeKind =
     | 'tuple'
     | 'taggedUnion'
     | 'function'
-    | 'subtype';
+    | 'subtype'
+    | 'record';
 
 /** Special type kinds for references */
 export type SpecialTypeKind = 
@@ -68,7 +74,7 @@ export interface ObjectTypeMeta extends BaseTypeMeta {
     }>;
 }
 
-/** Array type metadata */
+/** Array<E> type metadata */
 export interface ArrayTypeMeta extends BaseTypeMeta {
     category: 'complex';
     kind: 'array';
@@ -77,7 +83,7 @@ export interface ArrayTypeMeta extends BaseTypeMeta {
     maxElements?: number;
 }
 
-/** Map type metadata */
+/** Map<K,V> type metadata */
 export interface MapTypeMeta extends BaseTypeMeta {
     category: 'complex';
     kind: 'map';
@@ -85,13 +91,21 @@ export interface MapTypeMeta extends BaseTypeMeta {
     valueType: string; // Qualified name of value type
 }
 
-/** Set type metadata */
+/** Set<V> type metadata */
 export interface SetTypeMeta extends BaseTypeMeta {
     category: 'complex';
     kind: 'set';
     elementType: string; // Qualified name of element type
 }
 
+
+/** Record<K,V> type metadata */
+export interface RecordTypeMeta extends BaseTypeMeta {
+    category: 'complex';
+    kind: 'record';
+    keyType: string; // Qualified name of key type
+    valueType: string; // Qualified name of value type
+}
 /** Union type metadata */
 export interface UnionTypeMeta extends BaseTypeMeta {
     category: 'complex';
