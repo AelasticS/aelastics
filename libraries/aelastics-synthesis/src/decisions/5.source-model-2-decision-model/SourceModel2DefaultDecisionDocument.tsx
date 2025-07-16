@@ -65,10 +65,10 @@ export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dm
 
     @E2E({
         input: gdmT.Issue,
-        output: ModelElement, // Use the base ModelElement type since SelectedOption is dynamic
+        output: dmT.BaseSelectedOption, // Use the concrete base type
         ruleName: "Issue2SelectedOption",
     })
-    private createSelectedOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<any> {
+    private createSelectedOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.IBaseSelectedOption> {
 
         let defaultOption = issue.possibleOptions.find((o: gdmT.IOption) => {
             return o.isDefault === true;

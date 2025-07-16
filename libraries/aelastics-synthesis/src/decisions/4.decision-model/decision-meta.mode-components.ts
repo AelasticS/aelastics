@@ -15,7 +15,7 @@ export const SelectedOption = (option: IOption) => {
     // Get the actual type instance for this specific option
     const SelectedOptionType = dm.SelectedOption(option);
     
-    return (props: WithRefProps<any>) => {
+    return (props: WithRefProps<dm.IBaseSelectedOption>) => {
         return new Element(SelectedOptionType, props, 'selectedOptions');
     };
 };
