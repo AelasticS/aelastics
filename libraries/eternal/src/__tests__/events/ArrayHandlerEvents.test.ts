@@ -4,18 +4,39 @@ import { EventPayload, Result } from "../../events/EventTypes";
 import { getEventPattern } from "../../events/SubscriptionManager";
 import { RegistryService } from "../../registry/RegistryService";
 import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
-import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
+import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta, TypeMeta } from "../../registry/TypeDefinitions";
+import { createTestRegistry } from "../utils/testRegistrySetup";
+
+// Define the Article interface
+interface IArticle {
+  title: string;
+  keywords: string[];
+}
 
 // Create test schema using the new registry system
 function createTestNamespace(): Namespace {
-  const simpleArrayTypeMeta: ObjectTypeMeta = {
-    qName: "/test/SimpleArrayType",
+  // Create the array type for keywords
+  const keywordArrayTypeMeta: ArrayTypeMeta = {
+    qName: "/test/KeywordArray",
+    category: "complex",
+    kind: "array",
+    elementType: "/std/string"
+  };
+
+  // Create the Article object type that has keywords array property
+  const articleTypeMeta: ObjectTypeMeta = {
+    qName: "/test/Article",
     category: "complex",
     kind: "object",
     properties: new Map([
-      ["numbers", {
-        name: "numbers",
-        typeRef: "/std/array</std/number>",
+      ["title", {
+        name: "title",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["keywords", {
+        name: "keywords",
+        typeRef: "/test/KeywordArray",
         optional: false
       } as PropertyMeta]
     ])
@@ -24,24 +45,17 @@ function createTestNamespace(): Namespace {
   return {
     qName: "/test",
     version: "1.0.0",
-    types: new Map([
-      ["SimpleArrayType", simpleArrayTypeMeta]
+    types: new Map<string, TypeMeta>([
+      ["KeywordArray", keywordArrayTypeMeta],
+      ["Article", articleTypeMeta]
     ]),
-    exports: ["SimpleArrayType"],
+    exports: ["KeywordArray", "Article"],
     imports: new Map()
   };
 }
 
 function createTestStore() {
-  const registryMetadata: RegistryMetadata = {
-    namespaces: new Map(),
-    name: "Test Registry",
-    version: "1.0.0",
-    created: new Date(),
-    lastModified: new Date()
-  };
-  
-  const registry = new RegistryService(registryMetadata);
+  const registry = createTestRegistry();
   const namespace = createTestNamespace();
   
   registry.importNamespace(namespace);
@@ -50,63 +64,66 @@ function createTestStore() {
 
 describe("ArrayHandler Events", () => {
   let store: ReturnType<typeof createStore>;
-  let simpleArrayObject: StoreObject;
+  let articleObject: IArticle;
 
   beforeEach(() => {
     // Initialize the store with the new registry system
     store = createTestStore();
 
-    // Create an object of type SimpleArrayType
-    simpleArrayObject = store.objects.create("/test/SimpleArrayType") as StoreObject;
+    // Create an Article object with keywords array property
+    articleObject = store.objects.create<IArticle>("/test/Article", { 
+      title: "Test Article",
+      keywords: [] 
+    });
 
     // Retrieve the latest version of the object
-    simpleArrayObject = store.objects.findByUUID<StoreObject>((simpleArrayObject as StoreObject)[uuid])!;
+    articleObject = store.objects.findByUUID<IArticle>((articleObject as any)[uuid])!;
   });
 
   test("should emit events and track changes for push operation on array of simple values", () => {
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
       // Verify the event properties
-      expect(getEventPattern(event)).toBe("before.update.SimpleArrayType.numbers");
+      expect(getEventPattern(event)).toBe("before.update.Article.keywords");
       expect(event.changes?.[0].changeType).toBe("add");
       expect(event.changes?.[0].index).toBe(0);
-      expect(event.changes?.[0].newValue).toBe(42);
+      expect(event.changes?.[0].newValue).toBe("javascript");
       return { success: true }; // Simulate a successful result
     });
 
     // Mock after.update handler
     const afterUpdateHandler = jest.fn((event: EventPayload): Result => {
       // Verify the event properties
-      expect(getEventPattern(event)).toBe("after.update.SimpleArrayType.numbers");
+      expect(getEventPattern(event)).toBe("after.update.Article.keywords");
       expect(event.changes?.[0].changeType).toBe("add");
       expect(event.changes?.[0].index).toBe(0);
-      expect(event.changes?.[0].newValue).toBe(42);
+      expect(event.changes?.[0].newValue).toBe("javascript");
       return { success: true }; // Simulate a successful result
     });
 
     // Subscribe to events
-    store.events.subscribe(beforeUpdateHandler, "before", "update", "SimpleArrayType", "numbers");
-    store.events.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
+    store.events.subscribe(beforeUpdateHandler, "before", "update", "Article", "keywords");
+    store.events.subscribe(afterUpdateHandler, "after", "update", "Article", "keywords");
 
     // Perform the push operation using updateObject
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.push(42);
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.push("javascript");
+    }, articleObject);
 
     // Verify that the handlers were called
     expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);
     expect(afterUpdateHandler).toHaveBeenCalledTimes(1);
 
     // Verify the final state of the array
-    expect(simpleArrayObject.numbers).toEqual([42]);
+    expect(articleObject.keywords).toEqual(["javascript"]);
   });
 
   
   test("should emit events and track changes for pop operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.push(10, 20, 30);
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.push("react", "typescript", "javascript");
+    }, articleObject);
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -114,7 +131,7 @@ describe("ArrayHandler Events", () => {
       expect(getEventPattern(event)).toBe("before.update.SimpleArrayType.numbers");
       expect(event.changes?.[0].changeType).toBe("remove");
       expect(event.changes?.[0].index).toBe(2); // Last index
-      expect(event.changes?.[0].oldValue).toBe(30); // Last value
+      expect(event.changes?.[0].oldValue).toBe("javascript"); // Last value
       return { success: true }; // Simulate a successful result
     });
 
@@ -124,7 +141,7 @@ describe("ArrayHandler Events", () => {
       expect(getEventPattern(event)).toBe("after.update.SimpleArrayType.numbers");
       expect(event.changes?.[0].changeType).toBe("remove");
       expect(event.changes?.[0].index).toBe(2); // Last index
-      expect(event.changes?.[0].oldValue).toBe(30); // Last value
+      expect(event.changes?.[0].oldValue).toBe("javascript"); // Last value
       return { success: true }; // Simulate a successful result
     });
 
@@ -133,23 +150,23 @@ describe("ArrayHandler Events", () => {
     store.events.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the pop operation using updateObject
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.pop();
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.pop();
+    }, articleObject);
 
     // Verify that the handlers were called
     expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);
     expect(afterUpdateHandler).toHaveBeenCalledTimes(1);
 
     // Verify the final state of the array
-    expect(simpleArrayObject.numbers).toEqual([10, 20]);
+    expect(articleObject.keywords).toEqual(["react", "typescript"]);
   });
 
   test("should emit events and track changes for pop operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.push(10, 20, 30);
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.push("react", "typescript", "javascript");
+    }, articleObject);
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -157,7 +174,7 @@ describe("ArrayHandler Events", () => {
       expect(getEventPattern(event)).toBe("before.update.SimpleArrayType.numbers");
       expect(event.changes?.[0].changeType).toBe("remove");
       expect(event.changes?.[0].index).toBe(2); // Last index
-      expect(event.changes?.[0].oldValue).toBe(30); // Last value
+      expect(event.changes?.[0].oldValue).toBe("javascript"); // Last value
       return { success: true }; // Simulate a successful result
     });
 
@@ -167,7 +184,7 @@ describe("ArrayHandler Events", () => {
       expect(getEventPattern(event)).toBe("after.update.SimpleArrayType.numbers");
       expect(event.changes?.[0].changeType).toBe("remove");
       expect(event.changes?.[0].index).toBe(2); // Last index
-      expect(event.changes?.[0].oldValue).toBe(30); // Last value
+      expect(event.changes?.[0].oldValue).toBe("javascript"); // Last value
       return { success: true }; // Simulate a successful result
     });
 
@@ -176,23 +193,23 @@ describe("ArrayHandler Events", () => {
     store.events.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the pop operation using updateObject
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.pop();
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.pop();
+    }, articleObject);
 
     // Verify that the handlers were called
     expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);
     expect(afterUpdateHandler).toHaveBeenCalledTimes(1);
 
     // Verify the final state of the array
-    expect(simpleArrayObject.numbers).toEqual([10, 20]);
+    expect(articleObject.keywords).toEqual(["react", "typescript"]);
   });
 
   test("should emit events and track changes for unshift operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.push(20, 30);
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.push("typescript", "javascript");
+    }, articleObject);
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -200,7 +217,7 @@ describe("ArrayHandler Events", () => {
       expect(getEventPattern(event)).toBe("before.update.SimpleArrayType.numbers");
       expect(event.changes?.[0].changeType).toBe("add");
       expect(event.changes?.[0].index).toBe(0); // First index
-      expect(event.changes?.[0].newValue).toBe(10); // New first value
+      expect(event.changes?.[0].newValue).toBe("react"); // New first value
       return { success: true }; // Simulate a successful result
     });
 
@@ -210,7 +227,7 @@ describe("ArrayHandler Events", () => {
       expect(getEventPattern(event)).toBe("after.update.SimpleArrayType.numbers");
       expect(event.changes?.[0].changeType).toBe("add");
       expect(event.changes?.[0].index).toBe(0); // First index
-      expect(event.changes?.[0].newValue).toBe(10); // New first value
+      expect(event.changes?.[0].newValue).toBe("react"); // New first value
       return { success: true }; // Simulate a successful result
     });
 
@@ -219,23 +236,23 @@ describe("ArrayHandler Events", () => {
     store.events.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the unshift operation using updateObject
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.unshift(10);
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.unshift("react");
+    }, articleObject);
 
     // Verify that the handlers were called
     expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);
     expect(afterUpdateHandler).toHaveBeenCalledTimes(1);
 
     // Verify the final state of the array
-    expect(simpleArrayObject.numbers).toEqual([10, 20, 30]);
+    expect(articleObject.keywords).toEqual(["react", "typescript", "javascript"]);
   });
 
   test("should emit events and track changes for splice operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.push(10, 20, 30, 40);
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.push("react", "typescript", "javascript", "node");
+    }, articleObject);
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -243,10 +260,10 @@ describe("ArrayHandler Events", () => {
       expect(getEventPattern(event)).toBe("before.update.SimpleArrayType.numbers");
       expect(event.changes?.[0].changeType).toBe("remove");
       expect(event.changes?.[0].index).toBe(1); // Index of the removed element
-      expect(event.changes?.[0].oldValue).toBe(20); // Removed value
+      expect(event.changes?.[0].oldValue).toBe("typescript"); // Removed value
       expect(event.changes?.[1].changeType).toBe("remove");
       expect(event.changes?.[1].index).toBe(2); // Index of the removed element
-      expect(event.changes?.[1].oldValue).toBe(30); // Removed value
+      expect(event.changes?.[1].oldValue).toBe("javascript"); // Removed value
       return { success: true }; // Simulate a successful result
     });
 
@@ -256,10 +273,10 @@ describe("ArrayHandler Events", () => {
       expect(getEventPattern(event)).toBe("after.update.SimpleArrayType.numbers");
       expect(event.changes?.[0].changeType).toBe("remove");
       expect(event.changes?.[0].index).toBe(1); // Index of the removed element
-      expect(event.changes?.[0].oldValue).toBe(20); // Removed value
+      expect(event.changes?.[0].oldValue).toBe("typescript"); // Removed value
       expect(event.changes?.[1].changeType).toBe("remove");
       expect(event.changes?.[1].index).toBe(2); // Index of the removed element
-      expect(event.changes?.[1].oldValue).toBe(30); // Removed value
+      expect(event.changes?.[1].oldValue).toBe("javascript"); // Removed value
       return { success: true }; // Simulate a successful result
     });
 
@@ -268,23 +285,23 @@ describe("ArrayHandler Events", () => {
     store.events.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the splice operation using updateObject
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.splice(1, 2); // Remove 2 elements starting from index 1
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.splice(1, 2); // Remove 2 elements starting from index 1
+    }, articleObject);
 
     // Verify that the handlers were called
     expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);
     expect(afterUpdateHandler).toHaveBeenCalledTimes(1);
 
     // Verify the final state of the array
-    expect(simpleArrayObject.numbers).toEqual([10, 40]);
+    expect(articleObject.keywords).toEqual(["react", "node"]);
   });
 
   test("should emit events and track changes for sort operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.push(30, 10, 20);
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.push("javascript", "react", "typescript");
+    }, articleObject);
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -307,23 +324,23 @@ describe("ArrayHandler Events", () => {
     store.events.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the sort operation using updateObject
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.sort((a:number, b:number) => a - b); // Sort in ascending order
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.sort((a:string, b:string) => a.localeCompare(b)); // Sort in ascending order
+    }, articleObject);
 
     // Verify that the handlers were called
     expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);
     expect(afterUpdateHandler).toHaveBeenCalledTimes(1);
 
     // Verify the final state of the array
-    expect(simpleArrayObject.numbers).toEqual([10, 20, 30]);
+    expect(articleObject.keywords).toEqual(["javascript", "react", "typescript"]);
   });
 
   test("should emit events and track changes for reverse operation on array of simple values", () => {
     // Initialize the array with values
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.push(10, 20, 30);
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.push("react", "typescript", "javascript");
+    }, articleObject);
 
     // Mock before.update handler
     const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -346,16 +363,16 @@ describe("ArrayHandler Events", () => {
     store.events.subscribe(afterUpdateHandler, "after", "update", "SimpleArrayType", "numbers");
 
     // Perform the reverse operation using updateObject
-    simpleArrayObject = store.objects.update((obj) => {
-      obj.numbers.reverse(); // Reverse the array
-    }, simpleArrayObject);
+    articleObject = store.objects.update((obj) => {
+      obj.keywords.reverse(); // Reverse the array
+    }, articleObject);
 
     // Verify that the handlers were called
     expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);
     expect(afterUpdateHandler).toHaveBeenCalledTimes(1);
 
     // Verify the final state of the array
-    expect(simpleArrayObject.numbers).toEqual([30, 20, 10]);
+    expect(articleObject.keywords).toEqual(["javascript", "typescript", "react"]);
   });
 });
 
@@ -375,6 +392,14 @@ function createObjectArrayNamespace(): Namespace {
     ])
   };
 
+  // Create the array type for RelatedObject
+  const relatedObjectArrayTypeMeta: ArrayTypeMeta = {
+    qName: "/test/RelatedObjectArray",
+    category: "complex",
+    kind: "array",
+    elementType: "/test/RelatedObject"
+  };
+
   const objectArrayTypeMeta: ObjectTypeMeta = {
     qName: "/test/ObjectArrayType",
     category: "complex",
@@ -382,7 +407,7 @@ function createObjectArrayNamespace(): Namespace {
     properties: new Map([
       ["items", {
         name: "items",
-        typeRef: "/std/array</test/RelatedObject>",
+        typeRef: "/test/RelatedObjectArray",
         optional: false
       } as PropertyMeta]
     ]),
@@ -398,25 +423,18 @@ function createObjectArrayNamespace(): Namespace {
   return {
     qName: "/test",
     version: "1.0.0",
-    types: new Map([
+    types: new Map<string, TypeMeta>([
+      ["RelatedObjectArray", relatedObjectArrayTypeMeta],
       ["ObjectArrayType", objectArrayTypeMeta],
       ["RelatedObject", relatedObjectTypeMeta]
     ]),
-    exports: ["ObjectArrayType", "RelatedObject"],
+    exports: ["RelatedObjectArray", "ObjectArrayType", "RelatedObject"],
     imports: new Map()
   };
 }
 
 function createObjectArrayStore() {
-  const registryMetadata: RegistryMetadata = {
-    namespaces: new Map(),
-    name: "Test Registry",
-    version: "1.0.0",
-    created: new Date(),
-    lastModified: new Date()
-  };
-  
-  const registry = new RegistryService(registryMetadata);
+  const registry = createTestRegistry();
   const namespace = createObjectArrayNamespace();
   
   registry.importNamespace(namespace);
@@ -487,7 +505,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for pop operation on array of objects", () => {
         // Create a related object and add it to the array
-        let relatedObject = store.objects.create("RelatedObject") as StoreObject;
+        let relatedObject = store.objects.create("/test/RelatedObject") as StoreObject;
     
         // Add the related object to the array
         objectArrayObject = store.objects.update((obj) => {

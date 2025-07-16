@@ -1,5 +1,7 @@
+import { randomUUID } from 'crypto';
+
 export function generateUUID(): string {
-  return crypto.randomUUID()
+  return randomUUID()
 }
 
 /** Utility function to check if a value is an object with a UUID */

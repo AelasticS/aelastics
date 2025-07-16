@@ -1,6 +1,7 @@
 import { RegistryService } from "../../registry/RegistryService";
 import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
 import { TypeMeta, ObjectTypeMeta, ArrayTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
+import { NamespaceImportError } from "../../registry/RegistryService"
 
 describe("RegistryService", () => {
     let registry: RegistryMetadata;
@@ -27,9 +28,13 @@ describe("RegistryService", () => {
                 imports: new Map()
             };
 
-            const result = service.importNamespace(namespace);
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toEqual([]);
+            let errorCaught = false;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                errorCaught = true;
+            }
+            expect(errorCaught).toBe(false);
 
             const retrieved = service.getNamespace("/company/users");
             expect(retrieved).toEqual(namespace);
@@ -247,10 +252,15 @@ describe("RegistryService", () => {
             };
 
             service.importNamespace(baseNamespace);
-            const result = service.importNamespace(invalidImportNamespace);
-
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContain("Imported namespace '/nonexistent' does not exist");
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(invalidImportNamespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.name).toBe("NamespaceImportError");
+            expect(error!.validationResult.errors).toContain("Imported namespace '/nonexistent' does not exist");
         });
 
         test("should validate exported types exist", () => {
@@ -290,10 +300,15 @@ describe("RegistryService", () => {
             };
 
             service.importNamespace(baseNamespace);
-            const result = service.importNamespace(invalidImportNamespace);
-
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContain("Type 'NonExistentType' is not exported by namespace '/base'");
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(invalidImportNamespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.name).toBe("NamespaceImportError");
+            expect(error!.validationResult.errors).toContain("Type 'NonExistentType' is not exported by namespace '/base'");
         });
 
         test("should prevent duplicate namespace imports", () => {
@@ -306,10 +321,15 @@ describe("RegistryService", () => {
             };
 
             service.importNamespace(namespace);
-            const result = service.importNamespace(namespace);
-
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContain("Namespace '/company/users' already exists");
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.name).toBe("NamespaceImportError");
+            expect(error!.validationResult.errors).toContain("Namespace '/company/users' already exists");
         });
     });
 
@@ -337,10 +357,15 @@ describe("RegistryService", () => {
                 imports: new Map()
             };
 
-            const result = service.importNamespace(namespace);
-
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContain("Property 'email' missing required 'optional' flag");
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.name).toBe("NamespaceImportError");
+            expect(error!.validationResult.errors).toContain("Property 'email' missing required 'optional' flag");
         });
 
         test("should validate inverse collection target types are objects", () => {
@@ -365,10 +390,15 @@ describe("RegistryService", () => {
                 imports: new Map()
             };
 
-            const result = service.importNamespace(namespace);
-
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContain("Inverse property 'posts' references unknown target type '/company/posts/Post'");
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.name).toBe("NamespaceImportError");
+            expect(error!.validationResult.errors).toContain("Inverse property 'posts' references unknown target type '/company/posts/Post'");
         });
 
         test("should validate entity identity keys exist as properties", () => {
@@ -392,10 +422,15 @@ describe("RegistryService", () => {
                 imports: new Map()
             };
 
-            const result = service.importNamespace(namespace);
-
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContain("Identity key property 'id' not found in entity '/company/users/User'");
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.name).toBe("NamespaceImportError");
+            expect(error!.validationResult.errors).toContain("Identity key property 'id' not found in entity '/company/users/User'");
         });
     });
 

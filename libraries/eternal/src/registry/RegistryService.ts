@@ -12,6 +12,16 @@ import {
 } from "./NamespaceMetadata";
 import { InternalNamespace } from "./InternalNamespace";
 
+/** Custom error for namespace import failures */
+export class NamespaceImportError extends Error {
+    public validationResult: ValidationResult;
+    constructor(message: string, validationResult: ValidationResult) {
+        super(message);
+        this.name = "NamespaceImportError";
+        this.validationResult = validationResult;
+    }
+}
+
 /** Registry service - provides read-only lookup and import/export operations */
 export class RegistryService {
     private registry: RegistryMetadata;
@@ -135,11 +145,11 @@ export class RegistryService {
     // ===== IMPORT/EXPORT OPERATIONS =====
 
     /** Import namespace into registry */
-    public importNamespace(namespace: Namespace): ValidationResult {
+    public importNamespace(namespace: Namespace): void {
         const result = this.validateNamespaceForImport(namespace);
         
         if (!result.isValid) {
-            return result;
+            throw new NamespaceImportError("Namespace import failed", result);
         }
         
         // Create internal namespace with resolved types optimization
@@ -148,21 +158,21 @@ export class RegistryService {
         // Compute resolved types and check for errors
         const resolvedTypesErrors = internalNamespace.computeResolvedTypes(this.registry);
         if (resolvedTypesErrors.length > 0) {
-            return {
+            throw new NamespaceImportError("Namespace import failed: resolved types error", {
                 isValid: false,
                 errors: resolvedTypesErrors,
                 warnings: []
-            };
+            });
         }
         
         // Check for circular import dependencies
         const circularImportErrors = internalNamespace.detectCircularImports(this.registry);
         if (circularImportErrors.length > 0) {
-            return {
+            throw new NamespaceImportError("Namespace import failed: circular import error", {
                 isValid: false,
                 errors: circularImportErrors,
                 warnings: []
-            };
+            });
         }
         
         // Store both the regular namespace and internal namespace
@@ -170,8 +180,6 @@ export class RegistryService {
         this.internalNamespaces.set(namespace.qName, internalNamespace);
         
         this.refreshIndex();
-        
-        return result;
     }
 
     /** Export namespace from registry */

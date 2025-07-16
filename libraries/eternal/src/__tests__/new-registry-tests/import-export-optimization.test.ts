@@ -10,7 +10,7 @@ import {
     PropertyMeta, 
     SimpleTypeMeta 
 } from "../../registry/TypeDefinitions";
-import { RegistryService } from "../../registry/RegistryService";
+import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
 
 describe("Import/Export Optimization", () => {
     let registry: RegistryMetadata;
@@ -66,14 +66,15 @@ describe("Import/Export Optimization", () => {
                 imports: new Map([["/base", ["string"]]])
             };
 
-            const result = service.importNamespace(namespace);
-            
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toEqual([]);
-            
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeUndefined();
             const importedType = service.getType("/company/users/User") as ObjectTypeMeta;
             const emailProp = importedType.properties.get("email");
-            
             expect(emailProp?.typeRef).toBe("/base/string");
             expect(emailProp?.optional).toBe(true);
         });
@@ -96,11 +97,13 @@ describe("Import/Export Optimization", () => {
                 imports: new Map()
             };
 
-            const result = service.importNamespace(namespace);
-            
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toEqual([]);
-            
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeUndefined();
             const importedType = service.getType("/company/users/UserList") as ArrayTypeMeta;
             expect(importedType.elementType).toBe("/company/users/User");
         });
@@ -142,14 +145,15 @@ describe("Import/Export Optimization", () => {
                 imports: new Map()
             };
 
-            const result = service.importNamespace(namespace);
-            
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toEqual([]);
-            
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeUndefined();
             const importedType = service.getType("/family/Person") as ObjectTypeMeta;
             const parentProp = importedType.properties.get("parent");
-            
             expect(parentProp?.typeRef).toBe("/family/Person");
         });
     });
@@ -246,14 +250,15 @@ describe("Import/Export Optimization", () => {
                 ])
             };
 
-            const result = service.importNamespace(namespace);
-            
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toEqual([]);
-            
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(namespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeUndefined();
             const importedType = service.getType("/company/users/User") as ObjectTypeMeta;
             const inverseRel = importedType.inverseCollection?.get("posts");
-            
             expect(inverseRel?.propName).toBe("author");
             expect(inverseRel?.targetTypeQName).toBe("/company/posts/Post");
             expect(inverseRel?.isCollection).toBe(true);
@@ -328,14 +333,15 @@ describe("Import/Export Optimization", () => {
             };
 
             service.importNamespace(baseNamespace);
-            const result = service.importNamespace(appNamespace);
-            
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toEqual([]);
-            
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(appNamespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeUndefined();
             const userType = service.getType("/app/User") as ObjectTypeMeta;
             const nameProp = userType.properties.get("name");
-            
             expect(nameProp?.typeRef).toBe("/base/string");
         });
 
@@ -364,10 +370,15 @@ describe("Import/Export Optimization", () => {
             };
 
             // Try to import without base namespace present
-            const result = service.importNamespace(appNamespace);
-            
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContain("Imported namespace '/base' does not exist");
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(appNamespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeDefined();
+            expect(error!.name).toBe("NamespaceImportError");
+            expect(error!.validationResult.errors).toContain("Imported namespace '/base' does not exist");
         });
     });
 
@@ -513,10 +524,13 @@ describe("Import/Export Optimization", () => {
                 imports: new Map()
             };
 
-            const result = service.importNamespace(largeNamespace);
-            expect(result.isValid).toBe(true);
-            expect(result.errors).toEqual([]);
-
+            let error: NamespaceImportError | undefined;
+            try {
+                service.importNamespace(largeNamespace);
+            } catch (err) {
+                error = err as NamespaceImportError;
+            }
+            expect(error).toBeUndefined();
             // Verify all types are accessible
             for (let i = 0; i < 100; i++) {
                 const retrieved = service.getType(`/large/Type${i}`);
