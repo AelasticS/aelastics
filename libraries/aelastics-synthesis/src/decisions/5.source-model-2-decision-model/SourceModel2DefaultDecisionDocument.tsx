@@ -65,12 +65,12 @@ export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dm
 
     @E2E({
         input: gdmT.Issue,
-        output: dmT.SelectedOption,
+        output: ModelElement, // Use the base ModelElement type since SelectedOption is dynamic
         ruleName: "Issue2SelectedOption",
     })
-    private createSelectedOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.ISelectedOption> {
+    private createSelectedOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<any> {
 
-        var defaultOption = issue.possibleOptions.find((o: gdmT.IOption) => {
+        let defaultOption = issue.possibleOptions.find((o: gdmT.IOption) => {
             return o.isDefault === true;
         });
 
@@ -78,17 +78,23 @@ export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dm
             defaultOption = issue.possibleOptions[0];
         }
 
+        // Ensure defaultOption is defined and of correct type
+        if (!defaultOption) {
+            throw new Error("No possible options available for issue: " + issue.label);
+        }
+
+        // Create the specific component for this option
+        const SelectedOptionForThisOption = dmC.SelectedOption(defaultOption);
+
         return (
-            <dmC.SelectedOption
+            <SelectedOptionForThisOption
                 name={`Selected option for ${sourceModelElement.name} is ${defaultOption.name}`}
                 description={`Selected option for ${sourceModelElement.name} is ${defaultOption.name}`}
+
                 assumptions="Default assumptions"
                 justification="Default justification"
                 consequences="Default consequences"
-                ref={defaultOption}
-                newIssues={defaultOption.newIssues.map((issue: gdmT.IIssue) => {
-                    return this.createSelectedOptionForIssue(issue, sourceModelElement);
-                })}
+                ref={defaultOption as gdmT.IOption}
             />
         );
     }

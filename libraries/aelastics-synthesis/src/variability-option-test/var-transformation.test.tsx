@@ -219,7 +219,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @VarOption("RelationshipToElement", () => true)
+  @VarOption("RelationshipToElement", (decision) => true)
   RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
     const codomain = et.getCodomain(rel.ordinaryMappings[0]);
     const domain = et.getInverse(rel.ordinaryMappings[0]);

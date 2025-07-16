@@ -22,9 +22,19 @@ export const Issue: Template<gdm.IIssue> = (props) => {
 
 export const SubIssue: Template<gdm.IIssue> = (props) => {
     // todo: there is a problem with 3rd parameter, when structure is recursive. Sometimes it is 'roots' and sometimes 'elements'
-    return new Element(gdm.Issue, props, 'newIssues');
+    return new Element(gdm.Issue, props, 'subIssues');
 }
 
 export const Dependency: Template<gdm.IDependency> = (props) => {
     return new Element(gdm.Constraint, props, undefined);
 }
+
+export const SimpleOption: Template<gdm.ISimpleOption> = (props) => {
+    return new Element(gdm.Option, props, 'optionType');
+}
+
+export const CompositeOption: Template<gdm.ICompositeOption> = (props) => {
+    return new Element(gdm.Option, props, 'optionType');
+}
+
+

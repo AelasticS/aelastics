@@ -1,5 +1,5 @@
 
-import * as t from "aelastics-types"
+import * as t from "aelastics-types";
 
 
 // ############     PRIMER SA UNION OBJEKTIMA    ##############
@@ -185,6 +185,56 @@ type IRelationship2 = {
         NoPrefixSufix: false
     }
 };
+
+
+type IRelationship3 = {
+    ForeignKeyOrSeparateTable?: {
+        ForeignKey: {
+            isSelected: true
+        },
+        SeparateTable: {
+            isSelected: false,
+        }
+    } | {
+        ForeignKey: {
+            isSelected: false,
+        },
+        SeparateTable: {
+            isSelected: true,
+            NamingConventionForTable: {
+                ByRoleName: true,
+                ByEntitiesName: false
+            } | {
+                ByRoleName: false,
+                ByEntitiesName: true
+            }
+        }
+    },
+    FKNamingConvention: {
+        ByRoleName: true,
+        ByPKFromOriginTable: false
+    } | {
+        ByRoleName: false,
+        ByPKFromOriginTable: true
+    },
+    PKNamingConvention: {
+        AddPrefix: {
+            isSlected: true,
+            value: string
+        },
+        AddSufix: false,
+        NoPrefixSufix: false
+    } | {
+        AddPrefix: false,
+        AddSufix: false,
+        NoPrefixSufix: true
+    } | {
+        AddPrefix: false,
+        AddSufix: true,
+        NoPrefixSufix: false
+    }
+};
+
 
 function checkIRelationType2(decision: IRelationship2): boolean {
 
