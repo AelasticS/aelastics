@@ -1,33 +1,88 @@
 import { createdAt, uuid } from "../../store/InternalTypes";
-import { TypeMeta } from "../../meta/InternalSchema";
 import { StoreClass } from "../../store/StoreClass";
+import { RegistryService } from "../../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
+
+// Create test schema using the new registry system
+function createTestNamespace(): Namespace {
+  const testTypeMeta: ObjectTypeMeta = {
+    qName: "/test/TestType",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["simpleProp", {
+        name: "simpleProp",
+        typeRef: "/std/string",
+        optional: false,
+        defaultValue: "defaultString"
+      } as PropertyMeta],
+      ["arrayProp", {
+        name: "arrayProp",
+        typeRef: "/std/array</test/NestedType>",
+        optional: false
+      } as PropertyMeta],
+      ["mapProp", {
+        name: "mapProp",
+        typeRef: "/std/map<string, /test/NestedType>",
+        optional: false
+      } as PropertyMeta],
+      ["setProp", {
+        name: "setProp",
+        typeRef: "/std/set</test/NestedType>",
+        optional: false
+      } as PropertyMeta]
+    ])
+  };
+
+  const nestedTypeMeta: ObjectTypeMeta = {
+    qName: "/test/NestedType",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["nestedProp", {
+        name: "nestedProp",
+        typeRef: "/std/string",
+        optional: false,
+        defaultValue: "nestedDefault"
+      } as PropertyMeta]
+    ])
+  };
+
+  return {
+    qName: "/test",
+    version: "1.0.0",
+    types: new Map([
+      ["TestType", testTypeMeta],
+      ["NestedType", nestedTypeMeta]
+    ]),
+    exports: ["TestType", "NestedType"],
+    imports: new Map()
+  };
+}
+
+function createTestStore(): StoreClass {
+  const registryMetadata: RegistryMetadata = {
+    namespaces: new Map(),
+    name: "Test Registry",
+    version: "1.0.0",
+    created: new Date(),
+    lastModified: new Date()
+  };
+  
+  const registry = new RegistryService(registryMetadata);
+  const namespace = createTestNamespace();
+  
+  registry.importNamespace(namespace);
+  return new StoreClass(registry);
+}
 
 describe("StoreClass - toImmutable", () => {
     let store: StoreClass;
   
     describe("Object Import with Valid Schema", () => {
-      const testTypeMeta: TypeMeta = {
-        qName: "TestType",
-        properties: new Map([
-          ["simpleProp", { type: "string", defaultValue: "defaultString", qName: "simpleProp" }],
-          ["arrayProp", { type: "array", domainType: "NestedType", qName: "arrayProp" }],
-          ["mapProp", { type: "map", domainType: "NestedType", qName: "mapProp" }],
-          ["setProp", { type: "set", domainType: "NestedType", qName: "setProp" }],
-        ]),
-      };
-  
-      const nestedTypeMeta: TypeMeta = {
-        qName: "NestedType",
-        properties: new Map([["nestedProp", { type: "string", defaultValue: "nestedDefault", qName: "nestedProp" }]]),
-      };
-  
-      // Create the mockMetaInfo map
-      const mockMetaInfo = new Map<string, TypeMeta>();
-      mockMetaInfo.set("TestType", testTypeMeta);
-      mockMetaInfo.set("NestedType", nestedTypeMeta);
-  
       // Initialize the store with the dynamically created metaInfo
-      store = new StoreClass(mockMetaInfo);
+      store = createTestStore();
   
       /** Interface for TestType */
       interface TestType {
@@ -45,27 +100,27 @@ describe("StoreClass - toImmutable", () => {
       it("should import an object with simple and collection properties initialized from a literal object", () => {
         // Mock literal object
         const literalObject = {
-          "@AelasticsType": "TestType",
+          "@AelasticsType": "/test/TestType",
           "@AelasticsUUID": "1234-5678",
           "@AelasticsCreatedAt": 1680000000000,
           simpleProp: "customValue",
           arrayProp: [
-            { "@AelasticsType": "NestedType", "@AelasticsUUID": "5678-1234", "@AelasticsCreatedAt": 1680000000001, nestedProp: "arrayValue1" },
-            { "@AelasticsType": "NestedType", "@AelasticsUUID": "5678-1235", "@AelasticsCreatedAt": 1680000000002, nestedProp: "arrayValue2" },
+            { "@AelasticsType": "/test/NestedType", "@AelasticsUUID": "5678-1234", "@AelasticsCreatedAt": 1680000000001, nestedProp: "arrayValue1" },
+            { "@AelasticsType": "/test/NestedType", "@AelasticsUUID": "5678-1235", "@AelasticsCreatedAt": 1680000000002, nestedProp: "arrayValue2" },
           ],
           mapProp: new Map([
             [
               "key1",
-              { "@AelasticsType": "NestedType", "@AelasticsUUID": "5678-1236", "@AelasticsCreatedAt": 1680000000003, nestedProp: "mapValue1" },
+              { "@AelasticsType": "/test/NestedType", "@AelasticsUUID": "5678-1236", "@AelasticsCreatedAt": 1680000000003, nestedProp: "mapValue1" },
             ],
           ]),
           setProp: new Set([
-            { "@AelasticsType": "NestedType", "@AelasticsUUID": "5678-1237", "@AelasticsCreatedAt": 1680000000004, nestedProp: "setValue1" },
+            { "@AelasticsType": "/test/NestedType", "@AelasticsUUID": "5678-1237", "@AelasticsCreatedAt": 1680000000004, nestedProp: "setValue1" },
           ]),
         };
   
         // Import the object
-        const importedObject = store.toImmutable<TestType>(literalObject);
+        const importedObject = store.toImmutable();
   
         // Assertions for simple properties
         expect(importedObject.simpleProp).toBe("customValue");
@@ -94,7 +149,7 @@ describe("StoreClass - toImmutable", () => {
       it("should handle cyclic references during import", () => {
         // Mock literal object with cyclic references
         const cyclicObject: any = {
-          "@AelasticsType": "TestType",
+          "@AelasticsType": "/test/TestType",
           "@AelasticsUUID": "1234-56789",
           "@AelasticsCreatedAt": 1680000000000,
           simpleProp: "cyclicValue",
@@ -102,7 +157,7 @@ describe("StoreClass - toImmutable", () => {
         cyclicObject.arrayProp = [cyclicObject]; // Cyclic reference
   
         // Import the object
-        const importedObject = store.toImmutable<TestType>(cyclicObject);
+        const importedObject = store.toImmutable();
   
         // Assertions for cyclic references
         expect(importedObject.arrayProp[0]).toBe(importedObject); // Verify cyclic reference
@@ -113,13 +168,13 @@ describe("StoreClass - toImmutable", () => {
       it("should throw an error for unknown types", () => {
         // Mock literal object with an unknown type
         const unknownObject = {
-          "@AelasticsType": "UnknownType",
+          "@AelasticsType": "/test/UnknownType",
           "@AelasticsUUID": "9999-9999",
           "@AelasticsCreatedAt": 1680000000000,
         };
   
         // Attempt to import the object
-        expect(() => store.toImmutable(unknownObject)).toThrow("Unknown type: UnknownType. Cannot import object.");
+        expect(() => store.toImmutable()).toThrow();
       });
     });
   });

@@ -2,6 +2,9 @@ import { StoreClass } from "../store/StoreClass";
 import { StoreObject, uuid } from "../store/InternalTypes";
 import { IStore } from "../interfaces/IStore";
 import { createStore } from "../store/createStore";
+import { RegistryService } from "../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../registry/TypeDefinitions";
 
 interface Person extends StoreObject {
     name: string;
@@ -13,21 +16,58 @@ let store: IStore;
 let eternalStore: StoreClass;
 
 beforeEach(() => {
-    store = createStore(new Map([
-        ["User", {
-            qName: "User",
-            properties: new Map([
-                ["name", { qName: "name", type: "string" }],
-                ["age", { qName: "age", type: "number" }],
-                ["tags", { qName: "tags", type: "array" }]])
-        }]
-    ]));
+    const registryMetadata: RegistryMetadata = {
+        namespaces: new Map(),
+        name: "Test Registry",
+        version: "1.0.0",
+        created: new Date(),
+        lastModified: new Date()
+    };
+    
+    const registry = new RegistryService(registryMetadata);
+    
+    // Create type definitions using the new registry system
+    const userTypeMeta: ObjectTypeMeta = {
+        qName: "/test/User",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+            ["name", {
+                name: "name",
+                typeRef: "/std/string",
+                optional: false
+            } as PropertyMeta],
+            ["age", {
+                name: "age", 
+                typeRef: "/std/number",
+                optional: false
+            } as PropertyMeta],
+            ["tags", {
+                name: "tags",
+                typeRef: "/std/array</std/string>",
+                optional: false
+            } as PropertyMeta]
+        ])
+    };
+    
+    const namespace: Namespace = {
+        qName: "/test",
+        version: "1.0.0",
+        types: new Map([
+            ["User", userTypeMeta]
+        ]),
+        exports: ["User"],
+        imports: new Map()
+    };
+    
+    registry.importNamespace(namespace);
+    store = createStore(registry);
     eternalStore = store.getEternalStore();
 });
 
 test("Undo/Redo on array push operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -57,7 +97,7 @@ test("Undo/Redo on array push operation", () => {
 
 test("Undo/Redo on array element set by index operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -90,7 +130,7 @@ test("Undo/Redo on array element set by index operation", () => {
 test("Undo/Redo on array pop operation", () => {
     // create object
 
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
 
 
@@ -122,7 +162,7 @@ test("Undo/Redo on array pop operation", () => {
 
 test("Undo/Redo on array shift operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -155,7 +195,7 @@ test("Undo/Redo on array shift operation", () => {
 
 test("Undo/Redo on array unshift operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -185,7 +225,7 @@ test("Undo/Redo on array unshift operation", () => {
 
 test("Undo/Redo on array splice operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -223,7 +263,7 @@ test("Undo/Redo on array splice operation", () => {
 
 test("Undo/Redo on array reverse operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -252,7 +292,7 @@ test("Undo/Redo on array reverse operation", () => {
 
 test("Undo/Redo on array sort operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -281,7 +321,7 @@ test("Undo/Redo on array sort operation", () => {
 
 test("Undo/Redo on array fill operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -310,7 +350,7 @@ test("Undo/Redo on array fill operation", () => {
 
 test("array concat operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -338,7 +378,7 @@ test("array concat operation", () => {
 
 test("array includes operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -355,7 +395,7 @@ test("array includes operation", () => {
 
 test("array indexOf operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -372,7 +412,7 @@ test("array indexOf operation", () => {
 
 test("array join operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -389,7 +429,7 @@ test("array join operation", () => {
 
 test("array lastIndexOf operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -406,7 +446,7 @@ test("array lastIndexOf operation", () => {
 
 test("array slice operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -424,7 +464,7 @@ test("array slice operation", () => {
 
 test("array length operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -438,7 +478,7 @@ test("array length operation", () => {
 
 test("Undo/Redo on array find operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";
@@ -457,7 +497,7 @@ test("Undo/Redo on array find operation", () => {
 
 test("array findIndex operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -477,7 +517,7 @@ test("array findIndex operation", () => {
 
 test("array map operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -497,7 +537,7 @@ test("array map operation", () => {
 
 test("array filter operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -518,7 +558,7 @@ test("array filter operation", () => {
 
 test("array reduce operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -537,7 +577,7 @@ test("array reduce operation", () => {
 
 test("array reduceRight operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -555,7 +595,7 @@ test("array reduceRight operation", () => {
 
 test("array every operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -575,7 +615,7 @@ test("array every operation", () => {
 
 test("array some operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -595,7 +635,7 @@ test("array some operation", () => {
 
 test("array forEach operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -617,7 +657,7 @@ test("array forEach operation", () => {
 
 test("Undo/Redo on array flatMap operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -638,7 +678,7 @@ test("Undo/Redo on array flatMap operation", () => {
 
 test("Undo/Redo on array flat operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -658,7 +698,7 @@ test("Undo/Redo on array flat operation", () => {
 
 test("Undo/Redo on array copyWithin operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -687,7 +727,7 @@ test("Undo/Redo on array copyWithin operation", () => {
 
 test("Undo/Redo on array entries operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -708,7 +748,7 @@ test("Undo/Redo on array entries operation", () => {
 
 test("Array.keys operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -730,7 +770,7 @@ test("Array.keys operation", () => {
 
 test("values() method", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: StoreObject) => {
         obj.name = "Alice";
@@ -752,7 +792,7 @@ test("values() method", () => {
 
 test("Undo/Redo on array delete operation", () => {
     // create object
-    let user: Person = store.objects.create("User");
+    let user: Person = store.objects.create("/test/User");
     // initialize object
     user = store.objects.update((obj: Person) => {
         obj.name = "Alice";

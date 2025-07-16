@@ -1,6 +1,11 @@
 /** Type categories for the unified type system */
 export type TypeCategory = 'simple' | 'complex' | 'special';
 
+/** Property types for inverse relationship metadata */
+export type SimplePropType = 'string' | 'number' | 'boolean' | 'date';
+export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
+export type PropertyType = SimplePropType | ComplexPropType;
+
 /** Simple type kinds */
 export type SimpleTypeKind = 
     | 'string' 
@@ -51,6 +56,7 @@ export interface ObjectTypeMeta extends BaseTypeMeta {
     properties: Map<string, PropertyMeta>;
     identityKeys?: string[]; // For entity types only
     extends?: string; // Qualified name of base type
+    roles?: string[]; // List of allowed role names for this type
     
     // Bidirectional relationships (from aelastic-types)
     // inverse collection is possible only when target Type is an object
@@ -138,6 +144,15 @@ export interface ObjectRefTypeMeta extends BaseTypeMeta {
     targetType: string; // Qualified name of referenced entity type
 }
 
+/** Role metadata - describes roles that types can have */
+export interface RoleMeta {
+    qName: string; // Qualified name of the role
+    label?: string; // Human-readable label for the role
+    type: string; // Type defining the role's structure
+    isMandatory?: boolean; // If true, the role must always exist
+    isIndependent?: boolean; // If true, the role can exist without the object
+}
+
 /** Union of all type metadata */
 export type TypeMeta = 
     | SimpleTypeMeta
@@ -164,6 +179,7 @@ export interface PropertyMeta {
     // Bidirectional relationship metadata
     inverseProp?: string; // Name of inverse property
     inverseTypeRef?: string; // Qualified name of type containing inverse property
+    inverseType?: PropertyType; // Data type of the inverse property (derived during import)
 }
 
 /** Type checking functions */

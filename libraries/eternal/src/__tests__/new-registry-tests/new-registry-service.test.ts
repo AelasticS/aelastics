@@ -95,19 +95,32 @@ describe("RegistryService", () => {
 
     describe("Type Operations", () => {
         test("should store and retrieve types by qualified name", () => {
+            // First create a string type in the same namespace
+            const stringType: TypeMeta = {
+                qName: "/company/users/String",
+                category: "simple",
+                kind: "string"
+            };
+
             const userType: ObjectTypeMeta = {
                 qName: "/company/users/User",
                 category: "complex",
                 kind: "entity",
-                properties: new Map(),
+                properties: new Map([
+                    ["id", {
+                        name: "id",
+                        typeRef: "/company/users/String",
+                        optional: false
+                    }]
+                ]),
                 identityKeys: ["id"]
             };
 
             const namespace: Namespace = {
                 qName: "/company/users",
                 version: "1.0.0",
-                types: new Map([["User", userType]]),
-                exports: ["User"],
+                types: new Map<string, TypeMeta>([["String", stringType], ["User", userType]]),
+                exports: ["String", "User"],
                 imports: new Map()
             };
 
@@ -118,11 +131,23 @@ describe("RegistryService", () => {
         });
 
         test("should list types in namespace", () => {
+            const stringType: TypeMeta = {
+                qName: "/company/users/String",
+                category: "simple",
+                kind: "string"
+            };
+
             const userType: ObjectTypeMeta = {
                 qName: "/company/users/User",
                 category: "complex",
                 kind: "entity",
-                properties: new Map(),
+                properties: new Map([
+                    ["id", {
+                        name: "id",
+                        typeRef: "/company/users/String",
+                        optional: false
+                    }]
+                ]),
                 identityKeys: ["id"]
             };
 
@@ -136,17 +161,18 @@ describe("RegistryService", () => {
             const namespace: Namespace = {
                 qName: "/company/users",
                 version: "1.0.0",
-                types: new Map([["User", userType], ["Role", roleType]]),
-                exports: ["User", "Role"],
+                types: new Map<string, TypeMeta>([["String", stringType], ["User", userType], ["Role", roleType]]),
+                exports: ["String", "User", "Role"],
                 imports: new Map()
             };
 
             service.importNamespace(namespace);
 
             const types = service.listTypesInNamespace("/company/users");
+            expect(types).toContain("String");
             expect(types).toContain("User");
             expect(types).toContain("Role");
-            expect(types).toHaveLength(2);
+            expect(types).toHaveLength(3);
         });
 
         test("should get type in namespace context with imports", () => {
@@ -154,14 +180,27 @@ describe("RegistryService", () => {
             const baseNamespace: Namespace = {
                 qName: "/base",
                 version: "1.0.0",
-                types: new Map([["User", {
-                    qName: "/base/User",
-                    category: "complex",
-                    kind: "entity",
-                    properties: new Map(),
-                    identityKeys: ["id"]
-                } as ObjectTypeMeta]]),
-                exports: ["User"],
+                types: new Map<string, TypeMeta>([
+                    ["String", {
+                        qName: "/base/String",
+                        category: "simple",
+                        kind: "string"
+                    }],
+                    ["User", {
+                        qName: "/base/User",
+                        category: "complex",
+                        kind: "entity",
+                        properties: new Map([
+                            ["id", {
+                                name: "id",
+                                typeRef: "/base/String",
+                                optional: false
+                            }]
+                        ]),
+                        identityKeys: ["id"]
+                    } as ObjectTypeMeta]
+                ]),
+                exports: ["String", "User"],
                 imports: new Map()
             };
 
@@ -218,13 +257,26 @@ describe("RegistryService", () => {
             const baseNamespace: Namespace = {
                 qName: "/base",
                 version: "1.0.0",
-                types: new Map([["User", {
-                    qName: "/base/User",
-                    category: "complex",
-                    kind: "entity",
-                    properties: new Map(),
-                    identityKeys: ["id"]
-                } as ObjectTypeMeta]]),
+                types: new Map<string, TypeMeta>([
+                    ["String", {
+                        qName: "/base/String",
+                        category: "simple",
+                        kind: "string"
+                    }],
+                    ["User", {
+                        qName: "/base/User",
+                        category: "complex",
+                        kind: "entity",
+                        properties: new Map([
+                            ["id", {
+                                name: "id",
+                                typeRef: "/base/String",
+                                optional: false
+                            }]
+                        ]),
+                        identityKeys: ["id"]
+                    } as ObjectTypeMeta]
+                ]),
                 exports: ["User"],
                 imports: new Map()
             };
@@ -349,15 +401,27 @@ describe("RegistryService", () => {
 
     describe("Registry Statistics", () => {
         test("should provide registry statistics", () => {
+            const stringType: TypeMeta = {
+                qName: "/company/users/String",
+                category: "simple",
+                kind: "string"
+            };
+
             const userType: ObjectTypeMeta = {
                 qName: "/company/users/User",
                 category: "complex",
                 kind: "entity",
-                properties: new Map(),
+                properties: new Map([
+                    ["id", {
+                        name: "id",
+                        typeRef: "/company/users/String",
+                        optional: false
+                    }]
+                ]),
                 identityKeys: ["id"]
             };
 
-            const stringType: ArrayTypeMeta = {
+            const arrayType: ArrayTypeMeta = {
                 qName: "/company/users/UserList",
                 category: "complex",
                 kind: "array",
@@ -367,8 +431,8 @@ describe("RegistryService", () => {
             const namespace: Namespace = {
                 qName: "/company/users",
                 version: "1.0.0",
-                types: new Map([["User", userType], ["UserList", stringType]]),
-                exports: ["User", "UserList"],
+                types: new Map<string, TypeMeta>([["String", stringType], ["User", userType], ["UserList", arrayType]]),
+                exports: ["String", "User", "UserList"],
                 imports: new Map()
             };
 
@@ -376,7 +440,8 @@ describe("RegistryService", () => {
 
             const stats = service.getRegistryStats();
             expect(stats.namespaceCount).toBe(1);
-            expect(stats.totalTypeCount).toBe(2);
+            expect(stats.totalTypeCount).toBe(3);
+            expect(stats.typesByCategory.get("simple")).toBe(1);
             expect(stats.typesByCategory.get("complex")).toBe(2);
         });
     });

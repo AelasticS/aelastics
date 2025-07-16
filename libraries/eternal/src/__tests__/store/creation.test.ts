@@ -1,36 +1,91 @@
 import { createStore } from "../../store/createStore" // Adjust the path if necessary
 import { __StoreSuperClass__ } from "../../store/InternalTypes" // Corrected path for __StoreSuperClass__
-import { TypeMeta } from "../../meta/InternalSchema"
 import { State } from "../../store/State"
 import { EventPayload, Result } from "../../events/EventTypes"
 import { getEventPattern } from "../../events/SubscriptionManager"
+import { RegistryService } from "../../registry/RegistryService"
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata"
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions"
+
+// Create test schema using the new registry system
+function createTestNamespace(): Namespace {
+  const testTypeMeta: ObjectTypeMeta = {
+    qName: "/test/TestType",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["simpleProp", {
+        name: "simpleProp",
+        typeRef: "/std/string",
+        optional: false,
+        defaultValue: "defaultString"
+      } as PropertyMeta],
+      ["arrayProp", {
+        name: "arrayProp",
+        typeRef: "/std/array</test/NestedType>",
+        optional: false
+      } as PropertyMeta],
+      ["mapProp", {
+        name: "mapProp",
+        typeRef: "/std/map<string, /test/NestedType>",
+        optional: false
+      } as PropertyMeta],
+      ["setProp", {
+        name: "setProp",
+        typeRef: "/std/set</test/NestedType>",
+        optional: false
+      } as PropertyMeta]
+    ])
+  };
+
+  const nestedTypeMeta: ObjectTypeMeta = {
+    qName: "/test/NestedType",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["nestedProp", {
+        name: "nestedProp",
+        typeRef: "/std/string",
+        optional: false,
+        defaultValue: "nestedDefault"
+      } as PropertyMeta]
+    ])
+  };
+
+  return {
+    qName: "/test",
+    version: "1.0.0",
+    types: new Map([
+      ["TestType", testTypeMeta],
+      ["NestedType", nestedTypeMeta]
+    ]),
+    exports: ["TestType", "NestedType"],
+    imports: new Map()
+  };
+}
+
+function createTestStore() {
+  const registryMetadata: RegistryMetadata = {
+    namespaces: new Map(),
+    name: "Test Registry",
+    version: "1.0.0",
+    created: new Date(),
+    lastModified: new Date()
+  };
+  
+  const registry = new RegistryService(registryMetadata);
+  const namespace = createTestNamespace();
+  
+  registry.importNamespace(namespace);
+  return createStore(registry);
+}
 
 describe("StoreClass - createObject", () => {
   let store: ReturnType<typeof createStore>
 
   describe("Object Creation with Valid Schema", () => {
-    const testTypeMeta: TypeMeta = {
-      qName: "TestType",
-      properties: new Map([
-        ["simpleProp", { type: "string", defaultValue: "defaultString", qName: "simpleProp" }],
-        ["arrayProp", { type: "array", domainType: "NestedType", qName: "arrayProp" }],
-        ["mapProp", { type: "map", domainType: "NestedType", qName: "mapProp" }],
-        ["setProp", { type: "set", domainType: "NestedType", qName: "setProp" }],
-      ]),
-    }
-
-    const nestedTypeMeta: TypeMeta = {
-      qName: "NestedType",
-      properties: new Map([["nestedProp", { type: "string", defaultValue: "nestedDefault", qName: "nestedProp" }]]),
-    }
-
-    // Create the mockMetaInfo map
-    const mockMetaInfo = new Map<string, TypeMeta>()
-    mockMetaInfo.set("TestType", testTypeMeta)
-    mockMetaInfo.set("NestedType", nestedTypeMeta)
-
     // Initialize the store with the dynamically created metaInfo
-    store = createStore(mockMetaInfo)
+    store = createTestStore()
 
     /** Interface for TestType */
     interface TestType {
@@ -55,7 +110,7 @@ describe("StoreClass - createObject", () => {
       }
 
       // Create the object
-      const createdObject = store.objects.create("TestType", initialState)
+      const createdObject = store.objects.create("/test/TestType", initialState)
 
       // Assertions for simple properties
       expect(createdObject.simpleProp).toBe("customValue")
@@ -77,7 +132,7 @@ describe("StoreClass - createObject", () => {
       expect([...createdObject.setProp][0].nestedProp).toBe("setValue1")
 
       // Assertions for default values
-      const nestedObject = store.objects.create<NestedType>("NestedType")
+      const nestedObject = store.objects.create<NestedType>("/test/NestedType")
       expect(nestedObject.nestedProp).toBe("nestedDefault")
     })
 
@@ -88,7 +143,7 @@ describe("StoreClass - createObject", () => {
       }
 
       // Create the object
-      const createdObject = store.objects.create<TestType>("TestType", initialState)
+      const createdObject = store.objects.create<TestType>("/test/TestType", initialState)
 
       // Assertions for array properties
       expect(Array.isArray(createdObject.arrayProp)).toBe(true)
@@ -110,19 +165,50 @@ describe("StoreClass - createObject", () => {
       selfRef: CyclicType // Property referencing the same type
     }
 
-    // Static metadata for CyclicType
-    const cyclicMetaInfo = new Map<string, TypeMeta>([
-      [
-        "CyclicType",
-        {
-          qName: "CyclicType",
-          properties: new Map([["selfRef", { type: "object", domainType: "CyclicType", qName: "selfRef" }]]),
-        },
-      ],
-    ])
+    // Create namespace for CyclicType
+    function createCyclicNamespace(): Namespace {
+      const cyclicTypeMeta: ObjectTypeMeta = {
+        qName: "/test/CyclicType",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+          ["selfRef", {
+            name: "selfRef",
+            typeRef: "/test/CyclicType",
+            optional: true
+          } as PropertyMeta]
+        ])
+      };
+
+      return {
+        qName: "/test",
+        version: "1.0.0",
+        types: new Map([
+          ["CyclicType", cyclicTypeMeta]
+        ]),
+        exports: ["CyclicType"],
+        imports: new Map()
+      };
+    }
+
+    function createCyclicStore() {
+      const registryMetadata: RegistryMetadata = {
+        namespaces: new Map(),
+        name: "Test Registry",
+        version: "1.0.0",
+        created: new Date(),
+        lastModified: new Date()
+      };
+      
+      const registry = new RegistryService(registryMetadata);
+      const namespace = createCyclicNamespace();
+      
+      registry.importNamespace(namespace);
+      return createStore(registry);
+    }
 
     // Initialize the store once for all tests in this describe block
-    let store: ReturnType<typeof createStore> = createStore(cyclicMetaInfo)
+    let store: ReturnType<typeof createStore> = createCyclicStore()
 
     it("should handle cyclic references in initialState", () => {
       // Create an initialState with a cyclic reference
@@ -130,7 +216,7 @@ describe("StoreClass - createObject", () => {
       cyclicObject.selfRef = cyclicObject
 
       // Create the object
-      const createdObject = store.objects.create<CyclicType>("CyclicType", cyclicObject)
+      const createdObject = store.objects.create<CyclicType>("/test/CyclicType", cyclicObject)
 
       // Assertions
       expect(createdObject.selfRef).toBe(createdObject) // Verify cyclic reference
@@ -142,19 +228,8 @@ describe("StoreClass - createObject", () => {
         selfRef: CyclicType // Property referencing the same type
       }
 
-      // Static metadata for CyclicType
-      const cyclicMetaInfo = new Map<string, TypeMeta>([
-        [
-          "CyclicType",
-          {
-            qName: "CyclicType",
-            properties: new Map([["selfRef", { type: "object", domainType: "CyclicType", qName: "selfRef" }]]),
-          },
-        ],
-      ])
-
-      // Initialize the store once for all tests in this describe block
-      let store: ReturnType<typeof createStore> = createStore(cyclicMetaInfo)
+      // Use the cyclic store from the main test
+      let store: ReturnType<typeof createStore> = createCyclicStore()
 
       it("should handle cyclic references in initialState", () => {
         // Create an initialState with a cyclic reference
@@ -162,7 +237,7 @@ describe("StoreClass - createObject", () => {
         cyclicObject.selfRef = cyclicObject
 
         // Create the object
-        const createdObject = store.objects.create<CyclicType>("CyclicType", cyclicObject)
+        const createdObject = store.objects.create<CyclicType>("/test/CyclicType", cyclicObject)
 
         // Assertions
         expect(createdObject.selfRef).toBe(createdObject) // Verify cyclic reference
@@ -196,28 +271,70 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       setProp: Set<string>; // Set property
     }
   
-    // Static metadata for NullUndefinedTestType
-    const nullUndefinedMetaInfo = new Map<string, TypeMeta>([
-      [
-        'NullUndefinedTestType',
-        {
-          qName: 'NullUndefinedTestType',
-          properties: new Map([
-            ['simpleProp', { type: 'string', defaultValue: 'defaultString', qName: 'simpleProp' }],
-            ['arrayProp', { type: 'array', domainType: 'string', qName: 'arrayProp' }],
-            ['mapProp', { type: 'map', domainType: 'string', qName: 'mapProp' }],
-            ['setProp', { type: 'set', domainType: 'string', qName: 'setProp' }],
-          ]),
-        },
-      ],
-    ]);
+    // Create namespace for NullUndefinedTestType
+    function createNullUndefinedNamespace(): Namespace {
+      const nullUndefinedTypeMeta: ObjectTypeMeta = {
+        qName: "/test/NullUndefinedTestType",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+          ["simpleProp", {
+            name: "simpleProp",
+            typeRef: "/std/string",
+            optional: true,
+            defaultValue: "defaultString"
+          } as PropertyMeta],
+          ["arrayProp", {
+            name: "arrayProp",
+            typeRef: "/std/array</std/string>",
+            optional: false
+          } as PropertyMeta],
+          ["mapProp", {
+            name: "mapProp",
+            typeRef: "/std/map<string, /std/string>",
+            optional: false
+          } as PropertyMeta],
+          ["setProp", {
+            name: "setProp",
+            typeRef: "/std/set</std/string>",
+            optional: false
+          } as PropertyMeta]
+        ])
+      };
+
+      return {
+        qName: "/test",
+        version: "1.0.0",
+        types: new Map([
+          ["NullUndefinedTestType", nullUndefinedTypeMeta]
+        ]),
+        exports: ["NullUndefinedTestType"],
+        imports: new Map()
+      };
+    }
+
+    function createNullUndefinedStore() {
+      const registryMetadata: RegistryMetadata = {
+        namespaces: new Map(),
+        name: "Test Registry",
+        version: "1.0.0",
+        created: new Date(),
+        lastModified: new Date()
+      };
+      
+      const registry = new RegistryService(registryMetadata);
+      const namespace = createNullUndefinedNamespace();
+      
+      registry.importNamespace(namespace);
+      return createStore(registry);
+    }
   
     // Initialize the store once for all tests in this describe block
-    let store: ReturnType<typeof createStore> = createStore(nullUndefinedMetaInfo);
+    let store: ReturnType<typeof createStore> = createNullUndefinedStore();
   
     it('should initialize properties to default values when initialState is undefined', () => {
         // Create an object without providing initialState (undefined)
-        const createdObject = store.objects.create<NullUndefinedTestType>('NullUndefinedTestType');
+        const createdObject = store.objects.create<NullUndefinedTestType>('/test/NullUndefinedTestType');
       
         // Assertions for default values
         expect(createdObject.simpleProp).toBe('defaultString'); // Default value for simpleProp
@@ -232,7 +349,7 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       it('should explicitly set properties to null when initialState is null', () => {
         // Create an object with initialState explicitly set to null
         const initialState = { simpleProp: null } as Partial<NullUndefinedTestType>;
-        const createdObject = store.objects.create<NullUndefinedTestType>('NullUndefinedTestType', initialState);
+        const createdObject = store.objects.create<NullUndefinedTestType>('/test/NullUndefinedTestType', initialState);
       
         // Assertions for null values
         expect(createdObject.simpleProp).not.toBeNull(); // TODO: simpleProp should be explicitly set to null
@@ -256,42 +373,79 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       setProp: Set<string>; // Set property
     }
   
-    // Static metadata for InvalidTestType
-    const invalidMetaInfo = new Map<string, TypeMeta>([
-      [
-        'InvalidTestType',
-        {
-          qName: 'InvalidTestType',
-          properties: new Map([
-            ['arrayProp', { type: 'array', domainType: 'string', qName: 'arrayProp' }],
-            ['mapProp', { type: 'map', domainType: 'string', qName: 'mapProp' }],
-            ['setProp', { type: 'set', domainType: 'string', qName: 'setProp' }],
-          ]),
-        },
-      ],
-    ]);
+    // Create namespace for InvalidTestType
+    function createInvalidNamespace(): Namespace {
+      const invalidTypeMeta: ObjectTypeMeta = {
+        qName: "/test/InvalidTestType",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+          ["arrayProp", {
+            name: "arrayProp",
+            typeRef: "/std/array</std/string>",
+            optional: false
+          } as PropertyMeta],
+          ["mapProp", {
+            name: "mapProp",
+            typeRef: "/std/map<string, /std/string>",
+            optional: false
+          } as PropertyMeta],
+          ["setProp", {
+            name: "setProp",
+            typeRef: "/std/set</std/string>",
+            optional: false
+          } as PropertyMeta]
+        ])
+      };
+
+      return {
+        qName: "/test",
+        version: "1.0.0",
+        types: new Map([
+          ["InvalidTestType", invalidTypeMeta]
+        ]),
+        exports: ["InvalidTestType"],
+        imports: new Map()
+      };
+    }
+
+    function createInvalidStore() {
+      const registryMetadata: RegistryMetadata = {
+        namespaces: new Map(),
+        name: "Test Registry",
+        version: "1.0.0",
+        created: new Date(),
+        lastModified: new Date()
+      };
+      
+      const registry = new RegistryService(registryMetadata);
+      const namespace = createInvalidNamespace();
+      
+      registry.importNamespace(namespace);
+      return createStore(registry);
+    }
   
     // Initialize the store once for all tests in this describe block
-    let store: ReturnType<typeof createStore> = createStore(invalidMetaInfo);
+    let store: ReturnType<typeof createStore> = createInvalidStore();
   
     it('should throw an error if arrayProp is not an array', () => {
       const invalidState = { arrayProp: 'notAnArray' } as unknown as Partial<InvalidTestType>;
   
-      expect(() => store.objects.create<InvalidTestType>('InvalidTestType', invalidState))
+      expect(() => store.objects.create<InvalidTestType>('/test/InvalidTestType', invalidState))
         .toThrow('Expected an array for property arrayProp, but got string.');
     });
   
     it('should throw an error if mapProp is not a Map', () => {
       const invalidState = { mapProp: 'notAMap' } as unknown as Partial<InvalidTestType>;
   
-      expect(() => store.objects.create<InvalidTestType>('InvalidTestType', invalidState))
+      expect(() => store.objects.create<InvalidTestType>('/test/InvalidTestType', invalidState))
         .toThrow('Expected a Map for property mapProp, but got string.');
     });
   
     it('should throw an error if setProp is not a Set', () => {
       const invalidState = { setProp: 'notASet' } as unknown as Partial<InvalidTestType>;
   
-      expect(() => store.objects.create<InvalidTestType>('InvalidTestType', invalidState))
+      expect(() => store.objects.create<InvalidTestType>('/test/InvalidTestType', invalidState))
         .toThrow('Expected a Set for property setProp, but got string.');
     });
   });
@@ -310,46 +464,85 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       nestedProp: string; // Simple property in NestedType
     }
   
-    // Static metadata for StoreObjectTestType
-    const storeObjectMetaInfo = new Map<string, TypeMeta>([
-      [
-        'StoreObjectTestType',
-        {
-          qName: 'StoreObjectTestType',
-          properties: new Map([
-            ['simpleProp', { type: 'string', defaultValue: 'defaultString', qName: 'simpleProp' }],
-            ['arrayProp', { type: 'array', domainType: 'NestedType', qName: 'arrayProp' }],
-            [
-              'mapProp',
-              {
-                type: 'map',
-                keyType: 'string', // Keys are strings
-                itemType: 'object', // Values are objects of type NestedType
-                domainType: 'NestedType',
-                qName: 'mapProp',
-              },
-            ],
-            ['setProp', { type: 'set', domainType: 'NestedType', qName: 'setProp' }],
-          ]),
-        },
-      ],
-      [
-        'NestedType',
-        {
-          qName: 'NestedType',
-          properties: new Map([
-            ['nestedProp', { type: 'string', defaultValue: 'nestedDefault', qName: 'nestedProp' }],
-          ]),
-        },
-      ],
-    ]);
+    // Create namespace for StoreObjectTestType
+    function createStoreObjectNamespace(): Namespace {
+      const nestedTypeMeta: ObjectTypeMeta = {
+        qName: "/test/NestedType",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+          ["nestedProp", {
+            name: "nestedProp",
+            typeRef: "/std/string",
+            optional: false,
+            defaultValue: "nestedDefault"
+          } as PropertyMeta]
+        ])
+      };
+
+      const storeObjectTypeMeta: ObjectTypeMeta = {
+        qName: "/test/StoreObjectTestType",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+          ["simpleProp", {
+            name: "simpleProp",
+            typeRef: "/std/string",
+            optional: false,
+            defaultValue: "defaultString"
+          } as PropertyMeta],
+          ["arrayProp", {
+            name: "arrayProp",
+            typeRef: "/std/array</test/NestedType>",
+            optional: false
+          } as PropertyMeta],
+          ["mapProp", {
+            name: "mapProp",
+            typeRef: "/std/map<string, /test/NestedType>",
+            optional: false
+          } as PropertyMeta],
+          ["setProp", {
+            name: "setProp",
+            typeRef: "/std/set</test/NestedType>",
+            optional: false
+          } as PropertyMeta]
+        ])
+      };
+
+      return {
+        qName: "/test",
+        version: "1.0.0",
+        types: new Map([
+          ["NestedType", nestedTypeMeta],
+          ["StoreObjectTestType", storeObjectTypeMeta]
+        ]),
+        exports: ["NestedType", "StoreObjectTestType"],
+        imports: new Map()
+      };
+    }
+
+    function createStoreObjectStore() {
+      const registryMetadata: RegistryMetadata = {
+        namespaces: new Map(),
+        name: "Test Registry",
+        version: "1.0.0",
+        created: new Date(),
+        lastModified: new Date()
+      };
+      
+      const registry = new RegistryService(registryMetadata);
+      const namespace = createStoreObjectNamespace();
+      
+      registry.importNamespace(namespace);
+      return createStore(registry);
+    }
   
     // Initialize the store once for all tests in this describe block
-    let store: ReturnType<typeof createStore> = createStore(storeObjectMetaInfo);
+    let store: ReturnType<typeof createStore> = createStoreObjectStore();
   
     it('should directly assign store objects to properties without recreating them', () => {
       // Create a NestedType object in the store
-      const nestedObject = store.objects.create<NestedType>('NestedType', { nestedProp: 'nestedValue' });
+      const nestedObject = store.objects.create<NestedType>('/test/NestedType', { nestedProp: 'nestedValue' });
   
       // Use the existing store object in the initialState
       const initialState = {
@@ -360,7 +553,7 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       };
   
       // Create the object
-      const createdObject = store.objects.create<StoreObjectTestType>('StoreObjectTestType', initialState);
+      const createdObject = store.objects.create<StoreObjectTestType>('/test/StoreObjectTestType', initialState);
   
       // Assertions for simple properties
       expect(createdObject.simpleProp).toBe('customValue');
@@ -389,22 +582,55 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       arrayProp: string[]; // Array of simple values
     }
   
-    // Static metadata for EventTestType
-    const eventMetaInfo = new Map<string, TypeMeta>([
-      [
-        'EventTestType',
-        {
-          qName: 'EventTestType',
-          properties: new Map([
-            ['simpleProp', { type: 'string', qName: 'simpleProp' }],
-            ['arrayProp', { type: 'array', domainType: 'string', qName: 'arrayProp' }],
-          ]),
-        },
-      ],
-    ]);
+    // Create namespace for EventTestType
+    function createEventNamespace(): Namespace {
+      const eventTypeMeta: ObjectTypeMeta = {
+        qName: "/test/EventTestType",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+          ["simpleProp", {
+            name: "simpleProp",
+            typeRef: "/std/string",
+            optional: false
+          } as PropertyMeta],
+          ["arrayProp", {
+            name: "arrayProp",
+            typeRef: "/std/array</std/string>",
+            optional: false
+          } as PropertyMeta]
+        ])
+      };
+
+      return {
+        qName: "/test",
+        version: "1.0.0",
+        types: new Map([
+          ["/test/EventTestType", eventTypeMeta]
+        ]),
+        exports: ["/test/EventTestType"],
+        imports: new Map()
+      };
+    }
+
+    function createEventStore() {
+      const registryMetadata: RegistryMetadata = {
+        namespaces: new Map(),
+        name: "Test Registry",
+        version: "1.0.0",
+        created: new Date(),
+        lastModified: new Date()
+      };
+      
+      const registry = new RegistryService(registryMetadata);
+      const namespace = createEventNamespace();
+      
+      registry.importNamespace(namespace);
+      return createStore(registry);
+    }
   
     // Initialize the store once for all tests in this describe block
-    let store: ReturnType<typeof createStore> = createStore(eventMetaInfo);
+    let store: ReturnType<typeof createStore> = createEventStore();
   
     it('should emit events for setting properties during object creation', () => {
       // Mock before.update handler for simpleProp
@@ -426,15 +652,15 @@ describe('Handling Null or Undefined initialState in createObject', () => {
       });
   
       // Subscribe to events for simpleProp
-      store.events.subscribe(beforeUpdateHandler, "before", "update", "EventTestType", "simpleProp");
-      store.events.subscribe(afterUpdateHandler, "after", "update", "EventTestType", "simpleProp");
+      store.events.subscribe(beforeUpdateHandler, "before", "update", "/test/EventTestType", "simpleProp");
+      store.events.subscribe(afterUpdateHandler, "after", "update", "/test/EventTestType", "simpleProp");
   
       // Perform the createObject operation
       const initialState = {
         simpleProp: "customValue",
         arrayProp: ["value1", "value2"],
       };
-      const createdObject = store.objects.create<EventTestType>("EventTestType", initialState);
+      const createdObject = store.objects.create<EventTestType>("/test/EventTestType", initialState);
   
       // Verify that the handlers were called for simpleProp
       expect(beforeUpdateHandler).toHaveBeenCalledTimes(1);

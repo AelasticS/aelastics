@@ -48,6 +48,7 @@ Composite types that contain or reference other types:
 ## Type Definitions
 
 ### Property Metadata
+
 Each property in a type has the following metadata:
 
 ```typescript
@@ -57,10 +58,27 @@ interface PropertyMeta {
     optional: boolean;      // Whether property is optional
     inverseProp?: string;   // Name of inverse property (for bidirectional relationships)
     inverseTypeRef?: string; // Type of inverse property
+    inverseType?: PropertyType; // Data type of the inverse property (derived during import)
 }
 ```
 
+**PropertyType Definition:**
+```typescript
+export type SimplePropType = 'string' | 'number' | 'boolean' | 'date';
+export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
+export type PropertyType = SimplePropType | ComplexPropType;
+```
+
+**Inverse Type Usage:**
+- `inverseType: "object"` - Inverse property is a single reference
+- `inverseType: "array"` - Inverse property is a collection of references  
+- `inverseType: "map"` - Inverse property is a map collection
+- `inverseType: "set"` - Inverse property is a set collection
+
+This metadata is derived and computed during import to support existing store operations that depend on knowing whether the inverse relationship is a single reference or collection.
+
 ### Object Types
+
 Object types define structured data with properties:
 
 ```typescript
@@ -72,14 +90,52 @@ interface ObjectTypeMeta {
     extends?: string;                        // Base type (inheritance)
     identityKeys?: string[];                 // Identity properties (entities only)
     inverseCollection?: Map<string, InverseCollectionMeta>; // Bidirectional relationships
+    roles?: string[];                        // List of allowed role names for this type
 }
 ```
 
 ### Entity Types
+
 Entities are special objects with identity and lifecycle management:
+
 - **Identity Keys**: Properties that uniquely identify the entity
 - **Lifecycle Management**: Creation, modification, deletion tracking
 - **Bidirectional Relationships**: Automatic inverse relationship maintenance
+
+### Role System
+
+The registry supports a role-based system for type access control and behavior specification:
+
+```typescript
+interface RoleMeta {
+    qName: string;      // Name of the role
+    label?: string;     // Human-readable label for the role
+    type: string;       // Type defining the role's structure
+}
+```
+
+**Role Usage:**
+- Types can specify allowed roles through the `roles` property
+- Roles define behavioral patterns and access control
+- Each role has a defined structure type
+- Types can support multiple roles simultaneously
+
+**Example:**
+```typescript
+// Define a role
+const versionableRole: RoleMeta = {
+    qName: "/core/Versionable",
+    label: "Versionable Entity",
+    type: "/core/VersioningRules"
+};
+
+// Use role in type definition
+const documentType: ObjectTypeMeta = {
+    qName: "/company/Document",
+    // ... other properties
+    roles: ["/core/Versionable", "/core/Auditable"]
+};
+```
 
 ### Array Types
 Arrays represent ordered collections:

@@ -1,122 +1,154 @@
 import { createStore } from "../../store/createStore"
-import { initializeSchemaRegistry } from "../../meta/SchemaRegistry"
-import { SchemaRegistry } from "../../meta/InternalSchema"
-import { SchemaDescription } from "../../meta/ExternalSchema"
 import { StoreObject, uuid } from "../../store/InternalTypes"
+import { RegistryService } from "../../registry/RegistryService"
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata"
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions"
 
 // import jsonSchemas from "../data/jsonSchemaWithArrays";
 
-const schemas: SchemaDescription[] = [
-  {
+// Create type definitions using the new registry system
+function createLibraryNamespace(): Namespace {
+  const authorTypeMeta: ObjectTypeMeta = {
+    qName: "/library/Author",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["name", {
+        name: "name",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["books", {
+        name: "books",
+        typeRef: "/std/set</library/Book>",
+        optional: false,
+        inverseProp: "author",
+        inverseTypeRef: "/library/Book",
+        inverseType: "object"
+      } as PropertyMeta]
+    ])
+  };
+
+  const bookTypeMeta: ObjectTypeMeta = {
+    qName: "/library/Book",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["title", {
+        name: "title",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["author", {
+        name: "author",
+        typeRef: "/library/Author",
+        optional: false,
+        inverseProp: "books",
+        inverseTypeRef: "/library/Author",
+        inverseType: "set"
+      } as PropertyMeta]
+    ])
+  };
+
+  const publisherTypeMeta: ObjectTypeMeta = {
+    qName: "/library/Publisher",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["name", {
+        name: "name",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["books", {
+        name: "books",
+        typeRef: "/std/set</library/PublishedBook>",
+        optional: false,
+        inverseProp: "publisher",
+        inverseTypeRef: "/library/PublishedBook",
+        inverseType: "object"
+      } as PropertyMeta]
+    ])
+  };
+
+  const publishedBookTypeMeta: ObjectTypeMeta = {
+    qName: "/library/PublishedBook",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["title", {
+        name: "title",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["publisher", {
+        name: "publisher",
+        typeRef: "/library/Publisher",
+        optional: false,
+        inverseProp: "books",
+        inverseTypeRef: "/library/Publisher",
+        inverseType: "set"
+      } as PropertyMeta]
+    ])
+  };
+
+  const studentTypeMeta: ObjectTypeMeta = {
+    qName: "/library/Student",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["name", {
+        name: "name",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["courses", {
+        name: "courses",
+        typeRef: "/std/set</library/Course>",
+        optional: false,
+        inverseProp: "students",
+        inverseTypeRef: "/library/Course",
+        inverseType: "set"
+      } as PropertyMeta]
+    ])
+  };
+
+  const courseTypeMeta: ObjectTypeMeta = {
+    qName: "/library/Course",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["title", {
+        name: "title",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["students", {
+        name: "students",
+        typeRef: "/std/set</library/Student>",
+        optional: false,
+        inverseProp: "courses",
+        inverseTypeRef: "/library/Student",
+        inverseType: "set"
+      } as PropertyMeta]
+    ])
+  };
+
+  return {
     qName: "/library",
-    version: "1.0",
-    types: {
-      Author: {
-        qName: "Author",
-        properties: {
-          name: {
-            qName: "name",
-            type: "string",
-          },
-          books: {
-            qName: "books",
-            type: "set",
-            itemType: "object",
-            domainType: "Book",
-            inverseProp: "author",
-            inverseType: "object",
-          },
-        },
-      },
-      Book: {
-        qName: "Book",
-        properties: {
-          title: {
-            qName: "title",
-            type: "string",
-          },
-          author: {
-            qName: "author",
-            type: "object",
-            domainType: "Author",
-            inverseProp: "books",
-            inverseType: "set",
-          },
-        },
-      },
-      Publisher: {
-        qName: "Publisher",
-        properties: {
-          name: {
-            qName: "name",
-            type: "string",
-          },
-          books: {
-            qName: "books",
-            type: "set",
-            itemType: "object",
-            domainType: "PublishedBook",
-            inverseProp: "publisher",
-            inverseType: "object",
-          },
-        },
-      },
-      PublishedBook: {
-        qName: "PublishedBook",
-        properties: {
-          title: {
-            qName: "title",
-            type: "string",
-          },
-          publisher: {
-            qName: "publisher",
-            type: "object",
-            domainType: "Publisher",
-            inverseProp: "books",
-            inverseType: "set",
-          },
-        },
-      },
-      Student: {
-        qName: "Student",
-        properties: {
-          name: {
-            qName: "name",
-            type: "string",
-          },
-          courses: {
-            qName: "courses",
-            type: "set",
-            itemType: "object",
-            domainType: "Course",
-            inverseProp: "students",
-            inverseType: "set",
-          },
-        },
-      },
-      Course: {
-        qName: "Course",
-        properties: {
-          title: {
-            qName: "title",
-            type: "string",
-          },
-          students: {
-            qName: "students",
-            type: "set",
-            itemType: "object",
-            domainType: "Student",
-            inverseProp: "courses",
-            inverseType: "set",
-          },
-        },
-      },
-    },
-    roles: {},
-    export: ["Author", "Book", "Publisher", "PublishedBook"],
-    import: {},
-  },
-]
+    version: "1.0.0",
+    types: new Map([
+      ["Author", authorTypeMeta],
+      ["Book", bookTypeMeta],
+      ["Publisher", publisherTypeMeta],
+      ["PublishedBook", publishedBookTypeMeta],
+      ["Student", studentTypeMeta],
+      ["Course", courseTypeMeta]
+    ]),
+    exports: ["Author", "Book", "Publisher", "PublishedBook", "Student", "Course"],
+    imports: new Map()
+  };
+}
 
 // TypeScript interfaces based on the type definitions
 interface Author extends StoreObject{
@@ -159,14 +191,25 @@ describe("Bidirectional Relationships with Sets", () => {
   let store: ReturnType<typeof createStore>
 
   beforeEach(() => {
-    const schemaRegistry = initializeSchemaRegistry(schemas) as SchemaRegistry
-    store = createStore(schemaRegistry.schemas.get("/library")!)
+    const registryMetadata: RegistryMetadata = {
+      namespaces: new Map(),
+      name: "Test Registry",
+      version: "1.0.0",
+      created: new Date(),
+      lastModified: new Date()
+    };
+    
+    const registry = new RegistryService(registryMetadata);
+    const namespace = createLibraryNamespace();
+    
+    registry.importNamespace(namespace);
+    store = createStore(registry);
   })
 
   test("One-to-Many: Adding Books to Author", () => {
-    let author = store.objects.create<Author>("Author")
-    let book1 = store.objects.create<Book>("Book")
-    let book2 = store.objects.create<Book>("Book")
+    let author = store.objects.create<Author>("/library/Author")
+    let book1 = store.objects.create<Book>("/library/Book")
+    let book2 = store.objects.create<Book>("/library/Book")
 
     store.objects.update((a) => {
       a.books.add(book1)
@@ -184,9 +227,9 @@ describe("Bidirectional Relationships with Sets", () => {
   })
 
   test("One-to-Many: Removing Books from Author", () => {
-    let author = store.objects.create<Author>("Author")
-    let book1 = store.objects.create<Book>("Book")
-    let book2 = store.objects.create<Book>("Book")
+    let author = store.objects.create<Author>("/library/Author")
+    let book1 = store.objects.create<Book>("/library/Book")
+    let book2 = store.objects.create<Book>("/library/Book")
 
     store.objects.update((a) => {
       a.books.add(book1)
@@ -210,9 +253,9 @@ describe("Bidirectional Relationships with Sets", () => {
   })
 
 test("Many-to-One: Adding Books to Publisher", () => {
-    let publisher = store.objects.create<Publisher>("Publisher")
-    let book1 = store.objects.create<PublishedBook>("PublishedBook")
-    let book2 = store.objects.create<PublishedBook>("PublishedBook")
+    let publisher = store.objects.create<Publisher>("/library/Publisher")
+    let book1 = store.objects.create<PublishedBook>("/library/PublishedBook")
+    let book2 = store.objects.create<PublishedBook>("/library/PublishedBook")
 
     store.objects.update((p) => {
         p.books.add(book1)
@@ -230,9 +273,9 @@ test("Many-to-One: Adding Books to Publisher", () => {
 })
 
 test("Many-to-One: Removing Books from Publisher", () => {
-    let publisher = store.objects.create<Publisher>("Publisher")
-    let book1 = store.objects.create<PublishedBook>("PublishedBook")
-    let book2 = store.objects.create<PublishedBook>("PublishedBook")
+    let publisher = store.objects.create<Publisher>("/library/Publisher")
+    let book1 = store.objects.create<PublishedBook>("/library/PublishedBook")
+    let book2 = store.objects.create<PublishedBook>("/library/PublishedBook")
 
     store.objects.update((p) => {
         p.books.add(book1)
@@ -258,10 +301,10 @@ test("Many-to-One: Removing Books from Publisher", () => {
 })
 
 test("Many-to-Many: Adding Courses to Students", () => {
-    let student1 = store.objects.create<Student>("Student")
-    let student2 = store.objects.create<Student>("Student")
-    let course1 = store.objects.create<Course>("Course")
-    let course2 = store.objects.create<Course>("Course")
+    let student1 = store.objects.create<Student>("/library/Student")
+    let student2 = store.objects.create<Student>("/library/Student")
+    let course1 = store.objects.create<Course>("/library/Course")
+    let course2 = store.objects.create<Course>("/library/Course")
 
     store.objects.update((s) => {
         s.courses.add(course1)
@@ -294,10 +337,10 @@ test("Many-to-Many: Adding Courses to Students", () => {
 })
 
 test("Many-to-Many: Removing Courses from Students", () => {
-    let student1 = store.objects.create<Student>("Student")
-    let student2 = store.objects.create<Student>("Student")
-    let course1 = store.objects.create<Course>("Course")
-    let course2 = store.objects.create<Course>("Course")
+    let student1 = store.objects.create<Student>("/library/Student")
+    let student2 = store.objects.create<Student>("/library/Student")
+    let course1 = store.objects.create<Course>("/library/Course")
+    let course2 = store.objects.create<Course>("/library/Course")
 
     store.objects.update((s) => {
         s.courses.add(course1)

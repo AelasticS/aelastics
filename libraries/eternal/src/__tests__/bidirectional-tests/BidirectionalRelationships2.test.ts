@@ -1,55 +1,80 @@
 import { StoreObject, uuid } from "../../store/InternalTypes"
 import { createStore } from "../../store/createStore"
+import { RegistryService } from "../../registry/RegistryService"
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata"
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions"
 
 describe("Bidirectional Relationships & Cyclic References", () => {
   let store: ReturnType<typeof createStore>
 
   beforeEach(() => {
-    store = createStore(
-      new Map([
-        [
-          "Parent",
-          {
-            qName: "Parent",
-            properties: new Map([
-              ["name", { qName: "name", name: "name", type: "string" }],
-              [
-                "children",
-                {
-                  qName: "children",
-                  name: "children",
-                  type: "array",
-                  itemType: "object",
-                  domainType: "Child",
-                  inverseProp: "parent",
-                  inverseType: "object",
-                },
-              ],
-            ]),
-          },
-        ],
-        [
-          "Child",
-          {
-            qName: "Child",
-            properties: new Map([
-              ["name", { qName: "name", name: "name", type: "string" }],
-              [
-                "parent",
-                {
-                  qName: "parent",
-                  name: "parent",
-                  type: "object",
-                  domainType: "Parent",
-                  inverseProp: "children",
-                  inverseType: "array",
-                },
-              ],
-            ]),
-          },
-        ],
+    const registryMetadata: RegistryMetadata = {
+      namespaces: new Map(),
+      name: "Test Registry",
+      version: "1.0.0",
+      created: new Date(),
+      lastModified: new Date()
+    };
+    
+    const registry = new RegistryService(registryMetadata);
+    
+    // Create Parent type with bidirectional relationship
+    const parentTypeMeta: ObjectTypeMeta = {
+      qName: "/test/Parent",
+      category: "complex",
+      kind: "object",
+      properties: new Map([
+        ["name", {
+          name: "name",
+          typeRef: "/std/string",
+          optional: false
+        } as PropertyMeta],
+        ["children", {
+          name: "children",
+          typeRef: "/std/array</test/Child>",
+          optional: false,
+          inverseProp: "parent",
+          inverseTypeRef: "/test/Child",
+          inverseType: "object"
+        } as PropertyMeta]
       ])
-    )
+    };
+    
+    // Create Child type with bidirectional relationship
+    const childTypeMeta: ObjectTypeMeta = {
+      qName: "/test/Child",
+      category: "complex", 
+      kind: "object",
+      properties: new Map([
+        ["name", {
+          name: "name",
+          typeRef: "/std/string",
+          optional: false
+        } as PropertyMeta],
+        ["parent", {
+          name: "parent",
+          typeRef: "/test/Parent",
+          optional: false,
+          inverseProp: "children",
+          inverseTypeRef: "/test/Parent",
+          inverseType: "array"
+        } as PropertyMeta]
+      ])
+    };
+    
+    const namespace: Namespace = {
+      qName: "/test",
+      version: "1.0.0",
+      types: new Map([
+        ["Parent", parentTypeMeta],
+        ["Child", childTypeMeta]
+      ]),
+      exports: ["Parent", "Child"],
+      imports: new Map()
+    };
+    
+    registry.importNamespace(namespace);
+    store = createStore(registry);
   })
 
   interface Parent extends StoreObject{
@@ -63,11 +88,11 @@ describe("Bidirectional Relationships & Cyclic References", () => {
   }
 
   test("Bidirectional relationships should be correctly maintained", () => {
-    let parent = store.objects.create<Parent>("Parent") as Parent
+    let parent = store.objects.create<Parent>("/test/Parent") as Parent
 
-    let child1 = store.objects.create<Child>("Child") as Child
+    let child1 = store.objects.create<Child>("/test/Child") as Child
 
-    let child2 = store.objects.create<Child>("Child") as Child
+    let child2 = store.objects.create<Child>("/test/Child") as Child
 
     store.events.subscribeToObject(parent, (p) => {
       parent = p as Parent

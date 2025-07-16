@@ -1,22 +1,22 @@
-import { TypeMeta, TypeSchema } from "../meta/InternalSchema";
 import { StoreClass } from "./StoreClass";
 import { IStore } from "../interfaces/IStore";
 import { ObjectsAdapter, HistoryAdapter, DataAdapter, EventsAdapter, RegistryAdapterForStore } from "./InterfaceAdapters";
+import { RegistryService } from "../registry/RegistryService";
 
 
 export function createStore(
-  metaInfo: Map<string, TypeMeta> | TypeSchema,
+  registryService: RegistryService,
   initialState: any = {},
   options: {
     freeze?: boolean;
     fetchFromExternalSource?: (type: string, uuid: string) => any;
   } = { freeze: true }
 ): IStore {
-  if (!metaInfo) {
-    throw new Error("meta information is required to create a store");
+  if (!registryService) {
+    throw new Error("registry service is required to create a store");
   }
-  const types: Map<string, TypeMeta> = (metaInfo as TypeSchema).types || (metaInfo as Map<string, TypeMeta>);
-  const store = new StoreClass(types);
+  
+  const store = new StoreClass(registryService);
 
   // Create adapters for each interface
   const objectsAdapter = new ObjectsAdapter(store);

@@ -1,19 +1,59 @@
 import { createStore } from "../store/createStore";
-import { TypeMeta } from "../meta/InternalSchema";
+import { RegistryService } from "../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../registry/TypeDefinitions";
 
-describe("Interface Separation Tests", () => {
-  const userTypeMeta: TypeMeta = {
-    qName: "User",
+// Create user schema using the new registry system
+function createUserNamespace(): Namespace {
+  const userTypeMeta: ObjectTypeMeta = {
+    qName: "/test/User",
+    category: "complex",
+    kind: "object",
     properties: new Map([
-      ["name", { type: "string", qName: "name" }],
-      ["age", { type: "number", qName: "age" }]
+      ["name", {
+        name: "name",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["age", {
+        name: "age",
+        typeRef: "/std/number",
+        optional: false
+      } as PropertyMeta]
     ])
   };
 
-  const metaInfo = new Map<string, TypeMeta>([["User", userTypeMeta]]);
+  return {
+    qName: "/test",
+    version: "1.0.0",
+    types: new Map([
+      ["User", userTypeMeta]
+    ]),
+    exports: ["User"],
+    imports: new Map()
+  };
+}
+
+function createTestStore() {
+  const registryMetadata: RegistryMetadata = {
+    namespaces: new Map(),
+    name: "Test Registry",
+    version: "1.0.0",
+    created: new Date(),
+    lastModified: new Date()
+  };
+  
+  const registry = new RegistryService(registryMetadata);
+  const namespace = createUserNamespace();
+  
+  registry.importNamespace(namespace);
+  return createStore(registry);
+}
+
+describe("Interface Separation Tests", () => {
 
   test("Store has all required interfaces", () => {
-    const store = createStore(metaInfo);
+    const store = createTestStore();
     
     // Check that all interface accessors exist
     expect(store.objects).toBeDefined();
@@ -44,10 +84,10 @@ describe("Interface Separation Tests", () => {
   });
 
   test("Objects interface basic functionality", () => {
-    const store = createStore(metaInfo);
+    const store = createTestStore();
     
     // Create an object
-    const user = store.objects.create("User", { name: "John", age: 30 });
+    const user = store.objects.create("/test/User", { name: "John", age: 30 });
     expect(user).toBeDefined();
     expect((user as any).name).toBe("John");
     expect((user as any).age).toBe(30);
@@ -61,18 +101,18 @@ describe("Interface Separation Tests", () => {
     expect(foundUser).toBe(user);
     
     // Find by type
-    const users = store.objects.find("User");
+    const users = store.objects.find("/test/User");
     expect(users).toContain(user);
   });
 
   test("History interface basic functionality", () => {
-    const store = createStore(metaInfo);
+    const store = createTestStore();
     
     // Check initial state
     expect(store.history.isInUpdateMode()).toBe(false);
     
     // Create an object (should create a new state)
-    const user = store.objects.create("User", { name: "John", age: 30 });
+    const user = store.objects.create("/test/User", { name: "John", age: 30 });
     
     // Check state count
     expect(store.history.getStateCount()).toBeGreaterThan(0);
@@ -84,10 +124,10 @@ describe("Interface Separation Tests", () => {
   });
 
   test("Data interface basic functionality", () => {
-    const store = createStore(metaInfo);
+    const store = createTestStore();
     
     // Create an object
-    const user = store.objects.create("User", { name: "John", age: 30 });
+    const user = store.objects.create("/test/User", { name: "John", age: 30 });
     
     // Serialize
     const serialized = store.data.serialize(user);
@@ -99,7 +139,7 @@ describe("Interface Separation Tests", () => {
   });
 
   test("Registry interface basic functionality", () => {
-    const store = createStore(metaInfo);
+    const store = createTestStore();
     
     // Check registry info
     const registryInfo = store.registry.getInfo();
@@ -113,7 +153,7 @@ describe("Interface Separation Tests", () => {
   });
 
   test("Events interface basic functionality", () => {
-    const store = createStore(metaInfo);
+    const store = createTestStore();
     
     // Subscribe to store changes
     let storeChanged = false;
@@ -124,7 +164,7 @@ describe("Interface Separation Tests", () => {
     expect(typeof unsubscribe).toBe('function');
     
     // Create an object (should trigger store change)
-    const user = store.objects.create("User", { name: "John", age: 30 });
+    const user = store.objects.create("/test/User", { name: "John", age: 30 });
     
     // Clean up
     unsubscribe();

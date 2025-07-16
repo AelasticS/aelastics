@@ -1,20 +1,56 @@
 import { createStore } from "../store/createStore";
-import { TypeMeta } from "../meta/InternalSchema";
+import { RegistryService } from "../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../registry/TypeDefinitions";
+
+// Create user schema using the new registry system
+function createUserNamespace(): Namespace {
+    const userTypeMeta: ObjectTypeMeta = {
+        qName: "/test/User",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+            ["name", {
+                name: "name",
+                typeRef: "/std/string",
+                optional: false
+            } as PropertyMeta],
+            ["age", {
+                name: "age",
+                typeRef: "/std/number",
+                optional: false
+            } as PropertyMeta]
+        ])
+    };
+
+    return {
+        qName: "/test",
+        version: "1.0.0",
+        types: new Map([
+            ["User", userTypeMeta]
+        ]),
+        exports: ["User"],
+        imports: new Map()
+    };
+}
 
 describe("Store API: Produce Mode Detection", () => {
     let store: ReturnType<typeof createStore>;
 
     beforeEach(() => {
-        const metaInfo = new Map<string, TypeMeta>([
-            ["User", {
-                qName: "User",
-                properties: new Map([
-                    ["name", { qName: "name", name: "name", type: "string" }],
-                    ["age", { qName: "age", name: "age", type: "number" }]
-                ])
-            }]
-        ]);
-        store = createStore(metaInfo);
+        const registryMetadata: RegistryMetadata = {
+            namespaces: new Map(),
+            name: "Test Registry",
+            version: "1.0.0",
+            created: new Date(),
+            lastModified: new Date()
+        };
+        
+        const registry = new RegistryService(registryMetadata);
+        const namespace = createUserNamespace();
+        
+        registry.importNamespace(namespace);
+        store = createStore(registry);
     });
 
     interface User {
@@ -24,7 +60,7 @@ describe("Store API: Produce Mode Detection", () => {
     }
 
     test("isInProduceMode() should detect when produce() is active", () => {
-        const user = store.objects.create<User>("User");
+        const user = store.objects.create<User>("/test/User");
         let produceStatusDuringExecution = false;
 
         store.objects.update((u) => {

@@ -1,4 +1,80 @@
-import { isCollectionOfReferences, isReference, PropertyMeta, TypeMeta } from "../meta/InternalSchema"
+// Adapter functions to work with new registry PropertyMeta format
+function isReference(prop: PropertyMeta): boolean {
+  return prop.typeRef.includes("object") && !prop.typeRef.includes("array") && !prop.typeRef.includes("set") && !prop.typeRef.includes("map");
+}
+
+function isCollectionOfReferences(prop: PropertyMeta): boolean {
+  return (prop.typeRef.includes("array") || prop.typeRef.includes("map") || prop.typeRef.includes("set")) && prop.typeRef.includes("object");
+}
+
+function getPropertyTypeKind(typeRef: string): string {
+  if (typeRef.includes("array")) return "array";
+  if (typeRef.includes("map")) return "map";
+  if (typeRef.includes("set")) return "set";
+  if (typeRef.includes("object")) return "object";
+  return "primitive";
+}
+
+function createCollectionProxy(obj: StoreObject, propertyName: string, propertyMeta: PropertyMeta, store: StoreClass): any {
+  const privateKey = makePrivatePropertyKey(propertyName);
+  const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef);
+  
+  // Initialize the underlying collection if it doesn't exist
+  if (!obj[privateKey]) {
+    if (propTypeKind === "array") {
+      obj[privateKey] = [];
+    } else if (propTypeKind === "set") {
+      obj[privateKey] = new Set();
+    } else if (propTypeKind === "map") {
+      obj[privateKey] = new Map();
+    }
+  }
+  
+  const collection = obj[privateKey];
+  
+  // Create a basic proxy that forwards operations to the underlying collection
+  // TODO: Add proper change tracking and inverse relationship management
+  if (propTypeKind === "array") {
+    return new Proxy(collection, {
+      get(target, prop) {
+        if (typeof prop === 'string' && ['push', 'pop', 'shift', 'unshift', 'splice'].includes(prop)) {
+          return function(...args: any[]) {
+            console.warn(`Array operation ${prop} not fully implemented with change tracking`);
+            return (target as any)[prop](...args);
+          };
+        }
+        return target[prop as any];
+      }
+    });
+  } else if (propTypeKind === "set") {
+    return new Proxy(collection, {
+      get(target, prop) {
+        if (typeof prop === 'string' && ['add', 'delete', 'clear'].includes(prop)) {
+          return function(...args: any[]) {
+            console.warn(`Set operation ${prop} not fully implemented with change tracking`);
+            return (target as any)[prop](...args);
+          };
+        }
+        return target[prop as any];
+      }
+    });
+  } else if (propTypeKind === "map") {
+    return new Proxy(collection, {
+      get(target, prop) {
+        if (typeof prop === 'string' && ['set', 'delete', 'clear'].includes(prop)) {
+          return function(...args: any[]) {
+            console.warn(`Map operation ${prop} not fully implemented with change tracking`);
+            return (target as any)[prop](...args);
+          };
+        }
+        return target[prop as any];
+      }
+    });
+  }
+  
+  return collection;
+}
+import { PropertyMeta, TypeMeta, ObjectTypeMeta } from "../registry/TypeDefinitions"
 import { StoreClass } from "./StoreClass"
 import { __StoreSuperClass__, nextVersion, StoreObject, uuid } from "./InternalTypes"
 import {
@@ -11,7 +87,206 @@ import {
   uniqueTimestamp,
 } from "./utils"
 
-import * as invUpd from "./inverseUpdaters"
+// Inverse updater functions for new registry system
+function createOne2OneUpdater(store: StoreClass, propertyMeta: PropertyMeta): any {
+  const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
+  
+  return function(obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+    let oldObj: StoreObject | undefined;
+    
+    if (disconnectedObject) {
+      const oldUUID = typeof disconnectedObject === 'string' ? disconnectedObject : disconnectedObject[uuid];
+      if (oldUUID && (oldObj = store.objectManager.findByUUID<StoreObject>(oldUUID))) {
+        oldObj = checkWriteAccess(oldObj, store, propertyMeta.name);
+        oldObj[privateInverseKey] = undefined;
+      }
+    }
+    
+    let newObj: StoreObject | undefined;
+    
+    if (connectedObject) {
+      const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
+      if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
+        newObj = checkWriteAccess(newObj, store, propertyMeta.name);
+        newObj[privateInverseKey] = obj[uuid];
+      }
+    }
+  };
+}
+
+function createOne2ArrayUpdater(store: StoreClass, propertyMeta: PropertyMeta): any {
+  const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
+  
+  return function(obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+    let oldObj: StoreObject | undefined;
+    
+    if (disconnectedObject) {
+      const oldUUID = typeof disconnectedObject === 'string' ? disconnectedObject : disconnectedObject[uuid];
+      if (oldUUID && (oldObj = store.objectManager.findByUUID<StoreObject>(oldUUID))) {
+        oldObj = checkWriteAccess(oldObj, store, propertyMeta.name);
+        const array = oldObj[privateInverseKey];
+        if (array && Array.isArray(array)) {
+          const index = array.indexOf(obj[uuid]);
+          if (index > -1) {
+            array.splice(index, 1);
+          }
+        }
+      }
+    }
+    
+    let newObj: StoreObject | undefined;
+    
+    if (connectedObject) {
+      const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
+      if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
+        newObj = checkWriteAccess(newObj, store, propertyMeta.name);
+        const array = newObj[privateInverseKey];
+        if (array && Array.isArray(array) && !array.includes(obj[uuid])) {
+          array.push(obj[uuid]);
+        }
+      }
+    }
+  };
+}
+
+function createArray2OneUpdater(store: StoreClass, propertyMeta: PropertyMeta): any {
+  const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
+  
+  return function(obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+    let oldObj: StoreObject | undefined;
+    
+    if (disconnectedObject) {
+      const oldUUID = typeof disconnectedObject === 'string' ? disconnectedObject : disconnectedObject[uuid];
+      if (oldUUID && (oldObj = store.objectManager.findByUUID<StoreObject>(oldUUID))) {
+        oldObj = checkWriteAccess(oldObj, store, propertyMeta.name);
+        oldObj[privateInverseKey] = undefined;
+      }
+    }
+    
+    let newObj: StoreObject | undefined;
+    
+    if (connectedObject) {
+      const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
+      if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
+        newObj = checkWriteAccess(newObj, store, propertyMeta.name);
+        const oldUUID = newObj[privateInverseKey];
+        
+        if (oldUUID && (oldObj = store.objectManager.findByUUID<StoreObject>(oldUUID))) {
+          oldObj = checkWriteAccess(oldObj, store, propertyMeta.name);
+          const privateKey = makePrivatePropertyKey(propertyMeta.name);
+          const array = oldObj[privateKey];
+          if (array && Array.isArray(array)) {
+            const index = array.indexOf(obj[uuid]);
+            if (index > -1) {
+              array.splice(index, 1);
+            }
+          }
+        }
+        newObj[privateInverseKey] = obj[uuid];
+      }
+    }
+  };
+}
+
+function createArray2ArrayUpdater(store: StoreClass, propertyMeta: PropertyMeta): any {
+  const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
+  
+  return function(obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+    let oldObj: StoreObject | undefined;
+    
+    if (disconnectedObject) {
+      const oldUUID = typeof disconnectedObject === 'string' ? disconnectedObject : disconnectedObject[uuid];
+      if (oldUUID && (oldObj = store.objectManager.findByUUID<StoreObject>(oldUUID))) {
+        oldObj = checkWriteAccess(oldObj, store, propertyMeta.name);
+        const array = oldObj[privateInverseKey];
+        if (array && Array.isArray(array)) {
+          const index = array.indexOf(obj[uuid]);
+          if (index > -1) {
+            array.splice(index, 1);
+          }
+        }
+      }
+    }
+    
+    let newObj: StoreObject | undefined;
+    
+    if (connectedObject) {
+      const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
+      if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
+        newObj = checkWriteAccess(newObj, store, propertyMeta.name);
+        const array = newObj[privateInverseKey];
+        if (array && Array.isArray(array) && !array.includes(obj[uuid])) {
+          array.push(obj[uuid]);
+        }
+      }
+    }
+  };
+}
+
+function createOne2SetUpdater(store: StoreClass, propertyMeta: PropertyMeta): any {
+  const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
+  
+  return function(obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+    let oldObj: StoreObject | undefined;
+    
+    if (disconnectedObject) {
+      const oldUUID = typeof disconnectedObject === 'string' ? disconnectedObject : disconnectedObject[uuid];
+      if (oldUUID && (oldObj = store.objectManager.findByUUID<StoreObject>(oldUUID))) {
+        oldObj = checkWriteAccess(oldObj, store, propertyMeta.name);
+        const set = oldObj[privateInverseKey];
+        if (set && set instanceof Set) {
+          set.delete(obj[uuid]);
+        }
+      }
+    }
+    
+    let newObj: StoreObject | undefined;
+    
+    if (connectedObject) {
+      const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
+      if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
+        newObj = checkWriteAccess(newObj, store, propertyMeta.name);
+        const set = newObj[privateInverseKey];
+        if (set && set instanceof Set) {
+          set.add(obj[uuid]);
+        }
+      }
+    }
+  };
+}
+
+function createOne2MapUpdater(store: StoreClass, propertyMeta: PropertyMeta): any {
+  const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
+  
+  return function(obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
+    let oldObj: StoreObject | undefined;
+    
+    if (disconnectedObject) {
+      const oldUUID = typeof disconnectedObject === 'string' ? disconnectedObject : disconnectedObject[uuid];
+      if (oldUUID && (oldObj = store.objectManager.findByUUID<StoreObject>(oldUUID))) {
+        oldObj = checkWriteAccess(oldObj, store, propertyMeta.name);
+        const map = oldObj[privateInverseKey];
+        if (map && map instanceof Map) {
+          map.delete(obj[uuid]);
+        }
+      }
+    }
+    
+    let newObj: StoreObject | undefined;
+    
+    if (connectedObject) {
+      const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
+      if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
+        newObj = checkWriteAccess(newObj, store, propertyMeta.name);
+        const map = newObj[privateInverseKey];
+        if (map && map instanceof Map) {
+          map.set(obj[uuid], obj[uuid]);
+        }
+      }
+    }
+  };
+}
+
 import { EventPayload, Result } from "../events/EventTypes"
 import { ChangeLogEntry } from "../events/ChangeLog"
 
@@ -88,7 +363,8 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
 
   // Check if typeMeta.properties is defined and is a Map
-  if (!typeMeta.properties || !(typeMeta.properties instanceof Map)) {
+  const objectTypeMeta = typeMeta as ObjectTypeMeta;
+  if (!objectTypeMeta.properties || !(objectTypeMeta.properties instanceof Map)) {
     throw new Error(`Invalid properties for typeMeta: ${typeMeta.qName}`)
   }
   const allProps = store.getAllProperties(typeMeta.qName)
@@ -104,7 +380,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // Generate optimized getter
     let getter: (this: StoreObject) => any
-    if (propertyMeta.type === "object") {
+    if (getPropertyTypeKind(propertyMeta.typeRef) === "object") {
       getter = function (this: StoreObject) {
         let obj = checkReadAccess(this, store)
         return store.objectManager.findByUUID(obj[privateKey]) // Directly resolve UUIDs
@@ -121,17 +397,24 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // TODO add to changelog
 
-    if (propertyMeta.type === "array" || propertyMeta.type === "set" || propertyMeta.type === "map") {
+    const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef);
+    if (propTypeKind === "array" || propTypeKind === "set" || propTypeKind === "map") {
       getter = function () {
         let obj = checkReadAccess(this, store)
-        return obj[proxyKey] // Use proxy for collection properties
+        
+        // Create proxy if it doesn't exist
+        if (!obj[proxyKey]) {
+          obj[proxyKey] = createCollectionProxy(obj, key, propertyMeta, store);
+        }
+        
+        return obj[proxyKey]
       }
       // Prevent direct assignment to collection properties
       setter = function () {
         // TODO in future: create proxy, disconnect old and connect new elements
         throw new Error(`Cannot directly assign to collection property "${key}" of an object"`)
       }
-    } else if (propertyMeta.type === "object") {
+    } else if (propTypeKind === "object") {
       setter = function (this: StoreObject, value: StoreObject | undefined) {
         // Validate that the value is an object, undefined, or null, but not an array or any other special object
         if (value !== null && value !== undefined && (typeof value !== "object" || Array.isArray(value))) {
@@ -162,7 +445,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           timing: "before",
           operation: "update",
           objectType: typeMeta.qName,
-          property: propertyMeta.qName,
+          property: propertyMeta.name,
           timestamp: uniqueTimestamp(),
           objectId: this[uuid],
           changes: changes,
@@ -180,8 +463,8 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         obj[privateKey] = newUUID
 
         // Ensure bidirectional relationships are updated correctly
-        if (propertyMeta.domainType && propertyMeta.inverseProp && (oldUUID || value)) {
-          const updater: invUpd.inverseUpdater | undefined = obj[inverseUpdaterKey]
+        if (propertyMeta.inverseTypeRef && propertyMeta.inverseProp && (oldUUID || value)) {
+          const updater: any = obj[inverseUpdaterKey]
           if (!updater) {
             throw new Error(`Inverse updater function for property "${key}" is undefined.`)
           }
@@ -200,7 +483,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           timing: "after",
           operation: "update",
           objectType: typeMeta.qName,
-          property: propertyMeta.qName,
+          property: propertyMeta.name,
           timestamp: uniqueTimestamp(),
           objectId: this[uuid],
           changes: changes,
@@ -217,7 +500,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
       // primitive type
       setter = function (this: StoreObject, value: any) {
         // Validate that the value has the correct primitive type
-        const expectedType = propertyMeta.type
+        const expectedType = getPropertyTypeKind(propertyMeta.typeRef)
         const actualType = typeof value
 
         if (
@@ -255,7 +538,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           timing: "before",
           operation: "update",
           objectType: typeMeta.qName,
-          property: propertyMeta.qName,
+          property: propertyMeta.name,
           timestamp: uniqueTimestamp(),
           objectId: this[uuid],
           changes: changes,
@@ -284,7 +567,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           timing: "after",
           operation: "update",
           objectType: typeMeta.qName,
-          property: propertyMeta.qName,
+          property: propertyMeta.name,
           timestamp: uniqueTimestamp(),
           objectId: this[uuid],
           changes: changes,
@@ -303,77 +586,48 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // Precompute and bind inverse relationship updater
 
-    if (propertyMeta.domainType && propertyMeta.inverseProp) {
-      switch (propertyMeta.type) {
+    if (propertyMeta.inverseTypeRef && propertyMeta.inverseProp) {
+      const propertyTypeKind = getPropertyTypeKind(propertyMeta.typeRef);
+      const inverseType = propertyMeta.inverseType;
+      
+      switch (propertyTypeKind) {
         // property is an object
         case "object":
-          switch (propertyMeta.inverseType) {
-            case "object":
-              prototype[inverseUpdaterKey] = invUpd.one2one(store, propertyMeta)
-              break
-            case "array":
-              prototype[inverseUpdaterKey] = invUpd.one2array(store, propertyMeta)
-              break
-            case "map":
-              prototype[inverseUpdaterKey] = invUpd.one2map(store, propertyMeta)
-              break
-            case "set":
-              prototype[inverseUpdaterKey] = invUpd.one2set(store, propertyMeta)
-              break
+          if (inverseType === "object") {
+            prototype[inverseUpdaterKey] = createOne2OneUpdater(store, propertyMeta);
+          } else if (inverseType === "array") {
+            prototype[inverseUpdaterKey] = createOne2ArrayUpdater(store, propertyMeta);
+          } else if (inverseType === "set") {
+            prototype[inverseUpdaterKey] = createOne2SetUpdater(store, propertyMeta);
+          } else if (inverseType === "map") {
+            prototype[inverseUpdaterKey] = createOne2MapUpdater(store, propertyMeta);
           }
           break
 
         // property is an array
         case "array":
-          switch (propertyMeta.inverseType) {
-            case "object":
-              prototype[inverseUpdaterKey] = invUpd.array2one(store, propertyMeta)
-              break
-            case "array":
-              prototype[inverseUpdaterKey] = invUpd.array2array(store, propertyMeta)
-              break
-            case "map":
-              prototype[inverseUpdaterKey] = invUpd.array2map(store, propertyMeta)
-              break
-            case "set":
-              prototype[inverseUpdaterKey] = invUpd.array2set(store, propertyMeta)
-              break
+          if (inverseType === "object") {
+            prototype[inverseUpdaterKey] = createArray2OneUpdater(store, propertyMeta);
+          } else if (inverseType === "array") {
+            prototype[inverseUpdaterKey] = createArray2ArrayUpdater(store, propertyMeta);
           }
           break
 
         // property is a map
         case "map":
-          switch (propertyMeta.inverseType) {
-            case "object":
-              prototype[inverseUpdaterKey] = invUpd.map2one(store, propertyMeta)
-              break
-            case "array":
-              prototype[inverseUpdaterKey] = invUpd.map2array(store, propertyMeta)
-              break
-            case "map":
-              prototype[inverseUpdaterKey] = invUpd.map2map(store, propertyMeta)
-              break
-            case "set":
-              prototype[inverseUpdaterKey] = invUpd.map2set(store, propertyMeta)
-              break
+          if (inverseType === "object") {
+            prototype[inverseUpdaterKey] = createArray2OneUpdater(store, propertyMeta);
+          } else if (inverseType === "array") {
+            prototype[inverseUpdaterKey] = createArray2ArrayUpdater(store, propertyMeta);
           }
           break
 
         // property is a set
         case "set":
-          switch (propertyMeta.inverseType) {
-            case "object":
-              prototype[inverseUpdaterKey] = invUpd.set2one(store, propertyMeta)
-              break
-            case "array":
-              prototype[inverseUpdaterKey] = invUpd.set2array(store, propertyMeta)
-              break
-            case "map":
-              prototype[inverseUpdaterKey] = invUpd.set2map(store, propertyMeta)
-              break
-            case "set":
-              prototype[inverseUpdaterKey] = invUpd.set2set(store, propertyMeta)
-              break
+          if (inverseType === "object") {
+            prototype[inverseUpdaterKey] = createArray2OneUpdater(store, propertyMeta);
+          } else if (inverseType === "array") {
+            prototype[inverseUpdaterKey] = createArray2ArrayUpdater(store, propertyMeta);
           }
           break
       }
@@ -392,15 +646,15 @@ export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
       superClass.copyProps.call(this, newObj, superClass) // Use this as the context
     }
     // Copy properties of the current type
-    for (const [key, propertyMeta] of typeMeta.properties) {
+    for (const [key, propertyMeta] of (typeMeta as ObjectTypeMeta).properties || new Map()) {
       const privateKey = makePrivatePropertyKey(key)
-      if (propertyMeta.type === "array") {
+      if (propertyMeta.typeRef.includes("array")) {
         ;(newObj[privateKey] as [any]).push(...this[privateKey])
-      } else if (propertyMeta.type === "set") {
+      } else if (propertyMeta.typeRef.includes("set")) {
         ;(this[privateKey] as Set<any>).forEach((value) => {
           ;(newObj[privateKey] as Set<any>).add(value)
         })
-      } else if (propertyMeta.type === "map") {
+      } else if (propertyMeta.typeRef.includes("map")) {
         ;(this[privateKey] as Map<any, any>).forEach((value, key) => {
           ;(newObj[privateKey] as Map<any, any>).set(key, value)
         })
@@ -420,7 +674,7 @@ function addDisconnectMethod(prototype: any, typeMeta: TypeMeta) {
 
   // while (currentMeta) {
   
-  for (const prop of currentMeta.properties.values()) {
+  for (const prop of (currentMeta as ObjectTypeMeta).properties?.values() || []) {
     if (isReference(prop) || isCollectionOfReferences(prop)) {
       referenceProps.push(prop)
     }
@@ -438,8 +692,8 @@ function addDisconnectMethod(prototype: any, typeMeta: TypeMeta) {
     }
     // Disconnect references using meta information
     for (const prop of referenceProps) {
-      const value = obj[prop.qName]
-      if (prop.type === "array" && prop.itemType === "object") {
+      const value = obj[prop.name]
+      if (prop.typeRef.includes("array") && prop.typeRef.includes("object")) {
         // value.length = 0 // Clear the array // TODO restore this code when setting array  length is resolved
         for (let i = 0; i < value.length; i++) {
           if (value[i] && typeof value[i] === "object" && "uuid" in value[i]) {
@@ -447,12 +701,12 @@ function addDisconnectMethod(prototype: any, typeMeta: TypeMeta) {
             i-- // Adjust index after removal
           }
         }
-      } else if (prop.type === "map" && prop.itemType === "object") {
+      } else if (prop.typeRef.includes("map") && prop.typeRef.includes("object")) {
         value.clear() // Clear the map
-      } else if (prop.type === "set" && prop.itemType === "object") {
+      } else if (prop.typeRef.includes("set") && prop.typeRef.includes("object")) {
         value.clear() // Clear the set
-      } else if (prop.type === "object") {
-        obj[prop.qName] = undefined // Use property setter to nullify the reference
+      } else if (prop.typeRef.includes("object")) {
+        obj[prop.name] = undefined // Use property setter to nullify the reference
       }
     }
   }

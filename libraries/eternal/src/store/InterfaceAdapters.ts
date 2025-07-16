@@ -8,6 +8,7 @@ import { EventPayload, Result as EventResult } from "../events/EventTypes";
 import { Timing, Operation, Type, Property } from "../interfaces/ISubscriptionManager";
 import { RegistryAdapter } from "../registry/RegistryAdapter";
 import { SchemaRegistry } from "../meta/InternalSchema";
+import { RegistryService } from "../registry/RegistryService";
 
 export class ObjectsAdapter implements IObjects {
   constructor(private store: StoreClass) {}
@@ -126,17 +127,39 @@ export class DataAdapter implements IData {
   }
 
   deserialize<T>(json: string, type: string, validate?: boolean): T {
-    return this.store.deserialize(json);
+    const result = this.store.deserialize(json);
+    
+    // If type is specified and result is an object, validate it
+    if (type && result && typeof result === 'object') {
+      const typeMeta = this.store.getTypeMeta(type);
+      if (!typeMeta) {
+        throw new Error(`Type '${type}' not found in registry`);
+      }
+      // TODO: Add runtime validation against type metadata if validate is true
+    }
+    
+    return result as T;
   }
 
   serializeBatch?<T>(objects: T[]): string {
-    // TODO: Implement batch serialization
-    throw new Error("Batch serialization not yet implemented");
+    const batchData = objects.map(obj => this.store.export(obj));
+    return JSON.stringify(batchData);
   }
 
   deserializeBatch?<T>(json: string): T[] {
-    // TODO: Implement batch deserialization
-    throw new Error("Batch deserialization not yet implemented");
+    try {
+      const batchData = JSON.parse(json);
+      if (!Array.isArray(batchData)) {
+        throw new Error("Expected array for batch deserialization");
+      }
+      
+      return batchData.map(objData => {
+        const imported = this.store.import(objData);
+        return imported as T;
+      });
+    } catch (error) {
+      throw new Error(`Failed to deserialize batch: ${error}`);
+    }
   }
 }
 
@@ -166,13 +189,11 @@ export class RegistryAdapterForStore {
   private registryAdapter: RegistryAdapter;
   
   constructor(private store: StoreClass) {
-    // Create a schema registry from the store's metadata
+    // Use new registry service - create adapter from registry service
+    // TODO: Create a bridge between RegistryService and RegistryAdapter
     const schemaRegistry: SchemaRegistry = {
       schemas: new Map()
     };
-    
-    // TODO: Convert store's metaInfo to schema registry format
-    // For now, create empty registry
     this.registryAdapter = new RegistryAdapter(schemaRegistry);
   }
 

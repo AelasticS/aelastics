@@ -1,21 +1,57 @@
 import { createStore } from "../store/createStore";
-import { TypeMeta } from "../meta/InternalSchema";
 import { StoreObject, uuid } from "../store/InternalTypes";
+import { RegistryService } from "../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../registry/TypeDefinitions";
+
+// Create user schema using the new registry system
+function createUserNamespace(): Namespace {
+    const userTypeMeta: ObjectTypeMeta = {
+        qName: "/test/User",
+        category: "complex",
+        kind: "object",
+        properties: new Map([
+            ["name", {
+                name: "name",
+                typeRef: "/std/string",
+                optional: false
+            } as PropertyMeta],
+            ["age", {
+                name: "age",
+                typeRef: "/std/number",
+                optional: false
+            } as PropertyMeta]
+        ])
+    };
+
+    return {
+        qName: "/test",
+        version: "1.0.0",
+        types: new Map([
+            ["User", userTypeMeta]
+        ]),
+        exports: ["User"],
+        imports: new Map()
+    };
+}
 
 describe("Store API: Historical State Access", () => {
     let store: ReturnType<typeof createStore>;
 
     beforeEach(() => {
-        const metaInfo = new Map<string, TypeMeta>([
-            ["User", {
-                qName: "User",
-                properties: new Map([
-                    ["name", { qName: "name", name: "name", type: "string" }],
-                    ["age", { qName: "age", name: "age", type: "number" }]
-                ])
-            }]
-        ]);
-        store = createStore(metaInfo);
+        const registryMetadata: RegistryMetadata = {
+            namespaces: new Map(),
+            name: "Test Registry",
+            version: "1.0.0",
+            created: new Date(),
+            lastModified: new Date()
+        };
+        
+        const registry = new RegistryService(registryMetadata);
+        const namespace = createUserNamespace();
+        
+        registry.importNamespace(namespace);
+        store = createStore(registry);
     });
 
     interface User extends StoreObject{
@@ -25,7 +61,7 @@ describe("Store API: Historical State Access", () => {
     }
 
     test("fromState() should retrieve object from a previous state", () => {
-        let user = store.objects.create<User>("User");
+        let user = store.objects.create<User>("/test/User");
 
         user = store.objects.update((u) => {
             u.name = "Alice";
@@ -43,7 +79,7 @@ describe("Store API: Historical State Access", () => {
     });
 
        test("Accessing an object from old state should throw an error", () => {
-            let user = store.objects.create<User>("User");
+            let user = store.objects.create<User>("/test/User");
     
             store.objects.update((u) => {
                 u.name = "Alice";

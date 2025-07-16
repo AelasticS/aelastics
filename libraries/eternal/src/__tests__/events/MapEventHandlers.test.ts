@@ -1,45 +1,63 @@
 import { createStore } from "../../store/createStore"
-import { initializeSchemaRegistry } from "../../meta/SchemaRegistry"
-import { SchemaRegistry } from "../../meta/InternalSchema"
-import { SchemaDescription } from "../../meta/ExternalSchema"
 import { StoreObject, uuid } from "../../store/InternalTypes"
 import { EventPayload, Result } from "../../events/EventTypes"
 import { getEventPattern } from "../../events/SubscriptionManager"
+import { RegistryService } from "../../registry/RegistryService"
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata"
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions"
 
-const schemas: SchemaDescription[] = [
-  {
+// Create test schema using the new registry system
+function createTestNamespace(): Namespace {
+  const userTypeMeta: ObjectTypeMeta = {
+    qName: "/test/User",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["preferences", {
+        name: "preferences",
+        typeRef: "/std/map<string, /std/string>",
+        optional: false
+      } as PropertyMeta]
+    ])
+  };
+
+  return {
     qName: "/test",
-    version: "1.0",
-    types: {
-      User: {
-        qName: "User",
-        properties: {
-          preferences: {
-            qName: "preferences",
-            type: "map",
-            keyType: "string", // Keys represent preference names (e.g., "theme", "language")
-            itemType: "string", // Values represent preference values (e.g., "dark", "en-US")
-          },
-        },
-      },
-    },
-    roles: {},
-    export: ["User"],
-    import: {},
-  },
-]
+    version: "1.0.0",
+    types: new Map([
+      ["User", userTypeMeta]
+    ]),
+    exports: ["User"],
+    imports: new Map()
+  };
+}
+
+function createTestStore() {
+  const registryMetadata: RegistryMetadata = {
+    namespaces: new Map(),
+    name: "Test Registry",
+    version: "1.0.0",
+    created: new Date(),
+    lastModified: new Date()
+  };
+  
+  const registry = new RegistryService(registryMetadata);
+  const namespace = createTestNamespace();
+  
+  registry.importNamespace(namespace);
+  return createStore(registry);
+}
 
 describe("Map Event Handlers - User Preferences", () => {
   let store: ReturnType<typeof createStore>
   let userObject: StoreObject
 
   beforeEach(() => {
-    // Initialize the schema registry and store
-    const schemaRegistry: SchemaRegistry = initializeSchemaRegistry(schemas) as SchemaRegistry
-    store = createStore(schemaRegistry.schemas.get("/test")!)
+    // Initialize the store with the new registry system
+    store = createTestStore()
 
     // Create a User object
-    userObject = store.objects.create("User") as StoreObject
+    userObject = store.objects.create("/test/User") as StoreObject
   })
 
   test("should emit events and track changes for set operation on preferences map", () => {

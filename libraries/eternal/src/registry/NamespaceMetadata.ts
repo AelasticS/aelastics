@@ -1,5 +1,8 @@
 import { TypeMeta } from "./TypeDefinitions";
 
+/** Import entry - supports wildcards and aliasing */
+export type ImportEntry = string | { original: string; alias: string };
+
 /** Namespace metadata - container of type definitions with import/export support */
 export interface Namespace {
     qName: string; // Qualified name (path) of the namespace
@@ -12,7 +15,7 @@ export interface Namespace {
     
     // Import/Export system (like TypeScript modules)
     exports: string[]; // List of exported type names
-    imports: Map<string, string[]>; // Imported namespace path -> imported type names
+    imports: Map<string, ImportEntry[]>; // Imported namespace path -> imported entries (supports wildcards and aliases)
     
     // Additional metadata
     description?: string; // Namespace description
@@ -94,6 +97,7 @@ export function isSubNamespace(childPath: string, parentPath: string): boolean {
  * @param namespace - Namespace to check
  * @param registry - Registry containing all namespaces
  * @returns Set of available type names
+ * @deprecated Use InternalNamespace.getAvailableTypeNames() for better performance
  */
 export function getAvailableTypes(namespace: Namespace, registry: RegistryMetadata): Set<string> {
     const availableTypes = new Set<string>();
@@ -105,12 +109,25 @@ export function getAvailableTypes(namespace: Namespace, registry: RegistryMetada
     
     // Add imported types
     if (namespace.imports) {
-        for (const [importedNamespacePath, importedTypeNames] of namespace.imports) {
+        for (const [importedNamespacePath, importedEntries] of namespace.imports) {
             const importedNamespace = registry.namespaces.get(importedNamespacePath);
             if (importedNamespace && importedNamespace.exports) {
-                for (const typeName of importedTypeNames) {
-                    if (importedNamespace.exports.includes(typeName)) {
-                        availableTypes.add(typeName);
+                for (const entry of importedEntries) {
+                    if (entry === "*") {
+                        // Wildcard import - add all exported types
+                        for (const exportedType of importedNamespace.exports) {
+                            availableTypes.add(exportedType);
+                        }
+                    } else if (typeof entry === "string") {
+                        // Regular import
+                        if (importedNamespace.exports.includes(entry)) {
+                            availableTypes.add(entry);
+                        }
+                    } else {
+                        // Aliased import
+                        if (importedNamespace.exports.includes(entry.original)) {
+                            availableTypes.add(entry.alias);
+                        }
                     }
                 }
             }
@@ -126,6 +143,7 @@ export function getAvailableTypes(namespace: Namespace, registry: RegistryMetada
  * @param contextNamespace - Namespace context for resolution
  * @param registry - Registry containing all namespaces
  * @returns Qualified type name if found, undefined otherwise
+ * @deprecated Use InternalNamespace.getResolvedType() for better performance
  */
 export function resolveTypeReference(
     typeName: string, 
@@ -139,13 +157,31 @@ export function resolveTypeReference(
     
     // Check imported types
     if (contextNamespace.imports) {
-        for (const [importedNamespacePath, importedTypeNames] of contextNamespace.imports) {
-            if (importedTypeNames.includes(typeName)) {
-                const importedNamespace = registry.namespaces.get(importedNamespacePath);
-                if (importedNamespace && 
-                    importedNamespace.exports?.includes(typeName) &&
-                    importedNamespace.types.has(typeName)) {
-                    return buildQualifiedName(importedNamespacePath, typeName);
+        for (const [importedNamespacePath, importedEntries] of contextNamespace.imports) {
+            const importedNamespace = registry.namespaces.get(importedNamespacePath);
+            if (!importedNamespace) continue;
+            
+            for (const entry of importedEntries) {
+                if (entry === "*") {
+                    // Wildcard import - check if type is exported
+                    if (importedNamespace.exports?.includes(typeName) &&
+                        importedNamespace.types.has(typeName)) {
+                        return buildQualifiedName(importedNamespacePath, typeName);
+                    }
+                } else if (typeof entry === "string") {
+                    // Regular import
+                    if (entry === typeName && 
+                        importedNamespace.exports?.includes(typeName) &&
+                        importedNamespace.types.has(typeName)) {
+                        return buildQualifiedName(importedNamespacePath, typeName);
+                    }
+                } else {
+                    // Aliased import - check if we're looking for the alias
+                    if (entry.alias === typeName && 
+                        importedNamespace.exports?.includes(entry.original) &&
+                        importedNamespace.types.has(entry.original)) {
+                        return buildQualifiedName(importedNamespacePath, entry.original);
+                    }
                 }
             }
         }

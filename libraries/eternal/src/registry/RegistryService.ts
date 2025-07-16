@@ -10,12 +10,15 @@ import {
     resolveTypeReference,
     getAvailableTypes
 } from "./NamespaceMetadata";
+import { InternalNamespace } from "./InternalNamespace";
 
 /** Registry service - provides read-only lookup and import/export operations */
 export class RegistryService {
     private registry: RegistryMetadata;
     // Optimization: Map of all types by qualified name for fast lookup
     private typeIndex: Map<string, TypeMeta> = new Map();
+    // Internal namespaces with resolved types optimization
+    private internalNamespaces: Map<string, InternalNamespace> = new Map();
 
     constructor(registry: RegistryMetadata) {
         this.registry = registry;
@@ -84,6 +87,13 @@ export class RegistryService {
 
     /** Get type by name within namespace context */
     public getTypeInNamespace(typeName: string, namespacePath: string): TypeMeta | undefined {
+        // Use resolved types optimization if available (O(1) lookup)
+        const internalNamespace = this.internalNamespaces.get(namespacePath);
+        if (internalNamespace) {
+            return internalNamespace.getResolvedType(typeName);
+        }
+        
+        // Fallback to old method for non-internal namespaces
         const namespace = this.getNamespace(namespacePath);
         if (!namespace) return undefined;
 
@@ -111,6 +121,13 @@ export class RegistryService {
 
     /** Get all available types in namespace (local + imported) */
     public getAvailableTypesInNamespace(namespacePath: string): Set<string> {
+        // Use resolved types optimization if available (O(1) lookup)
+        const internalNamespace = this.internalNamespaces.get(namespacePath);
+        if (internalNamespace) {
+            return new Set(internalNamespace.getAvailableTypeNames());
+        }
+        
+        // Fallback to old method for non-internal namespaces
         const namespace = this.getNamespace(namespacePath);
         return namespace ? getAvailableTypes(namespace, this.registry) : new Set();
     }
@@ -121,11 +138,38 @@ export class RegistryService {
     public importNamespace(namespace: Namespace): ValidationResult {
         const result = this.validateNamespaceForImport(namespace);
         
-        if (result.isValid) {
-            // Store the optimized namespace (already transformed from source type system)
-            this.registry.namespaces.set(namespace.qName, namespace);
-            this.refreshIndex();
+        if (!result.isValid) {
+            return result;
         }
+        
+        // Create internal namespace with resolved types optimization
+        const internalNamespace = new InternalNamespace(namespace);
+        
+        // Compute resolved types and check for errors
+        const resolvedTypesErrors = internalNamespace.computeResolvedTypes(this.registry);
+        if (resolvedTypesErrors.length > 0) {
+            return {
+                isValid: false,
+                errors: resolvedTypesErrors,
+                warnings: []
+            };
+        }
+        
+        // Check for circular import dependencies
+        const circularImportErrors = internalNamespace.detectCircularImports(this.registry);
+        if (circularImportErrors.length > 0) {
+            return {
+                isValid: false,
+                errors: circularImportErrors,
+                warnings: []
+            };
+        }
+        
+        // Store both the regular namespace and internal namespace
+        this.registry.namespaces.set(namespace.qName, namespace);
+        this.internalNamespaces.set(namespace.qName, internalNamespace);
+        
+        this.refreshIndex();
         
         return result;
     }
@@ -162,7 +206,14 @@ export class RegistryService {
             }
 
             // Check if imported types are exported by the target namespace
-            for (const typeName of importedTypes) {
+            for (const importEntry of importedTypes) {
+                if (importEntry === '*') {
+                    // Wildcard import - skip validation (all exported types will be imported)
+                    continue;
+                }
+                
+                const typeName = typeof importEntry === 'string' ? importEntry : importEntry.original;
+                
                 if (!importedNamespace.exports.includes(typeName)) {
                     errors.push(`Type '${typeName}' is not exported by namespace '${importedNamespacePath}'`);
                 }
@@ -263,7 +314,26 @@ export class RegistryService {
     ): void {
         // Validate property type references
         for (const [propName, propMeta] of typeMeta.properties) {
-            const resolvedTypeRef = resolveTypeReference(propMeta.typeRef, contextNamespace, this.registry);
+            let resolvedTypeRef: string | undefined;
+            
+            // Check if typeRef is already a qualified name (starts with /)
+            if (propMeta.typeRef.startsWith('/')) {
+                // It's already a qualified name, check if it exists in registry OR in the namespace being validated
+                if (this.hasType(propMeta.typeRef)) {
+                    resolvedTypeRef = propMeta.typeRef;
+                } else {
+                    // Check if the type exists in the namespace being validated
+                    const namespacePath = getNamespacePath(propMeta.typeRef);
+                    const typeName = getLocalName(propMeta.typeRef);
+                    if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                        resolvedTypeRef = propMeta.typeRef;
+                    }
+                }
+            } else {
+                // It's a local name, try to resolve it
+                resolvedTypeRef = resolveTypeReference(propMeta.typeRef, contextNamespace, this.registry);
+            }
+            
             if (!resolvedTypeRef) {
                 errors.push(`Property '${propName}' references unknown type '${propMeta.typeRef}'`);
             }
@@ -276,7 +346,17 @@ export class RegistryService {
 
         // Validate inheritance
         if (typeMeta.extends) {
-            const baseTypeRef = resolveTypeReference(typeMeta.extends, contextNamespace, this.registry);
+            let baseTypeRef: string | undefined;
+            
+            // Check if extends is already a qualified name
+            if (typeMeta.extends.startsWith('/')) {
+                if (this.hasType(typeMeta.extends)) {
+                    baseTypeRef = typeMeta.extends;
+                }
+            } else {
+                baseTypeRef = resolveTypeReference(typeMeta.extends, contextNamespace, this.registry);
+            }
+            
             if (!baseTypeRef) {
                 errors.push(`Base type '${typeMeta.extends}' not found`);
             } else {
@@ -290,7 +370,17 @@ export class RegistryService {
         // Validate inverse collections - target types must be objects
         if (typeMeta.inverseCollection) {
             for (const [propName, inverseMeta] of typeMeta.inverseCollection) {
-                const targetTypeRef = resolveTypeReference(inverseMeta.targetTypeQName, contextNamespace, this.registry);
+                let targetTypeRef: string | undefined;
+                
+                // Check if target type is already a qualified name
+                if (inverseMeta.targetTypeQName.startsWith('/')) {
+                    if (this.hasType(inverseMeta.targetTypeQName)) {
+                        targetTypeRef = inverseMeta.targetTypeQName;
+                    }
+                } else {
+                    targetTypeRef = resolveTypeReference(inverseMeta.targetTypeQName, contextNamespace, this.registry);
+                }
+                
                 if (!targetTypeRef) {
                     errors.push(`Inverse property '${propName}' references unknown target type '${inverseMeta.targetTypeQName}'`);
                 } else {

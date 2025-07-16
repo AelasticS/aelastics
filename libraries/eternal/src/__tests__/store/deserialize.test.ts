@@ -1,5 +1,7 @@
 import { StoreClass } from "../../store/StoreClass"; // Adjust the path as needed
-import { TypeMeta } from "../../meta/InternalSchema";
+import { RegistryService } from "../../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
 
 interface MyClass {
   name?: string;
@@ -12,28 +14,90 @@ interface MyClass {
   description?: string;
 }
 
-describe("Serialization Tests", () => {
-  const myClassMeta: TypeMeta = {
-    qName: "MyClass",
+// Create MyClass schema using the new registry system
+function createMyClassNamespace(): Namespace {
+  const myClassTypeMeta: ObjectTypeMeta = {
+    qName: "/test/MyClass",
+    category: "complex",
+    kind: "object",
     properties: new Map([
-      ["name", { type: "string", qName: "name" }],
-      ["age", { type: "number", qName: "age" }],
-      ["array", { type: "array", domainType: "MyClass", qName: "array", itemType: "object" }],
-      ["map", { type: "map", domainType: "number", qName: "map" }],
-      ["set", { type: "set", domainType: "string", qName: "set" }],
-      ["child", { type: "object", domainType: "MyClass", qName: "child" }],
-      ["parent", { type: "object", domainType: "MyClass", qName: "parent" }],
-      ["description", { type: "string", qName: "description" }],
-    ]),
+      ["name", {
+        name: "name",
+        typeRef: "/std/string",
+        optional: true
+      } as PropertyMeta],
+      ["age", {
+        name: "age",
+        typeRef: "/std/number",
+        optional: true
+      } as PropertyMeta],
+      ["array", {
+        name: "array",
+        typeRef: "/std/array</test/MyClass>",
+        optional: true
+      } as PropertyMeta],
+      ["map", {
+        name: "map",
+        typeRef: "/std/map<string, /std/number>",
+        optional: true
+      } as PropertyMeta],
+      ["set", {
+        name: "set",
+        typeRef: "/std/set</std/string>",
+        optional: true
+      } as PropertyMeta],
+      ["child", {
+        name: "child",
+        typeRef: "/test/MyClass",
+        optional: true
+      } as PropertyMeta],
+      ["parent", {
+        name: "parent",
+        typeRef: "/test/MyClass",
+        optional: true
+      } as PropertyMeta],
+      ["description", {
+        name: "description",
+        typeRef: "/std/string",
+        optional: true
+      } as PropertyMeta]
+    ])
   };
 
-  const metaInfo = new Map<string, TypeMeta>([["MyClass", myClassMeta]]);
+  return {
+    qName: "/test",
+    version: "1.0.0",
+    types: new Map([
+      ["MyClass", myClassTypeMeta]
+    ]),
+    exports: ["MyClass"],
+    imports: new Map()
+  };
+}
+
+function createTestStore(): StoreClass {
+  const registryMetadata: RegistryMetadata = {
+    namespaces: new Map(),
+    name: "Test Registry",
+    version: "1.0.0",
+    created: new Date(),
+    lastModified: new Date()
+  };
+  
+  const registry = new RegistryService(registryMetadata);
+  const namespace = createMyClassNamespace();
+  
+  registry.importNamespace(namespace);
+  return new StoreClass(registry);
+}
+
+describe("Serialization Tests", () => {
 
   test("Deserialize a simple object", () => {
-    const store1 = new StoreClass(metaInfo);
-    const store2 = new StoreClass(metaInfo);
+    const store1 = createTestStore();
+    const store2 = createTestStore();
 
-    const objA = store1.create<MyClass>("MyClass", { name: "Object A", age: 30 });
+    const objA = store1.create<MyClass>("/test/MyClass", { name: "Object A", age: 30 });
 
     const serialized = store1.serialize(objA);
     const deserialized = store2.deserialize(serialized);
@@ -43,12 +107,12 @@ describe("Serialization Tests", () => {
   });
 
   test("Deserialize an object with collections", () => {
-    const store1 = new StoreClass(metaInfo);
-    const store2 = new StoreClass(metaInfo);
+    const store1 = createTestStore();
+    const store2 = createTestStore();
 
-    const objA = store1.create<MyClass>("MyClass", { name: "ObjectA", age: 30 });
+    const objA = store1.create<MyClass>("/test/MyClass", { name: "ObjectA", age: 30 });
 
-    let objB = store1.create<MyClass>("MyClass", {
+    let objB = store1.create<MyClass>("/test/MyClass", {
       name: "ObjectB",
       array: [objA],
       map: new Map([["key2", 42]]),
@@ -74,19 +138,19 @@ describe("Serialization Tests", () => {
   });
 
   test("Deserialize an object with circular references", () => {
-    const store1 = new StoreClass(metaInfo);
-    const store2 = new StoreClass(metaInfo);
+    const store1 = createTestStore();
+    const store2 = createTestStore();
 
-    const objA = store1.create<MyClass>("MyClass", { name: "ObjectA", age: 30 });
+    const objA = store1.create<MyClass>("/test/MyClass", { name: "ObjectA", age: 30 });
 
-    let objB = store1.create<MyClass>("MyClass", {
+    let objB = store1.create<MyClass>("/test/MyClass", {
       name: "ObjectB",
       array: [objA],
       map: new Map([["key2", 42]]),
       set: new Set(["value1", "value2"]),
     });
 
-    const objC = store1.create<MyClass>("MyClass", { name: "ObjectC", child: objB });
+    const objC = store1.create<MyClass>("/test/MyClass", { name: "ObjectC", child: objB });
 
     objB = store1.update<MyClass>((o) => {
       o.parent = objC;
@@ -101,21 +165,21 @@ describe("Serialization Tests", () => {
   });
 
   test("Deserialize a complex object with mixed structures", () => {
-    const store1 = new StoreClass(metaInfo);
-    const store2 = new StoreClass(metaInfo);
+    const store1 = createTestStore();
+    const store2 = createTestStore();
 
-    const objA = store1.create<MyClass>("MyClass", { name: "Object A", age: 30 });
+    const objA = store1.create<MyClass>("/test/MyClass", { name: "Object A", age: 30 });
 
-    const objB = store1.create<MyClass>("MyClass", {
+    const objB = store1.create<MyClass>("/test/MyClass", {
       name: "Object B",
       array: [objA],
       map: new Map([["key2", 42]]),
       set: new Set(["value1", "value2"]),
     });
 
-    const objC = store1.create<MyClass>("MyClass", { name:"Object C",child: objB });
+    const objC = store1.create<MyClass>("/test/MyClass", { name:"Object C",child: objB });
 
-    const objD = store1.create<MyClass>("MyClass", { description: "Object D" });
+    const objD = store1.create<MyClass>("/test/MyClass", { description: "Object D" });
 
     store1.update<MyClass>((o) => {
       o.array?.push(objD);

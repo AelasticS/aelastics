@@ -4,6 +4,7 @@ import {
     buildQualifiedName 
 } from "../../registry/NamespaceMetadata";
 import { 
+    TypeMeta,
     ObjectTypeMeta, 
     ArrayTypeMeta, 
     PropertyMeta, 
@@ -26,6 +27,22 @@ describe("Import/Export Optimization", () => {
 
     describe("Export-time Optimization Verification", () => {
         test("should handle pre-optimized optional properties", () => {
+            // First add the base string type
+            const stringType: SimpleTypeMeta = {
+                qName: "/base/string",
+                category: "simple",
+                kind: "string"
+            };
+
+            const baseNamespace: Namespace = {
+                qName: "/base",
+                types: new Map([["string", stringType]]),
+                exports: ["string"],
+                imports: new Map()
+            };
+
+            service.importNamespace(baseNamespace);
+
             // This test verifies that optional properties arrive already optimized
             // i.e., no OptionalTypeMeta wrapper, just a flag on the property
             
@@ -46,7 +63,7 @@ describe("Import/Export Optimization", () => {
                 qName: "/company/users",
                 types: new Map([["User", userType]]),
                 exports: ["User"],
-                imports: new Map()
+                imports: new Map([["/base", ["string"]]])
             };
 
             const result = service.importNamespace(namespace);
@@ -92,6 +109,18 @@ describe("Import/Export Optimization", () => {
             // This test verifies that forward references (links) are already resolved
             // i.e., no LinkTypeMeta, just direct type references
             
+            const stringType: TypeMeta = {
+                qName: "/family/String",
+                category: "simple",
+                kind: "string"
+            };
+
+            const idProperty: PropertyMeta = {
+                name: "id",
+                typeRef: "/family/String",
+                optional: false
+            };
+
             const personProperty: PropertyMeta = {
                 name: "parent",
                 typeRef: "/family/Person", // Direct reference, not a link
@@ -102,14 +131,14 @@ describe("Import/Export Optimization", () => {
                 qName: "/family/Person",
                 category: "complex",
                 kind: "entity",
-                properties: new Map([["parent", personProperty]]),
+                properties: new Map([["id", idProperty], ["parent", personProperty]]),
                 identityKeys: ["id"]
             };
 
             const namespace: Namespace = {
                 qName: "/family",
-                types: new Map([["Person", personType]]),
-                exports: ["Person"],
+                types: new Map<string, TypeMeta>([["String", stringType], ["Person", personType]]),
+                exports: ["String", "Person"],
                 imports: new Map()
             };
 
@@ -129,6 +158,55 @@ describe("Import/Export Optimization", () => {
         test("should handle optimized bidirectional relationships", () => {
             // This test verifies that bidirectional relationships are already optimized
             // with inverse collection metadata properly set
+            
+            // First add the base string type
+            const stringType: SimpleTypeMeta = {
+                qName: "/base/string",
+                category: "simple",
+                kind: "string"
+            };
+            
+            const baseNamespace: Namespace = {
+                qName: "/base",
+                types: new Map([["string", stringType]]),
+                exports: ["string"],
+                imports: new Map()
+            };
+            
+            service.importNamespace(baseNamespace);
+            
+            // Add the posts namespace types first (without user references)
+            const postType: ObjectTypeMeta = {
+                qName: "/company/posts/Post",
+                category: "complex",
+                kind: "entity",
+                properties: new Map([
+                    ["id", {
+                        name: "id",
+                        typeRef: "/base/string",
+                        optional: false
+                    }]
+                ]),
+                identityKeys: ["id"]
+            };
+            
+            const postListType: ArrayTypeMeta = {
+                qName: "/company/posts/PostList",
+                category: "complex",
+                kind: "array",
+                elementType: "/company/posts/Post"
+            };
+            
+            const postsNamespace: Namespace = {
+                qName: "/company/posts",
+                types: new Map<string, TypeMeta>([["Post", postType], ["PostList", postListType]]),
+                exports: ["Post", "PostList"],
+                imports: new Map([
+                    ["/base", ["string"]]
+                ])
+            };
+            
+            service.importNamespace(postsNamespace);
             
             const userType: ObjectTypeMeta = {
                 qName: "/company/users/User",
@@ -162,7 +240,10 @@ describe("Import/Export Optimization", () => {
                 qName: "/company/users",
                 types: new Map([["User", userType]]),
                 exports: ["User"],
-                imports: new Map()
+                imports: new Map([
+                    ["/base", ["string"]],
+                    ["/company/posts", ["PostList", "Post"]]
+                ])
             };
 
             const result = service.importNamespace(namespace);

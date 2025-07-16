@@ -1,30 +1,63 @@
-import { createStore } from "../../store/createStore"
-import { initializeSchemaRegistry } from "../../meta/SchemaRegistry"
-import { SchemaRegistry } from "../../meta/InternalSchema"
-import { SchemaDescription } from "../../meta/ExternalSchema"
-import { StoreObject, uuid } from "../../store/InternalTypes"
-import { EventPayload, Result } from "../../events/EventTypes"
-import { getEventPattern } from "../../events/SubscriptionManager"
+import { createStore } from "../../store/createStore";
+import { StoreObject, uuid } from "../../store/InternalTypes";
+import { EventPayload, Result } from "../../events/EventTypes";
+import { getEventPattern } from "../../events/SubscriptionManager";
+import { RegistryService } from "../../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
 
-const schemas: SchemaDescription[] = [
-  {
+// Create test schema using the new registry system
+function createTestNamespace(): Namespace {
+  const personTypeMeta: ObjectTypeMeta = {
+    qName: "/test/Person",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["name", {
+        name: "name",
+        typeRef: "/std/string",
+        optional: false
+      } as PropertyMeta],
+      ["age", {
+        name: "age",
+        typeRef: "/std/number",
+        optional: false
+      } as PropertyMeta],
+      ["description", {
+        name: "description",
+        typeRef: "/std/string",
+        optional: true
+      } as PropertyMeta]
+    ])
+  };
+
+  return {
     qName: "/test",
-    version: "1.0",
-    types: {
-      Person: {
-        qName: "Person",
-        properties: {
-          name: { qName: "name", type: "string" },
-          age: { qName: "age", type: "number" },
-          description: { qName: "description", type: "string", optional: true },
-        },
-      },
-    },
-    roles: {},
-    export: ["Person"],
-    import: {},
-  },
-]
+    version: "1.0.0",
+    types: new Map([
+      ["Person", personTypeMeta]
+    ]),
+    exports: ["Person"],
+    imports: new Map()
+  };
+}
+
+function createTestStore() {
+  const registryMetadata: RegistryMetadata = {
+    namespaces: new Map(),
+    name: "Test Registry",
+    version: "1.0.0",
+    created: new Date(),
+    lastModified: new Date()
+  };
+  
+  const registry = new RegistryService(registryMetadata);
+  const namespace = createTestNamespace();
+  
+  registry.importNamespace(namespace);
+  return createStore(registry);
+}
+
 interface Person {
   name: string
   age: number
@@ -36,12 +69,11 @@ describe("Primitive Property Updates", () => {
   let person: StoreObject
 
   beforeEach(() => {
-    // Initialize the schema registry and store
-    const schemaRegistry: SchemaRegistry = initializeSchemaRegistry(schemas) as SchemaRegistry
-    store = createStore(schemaRegistry.schemas.get("/test")!)
+    // Initialize the store with the new registry system
+    store = createTestStore();
 
     // Create a Person object
-    person = store.objects.create("Person") as StoreObject
+    person = store.objects.create("/test/Person") as StoreObject;
 
     // Update the Person object with initial values
     person = store.objects.update((p) => {

@@ -1,44 +1,63 @@
 import { createStore } from "../../store/createStore";
-import { initializeSchemaRegistry } from "../../meta/SchemaRegistry";
-import { SchemaRegistry } from "../../meta/InternalSchema";
-import { SchemaDescription } from "../../meta/ExternalSchema";
 import { StoreObject, uuid } from "../../store/InternalTypes";
 import { EventPayload, Result } from "../../events/EventTypes";
 import { getEventPattern } from "../../events/SubscriptionManager";
+import { RegistryService } from "../../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
 
-const schemas: SchemaDescription[] = [
-  {
+// Create test schema using the new registry system
+function createTestNamespace(): Namespace {
+  const simpleArrayTypeMeta: ObjectTypeMeta = {
+    qName: "/test/SimpleArrayType",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["numbers", {
+        name: "numbers",
+        typeRef: "/std/array</std/number>",
+        optional: false
+      } as PropertyMeta]
+    ])
+  };
+
+  return {
     qName: "/test",
-    version: "1.0",
-    types: {
-      SimpleArrayType: {
-        qName: "SimpleArrayType",
-        properties: {
-          numbers: {
-            qName: "numbers",
-            type: "array",
-            itemType: "number",
-          },
-        },
-      },
-    },
-    roles: {},
-    export: ["SimpleArrayType"],
-    import: {},
-  },
-];
+    version: "1.0.0",
+    types: new Map([
+      ["SimpleArrayType", simpleArrayTypeMeta]
+    ]),
+    exports: ["SimpleArrayType"],
+    imports: new Map()
+  };
+}
+
+function createTestStore() {
+  const registryMetadata: RegistryMetadata = {
+    namespaces: new Map(),
+    name: "Test Registry",
+    version: "1.0.0",
+    created: new Date(),
+    lastModified: new Date()
+  };
+  
+  const registry = new RegistryService(registryMetadata);
+  const namespace = createTestNamespace();
+  
+  registry.importNamespace(namespace);
+  return createStore(registry);
+}
 
 describe("ArrayHandler Events", () => {
   let store: ReturnType<typeof createStore>;
   let simpleArrayObject: StoreObject;
 
   beforeEach(() => {
-    // Initialize the schema registry and store
-    const schemaRegistry: SchemaRegistry = initializeSchemaRegistry(schemas) as SchemaRegistry;
-    store = createStore(schemaRegistry.schemas.get("/test")!);
+    // Initialize the store with the new registry system
+    store = createTestStore();
 
     // Create an object of type SimpleArrayType
-    simpleArrayObject = store.objects.create("SimpleArrayType") as StoreObject;
+    simpleArrayObject = store.objects.create("/test/SimpleArrayType") as StoreObject;
 
     // Retrieve the latest version of the object
     simpleArrayObject = store.objects.findByUUID<StoreObject>((simpleArrayObject as StoreObject)[uuid])!;
@@ -341,54 +360,79 @@ describe("ArrayHandler Events", () => {
 });
 
 
-const schemas2: SchemaDescription[] = [
-    {
-      qName: "/test",
-      version: "1.0",
-      types: {
-        ObjectArrayType: {
-          qName: "ObjectArrayType",
-          properties: {
-            items: {
-              qName: "items",
-              type: "array",
-              itemType: "object",
-              inverseProp: "parent",
-              inverseType: "object",
-              domainType: "RelatedObject",
-            },
-          },
-        },
-        RelatedObject: {
-          qName: "RelatedObject",
-          properties: {
-            parent: {
-              qName: "parent",
-              type: "object",
-              inverseProp: "items",
-              inverseType: "array",
-              domainType: "ObjectArrayType",
-            },
-          },
-        },
-      },
-      roles: {},
-      export: ["ObjectArrayType", "RelatedObject"],
-      import: {},
-    },
-  ];
+// Create test namespace for object array types with inverse relationships
+function createObjectArrayNamespace(): Namespace {
+  const relatedObjectTypeMeta: ObjectTypeMeta = {
+    qName: "/test/RelatedObject",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["parent", {
+        name: "parent",
+        typeRef: "/test/ObjectArrayType",
+        optional: true
+      } as PropertyMeta]
+    ])
+  };
+
+  const objectArrayTypeMeta: ObjectTypeMeta = {
+    qName: "/test/ObjectArrayType",
+    category: "complex",
+    kind: "object",
+    properties: new Map([
+      ["items", {
+        name: "items",
+        typeRef: "/std/array</test/RelatedObject>",
+        optional: false
+      } as PropertyMeta]
+    ]),
+    inverseCollection: new Map([
+      ["items", {
+        propName: "parent",
+        targetTypeQName: "/test/RelatedObject",
+        isCollection: false
+      }]
+    ])
+  };
+
+  return {
+    qName: "/test",
+    version: "1.0.0",
+    types: new Map([
+      ["ObjectArrayType", objectArrayTypeMeta],
+      ["RelatedObject", relatedObjectTypeMeta]
+    ]),
+    exports: ["ObjectArrayType", "RelatedObject"],
+    imports: new Map()
+  };
+}
+
+function createObjectArrayStore() {
+  const registryMetadata: RegistryMetadata = {
+    namespaces: new Map(),
+    name: "Test Registry",
+    version: "1.0.0",
+    created: new Date(),
+    lastModified: new Date()
+  };
+  
+  const registry = new RegistryService(registryMetadata);
+  const namespace = createObjectArrayNamespace();
+  
+  registry.importNamespace(namespace);
+  return createStore(registry);
+}
 describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () => {
     let store: ReturnType<typeof createStore>;
     let objectArrayObject: StoreObject;
   
 
     beforeEach(() => {
-      // Initialize the schema registry and store
-      const schemaRegistry: SchemaRegistry = initializeSchemaRegistry(schemas2) as SchemaRegistry;
-      store = createStore(schemaRegistry.schemas.get("/test")!);
+      // Initialize the store with the new registry system
+      store = createObjectArrayStore();
   
       // Create an object of type ObjectArrayType
-      objectArrayObject = store.objects.create("ObjectArrayType") as StoreObject;
+      objectArrayObject = store.objects.create("/test/ObjectArrayType") as StoreObject;
   
       // Retrieve the latest version of the object
       objectArrayObject = store.objects.findByUUID<StoreObject>((objectArrayObject as StoreObject)[uuid])!;
@@ -396,7 +440,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
   
     test("should emit events and update inverse properties for push operation on array of objects", () => {
         // Create a related object
-        let relatedObject = store.objects.create("RelatedObject") as StoreObject;
+        let relatedObject = store.objects.create("/test/RelatedObject") as StoreObject;
     
         // Get the UUID of the related object
         const relatedObjectUUID = (relatedObject as StoreObject)[uuid];
@@ -499,8 +543,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for splice operation on array of objects", () => {
         // Create related objects and add them to the array
-        let relatedObject1 = store.objects.create("RelatedObject") as StoreObject;
-        let relatedObject2 = store.objects.create("RelatedObject") as StoreObject;
+        let relatedObject1 = store.objects.create("/test/RelatedObject") as StoreObject;
+        let relatedObject2 = store.objects.create("/test/RelatedObject") as StoreObject;
     
         // Add the related objects to the array
         objectArrayObject = store.objects.update((obj) => {
@@ -558,7 +602,7 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for unshift operation on array of objects", () => {
         // Create a related object
-        let relatedObject = store.objects.create("RelatedObject") as StoreObject;
+        let relatedObject = store.objects.create("/test/RelatedObject") as StoreObject;
     
         // Mock before.update handler
         const beforeUpdateHandler = jest.fn((event: EventPayload): Result => {
@@ -602,8 +646,8 @@ describe("ArrayHandler Events - Arrays of Objects with Inverse Properties", () =
 
       test("should emit events and update inverse properties for shift operation on array of objects", () => {
         // Create related objects and add them to the array
-        let relatedObject1 = store.objects.create("RelatedObject") as StoreObject;
-        let relatedObject2 = store.objects.create("RelatedObject") as StoreObject;
+        let relatedObject1 = store.objects.create("/test/RelatedObject") as StoreObject;
+        let relatedObject2 = store.objects.create("/test/RelatedObject") as StoreObject;
     
         // Add the related objects to the array
         objectArrayObject = store.objects.update((obj) => {
