@@ -48,7 +48,7 @@ const voidType: SimpleTypeMeta = {
 // Add more primitives as needed
 
 export const systemNamespace: Namespace = {
-    qName: "system",
+    qName: "/system",
     version: "1.0.0",
     types: new Map([
         ["string", stringType],

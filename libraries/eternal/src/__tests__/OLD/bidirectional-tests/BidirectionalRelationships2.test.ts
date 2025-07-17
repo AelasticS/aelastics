@@ -1,8 +1,8 @@
-import { StoreObject, uuid } from "../../store/InternalTypes"
-import { createStore } from "../../store/createStore"
-import { RegistryService } from "../../registry/RegistryService"
-import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata"
-import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions"
+import { StoreObject, uuid } from "../../../store/InternalTypes"
+import { createStore } from "../../../store/createStore"
+import { RegistryService } from "../../../registry/RegistryService"
+import { Namespace, RegistryMetadata } from "../../../registry/NamespaceMetadata"
+import { ObjectTypeMeta, PropertyMeta } from "../../../registry/TypeDefinitions"
 
 describe("Bidirectional Relationships & Cyclic References", () => {
   let store: ReturnType<typeof createStore>

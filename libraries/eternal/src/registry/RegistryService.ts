@@ -35,8 +35,8 @@ export class RegistryService {
         this.registry = registry;
         
         // Auto-import system namespace if not present
-        if (!this.registry.namespaces.has("system")) {
-            this.registry.namespaces.set("system", systemNamespace);
+        if (!this.registry.namespaces.has(systemNamespace.qName)) {
+            this.registry.namespaces.set(systemNamespace.qName, systemNamespace);
         }
         
         this.buildTypeIndex();
@@ -175,8 +175,8 @@ export class RegistryService {
     /** Import namespace into registry */
     public importNamespace(namespace: Namespace): void {
         // Ensure "system" is present in namespace.imports
-        if (!namespace.imports.has("system")) {
-            namespace.imports.set("system", ["*"]);
+        if (!namespace.imports.has(systemNamespace.qName)) {
+            namespace.imports.set(systemNamespace.qName, ["*"]);
         }
         const result = this.validateNamespaceForImport(namespace);
         

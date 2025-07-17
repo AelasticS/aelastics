@@ -7,9 +7,9 @@ import {
     isSubNamespace,
     getAvailableTypes,
     resolveTypeReference
-} from "../../registry/NamespaceMetadata";
-import { ObjectTypeMeta } from "../../registry/TypeDefinitions";
-import { systemNamespace } from "../../registry/system-namespace";
+} from "../../../registry/NamespaceMetadata";
+import { ObjectTypeMeta } from "../../../registry/TypeDefinitions";
+import { systemNamespace } from "../../../registry/system-namespace";
 
 describe("Namespace Metadata Utilities", () => {
     

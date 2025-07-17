@@ -11,8 +11,8 @@ import {
     isObjectType,
     isEntityType,
     isCollectionType
-} from "../../registry/TypeDefinitions";
-import { systemNamespace } from "../../registry/system-namespace";
+} from "../../../registry/TypeDefinitions";
+import { systemNamespace } from "../../../registry/system-namespace";
 
 describe("Type Definitions", () => {
     

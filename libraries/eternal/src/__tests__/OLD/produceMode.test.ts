@@ -1,7 +1,7 @@
-import { createStore } from "../store/createStore";
-import { RegistryService, NamespaceImportError } from "../registry/RegistryService";
-import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata";
-import { ObjectTypeMeta, PropertyMeta } from "../registry/TypeDefinitions";
+import { createStore } from "../../store/createStore";
+import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
 
 // Create user schema using the new registry system
 function createUserNamespace(): Namespace {

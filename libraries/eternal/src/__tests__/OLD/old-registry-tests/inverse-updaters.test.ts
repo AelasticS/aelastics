@@ -1,7 +1,7 @@
-import { StoreClass } from "../../store/StoreClass";
-import { RegistryService } from "../../registry/RegistryService";
-import { PropertyMeta } from "../../registry/TypeDefinitions";
-import { RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { StoreClass } from "../../../store/StoreClass";
+import { RegistryService } from "../../../registry/RegistryService";
+import { PropertyMeta } from "../../../registry/TypeDefinitions";
+import { RegistryMetadata } from "../../../registry/NamespaceMetadata";
 
 describe("Inverse Updaters with New Registry System", () => {
   let store: StoreClass;

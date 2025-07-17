@@ -159,7 +159,7 @@ describe("Basic Namespace Import Tests", () => {
             const namespaces = registry.listNamespaces();
             expect(namespaces).toContain("/core");
             expect(namespaces).toContain("/company");
-            expect(namespaces).toContain("system"); // System namespace should be auto-imported
+            expect(namespaces).toContain("/system"); // System namespace should be auto-imported
         });
     });
 

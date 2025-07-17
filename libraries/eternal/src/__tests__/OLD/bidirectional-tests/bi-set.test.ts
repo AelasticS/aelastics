@@ -1,8 +1,8 @@
-import { createStore } from "../../store/createStore"
-import { StoreObject, uuid } from "../../store/InternalTypes"
-import { RegistryService } from "../../registry/RegistryService"
-import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata"
-import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions"
+import { createStore } from "../../../store/createStore"
+import { StoreObject, uuid } from "../../../store/InternalTypes"
+import { RegistryService } from "../../../registry/RegistryService"
+import { Namespace, RegistryMetadata } from "../../../registry/NamespaceMetadata"
+import { ObjectTypeMeta, PropertyMeta } from "../../../registry/TypeDefinitions"
 
 // import jsonSchemas from "../data/jsonSchemaWithArrays";
 

@@ -1,8 +1,8 @@
-import { RegistryService } from "../../registry/RegistryService";
-import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
-import { TypeMeta, ObjectTypeMeta, ArrayTypeMeta, PropertyMeta, SimpleTypeMeta } from "../../registry/TypeDefinitions";
-import { NamespaceImportError } from "../../registry/RegistryService";
-import { systemNamespace } from "../../registry/system-namespace";
+import { RegistryService } from "../../../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../../../registry/NamespaceMetadata";
+import { TypeMeta, ObjectTypeMeta, ArrayTypeMeta, PropertyMeta, SimpleTypeMeta } from "../../../registry/TypeDefinitions";
+import { NamespaceImportError } from "../../../registry/RegistryService";
+import { systemNamespace } from "../../../registry/system-namespace";
 
 describe("RegistryService", () => {1
     let registry: RegistryMetadata;

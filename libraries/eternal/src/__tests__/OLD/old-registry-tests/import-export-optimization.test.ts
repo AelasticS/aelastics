@@ -2,16 +2,16 @@ import {
     Namespace, 
     RegistryMetadata, 
     buildQualifiedName 
-} from "../../registry/NamespaceMetadata";
+} from "../../../registry/NamespaceMetadata";
 import { 
     TypeMeta,
     ObjectTypeMeta, 
     ArrayTypeMeta, 
     PropertyMeta, 
     SimpleTypeMeta 
-} from "../../registry/TypeDefinitions";
-import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
-import { systemNamespace } from "../../registry/system-namespace";
+} from "../../../registry/TypeDefinitions";
+import { RegistryService, NamespaceImportError } from "../../../registry/RegistryService";
+import { systemNamespace } from "../../../registry/system-namespace";
 
 describe("Import/Export Optimization", () => {
     let registry: RegistryMetadata;

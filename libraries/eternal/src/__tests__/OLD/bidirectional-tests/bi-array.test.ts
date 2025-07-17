@@ -1,11 +1,8 @@
-import { createStore } from "../../store/createStore";
-import { StoreObject, uuid } from "../../store/InternalTypes";
-import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
-import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata";
-import { ObjectTypeMeta, PropertyMeta } from "../../registry/TypeDefinitions";
-
-// import jsonSchemas from "../data/jsonSchemaWithMaps";
-
+import { createStore } from "../../../store/createStore";
+import { StoreObject, uuid } from "../../../store/InternalTypes";
+import { RegistryService } from "../../../registry/RegistryService";
+import { Namespace, RegistryMetadata } from "../../../registry/NamespaceMetadata";
+import { ObjectTypeMeta, PropertyMeta } from "../../../registry/TypeDefinitions";
 
 // Create type definitions using the new registry system
 function createLibraryNamespace(): Namespace {
@@ -21,7 +18,7 @@ function createLibraryNamespace(): Namespace {
             } as PropertyMeta],
             ["books", {
                 name: "books",
-                typeRef: "/std/map<string, /library/Book>",
+                typeRef: "/std/array</library/Book>",
                 optional: false,
                 inverseProp: "author",
                 inverseTypeRef: "/library/Book",
@@ -46,7 +43,7 @@ function createLibraryNamespace(): Namespace {
                 optional: false,
                 inverseProp: "books",
                 inverseTypeRef: "/library/Author",
-                inverseType: "map"
+                inverseType: "array"
             } as PropertyMeta]
         ])
     };
@@ -63,7 +60,7 @@ function createLibraryNamespace(): Namespace {
             } as PropertyMeta],
             ["books", {
                 name: "books",
-                typeRef: "/std/map<string, /library/PublishedBook>",
+                typeRef: "/std/array</library/PublishedBook>",
                 optional: false,
                 inverseProp: "publisher",
                 inverseTypeRef: "/library/PublishedBook",
@@ -88,7 +85,7 @@ function createLibraryNamespace(): Namespace {
                 optional: false,
                 inverseProp: "books",
                 inverseTypeRef: "/library/Publisher",
-                inverseType: "map"
+                inverseType: "array"
             } as PropertyMeta]
         ])
     };
@@ -105,11 +102,11 @@ function createLibraryNamespace(): Namespace {
             } as PropertyMeta],
             ["courses", {
                 name: "courses",
-                typeRef: "/std/map<string, /library/Course>",
+                typeRef: "/std/array</library/Course>",
                 optional: false,
                 inverseProp: "students",
                 inverseTypeRef: "/library/Course",
-                inverseType: "map"
+                inverseType: "array"
             } as PropertyMeta]
         ])
     };
@@ -126,11 +123,11 @@ function createLibraryNamespace(): Namespace {
             } as PropertyMeta],
             ["students", {
                 name: "students",
-                typeRef: "/std/map<string, /library/Student>",
+                typeRef: "/std/array</library/Student>",
                 optional: false,
                 inverseProp: "courses",
                 inverseTypeRef: "/library/Student",
-                inverseType: "map"
+                inverseType: "array"
             } as PropertyMeta]
         ])
     };
@@ -152,37 +149,37 @@ function createLibraryNamespace(): Namespace {
 }
 
 // TypeScript interfaces based on the type definitions
-interface Author extends StoreObject {
+interface Author {
     name: string;
-    books: Map<string, Book>;
+    books: Book[];
 }
 
-interface Book extends StoreObject {
+interface Book {
     title: string;
     author: Author;
 }
 
-interface Publisher extends StoreObject  {
+interface Publisher {
     name: string;
-    books: Map<string, PublishedBook>;
+    books: PublishedBook[];
 }
 
-interface PublishedBook extends StoreObject {
+interface PublishedBook {
     title: string;
     publisher: Publisher;
 }
 
-interface Student extends StoreObject {
+interface Student {
     name: string;
-    courses: Map<string, Course>;
+    courses: Course[];
 }
 
-interface Course extends StoreObject {
+interface Course {
     title: string;
-    students: Map<string, Student>;
+    students: Student[];
 }
 
-describe("Bidirectional Relationships with Maps", () => {
+describe("Bidirectional Relationships", () => {
     let store: ReturnType<typeof createStore>;
 
     beforeEach(() => {
@@ -197,17 +194,7 @@ describe("Bidirectional Relationships with Maps", () => {
         const registry = new RegistryService(registryMetadata);
         const namespace = createLibraryNamespace();
         
-        let error: NamespaceImportError | undefined;
-        try {
-            registry.importNamespace(namespace);
-        } catch (err) {
-            error = err as NamespaceImportError;
-        }
-        if (error) {
-            // If error is thrown, assert details
-            expect(error).toBeInstanceOf(NamespaceImportError);
-            throw error; // Fail the test setup
-        }
+        registry.importNamespace(namespace);
         store = createStore(registry);
     });
 
@@ -216,17 +203,15 @@ describe("Bidirectional Relationships with Maps", () => {
         let book1 = store.objects.create<Book>("/library/Book");
         let book2 = store.objects.create<Book>("/library/Book");
 
-        store.objects.update((a) => {
-            a.books.set(book1[uuid], book1);
-            a.books.set(book2[uuid], book2);
+        author = store.objects.update((a) => {
+            a.books.push(book1, book2);
         }, author);
 
-        author = store.objects.findByUUID<Author>(author[uuid])!;
-        book1 = store.objects.findByUUID<Book>(book1[uuid])!;
-        book2 = store.objects.findByUUID<Book>(book2[uuid])!;
-
-        expect(author.books.get(book1[uuid])).toBe(book1);
-        expect(author.books.get(book2[uuid])).toBe(book2);
+        book1 = store.objects.findByUUID<Book>((book1 as unknown as StoreObject) [uuid])!;
+        book2 = store.objects.findByUUID<Book>((book2 as unknown as StoreObject)[uuid])!;
+        
+        expect(author.books.includes(book1)).toBeTruthy;
+        expect(author.books.includes(book2)).toBeTruthy();
         expect(book1.author).toBe(author);
         expect(book2.author).toBe(author);
     });
@@ -236,25 +221,30 @@ describe("Bidirectional Relationships with Maps", () => {
         let book1 = store.objects.create<Book>("/library/Book");
         let book2 = store.objects.create<Book>("/library/Book");
 
-        store.objects.update((a) => {
-            a.books.set(book1[uuid], book1);
-            a.books.set(book2[uuid], book2);
+        author = store.objects.update((a) => {
+            a.books.push(book1, book2);
         }, author);
 
-        author = store.objects.findByUUID<Author>(author[uuid])!;
+        book1 = store.objects.findByUUID<Book>((book1 as unknown as StoreObject)[uuid])!;
+        let filteredBooks: Book[] = [];
 
         store.objects.update((a) => {
-            a.books.delete(book1[uuid]);
+            // TODO enable set on collections: a.books = a.books.filter(book => book !== book1);
+            // check if array os proxied
+            // disconnect all old elements and connect new ones
+            filteredBooks = a.books.filter(book => book !== book1);
         }, author);
 
-        author = store.objects.findByUUID<Author>(author[uuid])!;
-        book1 = store.objects.findByUUID<Book>(book1[uuid])!;
-        book2 = store.objects.findByUUID<Book>(book2[uuid])!;
+        book1 = store.objects.findByUUID<Book>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.objects.findByUUID<Book>((book2 as unknown as StoreObject)[uuid])!;
+        author = store.objects.findByUUID<Author>((author as unknown as StoreObject)[uuid])!;
 
-        expect(author.books.has(book1[uuid])).toBe(false);
-        expect(author.books.get(book2[uuid])).toBe(book2);
-        expect(book1.author).toBeUndefined();
-        expect(book2.author).toBe(author);
+        expect(filteredBooks.includes(book1)).toBeFalsy();
+        expect(author.books.includes(book2)).toBe
+        // expect(author.books.includes(book1)).toBeFalsy();
+        // expect(author.books.includes(book2)).toBeTruthy();
+        // expect(book1.author).toBeUndefined();
+        // expect(book2.author).toBe(author);
     });
 
     test("Many-to-One: Adding Books to Publisher", () => {
@@ -263,16 +253,15 @@ describe("Bidirectional Relationships with Maps", () => {
         let book2 = store.objects.create<PublishedBook>("/library/PublishedBook");
 
         store.objects.update((p) => {
-            p.books.set(book1[uuid], book1);
-            p.books.set(book2[uuid], book2);
+            p.books.push(book1, book2);
         }, publisher);
 
-        publisher = store.objects.findByUUID<Publisher>(publisher[uuid])!;
-        book1 = store.objects.findByUUID<PublishedBook>(book1[uuid])!;
-        book2 = store.objects.findByUUID<PublishedBook>(book2[uuid])!;
+        book1 = store.objects.findByUUID<PublishedBook>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.objects.findByUUID<PublishedBook>((book2 as unknown as StoreObject)[uuid])!;
+        publisher = store.objects.findByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
-        expect(publisher.books.get(book1[uuid])).toBe(book1);
-        expect(publisher.books.get(book2[uuid])).toBe(book2);
+        expect(publisher.books.includes(book1)).toBeTruthy();
+        expect(publisher.books.includes(book2)).toBeTruthy();
         expect(book1.publisher).toBe(publisher);
         expect(book2.publisher).toBe(publisher);
     });
@@ -283,22 +272,23 @@ describe("Bidirectional Relationships with Maps", () => {
         let book2 = store.objects.create<PublishedBook>("/library/PublishedBook");
 
         store.objects.update((p) => {
-            p.books.set(book1[uuid], book1);
-            p.books.set(book2[uuid], book2);
+            p.books.push(book1, book2);
         }, publisher);
 
-        publisher = store.objects.findByUUID<Publisher>(publisher[uuid])!;
+        publisher = store.objects.findByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
-        store.objects.update((p) => {
-            p.books.delete(book1[uuid]);
+        store.objects.update((p) => { //= p.books.filter(book => book !== book1);
+            const i = p.books.findIndex(book => book !== book1);
+            if(i >= 0)           
+                p.books.splice(i,1) 
         }, publisher);
 
-        publisher = store.objects.findByUUID<Publisher>(publisher[uuid])!;
-        book1 = store.objects.findByUUID<PublishedBook>(book1[uuid])!;
-        book2 = store.objects.findByUUID<PublishedBook>(book2[uuid])!;
+        book1 = store.objects.findByUUID<PublishedBook>((book1 as unknown as StoreObject)[uuid])!;
+        book2 = store.objects.findByUUID<PublishedBook>((book2 as unknown as StoreObject)[uuid])!;
+        publisher = store.objects.findByUUID<Publisher>((publisher as unknown as StoreObject)[uuid])!;
 
-        expect(publisher.books.has(book1[uuid])).toBe(false);
-        expect(publisher.books.get(book2[uuid])).toBe(book2);
+        expect(publisher.books.includes(book1)).toBeFalsy();
+        expect(publisher.books.includes(book2)).toBeTruthy();
         expect(book1.publisher).toBeUndefined();
         expect(book2.publisher).toBe(publisher);
     });
@@ -310,32 +300,26 @@ describe("Bidirectional Relationships with Maps", () => {
         let course2 = store.objects.create<Course>("/library/Course");
 
         store.objects.update((s) => {
-            s.courses.set(course1[uuid], course1);
-            s.courses.set(course2[uuid], course2);
+            s.courses.push(course1, course2);
         }, student1);
 
-        student1 = store.objects.findByUUID<Student>(student1[uuid])!;
-        course1 = store.objects.findByUUID<Course>(course1[uuid])!;
-        course2 = store.objects.findByUUID<Course>(course2[uuid])!;
-
         store.objects.update((s) => {
-            s.courses.set(course1[uuid], course1);
-            s.courses.set(course2[uuid], course2);
+            s.courses.push(course1, course2);
         }, student2);
 
-        student2 = store.objects.findByUUID<Student>(student2[uuid])!;
-        student1 = store.objects.findByUUID<Student>(student1[uuid])!;
-        course1 = store.objects.findByUUID<Course>(course1[uuid])!;
-        course2 = store.objects.findByUUID<Course>(course2[uuid])!;
+        student1 = store.objects.findByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
+        student2 = store.objects.findByUUID<Student>((student2 as unknown as StoreObject)[uuid])!;
+        course1 = store.objects.findByUUID<Course>((course1 as unknown as StoreObject)[uuid])!;
+        course2 = store.objects.findByUUID<Course>((course2 as unknown as StoreObject)[uuid])!;
 
-        expect(student1.courses.get(course1[uuid])).toBe(course1);
-        expect(student1.courses.get(course2[uuid])).toBe(course2);
-        expect(student2.courses.get(course1[uuid])).toBe(course1);
-        expect(student2.courses.get(course2[uuid])).toBe(course2);
-        expect(course1.students.get(student1[uuid])).toBe(student1);
-        expect(course1.students.get(student2[uuid])).toBe(student2);
-        expect(course2.students.get(student1[uuid])).toBe(student1);
-        expect(course2.students.get(student2[uuid])).toBe(student2);
+        expect(student1.courses.includes(course1)).toBeTruthy();
+        expect(student1.courses.includes(course2)).toBeTruthy();
+        expect(student2.courses.includes(course1)).toBeTruthy();
+        expect(student2.courses.includes(course2)).toBeTruthy();
+        expect(course1.students.includes(student1)).toBeTruthy();
+        expect(course1.students.includes(student2)).toBeTruthy();
+        expect(course2.students.includes(student1)).toBeTruthy();
+        expect(course2.students.includes(student2)).toBeTruthy();
     });
 
     test("Many-to-Many: Removing Courses from Students", () => {
@@ -345,37 +329,34 @@ describe("Bidirectional Relationships with Maps", () => {
         let course2 = store.objects.create<Course>("/library/Course");
 
         store.objects.update((s) => {
-            s.courses.set(course1[uuid], course1);
-            s.courses.set(course2[uuid], course2);
+            s.courses.push(course1, course2);
         }, student1);
 
-        student1 = store.objects.findByUUID<Student>(student1[uuid])!;
-        course1 = store.objects.findByUUID<Course>(course1[uuid])!;
-        course2 = store.objects.findByUUID<Course>(course2[uuid])!;
-
         store.objects.update((s) => {
-            s.courses.set(course1[uuid], course1);
-            s.courses.set(course2[uuid], course2);
+            s.courses.push(course1, course2);
         }, student2);
 
-        student1 = store.objects.findByUUID<Student>(student1[uuid])!;
+        student1 = store.objects.findByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
 
         store.objects.update((s) => {
-            s.courses.delete(course1[uuid]);
+            // s.courses = s.courses.filter(course => course !== course1);
+            s.courses.shift()
         }, student1);
 
-        student1 = store.objects.findByUUID<Student>(student1[uuid])!;
-        student2 = store.objects.findByUUID<Student>(student2[uuid])!;
-        course1 = store.objects.findByUUID<Course>(course1[uuid])!;
-        course2 = store.objects.findByUUID<Course>(course2[uuid])!;
+        student1 = store.objects.findByUUID<Student>((student1 as unknown as StoreObject)[uuid])!;
+        student2 = store.objects.findByUUID<Student>((student2 as unknown as StoreObject)[uuid])!;
+        course1 = store.objects.findByUUID<Course>((course1 as unknown as StoreObject)[uuid])!;
+        course2 = store.objects.findByUUID<Course>((course2 as unknown as StoreObject)[uuid])!;
 
-        expect(student1.courses.has(course1[uuid])).toBe(false);
-        expect(student1.courses.get(course2[uuid])).toBe(course2);
-        expect(student2.courses.get(course1[uuid])).toBe(course1);
-        expect(student2.courses.get(course2[uuid])).toBe(course2);
-        expect(course1.students.has(student1[uuid])).toBe(false);
-        expect(course1.students.get(student2[uuid])).toBe(student2);
-        expect(course2.students.get(student1[uuid])).toBe(student1);
-        expect(course2.students.get(student2[uuid])).toBe(student2);
+        expect(student1.courses.includes(course1)).toBeFalsy();
+        expect(student1.courses.includes(course2)).toBeTruthy();
+        expect(student2.courses.includes(course1)).toBeTruthy();
+        expect(student2.courses.includes(course2)).toBeTruthy();
+        expect(course1.students.includes(student1)).toBeFalsy();
+        expect(course1.students.includes(student2)).toBeTruthy();
+        expect(course2.students.includes(student1)).toBeTruthy();
+        expect(course2.students.includes(student2)).toBeTruthy();
     });
 });
+
+

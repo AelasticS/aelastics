@@ -1,10 +1,10 @@
-import { StoreClass } from "../store/StoreClass"
-import { StoreObject, uuid } from "../store/InternalTypes"
-import { IStore } from "../interfaces/IStore"
-import { createStore } from "../store/createStore"
-import { RegistryService, NamespaceImportError } from "../registry/RegistryService"
-import { Namespace, RegistryMetadata } from "../registry/NamespaceMetadata"
-import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta, TypeMeta } from "../registry/TypeDefinitions"
+import { StoreClass } from "../../store/StoreClass"
+import { StoreObject, uuid } from "../../store/InternalTypes"
+import { IStore } from "../../interfaces/IStore"
+import { createStore } from "../../store/createStore"
+import { RegistryService, NamespaceImportError } from "../../registry/RegistryService"
+import { Namespace, RegistryMetadata } from "../../registry/NamespaceMetadata"
+import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta, TypeMeta } from "../../registry/TypeDefinitions"
 
 interface Person extends StoreObject {
   name: string
