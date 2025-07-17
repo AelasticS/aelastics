@@ -106,6 +106,26 @@ export class StoreClass {
           return propMeta.defaultValue;
         }
         
+        // Extract namespace from typeMeta.qName (e.g., "/company/Employee" -> "/company")
+        const namespacePath = typeMeta.qName.substring(0, typeMeta.qName.lastIndexOf('/'));
+        const contextNamespace = store.registryService.getNamespace(namespacePath);
+        
+        if (contextNamespace) {
+          // Use enhanced registry resolution
+          const resolvedTypeRef = store.registryService.resolveAndValidateTypeReference(
+            propMeta.typeRef,
+            contextNamespace
+          );
+          
+          if (resolvedTypeRef) {
+            const resolvedType = store.registryService.getType(resolvedTypeRef);
+            if (resolvedType) {
+              return this.getDefaultValueForResolvedType(resolvedType, propMeta.optional);
+            }
+          }
+        }
+        
+        // Fallback to string-based detection for compatibility
         const typeRef = propMeta.typeRef;
         if (typeRef.includes('string')) return propMeta.optional ? undefined : '';
         if (typeRef.includes('number')) return propMeta.optional ? undefined : 0;
@@ -117,7 +137,65 @@ export class StoreClass {
         return propMeta.optional ? undefined : null;
       }
       
+      private getDefaultValueForResolvedType(resolvedType: TypeMeta, optional: boolean): any {
+        if (resolvedType.category === 'simple') {
+          switch (resolvedType.kind) {
+            case 'string': return optional ? undefined : '';
+            case 'number': return optional ? undefined : 0;
+            case 'boolean': return optional ? undefined : false;
+            case 'date': return optional ? undefined : new Date();
+            case 'bigint': return optional ? undefined : 0n;
+            case 'null': return null;
+            case 'undefined': return undefined;
+            default: return optional ? undefined : null;
+          }
+        } else if (resolvedType.category === 'complex') {
+          switch (resolvedType.kind) {
+            case 'array': return []; // Arrays are always initialized
+            case 'set': return new Set(); // Sets are always initialized
+            case 'map': return new Map(); // Maps are always initialized
+            case 'object':
+            case 'entity':
+              return optional ? undefined : null; // Object references
+            default: return optional ? undefined : null;
+          }
+        }
+        return optional ? undefined : null;
+      }
+      
       private getPropertyTypeKind(typeRef: string): string {
+        // Extract namespace from typeMeta.qName
+        const namespacePath = typeMeta.qName.substring(0, typeMeta.qName.lastIndexOf('/'));
+        const contextNamespace = store.registryService.getNamespace(namespacePath);
+        
+        if (contextNamespace) {
+          // Use enhanced registry resolution
+          const resolvedTypeRef = store.registryService.resolveAndValidateTypeReference(
+            typeRef,
+            contextNamespace
+          );
+          
+          if (resolvedTypeRef) {
+            const resolvedType = store.registryService.getType(resolvedTypeRef);
+            if (resolvedType) {
+              if (resolvedType.category === 'simple') {
+                return "primitive";
+              } else if (resolvedType.category === 'complex') {
+                switch (resolvedType.kind) {
+                  case 'array': return "array";
+                  case 'map': return "map";
+                  case 'set': return "set";
+                  case 'object':
+                  case 'entity':
+                    return "object";
+                  default: return "primitive";
+                }
+              }
+            }
+          }
+        }
+        
+        // Fallback to string-based detection for compatibility
         if (typeRef.includes("array")) return "array";
         if (typeRef.includes("map")) return "map";
         if (typeRef.includes("set")) return "set";
@@ -193,28 +271,73 @@ export class StoreClass {
     return (obj as any)[uuid]
   }
 
-  public create<T>(type: string, initialState?: Partial<T>): T {
-    if (!type || typeof type !== 'string') {
-      throw new Error('Type must be a non-empty string');
+  // Enhanced create API - overloaded methods for unambiguous type resolution
+  public create<T>(qualifiedNameOrTypeMeta: string | TypeMeta, initialState?: Partial<T>): T {
+    let typeMeta: TypeMeta | undefined;
+    
+    if (typeof qualifiedNameOrTypeMeta === 'string') {
+      // Handle qualified name with optimized resolution
+      typeMeta = this.getTypeMetaByQualifiedName(qualifiedNameOrTypeMeta);
+    } else {
+      // Handle TypeMeta object directly
+      typeMeta = qualifiedNameOrTypeMeta;
     }
     
-    const typeMeta = this.getTypeMeta(type);
     if (!typeMeta) {
-      throw new Error(`Type '${type}' not found in registry`);
+      const typeIdentifier = typeof qualifiedNameOrTypeMeta === 'string' 
+        ? qualifiedNameOrTypeMeta 
+        : qualifiedNameOrTypeMeta.qName || 'unknown';
+      throw new Error(`Type '${typeIdentifier}' not found in registry`);
     }
     
+    return this.createFromTypeMeta<T>(typeMeta, initialState);
+  }
+
+  /**
+   * Optimized type resolution using qualified name (e.g., "/company/Employee")
+   * Directly extracts namespace path instead of iterating through all namespaces
+   */
+  private getTypeMetaByQualifiedName(qualifiedName: string): TypeMeta | undefined {
+    // Validate qualified name format
+    if (!qualifiedName.startsWith('/')) {
+      throw new Error(`Invalid qualified name '${qualifiedName}'. Must start with '/' (e.g., '/company/Employee')`);
+    }
+    
+    // Extract namespace path and type name efficiently
+    const lastSlashIndex = qualifiedName.lastIndexOf('/');
+    if (lastSlashIndex === 0) {
+      throw new Error(`Invalid qualified name '${qualifiedName}'. Must contain at least one namespace level`);
+    }
+    
+    const namespacePath = qualifiedName.substring(0, lastSlashIndex);
+    const typeName = qualifiedName.substring(lastSlashIndex + 1);
+    
+    // Direct namespace lookup (O(1) instead of O(n) iteration)
+    const namespace = this.registryService.getNamespace(namespacePath);
+    if (!namespace) {
+      return undefined; // Namespace doesn't exist
+    }
+    
+    // Direct type lookup within namespace
+    return namespace.types.get(typeName);
+  }
+
+  /**
+   * Common object creation logic using TypeMeta
+   */
+  private createFromTypeMeta<T>(typeMeta: TypeMeta, initialState?: Partial<T>): T {
     if (typeMeta.category !== 'complex') {
-      throw new Error(`Cannot create instance of simple type '${type}'. Only complex types (object, entity) can be instantiated.`);
+      throw new Error(`Cannot create instance of simple type '${typeMeta.qName}'. Only complex types (object, entity) can be instantiated.`);
     }
     
     const objectTypeMeta = typeMeta as ObjectTypeMeta;
     if (objectTypeMeta.kind !== 'object' && objectTypeMeta.kind !== 'entity') {
-      throw new Error(`Cannot create instance of type '${type}' with kind '${objectTypeMeta.kind}'`);
+      throw new Error(`Cannot create instance of type '${typeMeta.qName}' with kind '${objectTypeMeta.kind}'`);
     }
     
     const DynamicClass = this.typeToClassMap.get(typeMeta.qName);
     if (!DynamicClass) {
-      throw new Error(`Dynamic class for type '${type}' not found. Make sure the type is properly registered.`);
+      throw new Error(`Dynamic class for type '${typeMeta.qName}' not found. Make sure the type is properly registered.`);
     }
     
     if (!this.currentState) {

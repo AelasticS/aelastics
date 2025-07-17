@@ -1,5 +1,6 @@
 import { StoreClass } from "./StoreClass";
 import { IObjects, Result } from "../interfaces/IObjects";
+import { TypeMeta } from "../registry/TypeDefinitions";
 import { IHistory, IState, ChangeLogEntry } from "../interfaces/IHistory";
 import { IData } from "../interfaces/IData";
 import { IEvents } from "../interfaces/IEvents";
@@ -13,8 +14,11 @@ import { RegistryService } from "../registry/RegistryService";
 export class ObjectsAdapter implements IObjects {
   constructor(private store: StoreClass) {}
 
-  create<T>(type: string, initialState?: Partial<T>): T {
-    return this.store.create<T>(type, initialState);
+  // Implement overloaded create methods
+  create<T>(qualifiedName: string, initialState?: Partial<T>): T;
+  create<T>(typeMeta: TypeMeta, initialState?: Partial<T>): T;
+  create<T>(qualifiedNameOrTypeMeta: string | TypeMeta, initialState?: Partial<T>): T {
+    return this.store.create<T>(qualifiedNameOrTypeMeta, initialState);
   }
 
   update<T>(recipe: (obj: T) => void, obj: T): T {
@@ -26,8 +30,16 @@ export class ObjectsAdapter implements IObjects {
     throw new Error("Delete functionality not yet implemented");
   }
 
-  find<T extends object>(type: string, predicate?: (obj: T) => boolean, state?: number): T[] {
-    return this.store.find<T>(type, predicate, state);
+  // Implement overloaded find methods
+  find<T extends object>(qualifiedName: string, predicate?: (obj: T) => boolean, state?: number): T[];
+  find<T extends object>(typeMeta: TypeMeta, predicate?: (obj: T) => boolean, state?: number): T[];
+  find<T extends object>(qualifiedNameOrTypeMeta: string | TypeMeta, predicate?: (obj: T) => boolean, state?: number): T[] {
+    // Convert TypeMeta to qualified name if needed
+    const qualifiedName = typeof qualifiedNameOrTypeMeta === 'string' 
+      ? qualifiedNameOrTypeMeta 
+      : qualifiedNameOrTypeMeta.qName;
+    
+    return this.store.find<T>(qualifiedName, predicate, state);
   }
 
   findByUUID<T extends object>(uuid: string, state?: number): T | undefined {
@@ -38,8 +50,11 @@ export class ObjectsAdapter implements IObjects {
     return this.store.getUUID(obj);
   }
 
-  import<T>(plainObject: any, type?: string): T {
-    // TODO: Implement import functionality 
+  // Implement overloaded import methods
+  import<T>(plainObject: any, qualifiedName: string): T;
+  import<T>(plainObject: any, typeMeta: TypeMeta): T;
+  import<T>(plainObject: any, qualifiedNameOrTypeMeta: string | TypeMeta): T {
+    // TODO: Implement import functionality with enhanced API
     throw new Error("Import functionality not yet implemented");
   }
 
