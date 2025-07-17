@@ -368,25 +368,7 @@ export class RegistryService {
     ): void {
         // Validate property type references
         for (const [propName, propMeta] of typeMeta.properties) {
-            let resolvedTypeRef: string | undefined;
-            
-            // Check if typeRef is already a qualified name (starts with /)
-            if (propMeta.typeRef.startsWith('/')) {
-                // It's already a qualified name, check if it exists in registry OR in the namespace being validated
-                if (this.hasType(propMeta.typeRef)) {
-                    resolvedTypeRef = propMeta.typeRef;
-                } else {
-                    // Check if the type exists in the namespace being validated
-                    const namespacePath = getNamespacePath(propMeta.typeRef);
-                    const typeName = getLocalName(propMeta.typeRef);
-                    if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
-                        resolvedTypeRef = propMeta.typeRef;
-                    }
-                }
-            } else {
-                // It's a local name, try to resolve it
-                resolvedTypeRef = resolveTypeReference(propMeta.typeRef, contextNamespace, this.registry);
-            }
+            const resolvedTypeRef = this.resolveAndValidateTypeReference(propMeta.typeRef, contextNamespace);
             
             if (!resolvedTypeRef) {
                 errors.push(`Property '${propName}' references unknown type '${propMeta.typeRef}'`);
@@ -400,23 +382,7 @@ export class RegistryService {
 
         // Validate inheritance
         if (typeMeta.extends) {
-            let baseTypeRef: string | undefined;
-            
-            // Check if extends is already a qualified name
-            if (typeMeta.extends.startsWith('/')) {
-                if (this.hasType(typeMeta.extends)) {
-                    baseTypeRef = typeMeta.extends;
-                } else {
-                    // Check if the type exists in the namespace being validated
-                    const namespacePath = getNamespacePath(typeMeta.extends);
-                    const typeName = getLocalName(typeMeta.extends);
-                    if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
-                        baseTypeRef = typeMeta.extends;
-                    }
-                }
-            } else {
-                baseTypeRef = resolveTypeReference(typeMeta.extends, contextNamespace, this.registry);
-            }
+            const baseTypeRef = this.resolveAndValidateTypeReference(typeMeta.extends, contextNamespace);
             
             if (!baseTypeRef) {
                 errors.push(`Base type '${typeMeta.extends}' not found`);
@@ -441,16 +407,7 @@ export class RegistryService {
         // Validate inverse collections - target types must be objects
         if (typeMeta.inverseCollection) {
             for (const [propName, inverseMeta] of typeMeta.inverseCollection) {
-                let targetTypeRef: string | undefined;
-                
-                // Check if target type is already a qualified name
-                if (inverseMeta.targetTypeQName.startsWith('/')) {
-                    if (this.hasType(inverseMeta.targetTypeQName)) {
-                        targetTypeRef = inverseMeta.targetTypeQName;
-                    }
-                } else {
-                    targetTypeRef = resolveTypeReference(inverseMeta.targetTypeQName, contextNamespace, this.registry);
-                }
+                const targetTypeRef = this.resolveAndValidateTypeReference(inverseMeta.targetTypeQName, contextNamespace);
                 
                 if (!targetTypeRef) {
                     errors.push(`Inverse property '${propName}' references unknown target type '${inverseMeta.targetTypeQName}'`);
@@ -470,23 +427,7 @@ export class RegistryService {
                 
                 // If not found in current type, check inherited properties
                 if (!propertyFound && typeMeta.extends) {
-                    let baseTypeRef: string | undefined;
-                    
-                    // Check if extends is already a qualified name
-                    if (typeMeta.extends.startsWith('/')) {
-                        if (this.hasType(typeMeta.extends)) {
-                            baseTypeRef = typeMeta.extends;
-                        } else {
-                            // Check if the type exists in the namespace being validated
-                            const namespacePath = getNamespacePath(typeMeta.extends);
-                            const typeName = getLocalName(typeMeta.extends);
-                            if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
-                                baseTypeRef = typeMeta.extends;
-                            }
-                        }
-                    } else {
-                        baseTypeRef = resolveTypeReference(typeMeta.extends, contextNamespace, this.registry);
-                    }
+                    const baseTypeRef = this.resolveAndValidateTypeReference(typeMeta.extends, contextNamespace);
                     
                     if (baseTypeRef) {
                         // Check if the base type has the property (recursively through inheritance)
@@ -499,6 +440,65 @@ export class RegistryService {
                 }
             }
         }
+    }
+
+    /** 
+     * Properly resolve and validate a type reference using all supported patterns
+     * @param typeReference - The type reference to resolve (absolute, relative, parent path, etc.)
+     * @param contextNamespace - The namespace context for resolution
+     * @returns The resolved qualified type name, or undefined if not found
+     */
+    public resolveAndValidateTypeReference(typeReference: string, contextNamespace: Namespace): string | undefined {
+        // First, try the comprehensive resolveTypeReference function
+        let resolvedTypeRef = resolveTypeReference(typeReference, contextNamespace, this.registry);
+        
+        if (resolvedTypeRef) {
+            // Double-check that the resolved type actually exists
+            if (this.hasType(resolvedTypeRef)) {
+                return resolvedTypeRef;
+            }
+            
+            // If not in registry, check if it exists in the namespace being validated
+            const namespacePath = getNamespacePath(resolvedTypeRef);
+            const typeName = getLocalName(resolvedTypeRef);
+            if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                return resolvedTypeRef;
+            }
+        }
+        
+        // If resolveTypeReference couldn't resolve it, try additional patterns for types in the namespace being validated
+        if (typeReference.startsWith('/')) {
+            // It's an absolute reference - check if it points to a type in the namespace being validated
+            const namespacePath = getNamespacePath(typeReference);
+            const typeName = getLocalName(typeReference);
+            if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                return typeReference; // Already qualified and exists in namespace being validated
+            }
+        }
+        
+        // Special handling for system types (they may not have qualified names in resolveTypeReference)
+        if (!typeReference.includes('/')) {
+            // Check if it's a system type
+            if (systemNamespace.types.has(typeReference)) {
+                return buildQualifiedName(systemNamespace.qName, typeReference);
+            }
+        }
+        
+        return undefined;
+    }
+
+    /** 
+     * Convenience method to resolve type reference with namespace path string
+     * @param typeReference - The type reference to resolve
+     * @param namespacePath - The namespace path as string (e.g., "/company")
+     * @returns The resolved qualified type name, or undefined if not found
+     */
+    public resolveTypeReference(typeReference: string, namespacePath: string): string | undefined {
+        const namespace = this.getNamespace(namespacePath);
+        if (!namespace) {
+            return undefined;
+        }
+        return this.resolveAndValidateTypeReference(typeReference, namespace);
     }
 
     /** Helper method to check if a property exists in the inheritance chain */
@@ -525,21 +525,7 @@ export class RegistryService {
         
         // If not found and this type extends another type, check recursively
         if (type.extends) {
-            let baseTypeRef: string | undefined;
-            
-            if (type.extends.startsWith('/')) {
-                if (this.hasType(type.extends)) {
-                    baseTypeRef = type.extends;
-                } else {
-                    const namespacePath = getNamespacePath(type.extends);
-                    const typeName = getLocalName(type.extends);
-                    if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
-                        baseTypeRef = type.extends;
-                    }
-                }
-            } else {
-                baseTypeRef = resolveTypeReference(type.extends, contextNamespace, this.registry);
-            }
+            const baseTypeRef = this.resolveAndValidateTypeReference(type.extends, contextNamespace);
             
             if (baseTypeRef) {
                 return this.hasPropertyInInheritanceChain(baseTypeRef, propertyName, contextNamespace);
