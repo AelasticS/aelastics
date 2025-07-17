@@ -174,6 +174,7 @@ export type TypeMeta =
     | ArrayTypeMeta
     | MapTypeMeta
     | SetTypeMeta
+    | RecordTypeMeta
     | UnionTypeMeta
     | TaggedUnionTypeMeta
     | IntersectionTypeMeta
@@ -217,6 +218,6 @@ export function isEntityType(type: TypeMeta): type is ObjectTypeMeta {
     return type.category === 'complex' && type.kind === 'entity';
 }
 
-export function isCollectionType(type: TypeMeta): type is ArrayTypeMeta | MapTypeMeta | SetTypeMeta {
-    return type.category === 'complex' && (type.kind === 'array' || type.kind === 'map' || type.kind === 'set');
+export function isCollectionType(type: TypeMeta): type is ArrayTypeMeta | MapTypeMeta | SetTypeMeta | RecordTypeMeta {
+    return type.category === 'complex' && (type.kind === 'array' || type.kind === 'map' || type.kind === 'set' || type.kind === 'record');
 }

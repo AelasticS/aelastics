@@ -59,6 +59,6 @@ export const systemNamespace: Namespace = {
         ["undefined", undefinedType],
         ["void", voidType]
     ]),
-    exports: ["string", "number", "boolean", "date", "literal", "null", "undefined", "void"],
+    exports: ["string", "number", "boolean", "date", "null", "undefined", "void"],
     imports: new Map()
 };

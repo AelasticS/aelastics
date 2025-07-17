@@ -298,8 +298,8 @@ export class RegistryService {
         const errors: string[] = [];
         const warnings: string[] = [];
 
-        // Validate qualified name format (must have at least one '/', no leading/trailing '/', no empty segments, only valid chars)
-        const qNamePattern = /^(?!\/)(?!.*\/$)(?!.*\/\/)([a-zA-Z0-9_\-]+\/)+[a-zA-Z0-9_\-]+$/;
+        // Validate qualified name format (must start with '/', no trailing '/', no empty segments, only valid chars)
+        const qNamePattern = /^\/(?!.*\/$)(?!.*\/\/)([a-zA-Z0-9_\-]+\/)*[a-zA-Z0-9_\-]+$/;
         if (!typeMeta.qName || !qNamePattern.test(typeMeta.qName)) {
             errors.push(`Invalid qualified name: ${typeMeta.qName}`);
         }
