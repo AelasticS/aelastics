@@ -406,6 +406,13 @@ export class RegistryService {
             if (typeMeta.extends.startsWith('/')) {
                 if (this.hasType(typeMeta.extends)) {
                     baseTypeRef = typeMeta.extends;
+                } else {
+                    // Check if the type exists in the namespace being validated
+                    const namespacePath = getNamespacePath(typeMeta.extends);
+                    const typeName = getLocalName(typeMeta.extends);
+                    if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                        baseTypeRef = typeMeta.extends;
+                    }
                 }
             } else {
                 baseTypeRef = resolveTypeReference(typeMeta.extends, contextNamespace, this.registry);
@@ -414,7 +421,17 @@ export class RegistryService {
             if (!baseTypeRef) {
                 errors.push(`Base type '${typeMeta.extends}' not found`);
             } else {
-                const baseType = this.getType(baseTypeRef);
+                // Check if the base type is in the registry or in the namespace being validated
+                let baseType = this.getType(baseTypeRef);
+                if (!baseType) {
+                    // Check if the type exists in the namespace being validated
+                    const namespacePath = getNamespacePath(baseTypeRef);
+                    const typeName = getLocalName(baseTypeRef);
+                    if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                        baseType = contextNamespace.types.get(typeName);
+                    }
+                }
+                
                 if (!baseType || !isObjectType(baseType)) {
                     errors.push(`Base type '${typeMeta.extends}' is not an object type`);
                 }
@@ -449,11 +466,87 @@ export class RegistryService {
         // Validate entity identity keys
         if (typeMeta.kind === 'entity' && typeMeta.identityKeys) {
             for (const keyProp of typeMeta.identityKeys) {
-                if (!typeMeta.properties.has(keyProp)) {
-                    errors.push(`Identity key property '${keyProp}' not found in entity '${typeMeta.qName}'`);
+                let propertyFound = typeMeta.properties.has(keyProp);
+                
+                // If not found in current type, check inherited properties
+                if (!propertyFound && typeMeta.extends) {
+                    let baseTypeRef: string | undefined;
+                    
+                    // Check if extends is already a qualified name
+                    if (typeMeta.extends.startsWith('/')) {
+                        if (this.hasType(typeMeta.extends)) {
+                            baseTypeRef = typeMeta.extends;
+                        } else {
+                            // Check if the type exists in the namespace being validated
+                            const namespacePath = getNamespacePath(typeMeta.extends);
+                            const typeName = getLocalName(typeMeta.extends);
+                            if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                                baseTypeRef = typeMeta.extends;
+                            }
+                        }
+                    } else {
+                        baseTypeRef = resolveTypeReference(typeMeta.extends, contextNamespace, this.registry);
+                    }
+                    
+                    if (baseTypeRef) {
+                        // Check if the base type has the property (recursively through inheritance)
+                        propertyFound = this.hasPropertyInInheritanceChain(baseTypeRef, keyProp, contextNamespace);
+                    }
+                }
+                
+                if (!propertyFound) {
+                    errors.push(`Identity key property '${keyProp}' not found in entity '${typeMeta.qName}' or its inheritance chain`);
                 }
             }
         }
+    }
+
+    /** Helper method to check if a property exists in the inheritance chain */
+    private hasPropertyInInheritanceChain(typeRef: string, propertyName: string, contextNamespace: Namespace): boolean {
+        // Get the type from registry or from the namespace being validated
+        let type = this.getType(typeRef);
+        if (!type) {
+            // Check if the type exists in the namespace being validated
+            const namespacePath = getNamespacePath(typeRef);
+            const typeName = getLocalName(typeRef);
+            if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                type = contextNamespace.types.get(typeName);
+            }
+        }
+        
+        if (!type || type.category !== "complex" || (type.kind !== "object" && type.kind !== "entity")) {
+            return false;
+        }
+        
+        // Check if this type has the property
+        if (type.properties.has(propertyName)) {
+            return true;
+        }
+        
+        // If not found and this type extends another type, check recursively
+        if (type.extends) {
+            let baseTypeRef: string | undefined;
+            
+            if (type.extends.startsWith('/')) {
+                if (this.hasType(type.extends)) {
+                    baseTypeRef = type.extends;
+                } else {
+                    const namespacePath = getNamespacePath(type.extends);
+                    const typeName = getLocalName(type.extends);
+                    if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                        baseTypeRef = type.extends;
+                    }
+                }
+            } else {
+                baseTypeRef = resolveTypeReference(type.extends, contextNamespace, this.registry);
+            }
+            
+            if (baseTypeRef) {
+                return this.hasPropertyInInheritanceChain(baseTypeRef, propertyName, contextNamespace);
+            }
+        }
+        
+        return false;
     }
 
     // ===== REGISTRY INFORMATION =====

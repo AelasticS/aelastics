@@ -2,6 +2,8 @@ import { RegistryService, NamespaceImportError } from "../../registry/RegistrySe
 import { RegistryMetadata } from "../../registry/NamespaceMetadata";
 import { companyNamespace } from "../example-namespaces/company-namespace";
 import { educationalNamespace } from "../example-namespaces/educational-namespace";
+import { coreNamespace } from "../example-namespaces/core-namespace";
+import { authNamespace } from "../example-namespaces/auth-namespace";
 
 describe("Bidirectional Relationship Tests", () => {
     let registry: RegistryService;
@@ -162,10 +164,12 @@ describe("Bidirectional Relationship Tests", () => {
     describe("Complex Many-to-Many Relationships", () => {
         test("should handle complex many-to-many relationships with dependencies", () => {
             // Educational namespace has Student ↔ Courses (many-to-many)
-            // But first we need to import its dependencies
-            expect(() => {
-                registry.importNamespace(educationalNamespace);
-            }).not.toThrow();
+            // Import dependencies in correct order
+            registry.importNamespace(coreNamespace);
+            registry.importNamespace(companyNamespace); // Auth depends on company
+            
+            registry.importNamespace(authNamespace);
+            registry.importNamespace(educationalNamespace);
             
             // Verify all types are imported
             expect(registry.hasType("/educational/Student")).toBe(true);
@@ -175,6 +179,10 @@ describe("Bidirectional Relationship Tests", () => {
         });
 
         test("should validate complex many-to-many relationship metadata", () => {
+            registry.importNamespace(coreNamespace);
+            registry.importNamespace(companyNamespace); // Auth depends on company
+            
+            registry.importNamespace(authNamespace);
             registry.importNamespace(educationalNamespace);
             
             // Get Student type and check courses property

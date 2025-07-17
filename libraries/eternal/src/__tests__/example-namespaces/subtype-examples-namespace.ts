@@ -194,8 +194,8 @@ const superAdminUserType: ObjectTypeMeta = {
             typeRef: "string",
             optional: false
         }]
-    ]),
-    identityKeys: ["id"]
+    ])
+    // Note: identityKeys are inherited from BaseUser, so we don't need to declare them here
 };
 
 export const subtypeExamplesNamespace: Namespace = {
