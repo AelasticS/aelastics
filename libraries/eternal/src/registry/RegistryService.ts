@@ -400,6 +400,12 @@ export class RegistryService {
                 
                 if (!baseType || !isObjectType(baseType)) {
                     errors.push(`Base type '${typeMeta.extends}' is not an object type`);
+                } else {
+                    // Check for circular inheritance
+                    const circularInheritanceError = this.detectCircularInheritance(typeMeta.qName, baseTypeRef, contextNamespace);
+                    if (circularInheritanceError) {
+                        errors.push(circularInheritanceError);
+                    }
                 }
             }
         }
@@ -499,6 +505,60 @@ export class RegistryService {
             return undefined;
         }
         return this.resolveAndValidateTypeReference(typeReference, namespace);
+    }
+
+    /**
+     * Detect circular inheritance in the inheritance chain
+     * @param startingTypeQName - The qualified name of the type we're validating
+     * @param baseTypeRef - The qualified name of the base type
+     * @param contextNamespace - The namespace context for resolution
+     * @param visited - Set of already visited types (for recursion tracking)
+     * @returns Error message if circular inheritance detected, undefined otherwise
+     */
+    private detectCircularInheritance(
+        startingTypeQName: string, 
+        baseTypeRef: string, 
+        contextNamespace: Namespace,
+        visited: Set<string> = new Set()
+    ): string | undefined {
+        // Check if we've encountered the starting type again (circular inheritance)
+        if (baseTypeRef === startingTypeQName) {
+            const cycle = Array.from(visited).join(' -> ') + ' -> ' + startingTypeQName;
+            return `Circular inheritance detected: ${cycle}`;
+        }
+        
+        // Check if we've already visited this base type (should not happen with proper validation, but safety check)
+        if (visited.has(baseTypeRef)) {
+            const cycle = Array.from(visited).join(' -> ') + ' -> ' + baseTypeRef;
+            return `Circular inheritance detected in chain: ${cycle}`;
+        }
+        
+        // Add current base type to visited set
+        visited.add(baseTypeRef);
+        
+        // Get the base type to check if it extends something else
+        let baseType = this.getType(baseTypeRef);
+        if (!baseType) {
+            // Check if the type exists in the namespace being validated
+            const namespacePath = getNamespacePath(baseTypeRef);
+            const typeName = getLocalName(baseTypeRef);
+            if (namespacePath === contextNamespace.qName && contextNamespace.types.has(typeName)) {
+                baseType = contextNamespace.types.get(typeName);
+            }
+        }
+        
+        // If base type doesn't exist or doesn't extend anything, no circular inheritance
+        if (!baseType || baseType.category !== "complex" || !isObjectType(baseType) || !baseType.extends) {
+            return undefined;
+        }
+        
+        // Resolve the base type's base type and recursively check
+        const baseBaseTypeRef = this.resolveAndValidateTypeReference(baseType.extends, contextNamespace);
+        if (baseBaseTypeRef) {
+            return this.detectCircularInheritance(startingTypeQName, baseBaseTypeRef, contextNamespace, visited);
+        }
+        
+        return undefined;
     }
 
     /** Helper method to check if a property exists in the inheritance chain */
