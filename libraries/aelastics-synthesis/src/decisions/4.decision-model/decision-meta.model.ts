@@ -5,9 +5,23 @@ import { Type } from '../../types-metamodel/types-meta.model';
 
 export const DecisionModel_TypeSchema = t.schema('DecisionModel_TypeSchema');
 
-export const SimpleOption = (option: gdm.IOption) => t.subtype(ModelElement, { defaultValue: t.optional(getOptionType(option)), optionType: t.literal('simple') }, 'SimpleOption');
-export const CompositeOption = t.subtype(ModelElement,
-    { subIssues: t.arrayOf(t.link(DecisionModel_TypeSchema, 'SelectedOption')), optionType: t.literal('composite') },
+export const SimpleOption = t.subtype(
+    ModelElement,
+    {
+        //TODO: Type of defaultValue should be determined based on the option type
+        // defaultValue: t.optional(getOptionType(option)), 
+        defaultValue: t.string, // defaultValue is a string for simplicity
+        optionType: t.literal('simple')
+    },
+    'SimpleOption',
+    DecisionModel_TypeSchema);
+
+export const CompositeOption = t.subtype(
+    ModelElement,
+    {
+        selectedOptions: t.arrayOf(t.link(DecisionModel_TypeSchema, 'SelectedOption')),
+        optionType: t.literal('composite')
+    },
     'CompositeOption'
 );
 
@@ -29,13 +43,13 @@ export const BaseSelectedOption = t.subtype(
 );
 
 // Factory function that creates specific SelectedOption types based on the option
-export const SelectedOption = (option: gdm.IOption) => t.subtype(
+export const SelectedOption = t.subtype(
     BaseSelectedOption, // Extend the base type
     {
         // newIssues: t.arrayOf(t.link(DecisionModel_TypeSchema, 'SelectedOption')), // todo selected options for new issues
         value: t.taggedUnion(
             {
-                simple: SimpleOption(option),
+                simple: SimpleOption,
                 composite: CompositeOption,
             },
             'optionType',
@@ -50,7 +64,7 @@ export const DecisionForElement = t.subtype(
     ModelElement,
     {
         elementId: t.string,
-        selectedOptions: t.arrayOf(BaseSelectedOption), // Use the base type for arrays
+        selectedOptions: t.arrayOf(SelectedOption), // Use the base type for arrays
     },
     'DecisionForElement',
     DecisionModel_TypeSchema
@@ -69,6 +83,8 @@ export const DecisionModel = t.subtype(
 
 export type IDecisionModel = t.TypeOf<typeof DecisionModel>;
 export type IBaseSelectedOption = t.TypeOf<typeof BaseSelectedOption>; // Type for the base
-export type ISelectedOption = IBaseSelectedOption; // Alias for backward compatibility
+export type ISelectedOption = t.TypeOf<typeof SelectedOption>;
 export type IDecisionForElement = t.TypeOf<typeof DecisionForElement>;
+export type ISimpleOption = t.TypeOf<typeof SimpleOption>;
+export type ICompositeOption = t.TypeOf<typeof CompositeOption>;
 

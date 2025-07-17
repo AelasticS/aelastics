@@ -70,7 +70,7 @@ export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dm
     })
     private createSelectedOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.IBaseSelectedOption> {
 
-        let defaultOption = issue.possibleOptions.find((o: gdmT.IOption) => {
+        let defaultOption: gdmT.IOption | undefined = issue.possibleOptions.find((o: gdmT.IOption) => {
             return o.isDefault === true;
         });
 
@@ -84,18 +84,30 @@ export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dm
         }
 
         // Create the specific component for this option
-        const SelectedOptionForThisOption = dmC.SelectedOption(defaultOption);
+        // const SelectedOptionForThisOption = dmC.SelectedOption(defaultOption);
+
+        const isSimpleOption: boolean = this.context.store.isTypeOf(defaultOption.optionType, gdmT.SimpleOption);
 
         return (
-            <SelectedOptionForThisOption
+            <dmC.SelectedOption
                 name={`Selected option for ${sourceModelElement.name} is ${defaultOption.name}`}
                 description={`Selected option for ${sourceModelElement.name} is ${defaultOption.name}`}
-
                 assumptions="Default assumptions"
                 justification="Default justification"
                 consequences="Default consequences"
                 ref={defaultOption as gdmT.IOption}
-            />
+                value={isSimpleOption ? (
+                    <dmC.SimpleOption name={`Simple option for ${defaultOption.name} for ${sourceModelElement.name}`}
+                        defaultValue={"defaultString"}
+                    />
+                ) : (
+                    <dmC.CompositeOption name={`Composite option for ${defaultOption.name} for ${sourceModelElement.name}`}>
+                        {(defaultOption.optionType as gdmT.ICompositeOption).subIssues.map((subIssue: gdmT.IIssue) => {
+                            return this.createSelectedOptionForIssue(subIssue, sourceModelElement);
+                        })}
+                    </dmC.CompositeOption>
+                )}>
+            </dmC.SelectedOption>
         );
     }
 

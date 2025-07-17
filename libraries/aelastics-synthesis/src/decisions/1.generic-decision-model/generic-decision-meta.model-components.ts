@@ -30,11 +30,11 @@ export const Dependency: Template<gdm.IDependency> = (props) => {
 }
 
 export const SimpleOption: Template<gdm.ISimpleOption> = (props) => {
-    return new Element(gdm.Option, props, 'optionType');
+    return new Element(gdm.SimpleOption, props, 'optionType');
 }
 
 export const CompositeOption: Template<gdm.ICompositeOption> = (props) => {
-    return new Element(gdm.Option, props, 'optionType');
+    return new Element(gdm.CompositeOption, props, 'optionType');
 }
 
 

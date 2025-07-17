@@ -55,7 +55,9 @@ export const Option = t.subtype(
       },
       'optionType',
       'OptionType',
+      GenericDecisionModel_TypeSchema
     )
+  
   },
   "Option",
   GenericDecisionModel_TypeSchema
