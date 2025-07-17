@@ -17,7 +17,8 @@ import * as tm from "./transformation.model.type";
 import { CpxTemplate, Element, Super, Template } from "../jsx/element";
 import { ModelStore } from "./../index";
 import { Model } from "generic-metamodel/src/models.type";
-import { IDecisionModel } from "../decisions/4.decision-model/decision-meta.model";
+import { IDecisionModel, ISelectedOption, IBaseSelectedOption } from "../decisions/4.decision-model/decision-meta.model";
+
 
 type IODescr = { type?: t.Any; instance?: IModel };
 type TransformationDescr = {
@@ -30,10 +31,34 @@ export interface ITraceRecord {
   ruleName: string;
 }
 
+export const _privatePop = Symbol('privatePop');
+export const _privatePush = Symbol('privatePush');
+
+export class Stack<T> {
+  private stack: Array<T> = [];
+
+  private [_privatePop]: () => T | undefined = () => {
+    return this.stack.pop();
+  };
+
+  private [_privatePush]: (element: T) => void = (element: T) => {
+    this.stack.push(element);
+  };
+
+  public peek(): T | undefined {
+    return this.stack[this.stack.length - 1];
+  }
+
+  public isEmpty(): boolean {
+    return this.stack.length === 0;
+  }
+}
+
 export class M2MContext extends Context {
   public input: IODescr = {};
   public output: IODescr = {};
   public transformation: TransformationDescr = {};
+  public currendElementDecision: Stack<ISelectedOption[]> = new Stack<ISelectedOption[]>();
 
   public readonly traceMap: Map<IModelElement, Array<ITraceRecord>> = new Map();
 

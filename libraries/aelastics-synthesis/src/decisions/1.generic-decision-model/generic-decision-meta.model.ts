@@ -23,10 +23,22 @@ export const GenericDecisionModel = t.subtype(
   GenericDecisionModel_TypeSchema
 );
 
-export const SimpleOption = t.subtype(ModelElement, { valueType: t.optional(Type), optionType: t.literal('simple') }, 'SimpleOption');
+export const SimpleOption = t.subtype(
+  ModelElement,
+  {
+    valueType: t.optional(Type),
+    optionType: t.literal('simple')
+  },
+  'SimpleOption',
+  GenericDecisionModel_TypeSchema);
+
 export const CompositeOption = t.subtype(ModelElement,
-  { subIssues: t.arrayOf(Issue), optionType: t.literal('composite') },
-  'CompositeOption'
+  {
+    subIssues: t.arrayOf(Issue),
+    optionType: t.literal('composite')
+  },
+  'CompositeOption',
+  GenericDecisionModel_TypeSchema
 );
 
 export const Option = t.subtype(

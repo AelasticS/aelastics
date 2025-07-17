@@ -1,7 +1,7 @@
 // https://luckylibora.medium.com/typescript-method-decorators-in-depth-problems-and-solutions-74387d51e6a
 
 import { Any } from "aelastics-types";
-import { abstractM2M, M2MContext } from "../transformations/abstractM2M";
+import { abstractM2M, M2MContext, _privatePop, _privatePush } from "../transformations/abstractM2M";
 import * as dm from "../decisions/4.decision-model/decision-meta.model"; // import decision model types for decision model transformation
 
 // https://stackoverflow.com/questions/55179461/reflection-in-javascript-how-to-intercept-an-object-for-function-enhancement-d
@@ -39,10 +39,14 @@ export const VarPoint = () => {
         .filter((d: dm.IDecisionForElement) => d.elementId === element.id)
         .flatMap((d: dm.IDecisionForElement) => d.selectedOptions) || [] as dm.ISelectedOption[];
 
-      const option = options.find((option) => {
+      (this as abstractM2M<any, any, any, dm.IDecisionModel>).context.currendElementDecision[_privatePush](selectedOptions);
 
+      const option = options.find((option) => {
         return option.evalCondition(selectedOptions);
       });
+
+      (this as abstractM2M<any, any, any, dm.IDecisionModel>).context.currendElementDecision[_privatePop]();
+
       if (!option) {
         throw new Error(`No option condition evaluated to true`);
       }
