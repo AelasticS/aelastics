@@ -44,6 +44,10 @@ export class TaggedUnionType<P extends InterfaceDecl> extends ComplexType<
   }
 
   *children(value: TypeOf<P[keyof P]>, n: Node): Generator<[TypeOf<P[keyof P]>, Any, ExtraInfo]> {
+    if (value === null || value === undefined) {
+      return;
+    }
+
     const discrValue = value[this.discriminator]
     if (!discrValue) {
       throw new ServiceError(
