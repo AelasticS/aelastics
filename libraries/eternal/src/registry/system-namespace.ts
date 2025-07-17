@@ -3,44 +3,44 @@ import { SimpleTypeMeta } from "./TypeDefinitions";
 
 // Define standard primitive types as SimpleTypeMeta
 const stringType: SimpleTypeMeta = {
-    qName: "string",
+    qName: "/system/string",
     category: "simple",
     kind: "string"
 };
 
 const numberType: SimpleTypeMeta = {
-    qName: "number",
+    qName: "/system/number",
     category: "simple",
     kind: "number"
 };
 
 const booleanType: SimpleTypeMeta = {
-    qName: "boolean",
+    qName: "/system/boolean",
     category: "simple",
     kind: "boolean"
 };
 
 const dateType: SimpleTypeMeta = {
-    qName: "date",
+    qName: "/system/date",
     category: "simple",
     kind: "date"
 };
 
 
 const nullType: SimpleTypeMeta = {
-    qName: "null",
+    qName: "/system/null",
     category: "simple",
     kind: "null"
 };
 
 const undefinedType: SimpleTypeMeta = {
-    qName: "undefined",
+    qName: "/system/undefined",
     category: "simple",
     kind: "undefined"
 };
 
 const voidType: SimpleTypeMeta = {
-    qName: "void",
+    qName: "/system/void",
     category: "simple",
     kind: "void"
 };

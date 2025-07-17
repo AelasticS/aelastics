@@ -41,7 +41,7 @@ beforeEach(() => {
     qName: "/test/User",
     category: "complex",
     kind: "object",
-    properties: new Map([
+    properties: new Map<string, PropertyMeta>([
       [
         "name",
         {
