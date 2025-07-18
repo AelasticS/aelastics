@@ -44,6 +44,8 @@ export class TaggedUnionType<P extends InterfaceDecl> extends ComplexType<
   }
 
   *children(value: TypeOf<P[keyof P]>, n: Node): Generator<[TypeOf<P[keyof P]>, Any, ExtraInfo]> {
+    // TODO: verify this condition, wich is added because of the error in the taggedUnionType 
+    // /libraries/aelastics-synthesis/src/decisions/examples/generic-decision-model-example.tsx
     if (value === null || value === undefined) {
       return;
     }

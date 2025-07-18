@@ -74,3 +74,7 @@ export const TypeLink: Template<t.ILink> = (props) => {
 export const InverseProperty: Template<t.IInverseProperty> = (props) => {
   return new Element(t.InverseProperty, props, "types")
 }
+
+export const TypeLiteral: Template<t.ILiteral> = (props) => {
+  return new Element(t.Literal, props, "types")
+}
