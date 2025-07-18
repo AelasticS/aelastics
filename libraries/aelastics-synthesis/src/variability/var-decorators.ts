@@ -45,12 +45,13 @@ export const VarPoint = () => {
         return option.evalCondition(selectedOptions);
       });
 
-      (this as abstractM2M<any, any, any, dm.IDecisionModel>).context.currendElementDecision[_privatePop]();
-
       if (!option) {
         throw new Error(`No option condition evaluated to true`);
       }
       let result = (this as any)[option.methodName](...args);
+
+      (this as abstractM2M<any, any, any, dm.IDecisionModel>).context.currendElementDecision[_privatePop]();
+      
       return result;
     };
     descriptor.value[__VarPoint] = propertyKey;
