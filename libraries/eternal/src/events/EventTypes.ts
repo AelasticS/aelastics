@@ -1,6 +1,6 @@
 import { StoreClass } from '../store/StoreClass';
 import { StoreObject } from '../store/InternalTypes';
-import { PropertyMeta } from '../meta/InternalSchema';
+import { PropertyMeta } from '../registry/TypeDefinitions';
 import { ChangeLogEntry } from './ChangeLog';
 
 export type EventPayload = {

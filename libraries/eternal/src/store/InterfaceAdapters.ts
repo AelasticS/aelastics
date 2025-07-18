@@ -4,11 +4,8 @@ import { TypeMeta } from "../registry/TypeDefinitions";
 import { IHistory, IState, ChangeLogEntry } from "../interfaces/IHistory";
 import { IData } from "../interfaces/IData";
 import { IEvents } from "../interfaces/IEvents";
-import { IRegistry } from "../interfaces/IRegistry";
 import { EventPayload, Result as EventResult } from "../events/EventTypes";
 import { Timing, Operation, Type, Property } from "../interfaces/ISubscriptionManager";
-import { RegistryAdapter } from "../registry/RegistryAdapter";
-import { SchemaRegistry } from "../meta/InternalSchema";
 import { RegistryService } from "../registry/RegistryService";
 
 export class ObjectsAdapter implements IObjects {
@@ -200,19 +197,3 @@ export class EventsAdapter implements IEvents {
   }
 }
 
-export class RegistryAdapterForStore {
-  private registryAdapter: RegistryAdapter;
-  
-  constructor(private store: StoreClass) {
-    // Use new registry service - create adapter from registry service
-    // TODO: Create a bridge between RegistryService and RegistryAdapter
-    const schemaRegistry: SchemaRegistry = {
-      schemas: new Map()
-    };
-    this.registryAdapter = new RegistryAdapter(schemaRegistry);
-  }
-
-  getRegistry(): IRegistry {
-    return this.registryAdapter;
-  }
-}

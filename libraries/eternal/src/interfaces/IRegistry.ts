@@ -1,4 +1,4 @@
-import { TypeMeta, TypeSchema, SchemaRegistry, PropertyMeta } from "../meta/InternalSchema";
+import { TypeMeta, PropertyMeta } from "../registry/TypeDefinitions";
 
 export interface ValidationResult {
   isValid: boolean;

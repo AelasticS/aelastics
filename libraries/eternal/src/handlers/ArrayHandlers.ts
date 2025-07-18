@@ -3,7 +3,7 @@ import { getClassName, isStoreObject, makePrivatePropertyKey, makePrivateProxyKe
 import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
 import { StoreObject, uuid } from "../store/InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
-import { PropertyMeta } from "../meta/InternalSchema"
+import { PropertyMeta, getPropertyItemTypeKind } from "../registry/TypeDefinitions"
 import { StoreClass } from "../store/StoreClass"
 
 import * as invUpd from "../store/inverseUpdaters"
@@ -13,18 +13,18 @@ import { State } from "../store/State"
 
 // Convert UUID to Object
 const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  propDes.itemType === "object" && item ? store.objectManager.findByUUID(item) : item
+  getPropertyItemTypeKind(propDes, store) === "object" && item ? store.objectManager.findByUUID(item) : item
 
 /** Convert UUIDs to Objects */
 const mapToObjects = (items: any[], store: StoreClass, propDes: PropertyMeta): any[] =>
   items.map((item) => toObject(item, store, propDes))
 
 // Convert object to UUID if needed
-const toUUID = (value: any, propDes: PropertyMeta): any => (propDes.itemType === "object" && value ? value[uuid] : value)
+const toUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any => (getPropertyItemTypeKind(propDes, store) === "object" && value ? value[uuid] : value)
 
 /** Map Objects to UUIDs */
-const mapToUUIDs = (items: any[], propDes: PropertyMeta): any[] =>
-  propDes.itemType === "object" && items ? items.map((item) => item[uuid]) : items
+const mapToUUIDs = (items: any[], propDes: PropertyMeta, store: StoreClass): any[] =>
+  getPropertyItemTypeKind(propDes, store) === "object" && items ? items.map((item) => item[uuid]) : items
 
 /** Creates typed array handlers to track UUIDs and object references */
 export const createArrayHandlers = <T extends StoreObject>({
@@ -32,9 +32,9 @@ export const createArrayHandlers = <T extends StoreObject>({
   object,
   propDes,
 }: ObservableExtra): ArrayHandlers<T> => {
-  const privateKey = makePrivatePropertyKey(propDes.qName)
-  const proxyKey = makePrivateProxyKey(propDes.qName)
-  const inverseUpdaterKey = makeUpdateInverseKey(propDes.qName)
+  const privateKey = makePrivatePropertyKey(propDes.name)
+  const proxyKey = makePrivateProxyKey(propDes.name)
+  const inverseUpdaterKey = makeUpdateInverseKey(propDes.name)
   const privateInverseKey = propDes.inverseProp ? makePrivatePropertyKey(propDes.inverseProp) : ""
   const subscriptionManager = store.subscriptionManager
 
@@ -53,8 +53,8 @@ export const createArrayHandlers = <T extends StoreObject>({
       return [false, res]
     },
 setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
-  const obj = checkWriteAccess(object, store, propDes.qName);
-  const newValueUUID = toUUID(value, propDes);
+  const obj = checkWriteAccess(object, store, propDes.name);
+  const newValueUUID = toUUID(value, propDes, store);
   const oldValueUUID = obj[privateKey][index];
 
   // Check if there are changes to be made
@@ -70,7 +70,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       objectId: object[uuid],
       operation: 'update' as const,
       changeType: 'remove' as const,
-      property: propDes.qName,
+      property: propDes.name,
       oldValue: oldValueUUID,
     });
   }
@@ -80,7 +80,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       objectId: object[uuid],
       operation: 'update' as const,
       changeType: 'add' as const,
-      property: propDes.qName,
+      property: propDes.name,
       newValue: newValueUUID,
     });
   }
@@ -90,7 +90,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       timing: 'before',
       operation: 'update',
       objectType: getClassName(object),
-      property: propDes.qName,
+      property: propDes.name,
       timestamp: uniqueTimestamp(),
       objectId: object[uuid],
       changes: changes,
@@ -104,7 +104,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
   // Perform the actual operation
   obj[privateKey][index] = newValueUUID;
-  if (propDes.itemType === "object" && propDes.inverseProp) {
+  if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
     const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
     updater(obj, oldValueUUID, newValueUUID);
   }
@@ -122,7 +122,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       timing: 'after',
       operation: 'update',
       objectType: getClassName(object),
-      property: propDes.qName,
+      property: propDes.name,
       timestamp: uniqueTimestamp(),
       objectId: object[uuid],
       changes: changes,
@@ -138,7 +138,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 },
     /** Remove item from array */
     delete: (target: T[], index: number): [boolean, boolean] => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
+      const obj = checkWriteAccess(object, store, propDes.name);
       const oldValueUUID = obj[privateKey][index];
     
       // Check if there are changes to be made
@@ -152,7 +152,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'remove' as const,
-        property: propDes.qName,
+        property: propDes.name,
         oldValue: oldValueUUID,
       }];
     
@@ -160,7 +160,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -173,7 +173,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Perform the actual operation
       obj[privateKey].splice(index, 1);
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         updater(obj, oldValueUUID, undefined);
       }
@@ -190,7 +190,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -205,8 +205,8 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     },
     /** Handle push (convert objects to UUIDs if needed) */
     push: (target: T[], ...items: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName) as StoreObject
-      const itemsUUIDs = mapToUUIDs(items, propDes)
+      const obj = checkWriteAccess(object, store, propDes.name) as StoreObject
+      const itemsUUIDs = mapToUUIDs(items, propDes, store)
     
       // Check if there are changes to be made
       if (itemsUUIDs.length === 0) {
@@ -219,7 +219,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'add' as const,
-        property: propDes.qName,
+        property: propDes.name,
         newValue: newValue,
         index:index,
       }));
@@ -228,7 +228,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -242,7 +242,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Perform the actual operation
       const newLength = obj[privateKey].push(...itemsUUIDs);
     
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
         items.forEach((item) => {
@@ -262,7 +262,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -278,7 +278,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle pop */
     pop: (target: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
+      const obj = checkWriteAccess(object, store, propDes.name)
       const item = obj[privateKey][obj[privateKey].length - 1] // Access the element to be popped
     
       // Check if there are changes to be made
@@ -292,7 +292,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'remove' as const,
-        property: propDes.qName,
+        property: propDes.name,
         oldValue: item,
         index: obj[privateKey].length - 1,
       }];
@@ -301,7 +301,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -314,7 +314,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Perform the actual operation
       const poppedItem = obj[privateKey].pop();
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, poppedItem, undefined)
       }
@@ -331,7 +331,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -347,7 +347,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle shift */
     shift: (target: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
+      const obj = checkWriteAccess(object, store, propDes.name)
       const shiftedItem = obj[privateKey][0] // Access the element to be shifted
     
       // Check if there are changes to be made
@@ -361,7 +361,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'remove' as const,
-        property: propDes.qName,
+        property: propDes.name,
         oldValue: shiftedItem,
         index: 0,
       }];
@@ -370,7 +370,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -383,7 +383,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Perform the actual operation
       const shiftedItemUUID = obj[privateKey].shift();
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, shiftedItemUUID, undefined)
       }
@@ -400,7 +400,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -416,8 +416,8 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle unshift (convert objects to UUIDs if needed) */
     unshift: (target: T[], ...items: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
-      const itemsUUIDs = mapToUUIDs(items, propDes)
+      const obj = checkWriteAccess(object, store, propDes.name)
+      const itemsUUIDs = mapToUUIDs(items, propDes, store)
     
       // Check if there are changes to be made
       if (itemsUUIDs.length === 0) {
@@ -430,7 +430,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'add' as const,
-        property: propDes.qName,
+        property: propDes.name,
         newValue: newValue,
         index:index,
       }));
@@ -439,7 +439,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -453,7 +453,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Perform the actual operation
       const newLength = obj[privateKey].unshift(...itemsUUIDs);
     
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
         items.forEach((item) => {
@@ -473,7 +473,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -489,8 +489,8 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle splice (convert objects to UUIDs if needed) */
     splice: (target: T[], start: number, deleteCount: number, ...items: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
-      const itemsUUIDs = mapToUUIDs(items, propDes)
+      const obj = checkWriteAccess(object, store, propDes.name)
+      const itemsUUIDs = mapToUUIDs(items, propDes, store)
       const deletedItems:any[] = obj[privateKey].slice(start, start + deleteCount)
     
       // Check if there are changes to be made
@@ -506,7 +506,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
           objectId: object[uuid],
           operation: 'update' as const,
           changeType: 'remove' as const,
-          property: propDes.qName,
+          property: propDes.name,
           oldValue: oldValue,
           index: start + index,
         })));
@@ -517,7 +517,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
           objectId: object[uuid],
           operation: 'update' as const,
           changeType: 'add' as const,
-          property: propDes.qName,
+          property: propDes.name,
           newValue: newValue,
           index: start + index,
         })));
@@ -527,7 +527,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -541,7 +541,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Perform the actual operation
       const deletedItemsUUIDs = obj[privateKey].splice(start, deleteCount, ...itemsUUIDs);
     
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of deleted items to null
         deletedItemsUUIDs.forEach((item: any) => {
@@ -565,7 +565,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -581,7 +581,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle reverse */
     reverse: (target: T[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
+      const obj = checkWriteAccess(object, store, propDes.name);
       const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
     
       // Emit before.update event and check for cancellation
@@ -590,7 +590,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'reorder' as const,
-        property: propDes.qName,
+        property: propDes.name,
         oldValue: originalArray,
         newValue: [...originalArray].reverse(),
       }];
@@ -599,7 +599,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -625,7 +625,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -641,7 +641,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle sort */
     sort: (target: T[], compareFn?: (a: T, b: T) => number) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
+      const obj = checkWriteAccess(object, store, propDes.name);
       const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
     
       // Emit before.update event and check for cancellation
@@ -650,7 +650,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'reorder' as const,
-        property: propDes.qName,
+        property: propDes.name,
         oldValue: originalArray,
         newValue: [...originalArray].sort(compareFn),
       }];
@@ -659,7 +659,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -685,7 +685,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -701,13 +701,13 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle fill */
     fill: (target: T[], value: T, start?: number, end?: number) => {
-      if (propDes.itemType === "object") {
+      if (getPropertyItemTypeKind(propDes, store) === "object") {
         throw new Error("Fill operation is not allowed for arrays of object UUIDs.");
       }
     
-      const obj = checkWriteAccess(object, store, propDes.qName);
+      const obj = checkWriteAccess(object, store, propDes.name);
       const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
-      const itemsUUID = toUUID(value, propDes);
+      const itemsUUID = toUUID(value, propDes, store);
     
       // Determine the actual start and end indices
       const actualStart = start ?? 0;
@@ -721,7 +721,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
           objectId: object[uuid],
           operation: 'update' as const,
           changeType: 'add' as const,
-          property: propDes.qName,
+          property: propDes.name,
           oldValue: obj[privateKey][i],
           newValue: itemsUUID,
           index: i,
@@ -732,7 +732,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -758,7 +758,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -773,11 +773,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     },
     /** Handle concat */
     concat: (target: T[], ...items: (T | ConcatArray<T>)[]) => {
-      const obj = checkWriteAccess(object, store, propDes.qName);
+      const obj = checkWriteAccess(object, store, propDes.name);
       const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
     
       // Flatten the items array and map to UUIDs
-      const itemsUUIDs = items.flat().map(item => toUUID(item, propDes));
+      const itemsUUIDs = items.flat().map(item => toUUID(item, propDes, store));
     
       // Check if there are changes to be made
       if (itemsUUIDs.length === 0) {
@@ -790,7 +790,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         objectId: object[uuid],
         operation: 'update' as const,
         changeType: 'add' as const,
-        property: propDes.qName,
+        property: propDes.name,
         newValue: newValue,
         index: obj[privateKey].length + index,
       }));
@@ -799,7 +799,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -813,7 +813,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Perform the actual operation
       const newArray = obj[privateKey].concat(itemsUUIDs);
     
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
         itemsUUIDs.forEach((item) => {
@@ -833,7 +833,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -850,7 +850,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     /** Handle includes */
     includes: (target: T[], value: T) => {
       const obj = checkReadAccess(object, store)
-      const newValue = toUUID(value, propDes)
+      const newValue = toUUID(value, propDes, store)
       const result = obj[privateKey].includes(newValue) // check is based on UUIDs, not timestamps
       return [false, result]
     },
@@ -988,11 +988,11 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle copyWithin */
     copyWithin: (target: T[], targetIndex: number, start: number = 0, end: number = target.length) => {
-      if (propDes.itemType === "object") {
+      if (getPropertyItemTypeKind(propDes, store) === "object") {
         throw new Error("copyWithin operation is not allowed for arrays of object UUIDs.");
       }
     
-      const obj = checkWriteAccess(object, store, propDes.qName);
+      const obj = checkWriteAccess(object, store, propDes.name);
       const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
     
       // Determine the actual start, end, and target indices
@@ -1015,7 +1015,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
           objectId: object[uuid],
           operation: 'update' as const,
           changeType: 'add' as const,
-          property: propDes.qName,
+          property: propDes.name,
           oldValue: oldValue,
           newValue: newValue,
         });
@@ -1025,7 +1025,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'before',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -1051,7 +1051,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         timing: 'after',
         operation: 'update',
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,

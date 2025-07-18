@@ -197,6 +197,60 @@ export interface PropertyMeta {
     inverseType?: PropertyType; // Data type of the inverse property (derived during import)
 }
 
+// Polymorphic functions for collection types
+
+/** Get item type reference from collection TypeMeta */
+export function getItemType(typeMeta: ArrayTypeMeta): string;
+export function getItemType(typeMeta: SetTypeMeta): string; 
+export function getItemType(typeMeta: MapTypeMeta): string; // returns valueType
+export function getItemType(typeMeta: TypeMeta): string | undefined;
+export function getItemType(typeMeta: TypeMeta): string | undefined {
+  switch (typeMeta.kind) {
+    case 'array':
+      return (typeMeta as ArrayTypeMeta).elementType;
+    case 'set':
+      return (typeMeta as SetTypeMeta).elementType;
+    case 'map':
+      return (typeMeta as MapTypeMeta).valueType;
+    default:
+      return undefined;
+  }
+}
+
+/** Get key type reference from map TypeMeta */
+export function getKeyType(typeMeta: MapTypeMeta): string;
+export function getKeyType(typeMeta: TypeMeta): string | undefined;
+export function getKeyType(typeMeta: TypeMeta): string | undefined {
+  if (typeMeta.kind === 'map') {
+    return (typeMeta as MapTypeMeta).keyType;
+  }
+  return undefined;
+}
+
+/** Get item type kind from PropertyMeta by resolving through registry */
+export function getPropertyItemTypeKind(propMeta: PropertyMeta, store: any): SimpleTypeKind | ComplexTypeKind | undefined {
+  const typeMeta = store.registryService.getTypeMeta(propMeta.typeRef);
+  if (!typeMeta) return undefined;
+  
+  const itemTypeRef = getItemType(typeMeta);
+  if (!itemTypeRef) return undefined;
+  
+  const itemTypeMeta = store.registryService.getTypeMeta(itemTypeRef);
+  return itemTypeMeta?.kind;
+}
+
+/** Get key type kind from PropertyMeta by resolving through registry (for maps) */
+export function getPropertyKeyTypeKind(propMeta: PropertyMeta, store: any): SimpleTypeKind | ComplexTypeKind | undefined {
+  const typeMeta = store.registryService.getTypeMeta(propMeta.typeRef);
+  if (!typeMeta) return undefined;
+  
+  const keyTypeRef = getKeyType(typeMeta);
+  if (!keyTypeRef) return undefined;
+  
+  const keyTypeMeta = store.registryService.getTypeMeta(keyTypeRef);
+  return keyTypeMeta?.kind;
+}
+
 /** Type checking functions */
 export function isSimpleType(type: TypeMeta): type is SimpleTypeMeta {
     return type.category === 'simple';

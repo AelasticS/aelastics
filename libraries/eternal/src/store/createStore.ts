@@ -1,6 +1,6 @@
 import { StoreClass } from "./StoreClass";
 import { IStore } from "../interfaces/IStore";
-import { ObjectsAdapter, HistoryAdapter, DataAdapter, EventsAdapter, RegistryAdapterForStore } from "./InterfaceAdapters";
+import { ObjectsAdapter, HistoryAdapter, DataAdapter, EventsAdapter } from "./InterfaceAdapters";
 import { RegistryService } from "../registry/RegistryService";
 
 
@@ -23,13 +23,11 @@ export function createStore(
   const historyAdapter = new HistoryAdapter(store);
   const dataAdapter = new DataAdapter(store);
   const eventsAdapter = new EventsAdapter(store);
-  const registryAdapterForStore = new RegistryAdapterForStore(store);
-
   const publicAPI: IStore = {
     // Namespace accessors
     get objects() { return objectsAdapter; },
     get history() { return historyAdapter; },
-    get registry() { return registryAdapterForStore.getRegistry(); },
+    get registry() { return store.registry; },
     get data() { return dataAdapter; },
     get events() { return eventsAdapter; },
 

@@ -2,7 +2,7 @@ import { StoreClass } from "./StoreClass";
 import { StoreObject, uuid } from "./InternalTypes";
 import { checkWriteAccess } from "./PropertyAccessors";
 import { makePrivatePropertyKey, removeElement } from "./utils";
-import { PropertyMeta } from "../meta/InternalSchema";
+import { PropertyMeta, getPropertyKeyTypeKind } from "../registry/TypeDefinitions";
 
 // type for inverse relationship updater
 export type inverseUpdater = (
@@ -13,7 +13,7 @@ export type inverseUpdater = (
 
 
 export function array2one(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-    const key = propertyMeta.qName;
+    const key = propertyMeta.name;
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
   
@@ -49,7 +49,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
   }
 
   export function array2array(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-    const key = propertyMeta.qName;
+    const key = propertyMeta.name;
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
   
@@ -79,7 +79,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
   }
 
   export function array2set(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-    const key = propertyMeta.qName;
+    const key = propertyMeta.name;
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
   
@@ -111,7 +111,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
   }
 
   export function array2map(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-    const key = propertyMeta.qName;
+    const key = propertyMeta.name;
     const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
     const privateKey = makePrivatePropertyKey(key);
   
@@ -143,7 +143,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
   }
 
     export function one2one(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -173,7 +173,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function one2array(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -203,7 +203,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function one2set(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -235,7 +235,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function one2map(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -267,7 +267,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function set2one(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -297,7 +297,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function set2array(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -327,7 +327,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function set2set(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -359,7 +359,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function set2map(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -384,7 +384,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
             if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
             newObj = checkWriteAccess(newObj, store, key);
             const mapObj: Map<any, any> = newObj[privateInverseKey];
-            const mapKey = propertyMeta.keyType === 'object' ? obj[privateKey][uuid] : obj[privateKey];
+            const mapKey = getPropertyKeyTypeKind(propertyMeta, store) === 'object' ? obj[privateKey][uuid] : obj[privateKey];
             mapObj.set(mapKey, obj[uuid]); // Add inverse relationship
             }
         }
@@ -392,7 +392,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function map2one(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -422,7 +422,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function map2array(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -452,7 +452,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function map2set(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     
@@ -484,7 +484,7 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
     }
 
     export function map2map(store: StoreClass, propertyMeta: PropertyMeta): inverseUpdater {
-        const key = propertyMeta.qName;
+        const key = propertyMeta.name;
         const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
         const privateKey = makePrivatePropertyKey(key);
     

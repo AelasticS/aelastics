@@ -3,7 +3,7 @@ import { createObservableMap, MapHandlers } from "@aelastics/observables"
 import { ObservableExtra } from "../events/EventTypes"
 import { checkReadAccess, checkWriteAccess } from "../store/PropertyAccessors"
 import { StoreClass } from "../store/StoreClass"
-import { PropertyMeta } from "../meta/InternalSchema"
+import { PropertyMeta, getPropertyItemTypeKind, getPropertyKeyTypeKind } from "../registry/TypeDefinitions"
 
 import * as invUpd from "../store/inverseUpdaters"
 import { ChangeLogEntry } from "../events/ChangeLog"
@@ -12,31 +12,31 @@ import { uuid } from "../store/InternalTypes"
 
 // Convert value UUID to Object
 const toValueObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  propDes.itemType === "object" && item ? store.objectManager.findByUUID(item) : item
+  getPropertyItemTypeKind(propDes, store) === "object" && item ? store.objectManager.findByUUID(item) : item
 
 // Convert key UUID to Object
 const toKeyObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  propDes.keyType === "object" && item ? store.objectManager.findByUUID(item) : item
+  getPropertyKeyTypeKind(propDes, store) === "object" && item ? store.objectManager.findByUUID(item) : item
 
 // Convert value object to UUID if needed
-const valueToUUID = (value: any, propDes: PropertyMeta): any =>
-  propDes.itemType === "object" && value ? value[uuid] : value
+const valueToUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any =>
+  getPropertyItemTypeKind(propDes, store) === "object" && value ? value[uuid] : value
 
 // Convert key object to UUID if needed
-const keyToUUID = (value: any, propDes: PropertyMeta): any =>
-  propDes.keyType === "object" && value ? value[uuid] : value
+const keyToUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any =>
+  getPropertyKeyTypeKind(propDes, store) === "object" && value ? value[uuid] : value
 
 export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: ObservableExtra): MapHandlers<K, V> => {
-  const privateKey = makePrivatePropertyKey(propDes.qName)
-  const inverseUpdaterKey = propDes.inverseProp ? makeUpdateInverseKey(propDes.qName) : ""
+  const privateKey = makePrivatePropertyKey(propDes.name)
+  const inverseUpdaterKey = propDes.inverseProp ? makeUpdateInverseKey(propDes.name) : ""
   const subscriptionManager = store.subscriptionManager
 
   return {
     /** Ensure values stored in the map are UUIDs if applicable */
     set: (target: Map<K, V>, key: K, value: V) => {
-      const newValue = valueToUUID(value, propDes)
-      const newKey = keyToUUID(key, propDes)
-      const obj = checkWriteAccess(object, store, propDes.qName)
+      const newValue = valueToUUID(value, propDes, store)
+      const newKey = keyToUUID(key, propDes, store)
+      const obj = checkWriteAccess(object, store, propDes.name)
 
       // get the old value
       const oldValue = obj[privateKey].get(newKey)
@@ -52,7 +52,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         objectId: object[uuid],
         operation: "update" as const,
         changeType: "remove" as const,
-        property: propDes.qName,
+        property: propDes.name,
         oldValue: oldValue,
         key: newKey,
       })}
@@ -61,7 +61,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         objectId: object[uuid],
         operation: "update" as const,
         changeType: "add" as const,
-        property: propDes.qName,
+        property: propDes.name,
         newValue: newValue,
         key: newKey,
       })
@@ -69,7 +69,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         timing: "before",
         operation: "update",
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -85,7 +85,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       // Perform the actual operation
       const res = obj[privateKey].set(newKey, newValue)
 
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, oldValue, newValue)
       }
@@ -102,7 +102,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         timing: "after",
         operation: "update",
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -121,7 +121,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
     /** Get value by key */
     get: (target: Map<K, V>, key: K) => {
       const obj = checkReadAccess(object, store)
-      const newKey = keyToUUID(key, propDes)
+      const newKey = keyToUUID(key, propDes, store)
       const newValue = obj[privateKey].get(newKey)
       const res = toValueObject(newValue, store, propDes)
       return [false, res]
@@ -130,14 +130,14 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
     /** Check if key exists */
     has: (target: Map<K, V>, key: K) => {
       const obj = checkReadAccess(object, store)
-      const keyUUID = keyToUUID(key, propDes)
+      const keyUUID = keyToUUID(key, propDes, store)
       return [false, obj[privateKey].has(keyUUID)]
     },
 
     /** Delete entry from map */
     delete: (target: Map<K, V>, key: K) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
-      const keyUUID = keyToUUID(key, propDes)
+      const obj = checkWriteAccess(object, store, propDes.name)
+      const keyUUID = keyToUUID(key, propDes, store)
       const oldValue = obj[privateKey].get(keyUUID)
 
       // Check if the key exists in the map
@@ -152,7 +152,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
           objectId: object[uuid],
           operation: "update" as const,
           changeType: "remove" as const,
-          property: propDes.qName,
+          property: propDes.name,
           oldValue: oldValue,
           key: keyUUID,
         },
@@ -162,7 +162,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         timing: "before",
         operation: "update",
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -178,7 +178,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       // Perform the actual operation
       const res = obj[privateKey].delete(keyUUID)
 
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, oldValue, undefined)
       }
@@ -195,7 +195,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         timing: "after",
         operation: "update",
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -213,7 +213,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
 
     /** Clear all entries from map */
     clear: (target: Map<K, V>) => {
-      const obj = checkWriteAccess(object, store, propDes.qName)
+      const obj = checkWriteAccess(object, store, propDes.name)
 
       // Check if the map is already empty
       if (obj[privateKey].size === 0) {
@@ -228,7 +228,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
           objectId: object[uuid],
           operation: "update" as const,
           changeType: "remove" as const,
-          property: propDes.qName,
+          property: propDes.name,
           oldValue: valueUUID,
           key: keyUUID,
         })
@@ -238,7 +238,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         timing: "before",
         operation: "update",
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -254,7 +254,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       // Perform the actual operation
       obj[privateKey].clear()
 
-      if (propDes.itemType === "object" && propDes.inverseProp) {
+      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         changes.forEach((change) => {
           updater(obj, change.oldValue, undefined)
@@ -273,7 +273,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
         timing: "after",
         operation: "update",
         objectType: getClassName(object),
-        property: propDes.qName,
+        property: propDes.name,
         timestamp: uniqueTimestamp(),
         objectId: object[uuid],
         changes: changes,
@@ -291,7 +291,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
 
     /** Get size of map */
     size: (target: Map<K, V>) => {
-      const privateKey = makePrivatePropertyKey(propDes.qName)
+      const privateKey = makePrivatePropertyKey(propDes.name)
       const obj = checkReadAccess(object, store)
       const res = obj[privateKey].size
       return [false, res]
@@ -301,7 +301,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
     keys: (target: Map<K, V>) => {
       const obj = checkReadAccess(object, store)
 
-      const key = makePrivatePropertyKey(propDes.qName)
+      const key = makePrivatePropertyKey(propDes.name)
       const result = Array.from(obj[key].keys())
         .map((k) => toKeyObject(k, store, propDes))
         [Symbol.iterator]()
@@ -344,7 +344,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
     /** Handle Symbol.iterator */
     [Symbol.iterator]: (target: Map<K, V>) => {
       const obj = checkReadAccess(object, store)
-      const key = makePrivatePropertyKey(propDes.qName)
+      const key = makePrivatePropertyKey(propDes.name)
       return (function* generator() {
         for (const [k, v] of obj[key]) {
           yield [toKeyObject(k, store, propDes), toValueObject(v, store, propDes)] as [K, V]

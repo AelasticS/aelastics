@@ -2,7 +2,7 @@ import { StoreClass } from "../store/StoreClass"
 import { Result } from "../events/EventTypes"
 import { IObjects } from "./IObjects"
 import { IHistory } from "./IHistory"
-import { IRegistry } from "./IRegistry"
+import { RegistryService } from "../registry/RegistryService"
 import { IData } from "./IData"
 import { IEvents } from "./IEvents"
 
@@ -13,7 +13,7 @@ export interface IStore {
   // Namespace accessors
   get objects(): IObjects;     // Object lifecycle management
   get history(): IHistory;     // State and time-travel operations  
-  get registry(): IRegistry;   // Type registry management
+  get registry(): RegistryService;   // Type registry management
   get data(): IData;           // JSON serialization operations
   get events(): IEvents;       // Event subscription management
   
