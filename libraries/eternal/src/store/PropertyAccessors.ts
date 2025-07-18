@@ -1,13 +1,53 @@
 // Adapter functions to work with new registry PropertyMeta format
-function isReference(prop: PropertyMeta): boolean {
+function isReference(prop: PropertyMeta, store?: StoreClass): boolean {
+  if (store) {
+    // Try new registry-based resolution first
+    const resolvedType = store.registry.getType(prop.typeRef);
+    if (resolvedType && resolvedType.category === 'complex') {
+      return resolvedType.kind === 'object' || resolvedType.kind === 'entity';
+    }
+  }
+  // Fallback to string-based detection
   return prop.typeRef.includes("object") && !prop.typeRef.includes("array") && !prop.typeRef.includes("set") && !prop.typeRef.includes("map");
 }
 
-function isCollectionOfReferences(prop: PropertyMeta): boolean {
+function isCollectionOfReferences(prop: PropertyMeta, store?: StoreClass): boolean {
+  if (store) {
+    // Try new registry-based resolution first
+    const resolvedType = store.registry.getType(prop.typeRef);
+    if (resolvedType && resolvedType.category === 'complex') {
+      if (resolvedType.kind === 'array' || resolvedType.kind === 'set' || resolvedType.kind === 'map') {
+        // For collections, check if they contain object references
+        // TODO: Check element type for collections - for now use string fallback
+        return prop.typeRef.includes("object");
+      }
+    }
+  }
+  // Fallback to string-based detection
   return (prop.typeRef.includes("array") || prop.typeRef.includes("map") || prop.typeRef.includes("set")) && prop.typeRef.includes("object");
 }
 
-function getPropertyTypeKind(typeRef: string): string {
+function getPropertyTypeKind(typeRef: string, store?: StoreClass): string {
+  if (store) {
+    // Try new registry-based resolution first
+    const resolvedType = store.registry.getType(typeRef);
+    if (resolvedType) {
+      if (resolvedType.category === 'simple') {
+        return "primitive";
+      } else if (resolvedType.category === 'complex') {
+        switch (resolvedType.kind) {
+          case 'array': return "array";
+          case 'map': return "map";
+          case 'set': return "set";
+          case 'object':
+          case 'entity':
+            return "object";
+          default: return "primitive";
+        }
+      }
+    }
+  }
+  // Fallback to string-based detection
   if (typeRef.includes("array")) return "array";
   if (typeRef.includes("map")) return "map";
   if (typeRef.includes("set")) return "set";
@@ -17,7 +57,7 @@ function getPropertyTypeKind(typeRef: string): string {
 
 function createCollectionProxy(obj: StoreObject, propertyName: string, propertyMeta: PropertyMeta, store: StoreClass): any {
   const privateKey = makePrivatePropertyKey(propertyName);
-  const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef);
+  const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef, store);
   
   // Initialize the underlying collection if it doesn't exist
   if (!obj[privateKey]) {
@@ -90,6 +130,7 @@ import {
 // Inverse updater functions for new registry system
 function createOne2OneUpdater(store: StoreClass, propertyMeta: PropertyMeta): any {
   const privateInverseKey = makePrivatePropertyKey(propertyMeta.inverseProp!);
+  const privateKey = makePrivatePropertyKey(propertyMeta.name);
   
   return function(obj: StoreObject, disconnectedObject?: string | StoreObject, connectedObject?: string | StoreObject) {
     let oldObj: StoreObject | undefined;
@@ -108,6 +149,19 @@ function createOne2OneUpdater(store: StoreClass, propertyMeta: PropertyMeta): an
       const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
       if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
         newObj = checkWriteAccess(newObj, store, propertyMeta.name);
+        
+        // Check if the target object is already connected to someone else (steal semantics)
+        const currentConnectionUUID = newObj[privateInverseKey];
+        if (currentConnectionUUID && currentConnectionUUID !== obj[uuid]) {
+          // Clear the old connection first
+          const currentlyConnectedObj = store.objectManager.findByUUID<StoreObject>(currentConnectionUUID);
+          if (currentlyConnectedObj) {
+            const checkedCurrentObj = checkWriteAccess(currentlyConnectedObj, store, propertyMeta.inverseProp!);
+            checkedCurrentObj[privateKey] = undefined;
+          }
+        }
+        
+        // Now set the new connection
         newObj[privateInverseKey] = obj[uuid];
       }
     }
@@ -380,7 +434,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // Generate optimized getter
     let getter: (this: StoreObject) => any
-    if (getPropertyTypeKind(propertyMeta.typeRef) === "object") {
+    if (getPropertyTypeKind(propertyMeta.typeRef, store) === "object") {
       getter = function (this: StoreObject) {
         let obj = checkReadAccess(this, store)
         return store.objectManager.findByUUID(obj[privateKey]) // Directly resolve UUIDs
@@ -397,7 +451,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // TODO add to changelog
 
-    const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef);
+    const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef, store);
     if (propTypeKind === "array" || propTypeKind === "set" || propTypeKind === "map") {
       getter = function () {
         let obj = checkReadAccess(this, store)
@@ -500,7 +554,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
       // primitive type
       setter = function (this: StoreObject, value: any) {
         // Validate that the value has the correct primitive type
-        const expectedType = getPropertyTypeKind(propertyMeta.typeRef)
+        const expectedType = getPropertyTypeKind(propertyMeta.typeRef, store)
         const actualType = typeof value
 
         if (
@@ -587,7 +641,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     // Precompute and bind inverse relationship updater
 
     if (propertyMeta.inverseTypeRef && propertyMeta.inverseProp) {
-      const propertyTypeKind = getPropertyTypeKind(propertyMeta.typeRef);
+      const propertyTypeKind = getPropertyTypeKind(propertyMeta.typeRef, store);
       const inverseType = propertyMeta.inverseType;
       
       switch (propertyTypeKind) {
@@ -634,7 +688,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     }
   }
   // Add disconnect method to the class
-  addDisconnectMethod(prototype, typeMeta)
+  addDisconnectMethod(prototype, typeMeta, store)
 }
 
 // add dynamically method to shallow copy props (including observables) from one instance to another
@@ -665,7 +719,7 @@ export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
   }
 }
 
-function addDisconnectMethod(prototype: any, typeMeta: TypeMeta) {
+function addDisconnectMethod(prototype: any, typeMeta: TypeMeta, store: StoreClass) {
   const disconnectKey = makeDisconnectKey()
 
   // Precalculate properties that are references, including collections
@@ -675,7 +729,7 @@ function addDisconnectMethod(prototype: any, typeMeta: TypeMeta) {
   // while (currentMeta) {
   
   for (const prop of (currentMeta as ObjectTypeMeta).properties?.values() || []) {
-    if (isReference(prop) || isCollectionOfReferences(prop)) {
+    if (isReference(prop, store) || isCollectionOfReferences(prop, store)) {
       referenceProps.push(prop)
     }
   }

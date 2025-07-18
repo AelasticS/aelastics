@@ -4,6 +4,7 @@ import { TypeMeta, PropertyMeta, ObjectTypeMeta } from "../registry/TypeDefiniti
 import { SubscriptionManager } from "../events/SubscriptionManager"
 import { State } from "./State"
 import { generateUUID, uniqueTimestamp } from "./utils"
+import { addPropertyAccessors } from "./PropertyAccessors"
 
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
@@ -53,24 +54,24 @@ export class StoreClass {
         this[uuid] = generateUUID();
         this[createdAt] = uniqueTimestamp();
         
-        // Initialize properties from type metadata
+        // Initialize properties from type metadata using private keys to bypass setters
         if (typeMeta.properties) {
           for (const [propName, propMeta] of typeMeta.properties) {
-            // Initialize all properties with appropriate defaults
             const defaultValue = this.getDefaultValue(propMeta);
-            (this as any)[propName] = defaultValue;
-            
-            // For collection properties, also initialize the private storage
             const propTypeKind = this.getPropertyTypeKind(propMeta.typeRef);
-            if (propTypeKind === "array" || propTypeKind === "set" || propTypeKind === "map") {
-              const privateKey = `_${propName}`;
-              if (propTypeKind === "array") {
-                (this as any)[privateKey] = [];
-              } else if (propTypeKind === "set") {
-                (this as any)[privateKey] = new Set();
-              } else if (propTypeKind === "map") {
-                (this as any)[privateKey] = new Map();
-              }
+            
+            // Use private key storage that PropertyAccessors expects
+            const privateKey = `_${propName}`;
+            
+            if (propTypeKind === "array") {
+              (this as any)[privateKey] = [];
+            } else if (propTypeKind === "set") {
+              (this as any)[privateKey] = new Set();
+            } else if (propTypeKind === "map") {
+              (this as any)[privateKey] = new Map();
+            } else {
+              // For primitives and objects, store in private key
+              (this as any)[privateKey] = defaultValue;
             }
           }
         }
@@ -206,6 +207,11 @@ export class StoreClass {
     
     // Set the class name for debugging
     Object.defineProperty(DynamicClass, 'name', { value: className });
+    
+    // Add property accessors for object/entity types that have properties
+    if ((typeMeta.kind === 'object' || typeMeta.kind === 'entity') && typeMeta.properties) {
+      addPropertyAccessors(DynamicClass.prototype, typeMeta, this);
+    }
     
     // Store the class in the map
     this.typeToClassMap.set(typeMeta.qName, DynamicClass);
@@ -362,14 +368,15 @@ export class StoreClass {
       throw new Error('Initial state must be an object');
     }
     
-    // Validate that all provided properties exist in the type definition
+    // Validate that all provided properties exist in the type definition and apply them
     for (const [propName, value] of Object.entries(initialState)) {
       if (!typeMeta.properties?.has(propName)) {
         throw new Error(`Property '${propName}' does not exist in type '${typeMeta.qName}'`);
       }
       
-      // TODO: Add runtime type validation against PropertyMeta
-      instance[propName] = value;
+      // Store directly in private key to bypass setters during construction
+      const privateKey = `_${propName}`;
+      instance[privateKey] = value;
     }
   }
 
