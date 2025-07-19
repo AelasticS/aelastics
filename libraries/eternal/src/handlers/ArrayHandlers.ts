@@ -3,7 +3,7 @@ import { getClassName, isStoreObject, makePrivatePropertyKey, makePrivateProxyKe
 import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
 import { StoreObject, uuid } from "../store/InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
-import { PropertyMeta, getPropertyItemTypeKind } from "../registry/TypeDefinitions"
+import { BaseTypeMeta, isObjectType, PropertyMeta } from "../registry/TypeDefinitions"
 import { StoreClass } from "../store/StoreClass"
 
 import * as invUpd from "../store/inverseUpdaters"
@@ -11,20 +11,23 @@ import { EventPayload, Result } from "../events/EventTypes"
 import { ChangeLogEntry } from "../events/ChangeLog"
 import { State } from "../store/State"
 
+
+// TODO: replace getPropertyItemTypeKind with isObjectType and test
 // Convert UUID to Object
-const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  getPropertyItemTypeKind(propDes, store) === "object" && item ? store.objectManager.findByUUID(item) : item
+const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) => {
+  return (isObjectType(propDes.inverseType!) && item ? store.objectManager.findByUUID(item) : item;
+}
 
 /** Convert UUIDs to Objects */
 const mapToObjects = (items: any[], store: StoreClass, propDes: PropertyMeta): any[] =>
   items.map((item) => toObject(item, store, propDes))
 
 // Convert object to UUID if needed
-const toUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any => (getPropertyItemTypeKind(propDes, store) === "object" && value ? value[uuid] : value)
+const toUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any => (isObjectType(propDes.inverseType!) && value ? value[uuid] : value)
 
 /** Map Objects to UUIDs */
 const mapToUUIDs = (items: any[], propDes: PropertyMeta, store: StoreClass): any[] =>
-  getPropertyItemTypeKind(propDes, store) === "object" && items ? items.map((item) => item[uuid]) : items
+  isObjectType(propDes.inverseType!) && items ? items.map((item) => item[uuid]) : items
 
 /** Creates typed array handlers to track UUIDs and object references */
 export const createArrayHandlers = <T extends StoreObject>({
@@ -104,7 +107,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
   // Perform the actual operation
   obj[privateKey][index] = newValueUUID;
-  if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+  if (isStoreObject(obj) && propDes.inverseProp) {
     const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
     updater(obj, oldValueUUID, newValueUUID);
   }

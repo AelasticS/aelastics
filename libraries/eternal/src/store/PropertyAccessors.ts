@@ -126,6 +126,7 @@ import {
   makeUpdateInverseKey,
   uniqueTimestamp,
 } from "./utils"
+import * as invUpd from "./inverseUpdaters"
 
 // Inverse updater functions for new registry system
 function createOne2OneUpdater(store: StoreClass, propertyMeta: PropertyMeta): any {
@@ -415,7 +416,6 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     throw new Error("Subscription manager not found.")
   }
 
-
   // Check if typeMeta.properties is defined and is a Map
   const objectTypeMeta = typeMeta as ObjectTypeMeta;
   if (!objectTypeMeta.properties || !(objectTypeMeta.properties instanceof Map)) {
@@ -434,10 +434,17 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // Generate optimized getter
     let getter: (this: StoreObject) => any
-    if (getPropertyTypeKind(propertyMeta.typeRef, store) === "object") {
+    const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef, store);
+    
+    if (propTypeKind === "array" || propTypeKind === "set" || propTypeKind === "map") {
+      getter = function () {
+        let obj = checkReadAccess(this, store)
+        return obj[proxyKey] // Use proxy for collection properties
+      }
+    } else if (propTypeKind === "object") {
       getter = function (this: StoreObject) {
         let obj = checkReadAccess(this, store)
-        return store.objectManager.findByUUID(obj[privateKey]) // Directly resolve UUIDs
+        return store.findByUUID(obj[privateKey]) // Directly resolve UUIDs
       }
     } else {
       getter = function (this: any) {
@@ -449,20 +456,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     // Generate optimized setter
     let setter: (this: StoreObject, value: any) => void
 
-    // TODO add to changelog
-
-    const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef, store);
     if (propTypeKind === "array" || propTypeKind === "set" || propTypeKind === "map") {
-      getter = function () {
-        let obj = checkReadAccess(this, store)
-        
-        // Create proxy if it doesn't exist
-        if (!obj[proxyKey]) {
-          obj[proxyKey] = createCollectionProxy(obj, key, propertyMeta, store);
-        }
-        
-        return obj[proxyKey]
-      }
       // Prevent direct assignment to collection properties
       setter = function () {
         // TODO in future: create proxy, disconnect old and connect new elements
@@ -475,8 +469,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
           throw new Error(`Invalid value for property "${key}". Expected an object, null, or undefined.`);
         }
         // Prevent redundant updates
-        // if (this[privateKey] === value[uuid] && store.isInUpdateMode()) {
-          if (value && this[privateKey] === value[uuid] && store.isInUpdateMode()) {
+        if (value && this[privateKey] === value[uuid] && store.isInUpdateMode()) {
           return
         }
 
@@ -554,7 +547,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
       // primitive type
       setter = function (this: StoreObject, value: any) {
         // Validate that the value has the correct primitive type
-        const expectedType = getPropertyTypeKind(propertyMeta.typeRef, store)
+        const expectedType = propTypeKind
         const actualType = typeof value
 
         if (
@@ -639,49 +632,79 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
     Object.defineProperty(prototype, key, { get: getter, set: setter })
 
     // Precompute and bind inverse relationship updater
-
     if (propertyMeta.inverseTypeRef && propertyMeta.inverseProp) {
-      const propertyTypeKind = getPropertyTypeKind(propertyMeta.typeRef, store);
       const inverseType = propertyMeta.inverseType;
       
-      switch (propertyTypeKind) {
+      switch (propTypeKind) {
         // property is an object
         case "object":
-          if (inverseType === "object") {
-            prototype[inverseUpdaterKey] = createOne2OneUpdater(store, propertyMeta);
-          } else if (inverseType === "array") {
-            prototype[inverseUpdaterKey] = createOne2ArrayUpdater(store, propertyMeta);
-          } else if (inverseType === "set") {
-            prototype[inverseUpdaterKey] = createOne2SetUpdater(store, propertyMeta);
-          } else if (inverseType === "map") {
-            prototype[inverseUpdaterKey] = createOne2MapUpdater(store, propertyMeta);
+          switch (inverseType) {
+            case "object":
+              prototype[inverseUpdaterKey] = invUpd.one2one(store, propertyMeta)
+              break
+            case "array":
+              prototype[inverseUpdaterKey] = invUpd.one2array(store, propertyMeta)
+              break
+            case "map":
+              prototype[inverseUpdaterKey] = invUpd.one2map(store, propertyMeta)
+              break
+            case "set":
+              prototype[inverseUpdaterKey] = invUpd.one2set(store, propertyMeta)
+              break
           }
           break
 
         // property is an array
         case "array":
-          if (inverseType === "object") {
-            prototype[inverseUpdaterKey] = createArray2OneUpdater(store, propertyMeta);
-          } else if (inverseType === "array") {
-            prototype[inverseUpdaterKey] = createArray2ArrayUpdater(store, propertyMeta);
+          switch (inverseType) {
+            case "object":
+              prototype[inverseUpdaterKey] = invUpd.array2one(store, propertyMeta)
+              break
+            case "array":
+              prototype[inverseUpdaterKey] = invUpd.array2array(store, propertyMeta)
+              break
+            case "map":
+              prototype[inverseUpdaterKey] = invUpd.array2map(store, propertyMeta)
+              break
+            case "set":
+              prototype[inverseUpdaterKey] = invUpd.array2set(store, propertyMeta)
+              break
           }
           break
 
         // property is a map
         case "map":
-          if (inverseType === "object") {
-            prototype[inverseUpdaterKey] = createArray2OneUpdater(store, propertyMeta);
-          } else if (inverseType === "array") {
-            prototype[inverseUpdaterKey] = createArray2ArrayUpdater(store, propertyMeta);
+          switch (inverseType) {
+            case "object":
+              prototype[inverseUpdaterKey] = invUpd.map2one(store, propertyMeta)
+              break
+            case "array":
+              prototype[inverseUpdaterKey] = invUpd.map2array(store, propertyMeta)
+              break
+            case "map":
+              prototype[inverseUpdaterKey] = invUpd.map2map(store, propertyMeta)
+              break
+            case "set":
+              prototype[inverseUpdaterKey] = invUpd.map2set(store, propertyMeta)
+              break
           }
           break
 
         // property is a set
         case "set":
-          if (inverseType === "object") {
-            prototype[inverseUpdaterKey] = createArray2OneUpdater(store, propertyMeta);
-          } else if (inverseType === "array") {
-            prototype[inverseUpdaterKey] = createArray2ArrayUpdater(store, propertyMeta);
+          switch (inverseType) {
+            case "object":
+              prototype[inverseUpdaterKey] = invUpd.set2one(store, propertyMeta)
+              break
+            case "array":
+              prototype[inverseUpdaterKey] = invUpd.set2array(store, propertyMeta)
+              break
+            case "map":
+              prototype[inverseUpdaterKey] = invUpd.set2map(store, propertyMeta)
+              break
+            case "set":
+              prototype[inverseUpdaterKey] = invUpd.set2set(store, propertyMeta)
+              break
           }
           break
       }

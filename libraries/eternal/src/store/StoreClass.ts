@@ -3,8 +3,11 @@ import { RegistryService } from "../registry/RegistryService"
 import { TypeMeta, PropertyMeta, ObjectTypeMeta } from "../registry/TypeDefinitions"
 import { SubscriptionManager } from "../events/SubscriptionManager"
 import { State } from "./State"
-import { generateUUID, uniqueTimestamp } from "./utils"
+import { generateUUID, uniqueTimestamp, makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
 import { addPropertyAccessors } from "./PropertyAccessors"
+import { createImmutableArray } from "../handlers/ArrayHandlers"
+import { createImmutableSet } from "../handlers/SetHandlers"
+import { createImmutableMap } from "../handlers/MapHandlers"
 
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
@@ -60,17 +63,36 @@ export class StoreClass {
             const defaultValue = this.getDefaultValue(propMeta);
             const propTypeKind = this.getPropertyTypeKind(propMeta.typeRef);
             
-            // Use private key storage that PropertyAccessors expects
-            const privateKey = `_${propName}`;
-            
             if (propTypeKind === "array") {
+              const privateKey = makePrivatePropertyKey(propName);
+              const proxyKey = makePrivateProxyKey(propName);
               (this as any)[privateKey] = [];
+              (this as any)[proxyKey] = createImmutableArray((this as any)[privateKey], {
+                store,
+                object: this as any,
+                propDes: propMeta,
+              });
             } else if (propTypeKind === "set") {
+              const privateKey = makePrivatePropertyKey(propName);
+              const proxyKey = makePrivateProxyKey(propName);
               (this as any)[privateKey] = new Set();
+              (this as any)[proxyKey] = createImmutableSet((this as any)[privateKey], {
+                store,
+                object: this as any,
+                propDes: propMeta,
+              });
             } else if (propTypeKind === "map") {
+              const privateKey = makePrivatePropertyKey(propName);
+              const proxyKey = makePrivateProxyKey(propName);
               (this as any)[privateKey] = new Map();
+              (this as any)[proxyKey] = createImmutableMap((this as any)[privateKey], {
+                store,
+                object: this as any,
+                propDes: propMeta,
+              });
             } else {
               // For primitives and objects, store in private key
+              const privateKey = makePrivatePropertyKey(propName);
               (this as any)[privateKey] = defaultValue;
             }
           }
