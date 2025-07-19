@@ -95,7 +95,8 @@ describe("Store Integration Tests", () => {
             expect(employee.homeAddress).toBeUndefined(); // optional
             
             // Test collection defaults (should be initialized)
-            expect(employee.skills).toEqual(new Set()); // Set type
+            expect(employee.skills).toBeInstanceOf(Set); // Set type - use toBeInstanceOf for proper proxy checking
+            expect(employee.skills!.size).toBe(0); // Empty set
             expect(employee.projects).toEqual([]); // Array type
         });
 
@@ -137,6 +138,9 @@ describe("Store Integration Tests", () => {
             expect(employee.homeAddress).toBe(address);
             expect(company.name).toBe("TypeMeta Corp");
             expect(address.street).toBe("456 TypeMeta St");
+            
+            // Test accessing related object properties (should work without updates)
+            expect(employee.homeAddress!.street).toBe("456 TypeMeta St");
         });
 
         test("should create Company object with collection properties", () => {
@@ -210,6 +214,10 @@ describe("Store Integration Tests", () => {
             expect(employee.homeAddress).toBe(address);
             expect(employee.homeAddress!.street).toBe("456 Oak Ave");
             expect(employee.homeAddress!.country).toBe("USA");
+            
+            // Test accessing related object properties (should work without updates)
+            expect(employee.homeAddress!.city).toBe("Springfield");
+            expect(employee.homeAddress!.zipCode).toBe("67890");
         });
     });
 
@@ -310,6 +318,11 @@ describe("Store Integration Tests", () => {
             });
 
             expect(employee.homeAddress).toBe(address);
+            
+            // Test accessing related object properties (should work without updates)
+            expect(employee.homeAddress!.street).toBe("789 Pine St");
+            expect(employee.homeAddress!.city).toBe("Metropolis");
+            expect(employee.homeAddress!.zipCode).toBe("54321");
         });
     });
 
