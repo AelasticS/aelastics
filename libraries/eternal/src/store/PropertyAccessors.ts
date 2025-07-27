@@ -468,6 +468,12 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
         if (value !== null && value !== undefined && (typeof value !== "object" || Array.isArray(value))) {
           throw new Error(`Invalid value for property "${key}". Expected an object, null, or undefined.`);
         }
+        
+        // Type validation using TypeValidator
+        if (value !== null && value !== undefined) {
+          store.validator.validateObjectProperty(value, propertyMeta);
+        }
+        
         // Prevent redundant updates
         if (value && this[privateKey] === value[uuid] && store.isInUpdateMode()) {
           return
