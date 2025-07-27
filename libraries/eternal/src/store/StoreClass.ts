@@ -437,7 +437,7 @@ export class StoreClass {
           }
         }
       } else if (propTypeKind === "object") {
-        // Object property: validate that object is registered in store
+        // Object property: validate that object is registered in store (only during creation)
         if (value) {
           this.validateObjectIsRegistered(value, propName);
         }

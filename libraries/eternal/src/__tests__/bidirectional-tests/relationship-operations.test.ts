@@ -95,7 +95,7 @@ describe("Relationship Operations Tests", () => {
         });
 
         test("should handle one-to-one replacement correctly", () => {
-            const employee1 = store.objects.create<Employee>("/company/Employee", {
+            let employee1 = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -103,7 +103,7 @@ describe("Relationship Operations Tests", () => {
                 isActive: true
             });
 
-            const employee2 = store.objects.create<Employee>("/company/Employee", {
+            let employee2 = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-002",
                 firstName: "Jane",
                 lastName: "Smith",
@@ -111,24 +111,31 @@ describe("Relationship Operations Tests", () => {
                 isActive: true
             });
 
-            const badge = store.objects.create<Badge>("/company/Badge", {
+            let badge = store.objects.create<Badge>("/company/Badge", {
                 id: "badge-001",
                 badgeNumber: "B001",
                 isActive: true
             });
 
             // Connect badge to employee1
-            store.objects.update((emp) => {
+            employee1 = store.objects.update((emp) => {
                 emp.badge = badge;
             }, employee1);
+
+            // Refresh badge reference from new state
+            badge = store.objects.findByUUID(store.objects.getUUID(badge))!;
 
             expect(employee1.badge).toBe(badge);
             expect(badge.employee).toBe(employee1);
 
             // Move badge to employee2 (should disconnect from employee1)
-            store.objects.update((emp) => {
+            employee2 = store.objects.update((emp) => {
                 emp.badge = badge;
             }, employee2);
+
+            // Refresh ALL references from new state after second update
+            employee1 = store.objects.findByUUID(store.objects.getUUID(employee1))!; // Get fresh employee1 reference
+            badge = store.objects.findByUUID(store.objects.getUUID(badge))!; // Get fresh badge reference
 
             expect(employee1.badge).toBeUndefined();
             expect(employee2.badge).toBe(badge);
