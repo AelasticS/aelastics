@@ -179,7 +179,7 @@ describe("Relationship Operations Tests", () => {
             // Refresh company reference from new state
             company = store.objects.findByUUID(store.objects.getUUID(company))!;
 
-            expect(company.employees).toContain(employee1);
+            expect(company.employees!.includes(employee1)).toBe(true);
             expect(employee1.company).toBe(company);
 
             // Test adding second employee
@@ -191,8 +191,8 @@ describe("Relationship Operations Tests", () => {
             company = store.objects.findByUUID(store.objects.getUUID(company))!;
             employee1 = store.objects.findByUUID(store.objects.getUUID(employee1))!;
 
-            expect(company.employees).toContain(employee1);
-            expect(company.employees).toContain(employee2);
+            expect(company.employees!.includes(employee1)).toBe(true);
+            expect(company.employees!.includes(employee2)).toBe(true);
             expect(company.employees!.length).toBe(2);
             expect(employee2.company).toBe(company);
 
@@ -205,8 +205,8 @@ describe("Relationship Operations Tests", () => {
             company = store.objects.findByUUID(store.objects.getUUID(company))!;
             employee2 = store.objects.findByUUID(store.objects.getUUID(employee2))!;
 
-            expect(company.employees).not.toContain(employee1);
-            expect(company.employees).toContain(employee2);
+            expect(company.employees!.includes(employee1)).toBe(false);
+            expect(company.employees!.includes(employee2)).toBe(true);
             expect(company.employees!.length).toBe(1);
             expect(employee1.company).toBeUndefined();
         });
@@ -239,7 +239,7 @@ describe("Relationship Operations Tests", () => {
             company1 = store.objects.findByUUID(store.objects.getUUID(company1))!;
             company2 = store.objects.findByUUID(store.objects.getUUID(company2))!;
 
-            expect(company1.employees).toContain(employee);
+            expect(company1.employees!.includes(employee)).toBe(true);
             expect(company2.employees).toEqual([]);
             expect(employee.company).toBe(company1);
 
@@ -253,7 +253,7 @@ describe("Relationship Operations Tests", () => {
             company2 = store.objects.findByUUID(store.objects.getUUID(company2))!;
 
             expect(company1.employees).toEqual([]);
-            expect(company2.employees).toContain(employee);
+            expect(company2.employees!.includes(employee)).toBe(true);
             expect(employee.company).toBe(company2);
         });
     });
@@ -301,17 +301,17 @@ describe("Relationship Operations Tests", () => {
                 }, project1);
 
                 // Verify bidirectional update
-                expect(project1.assignedEmployees).toContain(employee1);
-                expect(employee1.projects).toContain(project1);
+                expect(project1.assignedEmployees!.includes(employee1)).toBe(true);
+                expect(employee1.projects!.includes(project1)).toBe(true);
 
                 // Add employee to multiple projects
                 store.objects.update((proj) => {
                     proj.assignedEmployees?.push(employee1);
                 }, project2);
 
-                expect(project2.assignedEmployees).toContain(employee1);
-                expect(employee1.projects).toContain(project1);
-                expect(employee1.projects).toContain(project2);
+                expect(project2.assignedEmployees!.includes(employee1)).toBe(true);
+                expect(employee1.projects!.includes(project1)).toBe(true);
+                expect(employee1.projects!.includes(project2)).toBe(true);
                 expect(employee1.projects!.length).toBe(2);
 
                 // Add multiple employees to project
@@ -319,9 +319,9 @@ describe("Relationship Operations Tests", () => {
                     proj.assignedEmployees?.push(employee2);
                 }, project1);
 
-                expect(project1.assignedEmployees).toContain(employee1);
-                expect(project1.assignedEmployees).toContain(employee2);
-                expect(employee2.projects).toContain(project1);
+                expect(project1.assignedEmployees!.includes(employee1)).toBe(true);
+                expect(project1.assignedEmployees!.includes(employee2)).toBe(true);
+                expect(employee2.projects!.includes(project1)).toBe(true);
 
             } catch (error) {
                 // Collection operations might not be fully implemented yet
@@ -479,7 +479,7 @@ describe("Relationship Operations Tests", () => {
 
             expect(employee.company).toBe(company);
             expect(employee.badge).toBe(badge);
-            expect(company.employees).toContain(employee);
+            expect(company.employees!.includes(employee)).toBe(true);
             expect(badge.employee).toBe(employee);
 
             // Test disconnect method (if available)
@@ -490,7 +490,7 @@ describe("Relationship Operations Tests", () => {
                 // Verify all relationships are cleared
                 expect(employee.company).toBeUndefined();
                 expect(employee.badge).toBeUndefined();
-                expect(company.employees).not.toContain(employee);
+                expect(company.employees!.includes(employee)).toBe(false);
                 expect(badge.employee).toBeUndefined();
 
             } catch (error) {
