@@ -129,7 +129,7 @@ export class TypeValidator {
         isValid = actualType === 'string';
         break;
       case 'number':
-        isValid = actualType === 'number' && !isNaN(value);
+        isValid = actualType === 'number' && !isNaN(value) && isFinite(value);
         break;
       case 'boolean':
         isValid = actualType === 'boolean';
