@@ -166,6 +166,18 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
             const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
             if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID) as StoreObject | undefined)) {
             newObj = checkWriteAccess(newObj, store, key);
+            
+            // Check if the target object is already connected to someone else (steal semantics)
+            const currentConnectionUUID = newObj[privateInverseKey];
+            if (currentConnectionUUID && currentConnectionUUID !== obj[uuid]) {
+                // Clear the old connection first
+                const currentlyConnectedObj = store.objectManager.findByUUID<StoreObject>(currentConnectionUUID);
+                if (currentlyConnectedObj) {
+                const checkedCurrentObj = checkWriteAccess(currentlyConnectedObj, store, propertyMeta.inverseProp!);
+                checkedCurrentObj[privateKey] = undefined;
+                }
+            }
+            
             newObj[privateInverseKey] = obj[uuid]; // Set new inverse relationship
             }
         }
@@ -290,6 +302,19 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
             const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
             if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID) as StoreObject | undefined)) {
             newObj = checkWriteAccess(newObj, store, key);
+            
+            // Check if the target object is already connected to someone else (steal semantics)
+            const currentConnectionUUID = newObj[privateInverseKey];
+            if (currentConnectionUUID && currentConnectionUUID !== obj[uuid]) {
+                // Clear the old connection first
+                const currentlyConnectedObj = store.objectManager.findByUUID<StoreObject>(currentConnectionUUID);
+                if (currentlyConnectedObj) {
+                const checkedCurrentObj = checkWriteAccess(currentlyConnectedObj, store, propertyMeta.inverseProp!);
+                const setObj: Set<string> = checkedCurrentObj[privateKey];
+                setObj.delete(obj[uuid]);
+                }
+            }
+            
             newObj[privateInverseKey] = obj[uuid]; // Set new inverse relationship
             }
         }
@@ -415,6 +440,19 @@ export function array2one(store: StoreClass, propertyMeta: PropertyMeta): invers
             const newUUID = typeof connectedObject === 'string' ? connectedObject : connectedObject[uuid];
             if (newUUID && (newObj = store.objectManager.findByUUID<StoreObject>(newUUID))) {
             newObj = checkWriteAccess(newObj, store, key);
+            
+            // Check if the target object is already connected to someone else (steal semantics)
+            const currentConnectionUUID = newObj[privateInverseKey];
+            if (currentConnectionUUID && currentConnectionUUID !== obj[uuid]) {
+                // Clear the old connection first
+                const currentlyConnectedObj = store.objectManager.findByUUID<StoreObject>(currentConnectionUUID);
+                if (currentlyConnectedObj) {
+                const checkedCurrentObj = checkWriteAccess(currentlyConnectedObj, store, propertyMeta.inverseProp!);
+                const mapObj: Map<any, any> = checkedCurrentObj[privateKey];
+                mapObj.delete(obj[uuid]);
+                }
+            }
+            
             newObj[privateInverseKey] = obj[uuid]; // Set new inverse relationship
             }
         }
