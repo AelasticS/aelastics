@@ -8,6 +8,7 @@ import { addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
 import { createImmutableSet } from "../handlers/SetHandlers"
 import { createImmutableMap } from "../handlers/MapHandlers"
+import { TypeValidator } from "./TypeValidator"
 
 export type InternalRecipe = ((obj: StoreObject) => void) | (() => any)
 
@@ -19,11 +20,13 @@ export class StoreClass {
   private typeToClassMap: Map<string, any> = new Map() // Maps type names to dynamic classes
   private registryService: RegistryService
   private currentState: State | null = null
+  public readonly validator: TypeValidator // Type validation utility
 
   constructor(registryService: RegistryService) {
     this.registryService = registryService
     this.initializeRegistryTypes();
     this.initializeInitialState();
+    this.validator = new TypeValidator(this);
   }
 
   private initializeInitialState(): void {
@@ -708,6 +711,10 @@ export class StoreClass {
   
   public isInUpdateMode(): boolean {
     return this.inUpdateMode;
+  }
+
+  public getTypeClass(typeRef: string): any {
+    return this.typeToClassMap.get(typeRef);
   }
   
   public getAllChanges(option?: "all" | "only_modifications"): any[] {
