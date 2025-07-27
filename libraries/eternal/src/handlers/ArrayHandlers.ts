@@ -57,6 +57,10 @@ export const createArrayHandlers = <T extends StoreObject>({
     },
 setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
   const obj = checkWriteAccess(object, store, propDes.name);
+  
+  // Validate the value being set in the collection
+  store.validator.validateCollectionElement(value, propDes, "setByIndex");
+  
   const newValueUUID = toUUID(value, propDes, store);
   const oldValueUUID = obj[privateKey][index];
 
@@ -209,6 +213,12 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     /** Handle push (convert objects to UUIDs if needed) */
     push: (target: T[], ...items: T[]) => {
       const obj = checkWriteAccess(object, store, propDes.name) as StoreObject
+      
+      // Validate each item being added to the collection
+      items.forEach(item => {
+        store.validator.validateCollectionElement(item, propDes, "push");
+      });
+      
       const itemsUUIDs = mapToUUIDs(items, propDes, store)
     
       // Check if there are changes to be made
@@ -420,6 +430,12 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     /** Handle unshift (convert objects to UUIDs if needed) */
     unshift: (target: T[], ...items: T[]) => {
       const obj = checkWriteAccess(object, store, propDes.name)
+      
+      // Validate each item being added to the collection
+      items.forEach(item => {
+        store.validator.validateCollectionElement(item, propDes, "unshift");
+      });
+      
       const itemsUUIDs = mapToUUIDs(items, propDes, store)
     
       // Check if there are changes to be made
@@ -493,6 +509,14 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     /** Handle splice (convert objects to UUIDs if needed) */
     splice: (target: T[], start: number, deleteCount: number, ...items: T[]) => {
       const obj = checkWriteAccess(object, store, propDes.name)
+      
+      // Validate each item being added to the collection (if any)
+      if (items.length > 0) {
+        items.forEach(item => {
+          store.validator.validateCollectionElement(item, propDes, "splice");
+        });
+      }
+      
       const itemsUUIDs = mapToUUIDs(items, propDes, store)
       const deletedItems:any[] = obj[privateKey].slice(start, start + deleteCount)
     
