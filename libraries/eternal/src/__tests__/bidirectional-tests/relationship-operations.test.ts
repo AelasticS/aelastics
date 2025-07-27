@@ -145,12 +145,12 @@ describe("Relationship Operations Tests", () => {
 
     describe("One-to-Many Relationships (Arrays)", () => {
         test("should connect/disconnect Company ↔ Employee[] (one-to-many with array)", () => {
-            const company = store.objects.create<Company>("/company/Company", {
+            let company = store.objects.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp"
             });
 
-            const employee1 = store.objects.create<Employee>("/company/Employee", {
+            let employee1 = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -158,7 +158,7 @@ describe("Relationship Operations Tests", () => {
                 isActive: true
             });
 
-            const employee2 = store.objects.create<Employee>("/company/Employee", {
+            let employee2 = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-002",
                 firstName: "Jane",
                 lastName: "Smith",
@@ -172,17 +172,24 @@ describe("Relationship Operations Tests", () => {
             expect(employee2.company).toBeUndefined();
 
             // Test adding employee to company
-            store.objects.update((emp) => {
+            employee1 = store.objects.update((emp) => {
                 emp.company = company;
             }, employee1);
+
+            // Refresh company reference from new state
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
 
             expect(company.employees).toContain(employee1);
             expect(employee1.company).toBe(company);
 
             // Test adding second employee
-            store.objects.update((emp) => {
+            employee2 = store.objects.update((emp) => {
                 emp.company = company;
             }, employee2);
+
+            // Refresh all references from new state
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+            employee1 = store.objects.findByUUID(store.objects.getUUID(employee1))!;
 
             expect(company.employees).toContain(employee1);
             expect(company.employees).toContain(employee2);
@@ -190,9 +197,13 @@ describe("Relationship Operations Tests", () => {
             expect(employee2.company).toBe(company);
 
             // Test removing employee from company
-            store.objects.update((emp) => {
+            employee1 = store.objects.update((emp) => {
                 emp.company = undefined;
             }, employee1);
+
+            // Refresh all references from new state
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+            employee2 = store.objects.findByUUID(store.objects.getUUID(employee2))!;
 
             expect(company.employees).not.toContain(employee1);
             expect(company.employees).toContain(employee2);
@@ -201,17 +212,17 @@ describe("Relationship Operations Tests", () => {
         });
 
         test("should handle employee moving between companies", () => {
-            const company1 = store.objects.create<Company>("/company/Company", {
+            let company1 = store.objects.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp"
             });
 
-            const company2 = store.objects.create<Company>("/company/Company", {
+            let company2 = store.objects.create<Company>("/company/Company", {
                 id: "comp-002",
                 name: "Innovation Inc"
             });
 
-            const employee = store.objects.create<Employee>("/company/Employee", {
+            let employee = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -220,18 +231,26 @@ describe("Relationship Operations Tests", () => {
             });
 
             // Assign employee to company1
-            store.objects.update((emp) => {
+            employee = store.objects.update((emp) => {
                 emp.company = company1;
             }, employee);
+
+            // Refresh all references from new state
+            company1 = store.objects.findByUUID(store.objects.getUUID(company1))!;
+            company2 = store.objects.findByUUID(store.objects.getUUID(company2))!;
 
             expect(company1.employees).toContain(employee);
             expect(company2.employees).toEqual([]);
             expect(employee.company).toBe(company1);
 
             // Move employee to company2
-            store.objects.update((emp) => {
+            employee = store.objects.update((emp) => {
                 emp.company = company2;
             }, employee);
+
+            // Refresh all references from new state
+            company1 = store.objects.findByUUID(store.objects.getUUID(company1))!;
+            company2 = store.objects.findByUUID(store.objects.getUUID(company2))!;
 
             expect(company1.employees).toEqual([]);
             expect(company2.employees).toContain(employee);
@@ -429,7 +448,7 @@ describe("Relationship Operations Tests", () => {
 
     describe("Disconnect Operations", () => {
         test("should properly disconnect all relationships when object is disconnected", () => {
-            const employee = store.objects.create<Employee>("/company/Employee", {
+            let employee = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -437,22 +456,26 @@ describe("Relationship Operations Tests", () => {
                 isActive: true
             });
 
-            const company = store.objects.create<Company>("/company/Company", {
+            let company = store.objects.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp"
             });
 
-            const badge = store.objects.create<Badge>("/company/Badge", {
+            let badge = store.objects.create<Badge>("/company/Badge", {
                 id: "badge-001",
                 badgeNumber: "B001",
                 isActive: true
             });
 
             // Connect relationships
-            store.objects.update((emp) => {
+            employee = store.objects.update((emp) => {
                 emp.company = company;
                 emp.badge = badge;
             }, employee);
+
+            // Refresh all references from new state
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+            badge = store.objects.findByUUID(store.objects.getUUID(badge))!;
 
             expect(employee.company).toBe(company);
             expect(employee.badge).toBe(badge);
