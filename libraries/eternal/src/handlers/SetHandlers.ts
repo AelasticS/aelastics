@@ -30,6 +30,10 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
     /** Ensure values stored in the set are UUIDs if applicable */
     add: (target: Set<V>, value: V) => {
       const obj = checkWriteAccess(object, store, propDes.name)
+      
+      // Validate the value being added to the collection
+      store.validator.validateCollectionElement(value, propDes, "add");
+      
       const valueUUID = toUUID(value, propDes, store)
 
       // Check if the value already exists in the set
