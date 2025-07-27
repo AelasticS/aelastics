@@ -24,6 +24,14 @@ const skillSetType: SetTypeMeta = {
     elementType: "string"
 };
 
+// Map type for metadata (string keys, string values)
+const metadataMapType: MapTypeMeta = {
+    qName: "/company/MetadataMap",
+    kind: "map",
+    keyType: "string",
+    valueType: "string"
+};
+
 // ===== BASIC OBJECT TYPES =====
 
 // Address value object (no bidirectional relationships)
@@ -135,6 +143,11 @@ const employeeType: ObjectTypeMeta = {
         ["skills", {
             name: "skills",
             typeRef: "/company/SkillSet",
+            optional: true
+        }],
+        ["metadata", {
+            name: "metadata",
+            typeRef: "/company/MetadataMap",
             optional: true
         }],
         ["badge", {
@@ -264,8 +277,9 @@ export const companyNamespace: Namespace = {
         ["Project", projectType],
         ["EmployeeArray", employeeArrayType],
         ["ProjectArray", projectArrayType],
-        ["SkillSet", skillSetType]
+        ["SkillSet", skillSetType],
+        ["MetadataMap", metadataMapType]
     ]),
-    exports: ["Address", "Badge", "Employee", "Company", "Project", "EmployeeArray", "ProjectArray", "SkillSet"],
+    exports: ["Address", "Badge", "Employee", "Company", "Project", "EmployeeArray", "ProjectArray", "SkillSet", "MetadataMap"],
     imports: new Map() // System namespace is auto-imported
 };

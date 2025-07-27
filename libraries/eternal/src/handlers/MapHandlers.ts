@@ -34,9 +34,13 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
   return {
     /** Ensure values stored in the map are UUIDs if applicable */
     set: (target: Map<K, V>, key: K, value: V) => {
+      const obj = checkWriteAccess(object, store, propDes.name)
+      
+      // Validate the value being set in the map
+      store.validator.validateCollectionElement(value, propDes, "set");
+      
       const newValue = valueToUUID(value, propDes, store)
       const newKey = keyToUUID(key, propDes, store)
-      const obj = checkWriteAccess(object, store, propDes.name)
 
       // get the old value
       const oldValue = obj[privateKey].get(newKey)
