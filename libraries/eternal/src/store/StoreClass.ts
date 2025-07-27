@@ -374,13 +374,23 @@ export class StoreClass {
     
     const instance = new DynamicClass();
     
+    // Add to current state first (before applying initial state)
+    this.currentState.addObject(instance, 'created');
+    
     // Apply initial state if provided with validation
     if (initialState) {
-      this.validateAndApplyInitialState(instance, initialState, objectTypeMeta);
+      // Remember original update mode state
+      const wasInUpdateMode = this.inUpdateMode;
+      
+      try {
+        // Temporarily enter update mode to allow setters to work
+        this.inUpdateMode = true;
+        this.validateAndApplyInitialState(instance, initialState, objectTypeMeta);
+      } finally {
+        // Restore original update mode state
+        this.inUpdateMode = wasInUpdateMode;
+      }
     }
-    
-    // Add to current state
-    this.currentState.addObject(instance, 'created');
     
     return instance as T;
   }
@@ -392,13 +402,92 @@ export class StoreClass {
     
     // Validate that all provided properties exist in the type definition and apply them
     for (const [propName, value] of Object.entries(initialState)) {
-      if (!typeMeta.properties?.has(propName)) {
+      const propertyMeta = typeMeta.properties?.get(propName);
+      if (!propertyMeta) {
         throw new Error(`Property '${propName}' does not exist in type '${typeMeta.qName}'`);
       }
       
-      // Store directly in private key to bypass setters during construction
-      const privateKey = `_${propName}`;
-      instance[privateKey] = value;
+      // Get property type kind to determine how to handle the value
+      const propTypeKind = this.getPropertyTypeKind(propertyMeta.typeRef);
+      
+      if (propTypeKind === "array" || propTypeKind === "set" || propTypeKind === "map") {
+        // Collection properties: cannot be set directly, must add elements to existing collection
+        if (value && Array.isArray(value) && value.length > 0) {
+          // Get the collection proxy that was created during object construction
+          const collection = instance[propName];
+          if (collection) {
+            // Add each element to the collection
+            for (const element of value) {
+              // Validate that object elements are properly registered in store
+              if (propTypeKind === "array" && this.isObjectElement(propertyMeta.typeRef, element)) {
+                this.validateObjectIsRegistered(element, propName);
+              }
+              
+              if (Array.isArray(collection)) {
+                collection.push(element);
+              } else if (collection instanceof Set) {
+                collection.add(element);
+              } else if (collection instanceof Map) {
+                // For maps, expect element to be [key, value] tuple
+                if (Array.isArray(element) && element.length === 2) {
+                  collection.set(element[0], element[1]);
+                }
+              }
+            }
+          }
+        }
+      } else if (propTypeKind === "object") {
+        // Object property: validate that object is registered in store
+        if (value) {
+          this.validateObjectIsRegistered(value, propName);
+        }
+        // Use setter to maintain inverse relationships
+        instance[propName] = value;
+      } else {
+        // Primitive property: use setter for consistency
+        instance[propName] = value;
+      }
+    }
+  }
+  
+  private getPropertyTypeKind(typeRef: string): string {
+    const typeMeta = this.getTypeMeta(typeRef);
+    if (!typeMeta) {
+      return "primitive"; // Default fallback
+    }
+    
+    if (typeMeta.kind === 'object' || typeMeta.kind === 'entity') {
+      return "object";
+    }
+    return typeMeta.kind;
+  }
+  
+  private isObjectElement(typeRef: string, element: any): boolean {
+    // Check if the collection contains object/entity elements
+    const typeMeta = this.getTypeMeta(typeRef);
+    if (!typeMeta || typeMeta.kind !== 'array') {
+      return false;
+    }
+    
+    const arrayTypeMeta = typeMeta as any; // ArrayTypeMeta
+    const elementTypeMeta = this.getTypeMeta(arrayTypeMeta.elementType);
+    return !!(elementTypeMeta && (elementTypeMeta.kind === 'object' || elementTypeMeta.kind === 'entity'));
+  }
+  
+  private validateObjectIsRegistered(obj: any, propName: string): void {
+    if (typeof obj !== 'object' || obj === null) {
+      return; // Not an object, no validation needed
+    }
+    
+    // Check if object has UUID (required for store objects)
+    if (!obj[uuid]) {
+      throw new Error(`Object assigned to property '${propName}' must have a UUID. Objects must be created through the store or imported.`);
+    }
+    
+    // Check if object is registered in current state
+    const storeObj = this.findByUUID(obj[uuid]);
+    if (!storeObj) {
+      throw new Error(`Object assigned to property '${propName}' with UUID '${obj[uuid]}' is not registered in the store. Objects must be created through store.create() or imported with store.import().`);
     }
   }
 
