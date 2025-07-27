@@ -57,25 +57,33 @@ interface PropertyMeta {
     typeRef: string;        // Reference to type (qualified name)
     optional: boolean;      // Whether property is optional
     inverseProp?: string;   // Name of inverse property (for bidirectional relationships)
-    inverseTypeRef?: string; // Type of inverse property
-    inverseType?: PropertyType; // Data type of the inverse property (derived during import)
+    inverseTypeRef?: string; // Type containing the inverse property
+    inverseType?: TypeKind; // TypeKind of the inverse property (derived during import)
 }
 ```
 
-**PropertyType Definition:**
+**TypeKind Definition:**
 ```typescript
-export type SimplePropType = 'string' | 'number' | 'boolean' | 'date';
-export type ComplexPropType = 'object' | 'array' | 'map' | 'set';
-export type PropertyType = SimplePropType | ComplexPropType;
+export type TypeKind = SimpleTypeKind | ComplexTypeKind
+
+export type SimpleTypeKind =
+  | "string" | "number" | "boolean" | "date" | "literal"
+  | "null" | "undefined" | "void" | "bigint" | "symbol"
+  | "unknown" | "any" | "never"
+
+export type ComplexTypeKind =
+  | "object" | "entity" | "array" | "map" | "set" | "union"
+  | "intersection" | "tuple" | "taggedUnion" | "function"
+  | "subtype" | "record" | "objectRef"
 ```
 
 **Inverse Type Usage:**
-- `inverseType: "object"` - Inverse property is a single reference
-- `inverseType: "array"` - Inverse property is a collection of references  
+- `inverseType: "object"` - Inverse property is a single object/entity reference
+- `inverseType: "array"` - Inverse property is an array collection
 - `inverseType: "map"` - Inverse property is a map collection
 - `inverseType: "set"` - Inverse property is a set collection
 
-This metadata is derived and computed during import to support existing store operations that depend on knowing whether the inverse relationship is a single reference or collection.
+This metadata is automatically derived during namespace import to optimize bidirectional relationship handling. The system resolves the `inverseTypeRef` and `inverseProp` to determine the actual TypeKind of the inverse property.
 
 ### Object Types
 
@@ -84,12 +92,10 @@ Object types define structured data with properties:
 ```typescript
 interface ObjectTypeMeta {
     qName: string;                           // Fully qualified name
-    category: "complex";                     // Type category
     kind: "object" | "entity";               // Object or entity
     properties: Map<string, PropertyMeta>;   // Property definitions
     extends?: string;                        // Base type (inheritance)
     identityKeys?: string[];                 // Identity properties (entities only)
-    inverseCollection?: Map<string, InverseCollectionMeta>; // Bidirectional relationships
     roles?: string[];                        // List of allowed role names for this type
 }
 ```
@@ -137,15 +143,51 @@ const documentType: ObjectTypeMeta = {
 };
 ```
 
-### Array Types
+### Collection Types
+
+#### Array Types
 Arrays represent ordered collections:
 
 ```typescript
 interface ArrayTypeMeta {
     qName: string;           // Fully qualified name
-    category: "complex";     // Type category
     kind: "array";           // Array type
     elementType: string;     // Type of array elements
+}
+```
+
+#### Set Types
+Sets represent unordered collections of unique elements:
+
+```typescript
+interface SetTypeMeta {
+    qName: string;           // Fully qualified name
+    kind: "set";             // Set type
+    elementType: string;     // Type of set elements
+}
+```
+
+#### Map Types
+Maps represent key-value collections:
+
+```typescript
+interface MapTypeMeta {
+    qName: string;           // Fully qualified name
+    kind: "map";             // Map type
+    keyType: string;         // Type of map keys
+    valueType: string;       // Type of map values
+}
+```
+
+#### Record Types
+Records represent object types with dynamic keys:
+
+```typescript
+interface RecordTypeMeta {
+    qName: string;           // Fully qualified name
+    kind: "record";          // Record type
+    keyType: string;         // Type of record keys
+    valueType: string;       // Type of record values
 }
 ```
 
@@ -159,9 +201,8 @@ Standard union type where value can be any of the union members:
 ```typescript
 interface UnionTypeMeta {
     qName: string;           // Fully qualified name
-    category: "complex";     // Type category
     kind: "union";           // Union type
-    unionTypes: string[];    // Types in the union
+    memberTypes: string[];   // Types in the union
 }
 ```
 
@@ -171,15 +212,20 @@ Union with a discriminator property to identify which member is active:
 ```typescript
 interface TaggedUnionTypeMeta {
     qName: string;           // Fully qualified name
-    category: "complex";     // Type category
     kind: "taggedUnion";     // Tagged union type
     discriminator: string;   // Property name used to distinguish union members
-    unionTypes: TaggedUnionMember[]; // Union members with their discriminator values
+    memberTypes: Map<string, string>; // discriminator value -> qualified type name
 }
+```
 
-interface TaggedUnionMember {
-    typeRef: string;         // Reference to the union member type
-    discriminatorValue: any; // Value of discriminator property for this member
+#### Intersection Types
+Intersection types combine multiple types into one:
+
+```typescript
+interface IntersectionTypeMeta {
+    qName: string;           // Fully qualified name
+    kind: "intersection";    // Intersection type
+    memberTypes: string[];   // Types to intersect
 }
 ```
 
@@ -190,10 +236,53 @@ Functions represent callable operations:
 ```typescript
 interface FunctionTypeMeta {
     qName: string;                    // Fully qualified name
-    category: "complex";              // Type category
     kind: "function";                 // Function type
     parameters: ParameterMeta[];      // Function parameters
     returnType: string;               // Return type
+}
+
+interface ParameterMeta {
+    name: string;                     // Parameter name
+    typeRef: string;                  // Parameter type
+    optional: boolean;                // Whether parameter is optional
+    defaultValue?: any;               // Default value if optional
+}
+```
+
+### Tuple Types
+
+Tuples represent fixed-length arrays with specific types for each position:
+
+```typescript
+interface TupleTypeMeta {
+    qName: string;                    // Fully qualified name
+    kind: "tuple";                    // Tuple type
+    elementTypes: string[];           // Types for each position
+}
+```
+
+### Object Reference Types
+
+Object references provide indirect references to other object/entity types:
+
+```typescript
+interface ObjectRefTypeMeta {
+    qName: string;                    // Fully qualified name
+    kind: "objectRef";                // Object reference type
+    targetType: string;               // Qualified name of referenced entity type
+}
+```
+
+### Subtype (Derived) Types
+
+Subtypes are constrained versions of base types with additional validation:
+
+```typescript
+interface SubtypeTypeMeta {
+    qName: string;                    // Fully qualified name
+    kind: "subtype";                  // Subtype
+    baseType: string;                 // Base type being constrained
+    constraints: ValidationConstraint[]; // Additional constraints
 }
 ```
 
@@ -400,34 +489,112 @@ Only exported types can be imported by other namespaces.
 
 ## Bidirectional Relationships
 
-The registry supports automatic bidirectional relationship management:
+The registry supports automatic bidirectional relationship management with optimized inverse type derivation:
 
-### Forward Relationship
+### Property Metadata for Bidirectional Relationships
+
+Each property participating in a bidirectional relationship contains:
+
 ```typescript
-// User has many Posts
-const userType: ObjectTypeMeta = {
-    properties: new Map([
-        ["posts", {
-            name: "posts",
-            typeRef: "/blog/PostArray",
-            optional: false,
-            inverseProp: "author",
-            inverseTypeRef: "/blog/Post"
-        }]
-    ])
-};
+interface PropertyMeta {
+    name: string;           // Property name
+    typeRef: string;        // Type this property points to
+    inverseProp: string;    // Name of inverse property in target type
+    inverseTypeRef: string; // Type containing the inverse property
+    inverseType?: TypeKind; // Derived during import - kind of inverse property
+}
 ```
 
-### Inverse Relationship Metadata
+### Relationship Types and Examples
+
+#### One-to-One Relationships
 ```typescript
-inverseCollection: new Map([
-    ["posts", {
-        propName: "author",
-        targetTypeQName: "/blog/Post",
-        isCollection: true
-    }]
-])
+// Employee.badge property
+{
+    name: "badge",
+    typeRef: "/company/Badge",          // Points to Badge object
+    inverseProp: "employee",            // Badge.employee property name
+    inverseTypeRef: "/company/Badge",   // Badge type contains inverse property
+    inverseType: "object"               // Derived: Badge.employee is single reference
+}
+
+// Badge.employee property  
+{
+    name: "employee", 
+    typeRef: "/company/Employee",       // Points to Employee object
+    inverseProp: "badge",               // Employee.badge property name
+    inverseTypeRef: "/company/Employee", // Employee type contains inverse property
+    inverseType: "object"               // Derived: Employee.badge is single reference
+}
 ```
+
+#### One-to-Many Relationships
+```typescript
+// Company.employees property (one-to-many side)
+{
+    name: "employees",
+    typeRef: "/company/EmployeeArray",  // Array of employees
+    inverseProp: "company",             // Employee.company property name
+    inverseTypeRef: "/company/Employee", // Employee type contains inverse property
+    inverseType: "object"               // Derived: Employee.company is single reference
+}
+
+// Employee.company property (many-to-one side)
+{
+    name: "company",
+    typeRef: "/company/Company",        // Points to Company object
+    inverseProp: "employees",           // Company.employees property name  
+    inverseTypeRef: "/company/Company", // Company type contains inverse property
+    inverseType: "array"                // Derived: Company.employees is collection
+}
+```
+
+#### Many-to-Many Relationships
+```typescript
+// Employee.projects property
+{
+    name: "projects",
+    typeRef: "/company/ProjectArray",   // Array of projects
+    inverseProp: "assignedEmployees",   // Project.assignedEmployees property name
+    inverseTypeRef: "/company/Project", // Project type contains inverse property  
+    inverseType: "array"                // Derived: Project.assignedEmployees is collection
+}
+
+// Project.assignedEmployees property
+{
+    name: "assignedEmployees", 
+    typeRef: "/company/EmployeeArray",  // Array of employees
+    inverseProp: "projects",            // Employee.projects property name
+    inverseTypeRef: "/company/Employee", // Employee type contains inverse property
+    inverseType: "array"                // Derived: Employee.projects is collection
+}
+```
+
+### Key Rules for Bidirectional Relationships
+
+1. **Non-Collections (object/entity references):**
+   - `typeRef` and `inverseTypeRef` reference the same type
+   - Both properties have `inverseType: "object"`
+
+2. **Collections (arrays, sets, maps):**
+   - `typeRef` points to collection type (e.g., `"/company/EmployeeArray"`)
+   - `inverseTypeRef` points to element type containing inverse property (e.g., `"/company/Employee"`)
+   - Collection side has `inverseType: "object"` (element's inverse property is single reference)
+   - Single side has `inverseType: "array"` (collection property)
+
+### Automatic Inverse Type Derivation
+
+The `inverseType` field is automatically computed during namespace import:
+
+1. **Resolve Target Type**: System resolves `inverseTypeRef` to get the type containing the inverse property
+2. **Find Inverse Property**: Locates the property named by `inverseProp` in the target type
+3. **Derive TypeKind**: Determines the TypeKind of the inverse property:
+   - If inverse property type is `object` or `entity` → `inverseType: "object"`
+   - If inverse property type is `array` → `inverseType: "array"`
+   - If inverse property type is `set` → `inverseType: "set"`
+   - If inverse property type is `map` → `inverseType: "map"`
+
+This optimization enables PropertyAccessors and ArrayHandlers to efficiently determine relationship cardinality without runtime type resolution.
 
 ## Validation Rules
 
