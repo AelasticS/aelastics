@@ -36,7 +36,7 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Employee type and check badge property
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(isComplexType(employeeType!)).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe(true);
             expect(employeeType?.kind).toBe("entity");
             
             if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
@@ -44,7 +44,7 @@ describe("Bidirectional Relationship Tests", () => {
                 expect(badgeProperty).toBeDefined();
                 expect(badgeProperty?.typeRef).toBe("/company/Badge");
                 expect(badgeProperty?.inverseProp).toBe("employee");
-                expect(badgeProperty?.inverseTypeRef).toBe("/company/Employee");
+                expect(badgeProperty?.inverseTypeRef).toBe("/company/Badge");
                 expect(badgeProperty?.inverseType).toBe("object"); // Badge.employee is single reference
             }
             
@@ -99,7 +99,7 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Employee type and check company property
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(isComplexType(employeeType!)).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe(true);
             expect(employeeType?.kind).toBe("entity");
             
             if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
@@ -133,7 +133,7 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Employee type and check projects property
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(isComplexType(employeeType!)).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe(true);
             expect(employeeType?.kind).toBe("entity");
             
             if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
@@ -246,7 +246,7 @@ describe("Bidirectional Relationship Tests", () => {
             
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(isComplexType(employeeType!)).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe(true);
             expect(employeeType?.kind).toBe("entity");
             
             if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {

@@ -143,7 +143,7 @@ const employeeType: ObjectTypeMeta = {
             optional: true,
             // One-to-one: Employee has one badge
             inverseProp: "employee",
-            inverseTypeRef: "/company/Employee",
+            inverseTypeRef: "/company/Badge",
  // Badge.employee is a single reference
         }],
         ["company", {

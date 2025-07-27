@@ -633,29 +633,8 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // Precompute and bind inverse relationship updater
     if (propertyMeta.inverseTypeRef && propertyMeta.inverseProp) {
-      // Get inverse type kind - use resolved TypeMeta if available, otherwise fallback to string detection
-      let inverseTypeKind: string;
-      if (propertyMeta.inverseType) {
-        // Use resolved TypeMeta object
-        const inverseTypeMeta = propertyMeta.inverseType;
-        if (inverseTypeMeta.kind === 'object' || inverseTypeMeta.kind === 'entity') {
-          inverseTypeKind = 'object';
-        } else {
-          inverseTypeKind = inverseTypeMeta.kind;
-        }
-      } else {
-        // Fallback to string-based detection from inverseTypeRef
-        const inverseTypeRef = propertyMeta.inverseTypeRef;
-        if (inverseTypeRef.includes('Array')) {
-          inverseTypeKind = 'array';
-        } else if (inverseTypeRef.includes('Set')) {
-          inverseTypeKind = 'set';
-        } else if (inverseTypeRef.includes('Map')) {
-          inverseTypeKind = 'map';
-        } else {
-          inverseTypeKind = 'object'; // Default assumption
-        }
-      }
+      // Get inverse type kind - use derived TypeKind value
+      const inverseTypeKind = propertyMeta.inverseType || 'object'; // Default to 'object' if not derived
       
       switch (propTypeKind) {
         // property is an object

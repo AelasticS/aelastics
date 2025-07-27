@@ -180,7 +180,7 @@ export interface PropertyMeta {
   // Bidirectional relationship metadata
   inverseProp?: string // Name of inverse property
   inverseTypeRef?: string // Qualified name of type containing inverse property
-  inverseType?: TypeMeta // Data type of the inverse property (derived during import)
+  inverseType?: TypeKind // TypeKind of the inverse property (derived during import)
 }
 
 // Polymorphic functions for collection types

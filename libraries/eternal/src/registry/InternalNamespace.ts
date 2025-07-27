@@ -1,5 +1,5 @@
 import { Namespace, ImportEntry, RegistryMetadata } from './NamespaceMetadata';
-import { TypeMeta } from './TypeDefinitions';
+import { TypeMeta, ObjectTypeMeta, isObjectType, TypeKind } from './TypeDefinitions';
 
 /**
  * Internal namespace implementation with resolved types optimization
@@ -71,6 +71,10 @@ export class InternalNamespace implements Namespace {
                 }
             }
         }
+        
+        // Derive inverseType optimizations after all types are resolved
+        const derivationErrors = this.deriveInverseTypeOptimizations(registry);
+        errors.push(...derivationErrors);
         
         return errors;
     }
@@ -249,5 +253,95 @@ export class InternalNamespace implements Namespace {
         visited.delete(this.qName);
         
         return errors;
+    }
+
+    /**
+     * Derive inverseType optimizations for bidirectional relationships
+     * This resolves inverseTypeRef strings to TypeKind values
+     * @param registry The registry metadata for resolving type references
+     * @returns Array of error messages, empty if successful
+     */
+    private deriveInverseTypeOptimizations(registry: RegistryMetadata): string[] {
+        const errors: string[] = [];
+        
+        // Process all local types in this namespace
+        for (const [, typeMeta] of this.types) {
+            if (isObjectType(typeMeta)) {
+                const objectType = typeMeta as ObjectTypeMeta;
+                
+                // Process each property in the object type
+                for (const [propName, propertyMeta] of objectType.properties) {
+                    if (propertyMeta.inverseTypeRef && propertyMeta.inverseProp) {
+                        try {
+                            // Resolve the type containing the inverse property
+                            const inverseContainerType = this.resolveTypeReference(propertyMeta.inverseTypeRef, registry);
+                            
+                            if (inverseContainerType && isObjectType(inverseContainerType)) {
+                                const inverseContainerObject = inverseContainerType as ObjectTypeMeta;
+                                
+                                // Get the inverse property from the container type
+                                const inverseProperty = inverseContainerObject.properties.get(propertyMeta.inverseProp!);
+                                
+                                if (inverseProperty) {
+                                    // Resolve the type of the inverse property itself
+                                    const inversePropertyType = this.resolveTypeReference(inverseProperty.typeRef, registry);
+                                    
+                                    if (inversePropertyType) {
+                                        // Derive TypeKind from the inverse property's type
+                                        let inverseTypeKind: TypeKind;
+                                        if (inversePropertyType.kind === 'object' || inversePropertyType.kind === 'entity') {
+                                            inverseTypeKind = 'object';
+                                        } else {
+                                            inverseTypeKind = inversePropertyType.kind;
+                                        }
+                                        
+                                        // Set the derived TypeKind value
+                                        propertyMeta.inverseType = inverseTypeKind;
+                                    } else {
+                                        errors.push(`Cannot resolve inverse property type '${inverseProperty.typeRef}' for property '${propName}' in type '${typeMeta.qName}'`);
+                                    }
+                                } else {
+                                    errors.push(`Inverse property '${propertyMeta.inverseProp}' not found in type '${propertyMeta.inverseTypeRef}' for property '${propName}' in type '${typeMeta.qName}'`);
+                                }
+                            } else {
+                                errors.push(`Cannot resolve inverse type reference '${propertyMeta.inverseTypeRef}' for property '${propName}' in type '${typeMeta.qName}'`);
+                            }
+                        } catch (error) {
+                            errors.push(`Error deriving inverse type for property '${propName}' in type '${typeMeta.qName}': ${error}`);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return errors;
+    }
+
+    /**
+     * Helper method to resolve a type reference to TypeMeta
+     * This looks up types in the current namespace and imported namespaces
+     */
+    private resolveTypeReference(typeRef: string, registry: RegistryMetadata): TypeMeta | undefined {
+        // Try to resolve from global registry first (for absolute references like "/namespace/Type")
+        if (typeRef.startsWith('/')) {
+            // Split the qualified name to get namespace and type name
+            const parts = typeRef.split('/');
+            const namespacePath = '/' + parts.slice(1, -1).join('/');
+            const typeName = parts[parts.length - 1];
+            
+            // Check if this is a self-reference to the current namespace being imported
+            if (namespacePath === this.qName) {
+                return this.types.get(typeName);
+            }
+            
+            // Try to resolve from registry (for already imported namespaces)
+            const targetNamespace = registry.namespaces.get(namespacePath);
+            if (targetNamespace) {
+                return targetNamespace.types.get(typeName);
+            }
+        }
+        
+        // Try to resolve from resolved types (local + imported types)
+        return this.resolvedTypes.get(typeRef);
     }
 }
