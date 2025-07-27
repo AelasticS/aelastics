@@ -5,7 +5,6 @@ import { ObjectTypeMeta, PropertyMeta, TypeMeta } from "../../../registry/TypeDe
 
 const validType: ObjectTypeMeta = {
     qName: "/invalid/imports/ValidType",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -52,7 +51,6 @@ export const circularImportNamespaceA: Namespace = {
     types: new Map<string, TypeMeta>([
         ["TypeA", {
             qName: "/invalid/circular-a/TypeA",
-            category: "complex",
             kind: "entity",
             properties: new Map<string, PropertyMeta>([
                 ["id", {
@@ -81,7 +79,6 @@ export const circularImportNamespaceB: Namespace = {
     types: new Map<string, TypeMeta>([
         ["TypeB", {
             qName: "/invalid/circular-b/TypeB",
-            category: "complex",
             kind: "entity",
             properties: new Map<string, PropertyMeta>([
                 ["id", {

@@ -6,7 +6,6 @@ import { ObjectTypeMeta, PropertyMeta, SubtypeTypeMeta, TypeMeta } from "../../r
 // Base User type
 const baseUserType: ObjectTypeMeta = {
     qName: "/subtypes/BaseUser",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -41,7 +40,6 @@ const baseUserType: ObjectTypeMeta = {
 // Base Product type
 const baseProductType: ObjectTypeMeta = {
     qName: "/subtypes/BaseProduct",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -73,7 +71,6 @@ const baseProductType: ObjectTypeMeta = {
 // AdminUser as a SUBTYPE of BaseUser (not inheritance)
 const adminUserSubtype: SubtypeTypeMeta = {
     qName: "/subtypes/AdminUser",
-    category: "complex",
     kind: "subtype",
     baseType: "/subtypes/BaseUser", // Reference to base type
     extraProperties: new Map<string, PropertyMeta>([
@@ -98,7 +95,6 @@ const adminUserSubtype: SubtypeTypeMeta = {
 // PremiumUser as a SUBTYPE of BaseUser
 const premiumUserSubtype: SubtypeTypeMeta = {
     qName: "/subtypes/PremiumUser",
-    category: "complex",
     kind: "subtype",
     baseType: "/subtypes/BaseUser",
     extraProperties: new Map<string, PropertyMeta>([
@@ -123,7 +119,6 @@ const premiumUserSubtype: SubtypeTypeMeta = {
 // DigitalProduct as a SUBTYPE of BaseProduct
 const digitalProductSubtype: SubtypeTypeMeta = {
     qName: "/subtypes/DigitalProduct",
-    category: "complex",
     kind: "subtype",
     baseType: "/subtypes/BaseProduct",
     extraProperties: new Map<string, PropertyMeta>([
@@ -148,7 +143,6 @@ const digitalProductSubtype: SubtypeTypeMeta = {
 // PhysicalProduct as a SUBTYPE of BaseProduct
 const physicalProductSubtype: SubtypeTypeMeta = {
     qName: "/subtypes/PhysicalProduct",
-    category: "complex",
     kind: "subtype",
     baseType: "/subtypes/BaseProduct",
     extraProperties: new Map<string, PropertyMeta>([
@@ -180,7 +174,6 @@ const physicalProductSubtype: SubtypeTypeMeta = {
 // SuperAdminUser - INHERITS from BaseUser (proper inheritance)
 const superAdminUserType: ObjectTypeMeta = {
     qName: "/subtypes/SuperAdminUser",
-    category: "complex",
     kind: "entity",
     extends: "/subtypes/BaseUser", // This is inheritance, not subtype
     properties: new Map<string, PropertyMeta>([

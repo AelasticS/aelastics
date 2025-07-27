@@ -1,5 +1,6 @@
 import { RegistryService } from "../../registry/RegistryService";
 import { RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { isComplexType } from "../../registry/TypeDefinitions";
 
 describe("Type Reference Pattern Tests", () => {
     let registry: RegistryService;
@@ -19,7 +20,6 @@ describe("Type Reference Pattern Tests", () => {
             types: new Map([
                 ["RootType", {
                     qName: "/root/RootType",
-                    category: "complex" as const,
                     kind: "object" as const,
                     properties: new Map()
                 }]
@@ -34,7 +34,6 @@ describe("Type Reference Pattern Tests", () => {
             types: new Map([
                 ["ChildType", {
                     qName: "/root/child/ChildType",
-                    category: "complex" as const,
                     kind: "object" as const,
                     properties: new Map([
                         // Test all reference patterns in properties
@@ -78,7 +77,6 @@ describe("Type Reference Pattern Tests", () => {
             types: new Map([
                 ["ImportedType", {
                     qName: "/external/ImportedType",
-                    category: "simple" as const,
                     kind: "string" as const
                 }]
             ]),
@@ -127,10 +125,10 @@ describe("Type Reference Pattern Tests", () => {
             
             const childType = registry.getType("/root/child/ChildType");
             expect(childType).toBeDefined();
-            expect(childType?.category).toBe("complex");
+            expect(isComplexType(childType!)).toBe(true);
             expect(childType?.kind).toBe("object");
             
-            if (childType && childType.category === "complex" && childType.kind === "object") {
+            if (childType && isComplexType(childType) && childType.kind === "object") {
                 // All property references should have been validated successfully
                 expect(childType.properties.size).toBe(5);
                 expect(childType.properties.has("absoluteRef")).toBe(true);
@@ -145,7 +143,7 @@ describe("Type Reference Pattern Tests", () => {
             const childNs = registry.getNamespace("/root/child")!;
             const childType = registry.getType("/root/child/ChildType")!;
             
-            if (childType.category === "complex" && childType.kind === "object") {
+            if (isComplexType(childType) && childType.kind === "object") {
                 // Test that all references can be resolved
                 for (const [propName, propMeta] of childType.properties) {
                     const resolved = registry.resolveAndValidateTypeReference(propMeta.typeRef, childNs);

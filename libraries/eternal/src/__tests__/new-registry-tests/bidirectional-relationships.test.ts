@@ -1,4 +1,5 @@
 import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
+import { isComplexType } from "../../registry/TypeDefinitions";
 import { RegistryMetadata } from "../../registry/NamespaceMetadata";
 import { companyNamespace } from "../example-namespaces/company-namespace";
 import { educationalNamespace } from "../example-namespaces/educational-namespace";
@@ -35,10 +36,10 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Employee type and check badge property
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(employeeType?.category).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe("complex");
             expect(employeeType?.kind).toBe("entity");
             
-            if (employeeType && employeeType.category === "complex" && employeeType.kind === "entity") {
+            if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
                 const badgeProperty = employeeType.properties.get("badge");
                 expect(badgeProperty).toBeDefined();
                 expect(badgeProperty?.typeRef).toBe("/company/Badge");
@@ -50,10 +51,10 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Badge type and check employee property
             const badgeType = registry.getType("/company/Badge");
             expect(badgeType).toBeDefined();
-            expect(badgeType?.category).toBe("complex");
+            expect(isComplexType(badgeType!)).toBe(true);
             expect(badgeType?.kind).toBe("entity");
             
-            if (badgeType && badgeType.category === "complex" && badgeType.kind === "entity") {
+            if (badgeType && isComplexType(badgeType) && badgeType.kind === "entity") {
                 const employeeProperty = badgeType.properties.get("employee");
                 expect(employeeProperty).toBeDefined();
                 expect(employeeProperty?.typeRef).toBe("/company/Employee");
@@ -83,10 +84,10 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Company type and check employees property
             const companyType = registry.getType("/company/Company");
             expect(companyType).toBeDefined();
-            expect(companyType?.category).toBe("complex");
+            expect(isComplexType(companyType!)).toBe(true);
             expect(companyType?.kind).toBe("entity");
             
-            if (companyType && companyType.category === "complex" && companyType.kind === "entity") {
+            if (companyType && isComplexType(companyType) && companyType.kind === "entity") {
                 const employeesProperty = companyType.properties.get("employees");
                 expect(employeesProperty).toBeDefined();
                 expect(employeesProperty?.typeRef).toBe("/company/EmployeeArray");
@@ -98,10 +99,10 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Employee type and check company property
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(employeeType?.category).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe("complex");
             expect(employeeType?.kind).toBe("entity");
             
-            if (employeeType && employeeType.category === "complex" && employeeType.kind === "entity") {
+            if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
                 const companyProperty = employeeType.properties.get("company");
                 expect(companyProperty).toBeDefined();
                 expect(companyProperty?.typeRef).toBe("/company/Company");
@@ -132,10 +133,10 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Employee type and check projects property
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(employeeType?.category).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe("complex");
             expect(employeeType?.kind).toBe("entity");
             
-            if (employeeType && employeeType.category === "complex" && employeeType.kind === "entity") {
+            if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
                 const projectsProperty = employeeType.properties.get("projects");
                 expect(projectsProperty).toBeDefined();
                 expect(projectsProperty?.typeRef).toBe("/company/ProjectArray");
@@ -147,10 +148,10 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Project type and check assignedEmployees property
             const projectType = registry.getType("/company/Project");
             expect(projectType).toBeDefined();
-            expect(projectType?.category).toBe("complex");
+            expect(isComplexType(projectType!)).toBe(true);
             expect(projectType?.kind).toBe("entity");
             
-            if (projectType && projectType.category === "complex" && projectType.kind === "entity") {
+            if (projectType && isComplexType(projectType) && projectType.kind === "entity") {
                 const assignedEmployeesProperty = projectType.properties.get("assignedEmployees");
                 expect(assignedEmployeesProperty).toBeDefined();
                 expect(assignedEmployeesProperty?.typeRef).toBe("/company/EmployeeArray");
@@ -188,10 +189,10 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Student type and check courses property
             const studentType = registry.getType("/educational/Student");
             expect(studentType).toBeDefined();
-            expect(studentType?.category).toBe("complex");
+            expect(isComplexType(studentType!)).toBe(true);
             expect(studentType?.kind).toBe("entity");
             
-            if (studentType && studentType.category === "complex" && studentType.kind === "entity") {
+            if (studentType && isComplexType(studentType) && studentType.kind === "entity") {
                 const coursesProperty = studentType.properties.get("courses");
                 expect(coursesProperty).toBeDefined();
                 expect(coursesProperty?.typeRef).toBe("/educational/CourseArray");
@@ -203,10 +204,10 @@ describe("Bidirectional Relationship Tests", () => {
             // Get Course type and check enrolledStudents property
             const courseType = registry.getType("/educational/Course");
             expect(courseType).toBeDefined();
-            expect(courseType?.category).toBe("complex");
+            expect(isComplexType(courseType!)).toBe(true);
             expect(courseType?.kind).toBe("entity");
             
-            if (courseType && courseType.category === "complex" && courseType.kind === "entity") {
+            if (courseType && isComplexType(courseType) && courseType.kind === "entity") {
                 const enrolledStudentsProperty = courseType.properties.get("enrolledStudents");
                 expect(enrolledStudentsProperty).toBeDefined();
                 expect(enrolledStudentsProperty?.typeRef).toBe("/educational/StudentArray");
@@ -245,10 +246,10 @@ describe("Bidirectional Relationship Tests", () => {
             
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(employeeType?.category).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe("complex");
             expect(employeeType?.kind).toBe("entity");
             
-            if (employeeType && employeeType.category === "complex" && employeeType.kind === "entity") {
+            if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
                 // Check all bidirectional relationships on Employee
                 expect(employeeType.properties.has("badge")).toBe(true); // One-to-one
                 expect(employeeType.properties.has("company")).toBe(true); // Many-to-one

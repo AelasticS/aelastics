@@ -1,4 +1,4 @@
-import { TypeMeta, ObjectTypeMeta, isObjectType } from "./TypeDefinitions";
+import { TypeMeta, ObjectTypeMeta, isObjectType, isSimpleType, isComplexType } from "./TypeDefinitions";
 import { 
     Namespace, 
     RegistryMetadata, 
@@ -496,17 +496,13 @@ export class RegistryService {
             errors.push(`Invalid qualified name: ${typeMeta.qName}`);
         }
 
-        // Validate based on type category
-        switch (typeMeta.category) {
-            case 'simple':
-                this.validateSimpleType(typeMeta, contextNamespace, errors, warnings);
-                break;
-            case 'complex':
-                this.validateComplexType(typeMeta, contextNamespace, errors, warnings);
-                break;
-            case 'special':
-                this.validateSpecialType(typeMeta, contextNamespace, errors, warnings);
-                break;
+        // Validate based on type kind
+        if (isSimpleType(typeMeta)) {
+            this.validateSimpleType(typeMeta, contextNamespace, errors, warnings);
+        } else if (isComplexType(typeMeta)) {
+            this.validateComplexType(typeMeta, contextNamespace, errors, warnings);
+        } else if (typeMeta.kind === 'objectRef') {
+            this.validateSpecialType(typeMeta, contextNamespace, errors, warnings);
         }
 
         return {
@@ -527,17 +523,13 @@ export class RegistryService {
             errors.push(`Invalid qualified name: ${typeMeta.qName}`);
         }
 
-        // Validate based on type category
-        switch (typeMeta.category) {
-            case 'simple':
-                this.validateSimpleTypeWithRegistry(typeMeta, contextNamespace, registry, errors, warnings);
-                break;
-            case 'complex':
-                this.validateComplexTypeWithRegistry(typeMeta, contextNamespace, registry, errors, warnings);
-                break;
-            case 'special':
-                this.validateSpecialTypeWithRegistry(typeMeta, contextNamespace, registry, errors, warnings);
-                break;
+        // Validate based on type kind
+        if (isSimpleType(typeMeta)) {
+            this.validateSimpleTypeWithRegistry(typeMeta, contextNamespace, registry, errors, warnings);
+        } else if (isComplexType(typeMeta)) {
+            this.validateComplexTypeWithRegistry(typeMeta, contextNamespace, registry, errors, warnings);
+        } else if (typeMeta.kind === 'objectRef') {
+            this.validateSpecialTypeWithRegistry(typeMeta, contextNamespace, registry, errors, warnings);
         }
 
         return {
@@ -959,7 +951,7 @@ export class RegistryService {
         }
         
         // If base type doesn't exist or doesn't extend anything, no circular inheritance
-        if (!baseType || baseType.category !== "complex" || !isObjectType(baseType) || !baseType.extends) {
+        if (!baseType || !isComplexType(baseType) || !isObjectType(baseType) || !baseType.extends) {
             return undefined;
         }
         
@@ -989,7 +981,7 @@ export class RegistryService {
             type = namespace.types.get(typeName);
         }
         
-        if (!type || type.category !== "complex" || (type.kind !== "object" && type.kind !== "entity")) {
+        if (!type || !isComplexType(type) || (type.kind !== "object" && type.kind !== "entity")) {
             return false;
         }
         
@@ -1051,7 +1043,7 @@ export class RegistryService {
         }
         
         // If base type doesn't exist or doesn't extend anything, no circular inheritance
-        if (!baseType || baseType.category !== "complex" || !isObjectType(baseType) || !baseType.extends) {
+        if (!baseType || !isComplexType(baseType) || !isObjectType(baseType) || !baseType.extends) {
             return undefined;
         }
         
@@ -1077,7 +1069,7 @@ export class RegistryService {
             }
         }
         
-        if (!type || type.category !== "complex" || (type.kind !== "object" && type.kind !== "entity")) {
+        if (!type || !isComplexType(type) || (type.kind !== "object" && type.kind !== "entity")) {
             return false;
         }
         
@@ -1109,19 +1101,19 @@ export class RegistryService {
     public getRegistryStats(): {
         namespaceCount: number;
         totalTypeCount: number;
-        typesByCategory: Map<string, number>;
+        typesByKind: Map<string, number>;
     } {
-        const typesByCategory = new Map<string, number>();
+        const typesByKind = new Map<string, number>();
         
         for (const typeMeta of this.typeIndex.values()) {
-            const category = typeMeta.category;
-            typesByCategory.set(category, (typesByCategory.get(category) || 0) + 1);
+            const kind = typeMeta.kind;
+            typesByKind.set(kind, (typesByKind.get(kind) || 0) + 1);
         }
 
         return {
             namespaceCount: this.registry.namespaces.size,
             totalTypeCount: this.typeIndex.size,
-            typesByCategory
+            typesByKind
         };
     }
 }

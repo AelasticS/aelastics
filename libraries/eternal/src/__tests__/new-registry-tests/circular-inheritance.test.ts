@@ -21,7 +21,6 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/test-self-inheritance/TypeA",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-self-inheritance/TypeA", // Self-inheritance!
                         properties: new Map()
@@ -43,14 +42,12 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/test-direct-cycle/TypeA",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-direct-cycle/TypeB",
                         properties: new Map()
                     }],
                     ["TypeB", {
                         qName: "/test-direct-cycle/TypeB",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-direct-cycle/TypeA", // Creates cycle!
                         properties: new Map()
@@ -74,21 +71,18 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/test-indirect-cycle/TypeA",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-indirect-cycle/TypeB",
                         properties: new Map()
                     }],
                     ["TypeB", {
                         qName: "/test-indirect-cycle/TypeB",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-indirect-cycle/TypeC",
                         properties: new Map()
                     }],
                     ["TypeC", {
                         qName: "/test-indirect-cycle/TypeC",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-indirect-cycle/TypeA", // Creates cycle!
                         properties: new Map()
@@ -113,7 +107,6 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/ns1/TypeA",
-                        category: "complex" as const,
                         kind: "object" as const,
                         properties: new Map()
                     }]
@@ -129,7 +122,6 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["TypeB", {
                         qName: "/ns2/TypeB",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/ns1/TypeA",
                         properties: new Map()
@@ -146,14 +138,12 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["TypeC", {
                         qName: "/ns3/TypeC",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/ns2/TypeB", // This extends TypeB which extends TypeA
                         properties: new Map()
                     }],
                     ["TypeCyclic", {
                         qName: "/ns3/TypeCyclic",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/ns1/TypeA", // This would create a complex inheritance chain
                         properties: new Map()
@@ -179,7 +169,6 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["CyclicType", {
                         qName: "/ns-cyclic/CyclicType",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/ns3/TypeC", // TypeC -> TypeB -> TypeA, now TypeA would extend CyclicType in another test
                         properties: new Map()
@@ -204,7 +193,6 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["BaseType", {
                         qName: "/test-valid-inheritance/BaseType",
-                        category: "complex" as const,
                         kind: "object" as const,
                         properties: new Map([
                             ["baseProperty", {
@@ -216,7 +204,6 @@ describe("Circular Inheritance Detection Tests", () => {
                     }],
                     ["MiddleType", {
                         qName: "/test-valid-inheritance/MiddleType",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-valid-inheritance/BaseType",
                         properties: new Map([
@@ -229,7 +216,6 @@ describe("Circular Inheritance Detection Tests", () => {
                     }],
                     ["DerivedType", {
                         qName: "/test-valid-inheritance/DerivedType",
-                        category: "complex" as const,
                         kind: "entity" as const,
                         extends: "/test-valid-inheritance/MiddleType",
                         properties: new Map([
@@ -271,14 +257,12 @@ describe("Circular Inheritance Detection Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/test-error-messages/TypeA",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-error-messages/TypeB",
                         properties: new Map()
                     }],
                     ["TypeB", {
                         qName: "/test-error-messages/TypeB",
-                        category: "complex" as const,
                         kind: "object" as const,
                         extends: "/test-error-messages/TypeA",
                         properties: new Map()

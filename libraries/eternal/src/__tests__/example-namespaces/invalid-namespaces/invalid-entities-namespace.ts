@@ -5,7 +5,6 @@ import { ObjectTypeMeta, PropertyMeta, TypeMeta } from "../../../registry/TypeDe
 
 const missingIdentityKeysType: ObjectTypeMeta = {
     qName: "/invalid/entities/MissingIdentityKeys",
-    category: "complex",
     kind: "entity", // ERROR: Entity without identity keys
     properties: new Map<string, PropertyMeta>([
         ["name", {
@@ -24,7 +23,6 @@ const missingIdentityKeysType: ObjectTypeMeta = {
 
 const invalidIdentityKeysType: ObjectTypeMeta = {
     qName: "/invalid/entities/InvalidIdentityKeys",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["name", {
@@ -43,7 +41,6 @@ const invalidIdentityKeysType: ObjectTypeMeta = {
 
 const invalidInheritanceType: ObjectTypeMeta = {
     qName: "/invalid/entities/InvalidInheritance",
-    category: "complex",
     kind: "entity",
     extends: "string", // ERROR: Cannot extend from primitive type
     properties: new Map<string, PropertyMeta>([
@@ -63,7 +60,6 @@ const invalidInheritanceType: ObjectTypeMeta = {
 
 const invalidInverseCollectionType: ObjectTypeMeta = {
     qName: "/invalid/entities/InvalidInverseCollection",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {

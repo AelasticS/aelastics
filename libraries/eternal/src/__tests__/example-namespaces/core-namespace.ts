@@ -6,7 +6,6 @@ import { ObjectTypeMeta, PropertyMeta, TypeMeta } from "../../registry/TypeDefin
 // Auditable role structure
 const auditableRoleType: ObjectTypeMeta = {
     qName: "/core/AuditableRole",
-    category: "complex",
     kind: "object",
     properties: new Map<string, PropertyMeta>([
         ["createdBy", {
@@ -35,7 +34,6 @@ const auditableRoleType: ObjectTypeMeta = {
 // Timestampable role structure
 const timestampableRoleType: ObjectTypeMeta = {
     qName: "/core/TimestampableRole",
-    category: "complex",
     kind: "object",
     properties: new Map<string, PropertyMeta>([
         ["createdAt", {
@@ -54,7 +52,6 @@ const timestampableRoleType: ObjectTypeMeta = {
 // Versionable role structure
 const versionableRoleType: ObjectTypeMeta = {
     qName: "/core/VersionableRole",
-    category: "complex",
     kind: "object",
     properties: new Map<string, PropertyMeta>([
         ["version", {
@@ -78,7 +75,6 @@ const versionableRoleType: ObjectTypeMeta = {
 // Soft deletable role structure
 const softDeletableRoleType: ObjectTypeMeta = {
     qName: "/core/SoftDeletableRole",
-    category: "complex",
     kind: "object",
     properties: new Map<string, PropertyMeta>([
         ["isDeleted", {

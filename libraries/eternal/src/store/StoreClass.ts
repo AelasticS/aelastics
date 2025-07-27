@@ -1,6 +1,6 @@
 import { __StoreSuperClass__, StoreObject, uuid, createdAt } from "./InternalTypes"
 import { RegistryService } from "../registry/RegistryService"
-import { TypeMeta, PropertyMeta, ObjectTypeMeta } from "../registry/TypeDefinitions"
+import { TypeMeta, PropertyMeta, ObjectTypeMeta, isSimpleType, isComplexType } from "../registry/TypeDefinitions"
 import { SubscriptionManager } from "../events/SubscriptionManager"
 import { State } from "./State"
 import { generateUUID, uniqueTimestamp, makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
@@ -39,7 +39,7 @@ export class StoreClass {
       const availableTypes = this.registryService.getAvailableTypesInNamespace(namespacePath);
       for (const typeName of availableTypes) {
         const typeMeta = this.registryService.getTypeInNamespace(typeName, namespacePath);
-        if (typeMeta && typeMeta.category === 'complex') {
+        if (typeMeta && isComplexType(typeMeta)) {
           this.createDynamicClass(typeMeta as ObjectTypeMeta);
         }
       }
@@ -161,7 +161,7 @@ export class StoreClass {
       }
       
       private getDefaultValueForResolvedType(resolvedType: TypeMeta, optional: boolean): any {
-        if (resolvedType.category === 'simple') {
+        if (isSimpleType(resolvedType)) {
           switch (resolvedType.kind) {
             case 'string': return optional ? undefined : '';
             case 'number': return optional ? undefined : 0;
@@ -172,7 +172,7 @@ export class StoreClass {
             case 'undefined': return undefined;
             default: return optional ? undefined : null;
           }
-        } else if (resolvedType.category === 'complex') {
+        } else if (isComplexType(resolvedType)) {
           switch (resolvedType.kind) {
             case 'array': return []; // Arrays are always initialized
             case 'set': return new Set(); // Sets are always initialized
@@ -201,9 +201,9 @@ export class StoreClass {
           if (resolvedTypeRef) {
             const resolvedType = store.registryService.getType(resolvedTypeRef);
             if (resolvedType) {
-              if (resolvedType.category === 'simple') {
+              if (isSimpleType(resolvedType)) {
                 return "primitive";
-              } else if (resolvedType.category === 'complex') {
+              } else if (isComplexType(resolvedType)) {
                 switch (resolvedType.kind) {
                   case 'array': return "array";
                   case 'map': return "map";
@@ -354,7 +354,7 @@ export class StoreClass {
    * Common object creation logic using TypeMeta
    */
   private createFromTypeMeta<T>(typeMeta: TypeMeta, initialState?: Partial<T>): T {
-    if (typeMeta.category !== 'complex') {
+    if (!isComplexType(typeMeta)) {
       throw new Error(`Cannot create instance of simple type '${typeMeta.qName}'. Only complex types (object, entity) can be instantiated.`);
     }
     
@@ -549,7 +549,7 @@ export class StoreClass {
 
   public getAllProperties(typeName: string): Map<string, PropertyMeta> {
     const typeMeta = this.getTypeMeta(typeName);
-    if (!typeMeta || typeMeta.category !== 'complex') {
+    if (!typeMeta || !isComplexType(typeMeta)) {
       return new Map();
     }
     

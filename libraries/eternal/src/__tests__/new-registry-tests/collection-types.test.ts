@@ -1,4 +1,5 @@
 import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
+import { isComplexType } from "../../registry/TypeDefinitions";
 import { RegistryMetadata } from "../../registry/NamespaceMetadata";
 import { companyNamespace } from "../example-namespaces/company-namespace";
 import { educationalNamespace } from "../example-namespaces/educational-namespace";
@@ -33,10 +34,10 @@ describe("Collection Type Tests", () => {
             // Get EmployeeArray type
             const employeeArrayType = registry.getType("/company/EmployeeArray");
             expect(employeeArrayType).toBeDefined();
-            expect(employeeArrayType?.category).toBe("complex");
+            expect(isComplexType(employeeArrayType!)).toBe(true);
             expect(employeeArrayType?.kind).toBe("array");
             
-            if (employeeArrayType && employeeArrayType.category === "complex" && employeeArrayType.kind === "array") {
+            if (employeeArrayType && isComplexType(employeeArrayType) && employeeArrayType.kind === "array") {
                 expect(employeeArrayType.elementType).toBe("/company/Employee");
                 expect(employeeArrayType.qName).toBe("/company/EmployeeArray");
             }
@@ -44,10 +45,10 @@ describe("Collection Type Tests", () => {
             // Get ProjectArray type
             const projectArrayType = registry.getType("/company/ProjectArray");
             expect(projectArrayType).toBeDefined();
-            expect(projectArrayType?.category).toBe("complex");
+            expect(isComplexType(projectArrayType!)).toBe(true);
             expect(projectArrayType?.kind).toBe("array");
             
-            if (projectArrayType && projectArrayType.category === "complex" && projectArrayType.kind === "array") {
+            if (projectArrayType && isComplexType(projectArrayType) && projectArrayType.kind === "array") {
                 expect(projectArrayType.elementType).toBe("/company/Project");
                 expect(projectArrayType.qName).toBe("/company/ProjectArray");
             }
@@ -58,10 +59,10 @@ describe("Collection Type Tests", () => {
             
             // Verify that array element types exist
             const employeeArrayType = registry.getType("/company/EmployeeArray");
-            if (employeeArrayType && employeeArrayType.category === "complex" && employeeArrayType.kind === "array") {
+            if (employeeArrayType && isComplexType(employeeArrayType) && employeeArrayType.kind === "array") {
                 const elementType = registry.getType(employeeArrayType.elementType);
                 expect(elementType).toBeDefined();
-                expect(elementType?.category).toBe("complex");
+                expect(isComplexType(elementType!)).toBe(true);
                 expect(elementType?.kind).toBe("entity");
             }
         });
@@ -96,10 +97,10 @@ describe("Collection Type Tests", () => {
             // Get SkillSet type
             const skillSetType = registry.getType("/company/SkillSet");
             expect(skillSetType).toBeDefined();
-            expect(skillSetType?.category).toBe("complex");
+            expect(isComplexType(skillSetType!)).toBe(true);
             expect(skillSetType?.kind).toBe("set");
             
-            if (skillSetType && skillSetType.category === "complex" && skillSetType.kind === "set") {
+            if (skillSetType && isComplexType(skillSetType) && skillSetType.kind === "set") {
                 expect(skillSetType.elementType).toBe("string");
                 expect(skillSetType.qName).toBe("/company/SkillSet");
             }
@@ -109,7 +110,7 @@ describe("Collection Type Tests", () => {
             registry.importNamespace(companyNamespace);
             
             const skillSetType = registry.getType("/company/SkillSet");
-            if (skillSetType && skillSetType.category === "complex" && skillSetType.kind === "set") {
+            if (skillSetType && isComplexType(skillSetType) && skillSetType.kind === "set") {
                 // Element type should be a system type
                 expect(skillSetType.elementType).toBe("string");
                 
@@ -151,10 +152,10 @@ describe("Collection Type Tests", () => {
             // Get GradeMap type
             const gradeMapType = registry.getType("/educational/GradeMap");
             expect(gradeMapType).toBeDefined();
-            expect(gradeMapType?.category).toBe("complex");
+            expect(isComplexType(gradeMapType!)).toBe(true);
             expect(gradeMapType?.kind).toBe("map");
             
-            if (gradeMapType && gradeMapType.category === "complex" && gradeMapType.kind === "map") {
+            if (gradeMapType && isComplexType(gradeMapType) && gradeMapType.kind === "map") {
                 expect(gradeMapType.keyType).toBe("string");
                 expect(gradeMapType.valueType).toBe("number");
                 expect(gradeMapType.qName).toBe("/educational/GradeMap");
@@ -182,7 +183,7 @@ describe("Collection Type Tests", () => {
             for (const typeName of typeNames) {
                 const fullTypeName = `/ecommerce/${typeName}`;
                 const type = registry.getType(fullTypeName);
-                if (type && type.category === "complex" && type.kind === "record") {
+                if (type && isComplexType(type) && type.kind === "record") {
                     expect(registry.hasType(fullTypeName)).toBe(true);
                 }
             }
@@ -196,10 +197,10 @@ describe("Collection Type Tests", () => {
             // Check Employee entity with collection properties
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(employeeType?.category).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe(true);
             expect(employeeType?.kind).toBe("entity");
             
-            if (employeeType && employeeType.category === "complex" && employeeType.kind === "entity") {
+            if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
                 // Check skills property (Set type)
                 const skillsProperty = employeeType.properties.get("skills");
                 expect(skillsProperty).toBeDefined();
@@ -217,7 +218,7 @@ describe("Collection Type Tests", () => {
             
             // Company should have employees array
             const companyType = registry.getType("/company/Company");
-            if (companyType && companyType.category === "complex" && companyType.kind === "entity") {
+            if (companyType && isComplexType(companyType) && companyType.kind === "entity") {
                 const employeesProperty = companyType.properties.get("employees");
                 expect(employeesProperty).toBeDefined();
                 expect(employeesProperty?.typeRef).toBe("/company/EmployeeArray");
@@ -247,7 +248,7 @@ describe("Collection Type Tests", () => {
             for (const collection of collections) {
                 const type = registry.getType(`/company/${collection.name}`);
                 expect(type).toBeDefined();
-                expect(type?.category).toBe("complex");
+                expect(isComplexType(type!)).toBe(true);
                 expect(type?.kind).toBe(collection.kind);
             }
         });
@@ -287,7 +288,7 @@ describe("Collection Type Tests", () => {
                 const type = registry.getType(collection.qName);
                 expect(type).toBeDefined();
                 
-                if (type && type.category === "complex" && (type.kind === "array" || type.kind === "set")) {
+                if (type && isComplexType(type) && (type.kind === "array" || type.kind === "set")) {
                     expect(type.elementType).toBe(collection.elementType);
                     
                     // Verify element type exists (either in registry or as system type)
@@ -309,7 +310,7 @@ describe("Collection Type Tests", () => {
             
             for (const typeName of typeNames) {
                 const type = registry.getType(`/company/${typeName}`);
-                if (type && type.category === "complex") {
+                if (type && isComplexType(type)) {
                     // Verify type is properly structured
                     expect(type.qName).toBe(`/company/${typeName}`);
                     
@@ -365,7 +366,7 @@ describe("Collection Type Tests", () => {
             const stats = registry.getRegistryStats();
             
             // Should have complex types (including collections)
-            expect(stats.typesByCategory.get("complex")).toBeGreaterThan(0);
+            expect(stats.typesByKind.get("object")).toBeGreaterThan(0);
             expect(stats.totalTypeCount).toBeGreaterThan(0);
             
             // Verify specific collection types are counted
@@ -387,7 +388,7 @@ describe("Collection Type Tests", () => {
             let collectionCount = 0;
             for (const typeName of typeNames) {
                 const type = registry.getType(`/company/${typeName}`);
-                if (type && type.category === "complex" && 
+                if (type && isComplexType(type) && 
                     (type.kind === "array" || type.kind === "set" || type.kind === "map" || type.kind === "record")) {
                     collectionCount++;
                 }

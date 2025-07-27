@@ -1,7 +1,5 @@
 import { StoreClass } from "../store/StoreClass"
 
-/** Type categories for the unified type system */
-export type TypeCategory = "simple" | "complex" | "special"
 
 /** Property types for inverse relationship metadata */
 //export type SimplePropType = 'string' | 'number' | 'boolean' | 'date';
@@ -44,20 +42,17 @@ export type ComplexTypeKind =
 export interface BaseTypeMeta {
   qName: string // Qualified name of the type
   label?: string // Human-readable label
-  category: TypeCategory
   kind: TypeKind // Type kind (simple, complex, special)
 }
 
 /** Simple type metadata */
 export interface SimpleTypeMeta extends BaseTypeMeta {
-  category: "simple"
   kind: SimpleTypeKind
   literalValue?: any // For literal types only
 }
 
 /** Object/Entity type metadata */
 export interface ObjectTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "object" | "entity"
   properties: Map<string, PropertyMeta>
   identityKeys?: string[] // For entity types only
@@ -79,7 +74,6 @@ export interface ObjectTypeMeta extends BaseTypeMeta {
 
 /** Array<E> type metadata */
 export interface ArrayTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "array"
   elementType: string // Qualified name of element type
   minElements?: number
@@ -88,7 +82,6 @@ export interface ArrayTypeMeta extends BaseTypeMeta {
 
 /** Map<K,V> type metadata */
 export interface MapTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "map"
   keyType: string // Qualified name of key type
   valueType: string // Qualified name of value type
@@ -96,28 +89,24 @@ export interface MapTypeMeta extends BaseTypeMeta {
 
 /** Set<V> type metadata */
 export interface SetTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "set"
   elementType: string // Qualified name of element type
 }
 
 /** Record<K,V> type metadata */
 export interface RecordTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "record"
   keyType: string // Qualified name of key type
   valueType: string // Qualified name of value type
 }
 /** Union type metadata */
 export interface UnionTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "union"
   memberTypes: string[] // Qualified names of union member types
 }
 
 /** Tagged union type metadata */
 export interface TaggedUnionTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "taggedUnion"
   discriminator: string // Property name used for discrimination
   memberTypes: Map<string, string> // discriminator value -> qualified type name
@@ -125,21 +114,18 @@ export interface TaggedUnionTypeMeta extends BaseTypeMeta {
 
 /** Intersection type metadata */
 export interface IntersectionTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "intersection"
   memberTypes: string[] // Qualified names of intersection member types
 }
 
 /** Tuple type metadata */
 export interface TupleTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "tuple"
   elementTypes: string[] // Qualified names of types for each position
 }
 
 /** Function type metadata */
 export interface FunctionTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "function"
   paramTypes: string[] // Qualified names of parameter types
   returnType: string // Qualified name of return type
@@ -147,7 +133,6 @@ export interface FunctionTypeMeta extends BaseTypeMeta {
 
 /** Subtype metadata */
 export interface SubtypeTypeMeta extends BaseTypeMeta {
-  category: "complex"
   kind: "subtype"
   baseType: string // Qualified name of base type
   extraProperties: Map<string, PropertyMeta> // Additional properties
@@ -155,7 +140,6 @@ export interface SubtypeTypeMeta extends BaseTypeMeta {
 
 /** Object reference type metadata */
 export interface ObjectRefTypeMeta extends BaseTypeMeta {
-  category: "special"
   kind: "objectRef"
   targetType: string // Qualified name of referenced entity type
 }
@@ -255,7 +239,9 @@ export function getPropertyKeyTypeKind(propMeta: PropertyMeta, store: StoreClass
 
 /** Type checking functions */
 export function isSimpleType(type: TypeMeta): type is SimpleTypeMeta {
-  return type && type.category === "simple"
+  if (!type) return false
+  const simpleKinds: SimpleTypeKind[] = ["string", "number", "boolean", "date", "literal", "null", "undefined", "void", "bigint", "symbol", "unknown", "any", "never"]
+  return simpleKinds.includes(type.kind as SimpleTypeKind)
 }
 
 export function isComplexType(
@@ -265,6 +251,7 @@ export function isComplexType(
   | ArrayTypeMeta
   | MapTypeMeta
   | SetTypeMeta
+  | RecordTypeMeta
   | UnionTypeMeta
   | TaggedUnionTypeMeta
   | IntersectionTypeMeta
@@ -272,21 +259,21 @@ export function isComplexType(
   | FunctionTypeMeta
   | SubtypeTypeMeta {
   if (!type) return false
-  return type.category === "complex"
+  const complexKinds: ComplexTypeKind[] = ["object", "entity", "array", "map", "set", "union", "intersection", "tuple", "taggedUnion", "function", "subtype", "record"]
+  return complexKinds.includes(type.kind as ComplexTypeKind)
 }
 
 export function isObjectType(type: TypeMeta): type is ObjectTypeMeta {
-  return type && type.category === "complex" && (type.kind === "object" || type.kind === "entity")
+  return type && (type.kind === "object" || type.kind === "entity")
 }
 
 export function isEntityType(type: TypeMeta): type is ObjectTypeMeta {
-  return type && type.category === "complex" && type.kind === "entity"
+  return type && type.kind === "entity"
 }
 
 export function isCollectionType(type: TypeMeta): type is ArrayTypeMeta | MapTypeMeta | SetTypeMeta | RecordTypeMeta {
   return (
     type &&
-    type.category === "complex" &&
     (type.kind === "array" || type.kind === "map" || type.kind === "set" || type.kind === "record")
   )
 }

@@ -6,7 +6,6 @@ import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta, SetTypeMeta, TypeMeta } fr
 // Array type for permissions
 const permissionArrayType: ArrayTypeMeta = {
     qName: "/auth/PermissionArray",
-    category: "complex",
     kind: "array",
     elementType: "/auth/Permission"
 };
@@ -14,7 +13,6 @@ const permissionArrayType: ArrayTypeMeta = {
 // Set type for roles
 const roleSetType: SetTypeMeta = {
     qName: "/auth/RoleSet",
-    category: "complex",
     kind: "set",
     elementType: "string"
 };
@@ -22,7 +20,6 @@ const roleSetType: SetTypeMeta = {
 // Array type for users
 const userArrayType: ArrayTypeMeta = {
     qName: "/auth/UserArray",
-    category: "complex",
     kind: "array",
     elementType: "/auth/User"
 };
@@ -32,7 +29,6 @@ const userArrayType: ArrayTypeMeta = {
 // Base User type
 const userType: ObjectTypeMeta = {
     qName: "/auth/User",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -78,7 +74,6 @@ const userType: ObjectTypeMeta = {
 // Admin User - PROPER INHERITANCE from User
 const adminUserType: ObjectTypeMeta = {
     qName: "/auth/AdminUser",
-    category: "complex",
     kind: "entity",
     extends: "/auth/User", // Proper inheritance from User
     properties: new Map<string, PropertyMeta>([
@@ -99,7 +94,6 @@ const adminUserType: ObjectTypeMeta = {
             // One-to-many: AdminUser has many permissions
             inverseProp: "grantedToAdmin",
             inverseTypeRef: "/auth/Permission",
-            inverseType: "object"
         }]
     ]),
     identityKeys: ["id"],
@@ -109,7 +103,6 @@ const adminUserType: ObjectTypeMeta = {
 // Guest User - PROPER INHERITANCE from User
 const guestUserType: ObjectTypeMeta = {
     qName: "/auth/GuestUser",
-    category: "complex",
     kind: "entity",
     extends: "/auth/User", // Proper inheritance from User
     properties: new Map<string, PropertyMeta>([
@@ -136,7 +129,6 @@ const guestUserType: ObjectTypeMeta = {
 // Permission entity
 const permissionType: ObjectTypeMeta = {
     qName: "/auth/Permission",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -171,7 +163,6 @@ const permissionType: ObjectTypeMeta = {
             // Many-to-one: Permission belongs to one admin
             inverseProp: "permissions",
             inverseTypeRef: "/auth/AdminUser",
-            inverseType: "array"
         }]
     ]),
     identityKeys: ["id"],
@@ -181,7 +172,6 @@ const permissionType: ObjectTypeMeta = {
 // Session entity with reference to imported Address type
 const sessionType: ObjectTypeMeta = {
     qName: "/auth/Session",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -201,7 +191,6 @@ const sessionType: ObjectTypeMeta = {
             // One-to-one: Session belongs to one user
             inverseProp: "currentSession",
             inverseTypeRef: "/auth/User",
-            inverseType: "object"
         }],
         ["createdAt", {
             name: "createdAt",
@@ -242,7 +231,6 @@ userType.properties.set("currentSession", {
     // One-to-one: User has one current session
     inverseProp: "user",
     inverseTypeRef: "/auth/Session",
-    inverseType: "object"
 });
 
 // Export the auth namespace with imports

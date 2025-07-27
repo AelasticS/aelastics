@@ -5,7 +5,6 @@ import { ObjectTypeMeta, PropertyMeta, TypeMeta } from "../../../registry/TypeDe
 
 const invalidReferencesType: ObjectTypeMeta = {
     qName: "/invalid/references/InvalidReferences",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -34,7 +33,6 @@ const invalidReferencesType: ObjectTypeMeta = {
 
 const inheritanceErrorType: ObjectTypeMeta = {
     qName: "/invalid/references/InheritanceError",
-    category: "complex",
     kind: "entity",
     extends: "/nonexistent/BaseType", // ERROR: Base type doesn't exist
     properties: new Map<string, PropertyMeta>([
@@ -54,7 +52,6 @@ const inheritanceErrorType: ObjectTypeMeta = {
 
 const invalidBidirectionalType: ObjectTypeMeta = {
     qName: "/invalid/references/InvalidBidirectional",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -68,7 +65,6 @@ const invalidBidirectionalType: ObjectTypeMeta = {
             optional: false,
             inverseProp: "nonExistentProperty", // ERROR: Inverse property doesn't exist
             inverseTypeRef: "/invalid/references/InvalidReferences",
-            inverseType: "object"
         }],
         ["anotherBadInverse", {
             name: "anotherBadInverse",
@@ -76,7 +72,6 @@ const invalidBidirectionalType: ObjectTypeMeta = {
             optional: false,
             inverseProp: "someProperty",
             inverseTypeRef: "/nonexistent/Type", // ERROR: Referenced type doesn't exist
-            inverseType: "object"
         }]
     ]),
     identityKeys: ["id"]

@@ -1,4 +1,5 @@
 import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
+import { isComplexType } from "../../registry/TypeDefinitions";
 import { RegistryMetadata } from "../../registry/NamespaceMetadata";
 import { companyNamespace } from "../example-namespaces/company-namespace";
 import { coreNamespace } from "../example-namespaces/core-namespace";
@@ -478,15 +479,15 @@ describe("Validation Error Tests", () => {
             
             // Verify collections are properly imported
             const stringArray = registry.getType("/test-valid-collections/StringArray");
-            expect(stringArray?.category).toBe("complex");
+            expect(isComplexType(stringArray!)).toBe(true);
             expect(stringArray?.kind).toBe("array");
             
             const numberSet = registry.getType("/test-valid-collections/NumberSet");
-            expect(numberSet?.category).toBe("complex");
+            expect(isComplexType(numberSet!)).toBe(true);
             expect(numberSet?.kind).toBe("set");
             
             const stringToNumberMap = registry.getType("/test-valid-collections/StringToNumberMap");
-            expect(stringToNumberMap?.category).toBe("complex");
+            expect(isComplexType(stringToNumberMap!)).toBe(true);
             expect(stringToNumberMap?.kind).toBe("map");
         });
 

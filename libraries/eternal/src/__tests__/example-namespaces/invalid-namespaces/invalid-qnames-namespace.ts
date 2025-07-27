@@ -5,7 +5,6 @@ import { ObjectTypeMeta, PropertyMeta, TypeMeta } from "../../../registry/TypeDe
 
 const badQNameType1: ObjectTypeMeta = {
     qName: "InvalidQName", // ERROR: Missing leading slash
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -24,7 +23,6 @@ const badQNameType1: ObjectTypeMeta = {
 
 const badQNameType2: ObjectTypeMeta = {
     qName: "/invalid/qnames/", // ERROR: Trailing slash
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -43,7 +41,6 @@ const badQNameType2: ObjectTypeMeta = {
 
 const badQNameType3: ObjectTypeMeta = {
     qName: "/invalid//qnames/EmptySegment", // ERROR: Double slash (empty segment)
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -62,7 +59,6 @@ const badQNameType3: ObjectTypeMeta = {
 
 const badQNameType4: ObjectTypeMeta = {
     qName: "/invalid/qnames/Invalid@Name", // ERROR: Invalid characters
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {

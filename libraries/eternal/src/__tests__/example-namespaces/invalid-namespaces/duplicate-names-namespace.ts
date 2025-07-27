@@ -5,7 +5,6 @@ import { ObjectTypeMeta, PropertyMeta, TypeMeta } from "../../../registry/TypeDe
 
 const duplicateType1: ObjectTypeMeta = {
     qName: "/invalid/duplicates/DuplicateType",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -24,7 +23,6 @@ const duplicateType1: ObjectTypeMeta = {
 
 const duplicateType2: ObjectTypeMeta = {
     qName: "/invalid/duplicates/DuplicateType", // ERROR: Same qName as duplicateType1
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {

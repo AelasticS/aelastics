@@ -1,5 +1,6 @@
 import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
 import { RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { isComplexType } from "../../registry/TypeDefinitions";
 import { subtypeExamplesNamespace } from "../example-namespaces/subtype-examples-namespace";
 import { companyNamespace } from "../example-namespaces/company-namespace";
 import { coreNamespace } from "../example-namespaces/core-namespace";
@@ -38,20 +39,20 @@ describe("Inheritance and Subtype Tests", () => {
             // Get BaseUser type - should not have extends property
             const baseUserType = registry.getType("/subtypes/BaseUser");
             expect(baseUserType).toBeDefined();
-            expect(baseUserType?.category).toBe("complex");
+            expect(isComplexType(baseUserType!)).toBe(true);
             expect(baseUserType?.kind).toBe("entity");
             
-            if (baseUserType && baseUserType.category === "complex" && baseUserType.kind === "entity") {
+            if (baseUserType && isComplexType(baseUserType) && baseUserType.kind === "entity") {
                 expect(baseUserType.extends).toBeUndefined();
             }
             
             // Get SuperAdminUser type and verify it extends BaseUser
             const superAdminUserType = registry.getType("/subtypes/SuperAdminUser");
             expect(superAdminUserType).toBeDefined();
-            expect(superAdminUserType?.category).toBe("complex");
+            expect(isComplexType(superAdminUserType!)).toBe(true);
             expect(superAdminUserType?.kind).toBe("entity");
             
-            if (superAdminUserType && superAdminUserType.category === "complex" && superAdminUserType.kind === "entity") {
+            if (superAdminUserType && isComplexType(superAdminUserType) && superAdminUserType.kind === "entity") {
                 expect(superAdminUserType.extends).toBe("/subtypes/BaseUser");
             }
         });
@@ -62,10 +63,10 @@ describe("Inheritance and Subtype Tests", () => {
             // Get BaseUser properties
             const baseUserType = registry.getType("/subtypes/BaseUser");
             expect(baseUserType).toBeDefined();
-            expect(baseUserType?.category).toBe("complex");
+            expect(isComplexType(baseUserType!)).toBe(true);
             expect(baseUserType?.kind).toBe("entity");
             
-            if (baseUserType && baseUserType.category === "complex" && baseUserType.kind === "entity") {
+            if (baseUserType && isComplexType(baseUserType) && baseUserType.kind === "entity") {
                 expect(baseUserType.properties.has("id")).toBe(true);
                 expect(baseUserType.properties.has("username")).toBe(true);
                 expect(baseUserType.properties.has("email")).toBe(true);
@@ -75,7 +76,7 @@ describe("Inheritance and Subtype Tests", () => {
             
             // Get SuperAdminUser properties (should have its own properties)
             const superAdminUserType = registry.getType("/subtypes/SuperAdminUser");
-            if (superAdminUserType && superAdminUserType.category === "complex" && superAdminUserType.kind === "entity") {
+            if (superAdminUserType && isComplexType(superAdminUserType) && superAdminUserType.kind === "entity") {
                 // SuperAdminUser's own properties
                 expect(superAdminUserType.properties.has("systemAccess")).toBe(true);
                 expect(superAdminUserType.properties.has("securityClearance")).toBe(true);
@@ -95,12 +96,12 @@ describe("Inheritance and Subtype Tests", () => {
             expect(superAdminUser).toBeDefined();
             
             // BaseUser has no parent
-            if (baseUser && baseUser.category === "complex" && baseUser.kind === "entity") {
+            if (baseUser && isComplexType(baseUser) && baseUser.kind === "entity") {
                 expect(baseUser.extends).toBeUndefined();
             }
             
             // SuperAdminUser extends BaseUser
-            if (superAdminUser && superAdminUser.category === "complex" && superAdminUser.kind === "entity") {
+            if (superAdminUser && isComplexType(superAdminUser) && superAdminUser.kind === "entity") {
                 expect(superAdminUser.extends).toBe("/subtypes/BaseUser");
             }
         });
@@ -127,10 +128,10 @@ describe("Inheritance and Subtype Tests", () => {
             // Get AdminUser subtype
             const adminUserSubtype = registry.getType("/subtypes/AdminUser");
             expect(adminUserSubtype).toBeDefined();
-            expect(adminUserSubtype?.category).toBe("complex");
+            expect(isComplexType(adminUserSubtype!)).toBe(true);
             expect(adminUserSubtype?.kind).toBe("subtype");
             
-            if (adminUserSubtype && adminUserSubtype.category === "complex" && adminUserSubtype.kind === "subtype") {
+            if (adminUserSubtype && isComplexType(adminUserSubtype) && adminUserSubtype.kind === "subtype") {
                 expect(adminUserSubtype.baseType).toBe("/subtypes/BaseUser");
                 expect(adminUserSubtype.extraProperties).toBeDefined();
                 expect(adminUserSubtype.extraProperties.size).toBeGreaterThan(0);
@@ -139,10 +140,10 @@ describe("Inheritance and Subtype Tests", () => {
             // Get PremiumUser subtype
             const premiumUserSubtype = registry.getType("/subtypes/PremiumUser");
             expect(premiumUserSubtype).toBeDefined();
-            expect(premiumUserSubtype?.category).toBe("complex");
+            expect(isComplexType(premiumUserSubtype!)).toBe(true);
             expect(premiumUserSubtype?.kind).toBe("subtype");
             
-            if (premiumUserSubtype && premiumUserSubtype.category === "complex" && premiumUserSubtype.kind === "subtype") {
+            if (premiumUserSubtype && isComplexType(premiumUserSubtype) && premiumUserSubtype.kind === "subtype") {
                 expect(premiumUserSubtype.baseType).toBe("/subtypes/BaseUser");
                 expect(premiumUserSubtype.extraProperties).toBeDefined();
             }
@@ -153,7 +154,7 @@ describe("Inheritance and Subtype Tests", () => {
             
             // Get AdminUser subtype
             const adminUserSubtype = registry.getType("/subtypes/AdminUser");
-            if (adminUserSubtype && adminUserSubtype.category === "complex" && adminUserSubtype.kind === "subtype") {
+            if (adminUserSubtype && isComplexType(adminUserSubtype) && adminUserSubtype.kind === "subtype") {
                 const extraProps = adminUserSubtype.extraProperties;
                 expect(extraProps.has("adminLevel")).toBe(true);
                 expect(extraProps.has("canManageUsers")).toBe(true);
@@ -166,7 +167,7 @@ describe("Inheritance and Subtype Tests", () => {
             
             // Get PremiumUser subtype
             const premiumUserSubtype = registry.getType("/subtypes/PremiumUser");
-            if (premiumUserSubtype && premiumUserSubtype.category === "complex" && premiumUserSubtype.kind === "subtype") {
+            if (premiumUserSubtype && isComplexType(premiumUserSubtype) && premiumUserSubtype.kind === "subtype") {
                 const extraProps = premiumUserSubtype.extraProperties;
                 expect(extraProps.has("subscriptionLevel")).toBe(true);
                 expect(extraProps.has("subscriptionExpires")).toBe(true);
@@ -180,10 +181,10 @@ describe("Inheritance and Subtype Tests", () => {
             // Get DigitalProduct subtype
             const digitalProductSubtype = registry.getType("/subtypes/DigitalProduct");
             expect(digitalProductSubtype).toBeDefined();
-            expect(digitalProductSubtype?.category).toBe("complex");
+            expect(isComplexType(digitalProductSubtype!)).toBe(true);
             expect(digitalProductSubtype?.kind).toBe("subtype");
             
-            if (digitalProductSubtype && digitalProductSubtype.category === "complex" && digitalProductSubtype.kind === "subtype") {
+            if (digitalProductSubtype && isComplexType(digitalProductSubtype) && digitalProductSubtype.kind === "subtype") {
                 expect(digitalProductSubtype.baseType).toBe("/subtypes/BaseProduct");
                 const extraProps = digitalProductSubtype.extraProperties;
                 expect(extraProps.has("downloadUrl")).toBe(true);
@@ -201,10 +202,10 @@ describe("Inheritance and Subtype Tests", () => {
             // Get PhysicalProduct subtype
             const physicalProductSubtype = registry.getType("/subtypes/PhysicalProduct");
             expect(physicalProductSubtype).toBeDefined();
-            expect(physicalProductSubtype?.category).toBe("complex");
+            expect(isComplexType(physicalProductSubtype!)).toBe(true);
             expect(physicalProductSubtype?.kind).toBe("subtype");
             
-            if (physicalProductSubtype && physicalProductSubtype.category === "complex" && physicalProductSubtype.kind === "subtype") {
+            if (physicalProductSubtype && isComplexType(physicalProductSubtype) && physicalProductSubtype.kind === "subtype") {
                 expect(physicalProductSubtype.baseType).toBe("/subtypes/BaseProduct");
                 const extraProps = physicalProductSubtype.extraProperties;
                 expect(extraProps.has("weight")).toBe(true);
@@ -249,7 +250,7 @@ describe("Inheritance and Subtype Tests", () => {
                 const subtypeType = registry.getType(subtypeQName);
                 expect(subtypeType).toBeDefined();
                 
-                if (subtypeType && subtypeType.category === "complex" && subtypeType.kind === "subtype") {
+                if (subtypeType && isComplexType(subtypeType) && subtypeType.kind === "subtype") {
                     expect(subtypeType.baseType).toBe("/subtypes/BaseUser");
                 }
             }
@@ -264,7 +265,7 @@ describe("Inheritance and Subtype Tests", () => {
                 const subtypeType = registry.getType(subtypeQName);
                 expect(subtypeType).toBeDefined();
                 
-                if (subtypeType && subtypeType.category === "complex" && subtypeType.kind === "subtype") {
+                if (subtypeType && isComplexType(subtypeType) && subtypeType.kind === "subtype") {
                     expect(subtypeType.baseType).toBe("/subtypes/BaseProduct");
                 }
             }
@@ -275,13 +276,13 @@ describe("Inheritance and Subtype Tests", () => {
             
             // Check that types can have inheritance
             const baseUserType = registry.getType("/subtypes/BaseUser");
-            if (baseUserType && baseUserType.category === "complex" && baseUserType.kind === "entity") {
+            if (baseUserType && isComplexType(baseUserType) && baseUserType.kind === "entity") {
                 expect(baseUserType.extends).toBeUndefined();
                 // BaseUser doesn't have roles in this example
             }
             
             const superAdminUserType = registry.getType("/subtypes/SuperAdminUser");
-            if (superAdminUserType && superAdminUserType.category === "complex" && superAdminUserType.kind === "entity") {
+            if (superAdminUserType && isComplexType(superAdminUserType) && superAdminUserType.kind === "entity") {
                 expect(superAdminUserType.extends).toBe("/subtypes/BaseUser");
                 // SuperAdminUser inherits identity keys from BaseUser, so it doesn't need to declare them
                 expect(superAdminUserType.identityKeys).toBeUndefined();

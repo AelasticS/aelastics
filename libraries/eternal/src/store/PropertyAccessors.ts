@@ -3,7 +3,7 @@ function isReference(prop: PropertyMeta, store?: StoreClass): boolean {
   if (store) {
     // Try new registry-based resolution first
     const resolvedType = store.registry.getType(prop.typeRef);
-    if (resolvedType && resolvedType.category === 'complex') {
+    if (resolvedType && isComplexType(resolvedType)) {
       return resolvedType.kind === 'object' || resolvedType.kind === 'entity';
     }
   }
@@ -15,7 +15,7 @@ function isCollectionOfReferences(prop: PropertyMeta, store?: StoreClass): boole
   if (store) {
     // Try new registry-based resolution first
     const resolvedType = store.registry.getType(prop.typeRef);
-    if (resolvedType && resolvedType.category === 'complex') {
+    if (resolvedType && isComplexType(resolvedType)) {
       if (resolvedType.kind === 'array' || resolvedType.kind === 'set' || resolvedType.kind === 'map') {
         // For collections, check if they contain object references
         // TODO: Check element type for collections - for now use string fallback
@@ -32,9 +32,9 @@ function getPropertyTypeKind(typeRef: string, store?: StoreClass): string {
     // Try new registry-based resolution first
     const resolvedType = store.registry.getType(typeRef);
     if (resolvedType) {
-      if (resolvedType.category === 'simple') {
+      if (isSimpleType(resolvedType)) {
         return "primitive";
-      } else if (resolvedType.category === 'complex') {
+      } else if (isComplexType(resolvedType)) {
         switch (resolvedType.kind) {
           case 'array': return "array";
           case 'map': return "map";
@@ -114,7 +114,7 @@ function createCollectionProxy(obj: StoreObject, propertyName: string, propertyM
   
   return collection;
 }
-import { PropertyMeta, TypeMeta, ObjectTypeMeta } from "../registry/TypeDefinitions"
+import { PropertyMeta, TypeMeta, ObjectTypeMeta, isComplexType, isSimpleType } from "../registry/TypeDefinitions"
 import { StoreClass } from "./StoreClass"
 import { __StoreSuperClass__, nextVersion, StoreObject, uuid } from "./InternalTypes"
 import {
@@ -633,12 +633,34 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
     // Precompute and bind inverse relationship updater
     if (propertyMeta.inverseTypeRef && propertyMeta.inverseProp) {
-      const inverseType = propertyMeta.inverseType;
+      // Get inverse type kind - use resolved TypeMeta if available, otherwise fallback to string detection
+      let inverseTypeKind: string;
+      if (propertyMeta.inverseType) {
+        // Use resolved TypeMeta object
+        const inverseTypeMeta = propertyMeta.inverseType;
+        if (inverseTypeMeta.kind === 'object' || inverseTypeMeta.kind === 'entity') {
+          inverseTypeKind = 'object';
+        } else {
+          inverseTypeKind = inverseTypeMeta.kind;
+        }
+      } else {
+        // Fallback to string-based detection from inverseTypeRef
+        const inverseTypeRef = propertyMeta.inverseTypeRef;
+        if (inverseTypeRef.includes('Array')) {
+          inverseTypeKind = 'array';
+        } else if (inverseTypeRef.includes('Set')) {
+          inverseTypeKind = 'set';
+        } else if (inverseTypeRef.includes('Map')) {
+          inverseTypeKind = 'map';
+        } else {
+          inverseTypeKind = 'object'; // Default assumption
+        }
+      }
       
       switch (propTypeKind) {
         // property is an object
         case "object":
-          switch (inverseType) {
+          switch (inverseTypeKind) {
             case "object":
               prototype[inverseUpdaterKey] = invUpd.one2one(store, propertyMeta)
               break
@@ -656,7 +678,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // property is an array
         case "array":
-          switch (inverseType) {
+          switch (inverseTypeKind) {
             case "object":
               prototype[inverseUpdaterKey] = invUpd.array2one(store, propertyMeta)
               break
@@ -674,7 +696,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // property is a map
         case "map":
-          switch (inverseType) {
+          switch (inverseTypeKind) {
             case "object":
               prototype[inverseUpdaterKey] = invUpd.map2one(store, propertyMeta)
               break
@@ -692,7 +714,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 
         // property is a set
         case "set":
-          switch (inverseType) {
+          switch (inverseTypeKind) {
             case "object":
               prototype[inverseUpdaterKey] = invUpd.set2one(store, propertyMeta)
               break

@@ -21,7 +21,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/test-a/TypeA",
-                        category: "simple" as const,
                         kind: "string" as const
                     }]
                 ]),
@@ -35,7 +34,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeB", {
                         qName: "/test-b/TypeB",
-                        category: "simple" as const,
                         kind: "number" as const
                     }]
                 ]),
@@ -68,7 +66,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["SingleType", {
                         qName: "/single/SingleType",
-                        category: "simple" as const,
                         kind: "string" as const
                     }]
                 ]),
@@ -93,7 +90,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/circular-a/TypeA",
-                        category: "complex" as const,
                         kind: "object" as const,
                         properties: new Map([
                             ["refToB", {
@@ -116,7 +112,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeB", {
                         qName: "/circular-b/TypeB",
-                        category: "complex" as const,
                         kind: "object" as const,
                         properties: new Map([
                             ["refToA", {
@@ -154,7 +149,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/circular-a/TypeA",
-                        category: "simple" as const,
                         kind: "string" as const
                     }]
                 ]),
@@ -238,7 +232,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/ref-a/TypeA",
-                        category: "complex" as const,
                         kind: "object" as const,
                         properties: new Map([
                             ["refToB", {
@@ -261,7 +254,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeB", {
                         qName: "/ref-b/TypeB",
-                        category: "simple" as const,
                         kind: "string" as const
                     }]
                 ]),
@@ -285,7 +277,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeA", {
                         qName: "/invalid-ref-a/TypeA",
-                        category: "complex" as const,
                         kind: "object" as const,
                         properties: new Map([
                             ["refToNonExistent", {
@@ -306,7 +297,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TypeB", {
                         qName: "/invalid-ref-b/TypeB",
-                        category: "simple" as const,
                         kind: "string" as const
                     }]
                 ]),
@@ -333,7 +323,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["ValidType", {
                         qName: "/valid/ValidType",
-                        category: "simple" as const,
                         kind: "string" as const
                     }]
                 ]),
@@ -368,7 +357,6 @@ describe("Batch Import Tests", () => {
                 types: new Map([
                     ["TestType", {
                         qName: "/test-system/TestType",
-                        category: "complex" as const,
                         kind: "object" as const,
                         properties: new Map([
                             ["stringProp", {

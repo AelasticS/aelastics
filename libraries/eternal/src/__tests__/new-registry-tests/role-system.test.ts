@@ -1,5 +1,6 @@
 import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
 import { RegistryMetadata } from "../../registry/NamespaceMetadata";
+import { isComplexType } from "../../registry/TypeDefinitions";
 import { companyNamespace } from "../example-namespaces/company-namespace";
 import { coreNamespace } from "../example-namespaces/core-namespace";
 import { ecommerceNamespace } from "../example-namespaces/ecommerce-namespace";
@@ -43,7 +44,7 @@ describe("Role System Tests", () => {
                 
                 // Role types should have proper category and kind
                 if (type) {
-                    expect(['simple', 'complex', 'special']).toContain(type.category);
+                    expect(type.kind).toBeDefined(); // Type should have a valid kind
                 }
             }
         });
@@ -56,7 +57,7 @@ describe("Role System Tests", () => {
             
             for (const typeName of coreTypes) {
                 const type = registry.getType(`/core/${typeName}`);
-                if (type && type.category === "complex" && type.kind === "object") {
+                if (type && isComplexType(type) && type.kind === "object") {
                     // Verify extends property if present
                     if (type.extends) {
                         expect(typeof type.extends).toBe("string");
@@ -87,10 +88,10 @@ describe("Role System Tests", () => {
             // Check Employee entity roles
             const employeeType = registry.getType("/company/Employee");
             expect(employeeType).toBeDefined();
-            expect(employeeType?.category).toBe("complex");
+            expect(isComplexType(employeeType!)).toBe(true);
             expect(employeeType?.kind).toBe("entity");
             
-            if (employeeType && employeeType.category === "complex" && employeeType.kind === "entity") {
+            if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
                 if (employeeType.roles) {
                     expect(Array.isArray(employeeType.roles)).toBe(true);
                     expect(employeeType.roles.length).toBeGreaterThan(0);
@@ -106,10 +107,10 @@ describe("Role System Tests", () => {
             // Check Company entity roles
             const companyType = registry.getType("/company/Company");
             expect(companyType).toBeDefined();
-            expect(companyType?.category).toBe("complex");
+            expect(isComplexType(companyType!)).toBe(true);
             expect(companyType?.kind).toBe("entity");
             
-            if (companyType && companyType.category === "complex" && companyType.kind === "entity") {
+            if (companyType && isComplexType(companyType) && companyType.kind === "entity") {
                 if (companyType.roles) {
                     expect(Array.isArray(companyType.roles)).toBe(true);
                     
@@ -136,7 +137,7 @@ describe("Role System Tests", () => {
             
             // Check entities with multiple roles
             const customerType = registry.getType("/ecommerce/Customer");
-            if (customerType && customerType.category === "complex" && customerType.kind === "entity") {
+            if (customerType && isComplexType(customerType) && customerType.kind === "entity") {
                 if (customerType.roles) {
                     expect(customerType.roles.length).toBeGreaterThanOrEqual(1);
                     
@@ -201,7 +202,7 @@ describe("Role System Tests", () => {
             
             // Check that role references use qualified names
             const employeeType = registry.getType("/company/Employee");
-            if (employeeType && employeeType.category === "complex" && employeeType.kind === "entity") {
+            if (employeeType && isComplexType(employeeType) && employeeType.kind === "entity") {
                 if (employeeType.roles) {
                     for (const role of employeeType.roles) {
                         // Role references should be qualified names
@@ -224,7 +225,7 @@ describe("Role System Tests", () => {
             
             for (const typeName of allTypes) {
                 const type = registry.getType(typeName);
-                if (type && type.category === "complex") {
+                if (type && isComplexType(type)) {
                     // Check if non-entity complex types have roles (should not happen)
                     if (type.kind !== "entity" && type.kind === "object" && type.roles) {
                         // This is informational - current implementation may allow roles on non-entities
@@ -245,7 +246,7 @@ describe("Role System Tests", () => {
             
             for (const typeName of companyTypes) {
                 const type = registry.getType(`/company/${typeName}`);
-                if (type && type.category === "complex" && type.kind === "entity") {
+                if (type && isComplexType(type) && type.kind === "entity") {
                     if (type.roles) {
                         for (const role of type.roles) {
                             // Role should reference types in other namespaces (like /core/...)
@@ -283,7 +284,7 @@ describe("Role System Tests", () => {
             
             for (const typeName of coreTypes) {
                 const type = registry.getType(`/core/${typeName}`);
-                if (type && type.category === "complex" && (type.kind === "object" || type.kind === "entity")) {
+                if (type && isComplexType(type) && (type.kind === "object" || type.kind === "entity")) {
                     // Check for inheritance relationships
                     if (type.extends) {
                         // Base type should exist
@@ -315,7 +316,7 @@ describe("Role System Tests", () => {
                 
                 for (const typeName of types) {
                     const type = registry.getType(`${namespacePath}/${typeName}`);
-                    if (type && type.category === "complex" && type.kind === "entity") {
+                    if (type && isComplexType(type) && type.kind === "entity") {
                         if (type.roles && type.roles.length > 0) {
                             entitiesWithRoles++;
                             totalRoleAssignments += type.roles.length;
@@ -341,7 +342,7 @@ describe("Role System Tests", () => {
                 
                 for (const typeName of types) {
                     const type = registry.getType(`${namespacePath}/${typeName}`);
-                    if (type && type.category === "complex" && type.kind === "entity") {
+                    if (type && isComplexType(type) && type.kind === "entity") {
                         if (type.roles) {
                             for (const role of type.roles) {
                                 roleUsageMap.set(role, (roleUsageMap.get(role) || 0) + 1);

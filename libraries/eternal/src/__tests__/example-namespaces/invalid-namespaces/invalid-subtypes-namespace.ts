@@ -5,7 +5,6 @@ import { ObjectTypeMeta, PropertyMeta, SubtypeTypeMeta, TypeMeta } from "../../.
 
 const validBaseType: ObjectTypeMeta = {
     qName: "/invalid/subtypes/ValidBase",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -27,7 +26,6 @@ const validBaseType: ObjectTypeMeta = {
 // ERROR: Subtype referencing non-existent base type
 const nonExistentBaseSubtype: SubtypeTypeMeta = {
     qName: "/invalid/subtypes/NonExistentBase",
-    category: "complex",
     kind: "subtype",
     baseType: "/nonexistent/BaseType", // ERROR: Base type doesn't exist
     extraProperties: new Map<string, PropertyMeta>([
@@ -42,7 +40,6 @@ const nonExistentBaseSubtype: SubtypeTypeMeta = {
 // ERROR: Subtype referencing primitive type as base
 const primitiveBaseSubtype: SubtypeTypeMeta = {
     qName: "/invalid/subtypes/PrimitiveBase",
-    category: "complex",
     kind: "subtype",
     baseType: "string", // ERROR: Cannot use primitive as base type
     extraProperties: new Map<string, PropertyMeta>([
@@ -57,7 +54,6 @@ const primitiveBaseSubtype: SubtypeTypeMeta = {
 // ERROR: Subtype with invalid property references
 const invalidPropertyRefsSubtype: SubtypeTypeMeta = {
     qName: "/invalid/subtypes/InvalidPropertyRefs",
-    category: "complex",
     kind: "subtype",
     baseType: "/invalid/subtypes/ValidBase",
     extraProperties: new Map<string, PropertyMeta>([
@@ -77,7 +73,6 @@ const invalidPropertyRefsSubtype: SubtypeTypeMeta = {
 // ERROR: Subtype with circular reference
 const circularSubtype1: SubtypeTypeMeta = {
     qName: "/invalid/subtypes/CircularA",
-    category: "complex",
     kind: "subtype",
     baseType: "/invalid/subtypes/CircularB", // ERROR: Will create circular dependency
     extraProperties: new Map<string, PropertyMeta>([
@@ -91,7 +86,6 @@ const circularSubtype1: SubtypeTypeMeta = {
 
 const circularSubtype2: SubtypeTypeMeta = {
     qName: "/invalid/subtypes/CircularB",
-    category: "complex",
     kind: "subtype",
     baseType: "/invalid/subtypes/CircularA", // ERROR: Will create circular dependency
     extraProperties: new Map<string, PropertyMeta>([
@@ -106,7 +100,6 @@ const circularSubtype2: SubtypeTypeMeta = {
 // ERROR: Subtype with duplicate property names from base
 const duplicatePropertySubtype: SubtypeTypeMeta = {
     qName: "/invalid/subtypes/DuplicateProperty",
-    category: "complex",
     kind: "subtype",
     baseType: "/invalid/subtypes/ValidBase",
     extraProperties: new Map<string, PropertyMeta>([
@@ -126,7 +119,6 @@ const duplicatePropertySubtype: SubtypeTypeMeta = {
 // ERROR: Subtype with invalid qName
 const invalidQNameSubtype: SubtypeTypeMeta = {
     qName: "InvalidQName", // ERROR: Missing leading slash
-    category: "complex",
     kind: "subtype",
     baseType: "/invalid/subtypes/ValidBase",
     extraProperties: new Map<string, PropertyMeta>([
@@ -141,7 +133,6 @@ const invalidQNameSubtype: SubtypeTypeMeta = {
 // ERROR: Subtype attempting to extend another subtype (deep nesting)
 const nestedSubtype: SubtypeTypeMeta = {
     qName: "/invalid/subtypes/NestedSubtype",
-    category: "complex",
     kind: "subtype",
     baseType: "/invalid/subtypes/NonExistentBase", // ERROR: Base is another subtype (if it existed)
     extraProperties: new Map<string, PropertyMeta>([

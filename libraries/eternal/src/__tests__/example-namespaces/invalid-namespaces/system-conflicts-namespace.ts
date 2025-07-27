@@ -5,25 +5,21 @@ import { ObjectTypeMeta, PropertyMeta, SimpleTypeMeta, TypeMeta } from "../../..
 
 const conflictingStringType: SimpleTypeMeta = {
     qName: "/invalid/system-conflicts/string", // ERROR: 'string' conflicts with system type
-    category: "simple",
     kind: "string"
 };
 
 const conflictingNumberType: SimpleTypeMeta = {
     qName: "/invalid/system-conflicts/number", // ERROR: 'number' conflicts with system type
-    category: "simple", 
     kind: "number"
 };
 
 const conflictingBooleanType: SimpleTypeMeta = {
     qName: "/invalid/system-conflicts/boolean", // ERROR: 'boolean' conflicts with system type
-    category: "simple",
     kind: "boolean"
 };
 
 const someValidType: ObjectTypeMeta = {
     qName: "/invalid/system-conflicts/ValidType",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {

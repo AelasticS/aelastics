@@ -1,4 +1,5 @@
 import { RegistryService, NamespaceImportError } from "../../registry/RegistryService";
+import { isSimpleType } from "../../registry/TypeDefinitions";
 import { RegistryMetadata } from "../../registry/NamespaceMetadata";
 import { companyNamespace } from "../example-namespaces/company-namespace";
 import { systemConflictsNamespace, reservedSystemNamespace } from "../example-namespaces/invalid-namespaces/system-conflicts-namespace";
@@ -95,7 +96,7 @@ describe("System Namespace Auto-Import Tests", () => {
             const stringType = registry.getType("/system/string");
             expect(stringType).toBeDefined();
             expect(stringType?.qName).toBe("/system/string");
-            expect(stringType?.category).toBe("simple");
+            expect(isSimpleType(stringType!)).toBe(true);
             expect(stringType?.kind).toBe("string");
         });
 

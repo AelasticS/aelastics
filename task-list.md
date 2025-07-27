@@ -70,3 +70,6 @@
         - analyze (parse) ts files or
         - dynamic import of ts files and traverse internal structure to do conversion
     - create test cases for testing this functionality
+### Analyze aelastics-result
+	- add warnings
+    - use results in eternal? 

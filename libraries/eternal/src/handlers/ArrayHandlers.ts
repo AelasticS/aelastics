@@ -3,7 +3,7 @@ import { getClassName, isStoreObject, makePrivatePropertyKey, makePrivateProxyKe
 import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
 import { StoreObject, uuid } from "../store/InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
-import { BaseTypeMeta, isObjectType, PropertyMeta } from "../registry/TypeDefinitions"
+import { BaseTypeMeta, isObjectType, PropertyMeta, getPropertyItemTypeKind } from "../registry/TypeDefinitions"
 import { StoreClass } from "../store/StoreClass"
 
 import * as invUpd from "../store/inverseUpdaters"
@@ -15,7 +15,7 @@ import { State } from "../store/State"
 // TODO: replace getPropertyItemTypeKind with isObjectType and test
 // Convert UUID to Object
 const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) => {
-  return (isObjectType(propDes.inverseType!) && item ? store.objectManager.findByUUID(item) : item;
+  return (isObjectType(propDes.inverseType!) && item) ? store.objectManager.findByUUID(item) : item;
 }
 
 /** Convert UUIDs to Objects */

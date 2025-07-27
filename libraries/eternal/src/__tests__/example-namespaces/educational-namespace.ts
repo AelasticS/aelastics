@@ -6,7 +6,6 @@ import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta, SetTypeMeta, MapTypeMeta, 
 // Array type for students
 const studentArrayType: ArrayTypeMeta = {
     qName: "/educational/StudentArray",
-    category: "complex",
     kind: "array",
     elementType: "/educational/Student"
 };
@@ -14,7 +13,6 @@ const studentArrayType: ArrayTypeMeta = {
 // Array type for courses
 const courseArrayType: ArrayTypeMeta = {
     qName: "/educational/CourseArray",
-    category: "complex",
     kind: "array",
     elementType: "/educational/Course"
 };
@@ -22,7 +20,6 @@ const courseArrayType: ArrayTypeMeta = {
 // Array type for assignments
 const assignmentArrayType: ArrayTypeMeta = {
     qName: "/educational/AssignmentArray",
-    category: "complex",
     kind: "array",
     elementType: "/educational/Assignment"
 };
@@ -30,7 +27,6 @@ const assignmentArrayType: ArrayTypeMeta = {
 // Set type for subjects
 const subjectSetType: SetTypeMeta = {
     qName: "/educational/SubjectSet",
-    category: "complex",
     kind: "set",
     elementType: "string"
 };
@@ -38,7 +34,6 @@ const subjectSetType: SetTypeMeta = {
 // Map type for grades (student ID -> grade)
 const gradeMapType: MapTypeMeta = {
     qName: "/educational/GradeMap",
-    category: "complex",
     kind: "map",
     keyType: "string",
     valueType: "number"
@@ -49,7 +44,6 @@ const gradeMapType: MapTypeMeta = {
 // Student entity
 const studentType: ObjectTypeMeta = {
     qName: "/educational/Student",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -94,7 +88,6 @@ const studentType: ObjectTypeMeta = {
             // Many-to-many: Student enrolls in many courses
             inverseProp: "enrolledStudents",
             inverseTypeRef: "/educational/Course",
-            inverseType: "array"
         }],
         ["assignments", {
             name: "assignments",
@@ -103,7 +96,6 @@ const studentType: ObjectTypeMeta = {
             // One-to-many: Student has many assignments
             inverseProp: "student",
             inverseTypeRef: "/educational/Assignment",
-            inverseType: "object"
         }]
     ]),
     identityKeys: ["id"],
@@ -113,7 +105,6 @@ const studentType: ObjectTypeMeta = {
 // Teacher entity (inherits from imported User)
 const teacherType: ObjectTypeMeta = {
     qName: "/educational/Teacher",
-    category: "complex",
     kind: "entity",
     extends: "BaseUser", // This will be resolved from imports
     properties: new Map<string, PropertyMeta>([
@@ -144,7 +135,6 @@ const teacherType: ObjectTypeMeta = {
             // One-to-many: Teacher teaches many courses
             inverseProp: "teacher",
             inverseTypeRef: "/educational/Course",
-            inverseType: "object"
         }]
     ]),
     identityKeys: ["id"],
@@ -154,7 +144,6 @@ const teacherType: ObjectTypeMeta = {
 // Course entity with many-to-many relationships
 const courseType: ObjectTypeMeta = {
     qName: "/educational/Course",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -204,7 +193,6 @@ const courseType: ObjectTypeMeta = {
             // Many-to-one: Course has one teacher
             inverseProp: "courses",
             inverseTypeRef: "/educational/Teacher",
-            inverseType: "array"
         }],
         ["enrolledStudents", {
             name: "enrolledStudents",
@@ -213,7 +201,6 @@ const courseType: ObjectTypeMeta = {
             // Many-to-many: Course has many students
             inverseProp: "courses",
             inverseTypeRef: "/educational/Student",
-            inverseType: "array"
         }],
         ["assignments", {
             name: "assignments",
@@ -222,7 +209,6 @@ const courseType: ObjectTypeMeta = {
             // One-to-many: Course has many assignments
             inverseProp: "course",
             inverseTypeRef: "/educational/Assignment",
-            inverseType: "object"
         }],
         ["grades", {
             name: "grades",
@@ -237,7 +223,6 @@ const courseType: ObjectTypeMeta = {
 // Assignment entity
 const assignmentType: ObjectTypeMeta = {
     qName: "/educational/Assignment",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -282,7 +267,6 @@ const assignmentType: ObjectTypeMeta = {
             // Many-to-one: Assignment belongs to one course
             inverseProp: "assignments",
             inverseTypeRef: "/educational/Course",
-            inverseType: "array"
         }],
         ["student", {
             name: "student",
@@ -291,7 +275,6 @@ const assignmentType: ObjectTypeMeta = {
             // Many-to-one: Assignment belongs to one student
             inverseProp: "assignments",
             inverseTypeRef: "/educational/Student",
-            inverseType: "array"
         }]
     ]),
     identityKeys: ["id"],

@@ -6,7 +6,6 @@ import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta, SetTypeMeta, MapTypeMeta, 
 // Array type for order items
 const orderItemArrayType: ArrayTypeMeta = {
     qName: "/ecommerce/OrderItemArray",
-    category: "complex",
     kind: "array",
     elementType: "/ecommerce/OrderItem"
 };
@@ -14,7 +13,6 @@ const orderItemArrayType: ArrayTypeMeta = {
 // Array type for products
 const productArrayType: ArrayTypeMeta = {
     qName: "/ecommerce/ProductArray",
-    category: "complex",
     kind: "array",
     elementType: "/ecommerce/Product"
 };
@@ -22,7 +20,6 @@ const productArrayType: ArrayTypeMeta = {
 // Set type for categories
 const categorySetType: SetTypeMeta = {
     qName: "/ecommerce/CategorySet",
-    category: "complex",
     kind: "set",
     elementType: "string"
 };
@@ -30,7 +27,6 @@ const categorySetType: SetTypeMeta = {
 // Map type for product attributes (key: attribute name, value: attribute value)
 const productAttributeMapType: MapTypeMeta = {
     qName: "/ecommerce/ProductAttributeMap",
-    category: "complex",
     kind: "map",
     keyType: "string",
     valueType: "string"
@@ -39,7 +35,6 @@ const productAttributeMapType: MapTypeMeta = {
 // Record type for inventory counts (key: warehouse location, value: count)
 const inventoryRecordType: RecordTypeMeta = {
     qName: "/ecommerce/InventoryRecord",
-    category: "complex",
     kind: "record",
     keyType: "string",
     valueType: "number"
@@ -50,7 +45,6 @@ const inventoryRecordType: RecordTypeMeta = {
 // Customer entity
 const customerType: ObjectTypeMeta = {
     qName: "/ecommerce/Customer",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -90,7 +84,6 @@ const customerType: ObjectTypeMeta = {
             // One-to-many: Customer has many orders
             inverseProp: "customer",
             inverseTypeRef: "/ecommerce/Order",
-            inverseType: "object"
         }]
     ]),
     identityKeys: ["id"],
@@ -100,7 +93,6 @@ const customerType: ObjectTypeMeta = {
 // Product entity with all collection types
 const productType: ObjectTypeMeta = {
     qName: "/ecommerce/Product",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -150,7 +142,6 @@ const productType: ObjectTypeMeta = {
             // One-to-many: Product has many order items
             inverseProp: "product",
             inverseTypeRef: "/ecommerce/OrderItem",
-            inverseType: "object"
         }]
     ]),
     identityKeys: ["id"],
@@ -160,7 +151,6 @@ const productType: ObjectTypeMeta = {
 // Order entity
 const orderType: ObjectTypeMeta = {
     qName: "/ecommerce/Order",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -195,7 +185,6 @@ const orderType: ObjectTypeMeta = {
             // Many-to-one: Order belongs to one customer
             inverseProp: "orders",
             inverseTypeRef: "/ecommerce/Customer",
-            inverseType: "array"
         }],
         ["orderItems", {
             name: "orderItems",
@@ -204,7 +193,6 @@ const orderType: ObjectTypeMeta = {
             // One-to-many: Order has many order items
             inverseProp: "order",
             inverseTypeRef: "/ecommerce/OrderItem",
-            inverseType: "object"
         }]
     ]),
     identityKeys: ["id"],
@@ -214,7 +202,6 @@ const orderType: ObjectTypeMeta = {
 // OrderItem entity - junction entity for Order-Product relationship
 const orderItemType: ObjectTypeMeta = {
     qName: "/ecommerce/OrderItem",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -244,7 +231,6 @@ const orderItemType: ObjectTypeMeta = {
             // Many-to-one: OrderItem belongs to one order
             inverseProp: "orderItems",
             inverseTypeRef: "/ecommerce/Order",
-            inverseType: "array"
         }],
         ["product", {
             name: "product",
@@ -253,7 +239,6 @@ const orderItemType: ObjectTypeMeta = {
             // Many-to-one: OrderItem belongs to one product
             inverseProp: "orderItems",
             inverseTypeRef: "/ecommerce/Product",
-            inverseType: "array"
         }]
     ]),
     identityKeys: ["id"],
@@ -263,7 +248,6 @@ const orderItemType: ObjectTypeMeta = {
 // Array type for orders (defined after Order type)
 const orderArrayType: ArrayTypeMeta = {
     qName: "/ecommerce/OrderArray",
-    category: "complex",
     kind: "array",
     elementType: "/ecommerce/Order"
 };

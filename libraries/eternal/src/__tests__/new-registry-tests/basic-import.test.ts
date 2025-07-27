@@ -149,7 +149,7 @@ describe("Basic Namespace Import Tests", () => {
             const stats = registry.getRegistryStats();
             expect(stats.namespaceCount).toBeGreaterThan(0);
             expect(stats.totalTypeCount).toBeGreaterThan(0);
-            expect(stats.typesByCategory.get("complex")).toBeGreaterThan(0);
+            expect(stats.typesByKind.get("object")).toBeGreaterThan(0);
         });
 
         test("should list all namespaces after import", () => {

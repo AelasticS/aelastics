@@ -6,7 +6,6 @@ import { ObjectTypeMeta, PropertyMeta, ArrayTypeMeta, SetTypeMeta, MapTypeMeta, 
 // Array type for employees
 const employeeArrayType: ArrayTypeMeta = {
     qName: "/company/EmployeeArray",
-    category: "complex",
     kind: "array",
     elementType: "/company/Employee"
 };
@@ -14,7 +13,6 @@ const employeeArrayType: ArrayTypeMeta = {
 // Array type for projects
 const projectArrayType: ArrayTypeMeta = {
     qName: "/company/ProjectArray",
-    category: "complex",
     kind: "array",
     elementType: "/company/Project"
 };
@@ -22,7 +20,6 @@ const projectArrayType: ArrayTypeMeta = {
 // Set type for skills
 const skillSetType: SetTypeMeta = {
     qName: "/company/SkillSet",
-    category: "complex",
     kind: "set",
     elementType: "string"
 };
@@ -32,7 +29,6 @@ const skillSetType: SetTypeMeta = {
 // Address value object (no bidirectional relationships)
 const addressType: ObjectTypeMeta = {
     qName: "/company/Address",
-    category: "complex",
     kind: "object",
     properties: new Map<string, PropertyMeta>([
         ["street", {
@@ -61,7 +57,6 @@ const addressType: ObjectTypeMeta = {
 // Badge entity - ONE-TO-ONE with Employee
 const badgeType: ObjectTypeMeta = {
     qName: "/company/Badge",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -86,7 +81,7 @@ const badgeType: ObjectTypeMeta = {
             // One-to-one: Badge belongs to one employee
             inverseProp: "badge",
             inverseTypeRef: "/company/Employee",
-            inverseType: "object" // Employee.badge is a single reference
+ // Employee.badge is a single reference
         }]
     ]),
     identityKeys: ["id"]
@@ -95,7 +90,6 @@ const badgeType: ObjectTypeMeta = {
 // Employee entity with bidirectional relationships
 const employeeType: ObjectTypeMeta = {
     qName: "/company/Employee",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -150,7 +144,7 @@ const employeeType: ObjectTypeMeta = {
             // One-to-one: Employee has one badge
             inverseProp: "employee",
             inverseTypeRef: "/company/Employee",
-            inverseType: "object" // Badge.employee is a single reference
+ // Badge.employee is a single reference
         }],
         ["company", {
             name: "company",
@@ -159,7 +153,7 @@ const employeeType: ObjectTypeMeta = {
             // Many-to-one: Employee belongs to one company
             inverseProp: "employees",
             inverseTypeRef: "/company/Company",
-            inverseType: "array" // Company.employees is a collection
+ // Company.employees is a collection
         }],
         ["projects", {
             name: "projects",
@@ -168,7 +162,7 @@ const employeeType: ObjectTypeMeta = {
             // Many-to-many: Employee works on many projects
             inverseProp: "assignedEmployees",
             inverseTypeRef: "/company/Project",
-            inverseType: "array" // Project.assignedEmployees is a collection
+ // Project.assignedEmployees is a collection
         }]
     ]),
     identityKeys: ["id"],
@@ -178,7 +172,6 @@ const employeeType: ObjectTypeMeta = {
 // Company entity - ONE-TO-MANY with Employees
 const companyType: ObjectTypeMeta = {
     qName: "/company/Company",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -208,7 +201,7 @@ const companyType: ObjectTypeMeta = {
             // One-to-many: Company has many employees
             inverseProp: "company",
             inverseTypeRef: "/company/Employee",
-            inverseType: "object" // Employee.company is a single reference
+ // Employee.company is a single reference
         }]
     ]),
     identityKeys: ["id"],
@@ -218,7 +211,6 @@ const companyType: ObjectTypeMeta = {
 // Project entity - MANY-TO-MANY with Employees
 const projectType: ObjectTypeMeta = {
     qName: "/company/Project",
-    category: "complex",
     kind: "entity",
     properties: new Map<string, PropertyMeta>([
         ["id", {
@@ -253,7 +245,7 @@ const projectType: ObjectTypeMeta = {
             // Many-to-many: Project has many employees
             inverseProp: "projects",
             inverseTypeRef: "/company/Employee",
-            inverseType: "array" // Employee.projects is a collection
+ // Employee.projects is a collection
         }]
     ]),
     identityKeys: ["id"],
