@@ -419,8 +419,11 @@ export class StoreClass {
           // Get the collection proxy that was created during object construction
           const collection = instance[propName];
           if (collection) {
-            // Add each element to the collection
+            // Add each element to the collection with validation
             for (const element of value) {
+              // Use TypeValidator to validate collection element types
+              this.validator.validateCollectionElement(element, propertyMeta, "initial_state");
+              
               // Validate that object elements are properly registered in store
               if (propTypeKind === "array" && this.isObjectElement(propertyMeta.typeRef, element)) {
                 this.validateObjectIsRegistered(element, propName);
@@ -440,14 +443,20 @@ export class StoreClass {
           }
         }
       } else if (propTypeKind === "object") {
-        // Object property: validate that object is registered in store (only during creation)
-        if (value) {
+        // Object property: validate type and registration
+        if (value !== null && value !== undefined) {
+          // Use TypeValidator to validate object property type
+          this.validator.validateObjectProperty(value, propertyMeta);
+          // Validate that object is registered in store (only during creation)
           this.validateObjectIsRegistered(value, propName);
         }
         // Use setter to maintain inverse relationships
         instance[propName] = value;
       } else {
-        // Primitive property: use setter for consistency
+        // Primitive property: validate type and use setter for consistency
+        if (value !== null && value !== undefined) {
+          this.validator.validatePrimitiveType(value, propertyMeta.typeRef, propertyMeta.name);
+        }
         instance[propName] = value;
       }
     }
