@@ -50,7 +50,7 @@ export class StoreClass {
   }
 
   private createDynamicClass(typeMeta: ObjectTypeMeta): void {
-    const className = typeMeta.qName // .split('/').pop() || 'UnknownType';
+    const className = typeMeta.qName 
     const store = this; // Capture store reference for use in class methods
     
     // Create dynamic class that extends __StoreSuperClass__
