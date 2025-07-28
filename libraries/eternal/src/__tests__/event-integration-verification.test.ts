@@ -50,7 +50,7 @@ describe("Event Integration Verification", () => {
         const updateListener = jest.fn().mockReturnValue({ success: true });
         
         const unsubscribe = events.subscribe(
-            updateListener, "before", "update", "/company/Company"
+            updateListener, "before", "update", "/company/Company", "*"
         );
 
         // Create an object first
