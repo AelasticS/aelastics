@@ -1,5 +1,10 @@
 import { EventPayload, Result } from "../events/EventTypes";
-import { Timing, Operation, Type, Property } from "./ISubscriptionManager";
+
+export type Timing = 'before' | 'after' | 'beforeCommit' | 'afterCommit' | '*';
+export type Operation = 'create' | 'update' | 'delete' | 'import'| '*'; // "update" for both scalar and collection changes
+export type Type = string | '*';
+export type Property = string | '*';
+
 
 /// Interface for event subscription management
 /// This interface defines methods for subscribing to various events in the system,

@@ -5,8 +5,7 @@ import { IHistory, IState, ChangeLogEntry } from "../interfaces/IHistory";
 import { IData } from "../interfaces/IData";
 import { IEvents } from "../interfaces/IEvents";
 import { EventPayload, Result as EventResult } from "../events/EventTypes";
-import { Timing, Operation, Type, Property } from "../interfaces/ISubscriptionManager";
-import { RegistryService } from "../registry/RegistryService";
+import { Timing, Operation, Type, Property } from "../interfaces/IEvents";
 
 export class ObjectsAdapter implements IObjects {
   constructor(private store: StoreClass) {}
