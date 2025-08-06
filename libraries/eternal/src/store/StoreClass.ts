@@ -503,31 +503,39 @@ export class StoreClass {
     }
   }
 
-  public update<T>(recipe: InternalRecipe, obj: T): T {
-    if (!this.currentState) {
-      throw new Error('No current state available for update');
-    }
-    
-    const storeObj = obj as any as StoreObject;
-    this.inUpdateMode = true;
+  public update<T>(recipe: (obj: T) => void, obj?: T): T {
+    let hasError = false
+    const wasInUpdateMode = this.inUpdateMode
     try {
-      const newVersion = this.currentState.createNewVersion(storeObj);
-      
-      // Apply the recipe
-      if (typeof recipe === 'function') {
-        if (recipe.length === 0) {
-          // Recipe returns new value
-          const newValue = (recipe as () => any)();
-          Object.assign(newVersion, newValue);
-        } else {
-          // Recipe modifies object in place
-          (recipe as (obj: StoreObject) => void)(newVersion);
-        }
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = true // Enter update mode if not already in it
+        this.makeNewState() // Create a new state for the update
       }
-      
-      return newVersion as T;
+      if (obj) {
+        // If an object is provided, apply the recipe to it
+        if (!(obj instanceof __StoreSuperClass__)) {
+          throw new Error("Invalid object: Ensure it was created or imported using the store.")
+        }
+        recipe(obj) // Apply modifications
+        let newObj = this.getState().getObject((obj as any)[uuid]) // get the latest version
+        return newObj as T
+      } else {
+        // If no object is provided, apply the recipe to the store
+        const result = (recipe as () => T)()
+        return result
+      }
+    } catch (error) {
+      hasError = true // Set error flag
+      console.error("An error occurred while applying the recipe:", error)
+      this.revertToPreviousState()
+      throw error // Re-throw the error after logging it
     } finally {
-      this.inUpdateMode = false;
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = false // Exit update mode if it was set by this method
+      }
+      if (!hasError) {
+        this.subscriptionManager.notifySubscribers() // Notify all subscribers of the store and objects
+      }
     }
   }
 
@@ -622,22 +630,42 @@ export class StoreClass {
     return JSON.stringify(allObjects);
   }
 
-  public undo(): boolean {
-    if (this.currentStateIndex > 0) {
-      this.currentStateIndex--;
-      this.currentState = this.stateHistory[this.currentStateIndex];
-      return true;
+  public makeNewState(): void {
+    // Clear future states if undo() was called before this change
+    // TODO check if objects from previous state which has nextVersion objects will be hanging
+    if (this.currentStateIndex < this.stateHistory.length - 1) {
+      this.stateHistory = this.stateHistory.slice(0, this.currentStateIndex + 1)
     }
-    return false;
+    this.stateHistory.push(new State(this, this.stateHistory.length > 0 ? this.getState() : undefined))
+    this.currentStateIndex++
   }
 
-  public redo(): boolean {
-    if (this.currentStateIndex < this.stateHistory.length - 1) {
-      this.currentStateIndex++;
-      this.currentState = this.stateHistory[this.currentStateIndex];
-      return true;
+  private revertToPreviousState(): boolean {
+    if (this.currentStateIndex >= 0) {
+      this.currentStateIndex--
+      return true // successful
     }
-    return false;
+    return false // unsuccessful
+  }
+
+  /** Undo the last change */
+  public undo(): boolean {
+    if (this.inUpdateMode) {
+      throw new Error("Cannot undo while in update mode.")
+    }
+    return this.revertToPreviousState()
+  }
+
+  /** Redo the last undone change */
+  public redo(): boolean {
+    if (this.inUpdateMode) {
+      throw new Error("Cannot redo while in update mode.")
+    }
+    if (this.currentStateIndex < this.stateHistory.length - 1) {
+      this.currentStateIndex++
+      return true // Redo successful
+    }
+    return false // Cannot redo beyond latest state
   }
 
   public clearHistory(): void {
