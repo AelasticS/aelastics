@@ -155,8 +155,10 @@ describe("Object Subscription Tests", () => {
         
         const employee = store.objects.create("/company/Employee", {
             id: "emp-001",
-            name: "John Doe",
-            email: "john@example.com"
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            isActive: true
         });
 
         // Subscribe to each object
@@ -170,7 +172,7 @@ describe("Object Subscription Tests", () => {
 
         // Update employee
         const updatedEmployee = store.objects.update((emp: any) => {
-            emp.name = "Jane Doe";
+            emp.firstName = "Jane";
         }, employee);
 
         // Verify each listener was called with correct object
@@ -189,8 +191,10 @@ describe("Object Subscription Tests", () => {
         // Create an employee object
         const employee = store.objects.create("/company/Employee", {
             id: "emp-001",
-            name: "John Doe",
-            email: "john@example.com"
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            isActive: true
         });
 
         // Subscribe to object updates
@@ -198,7 +202,7 @@ describe("Object Subscription Tests", () => {
 
         // Update different properties
         const updatedEmployee1 = store.objects.update((emp: any) => {
-            emp.name = "Jane Doe";
+            emp.firstName = "Jane";
         }, employee);
 
         const updatedEmployee2 = store.objects.update((emp: any) => {

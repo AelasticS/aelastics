@@ -112,8 +112,10 @@ describe("Store Subscription Tests", () => {
         // Create another object - should not trigger listener
         store.objects.create("/company/Employee", {
             id: "emp-001",
-            name: "John Doe",
-            email: "john@example.com"
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            isActive: true
         });
 
         // Verify listener was not called after unsubscribe
@@ -134,8 +136,10 @@ describe("Store Subscription Tests", () => {
 
         store.objects.create("/company/Employee", {
             id: "emp-001",
-            name: "John Doe",
-            email: "john@example.com"
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            isActive: true
         });
 
         // Verify listener was called for each creation
@@ -164,8 +168,10 @@ describe("Store Subscription Tests", () => {
         // Create another object
         store.objects.create("/company/Employee", {
             id: "emp-001",
-            name: "John Doe",
-            email: "john@example.com"
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            isActive: true
         });
 
         // Verify listener was called for each operation
@@ -197,8 +203,10 @@ describe("Store Subscription Tests", () => {
         // Create another object - should only trigger second listener
         store.objects.create("/company/Employee", {
             id: "emp-001",
-            name: "John Doe",
-            email: "john@example.com"
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            isActive: true
         });
 
         // Verify only listener2 was called for second operation
@@ -235,8 +243,10 @@ describe("Store Subscription Tests", () => {
         // Create a different object - should only trigger store listener
         store.objects.create("/company/Employee", {
             id: "emp-001",
-            name: "John Doe",
-            email: "john@example.com"
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            isActive: true
         });
 
         // Verify only store listener was called for different object
