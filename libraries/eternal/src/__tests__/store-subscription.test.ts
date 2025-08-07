@@ -271,13 +271,15 @@ describe("Store Subscription Tests", () => {
 
         const employee1 = store.objects.create("/company/Employee", {
             id: "emp-001",
-            name: "John Doe",
+            firstName: "John",
+            lastName: "Doe",
             email: "john@example.com"
         });
 
         const employee2 = store.objects.create("/company/Employee", {
             id: "emp-002", 
-            name: "Jane Smith",
+            firstName: "Jane",
+            lastName: "Smith",
             email: "jane@example.com"
         });
 
