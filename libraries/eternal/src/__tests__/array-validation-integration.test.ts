@@ -49,7 +49,7 @@ describe("Array Validation Integration", () => {
 
     describe("Array push validation", () => {
         test("should allow valid Employee objects in employees array", () => {
-            const company = store.create<Company>("/company/Company", {
+            let company = store.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp"
             });
@@ -72,7 +72,7 @@ describe("Array Validation Integration", () => {
 
             // This should work - adding valid Employee objects
             expect(() => {
-                store.update((comp) => {
+                company = store.update((comp) => {
                     comp.employees!.push(employee1, employee2);
                 }, company);
             }).not.toThrow();
@@ -118,7 +118,7 @@ describe("Array Validation Integration", () => {
 
     describe("Array unshift validation", () => {
         test("should validate elements added via unshift", () => {
-            const company = store.create<Company>("/company/Company", {
+            let company = store.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp"
             });
@@ -139,7 +139,7 @@ describe("Array Validation Integration", () => {
 
             // Valid unshift should work
             expect(() => {
-                store.update((comp) => {
+                company = store.update((comp) => {
                     comp.employees!.unshift(employee);
                 }, company);
             }).not.toThrow();
@@ -155,7 +155,7 @@ describe("Array Validation Integration", () => {
 
     describe("Array splice validation", () => {
         test("should validate elements added via splice", () => {
-            const company = store.create<Company>("/company/Company", {
+            let company = store.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp"
             });
@@ -184,7 +184,7 @@ describe("Array Validation Integration", () => {
 
             // Valid splice should work
             expect(() => {
-                store.update((comp) => {
+                company = store.update((comp) => {
                     comp.employees!.splice(0, 0, employee1, employee2);
                 }, company);
             }).not.toThrow();
@@ -200,7 +200,7 @@ describe("Array Validation Integration", () => {
 
     describe("Array setByIndex validation", () => {
         test("should validate element set by index", () => {
-            const company = store.create<Company>("/company/Company", {
+            let company = store.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp"
             });
@@ -228,13 +228,13 @@ describe("Array Validation Integration", () => {
             });
 
             // First add an employee
-            store.update((comp) => {
+            company = store.update((comp) => {
                 comp.employees!.push(employee1);
             }, company);
 
             // Valid setByIndex should work
             expect(() => {
-                store.update((comp) => {
+                company = store.update((comp) => {
                     comp.employees![0] = employee2;
                 }, company);
             }).not.toThrow();

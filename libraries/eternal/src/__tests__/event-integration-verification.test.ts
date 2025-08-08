@@ -67,10 +67,6 @@ describe("Event Integration Verification", () => {
             comp.name = "Updated Corp";
         }, company);
 
-        // Check if the listener was called
-        console.log("Update listener call count:", updateListener.mock.calls.length);
-        console.log("Updated company name:", company.name);
-
         // This test will reveal whether events are integrated with real operations
         expect(updateListener).toHaveBeenCalledTimes(1);
 
@@ -93,10 +89,6 @@ describe("Event Integration Verification", () => {
             objectType: "/company/Company",
             timestamp: Date.now()
         });
-
-        // Check if manual emission works
-        console.log("Manual listener call count:", manualListener.mock.calls.length);
-        console.log("Manual emission result:", result);
 
         // Manual emission should definitely work
         expect(manualListener).toHaveBeenCalledTimes(1);

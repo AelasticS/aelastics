@@ -26,7 +26,7 @@ describe("Object Subscription Tests", () => {
         const objectUpdateListener = jest.fn();
         
         // Create a company object
-        const company = store.objects.create("/company/Company", {
+    let company = store.objects.create("/company/Company", {
             id: "comp-001",
             name: "Tech Corp"
         });
@@ -88,7 +88,7 @@ describe("Object Subscription Tests", () => {
         const listener2 = jest.fn();
         
         // Create a company object
-        const company = store.objects.create("/company/Company", {
+    let company = store.objects.create("/company/Company", {
             id: "comp-001",
             name: "Tech Corp"
         });
@@ -116,7 +116,7 @@ describe("Object Subscription Tests", () => {
         const objectUpdateListener = jest.fn();
         
         // Create a company object
-        const company = store.objects.create("/company/Company", {
+        let company = store.objects.create("/company/Company", {
             id: "comp-001",
             name: "Tech Corp"
         });
@@ -125,7 +125,7 @@ describe("Object Subscription Tests", () => {
         const unsubscribe = events.subscribeToObject(company, objectUpdateListener);
 
         // Update the object - should trigger listener
-        store.objects.update((comp: any) => {
+        company = store.objects.update((comp: any) => {
             comp.name = "First Update";
         }, company);
 
@@ -135,7 +135,7 @@ describe("Object Subscription Tests", () => {
         unsubscribe();
 
         // Update again - should not trigger listener
-        store.objects.update((comp: any) => {
+        company = store.objects.update((comp: any) => {
             comp.name = "Second Update";
         }, company);
 

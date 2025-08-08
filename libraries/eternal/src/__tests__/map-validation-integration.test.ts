@@ -42,7 +42,7 @@ describe("Map Validation Integration", () => {
 
     describe("Map set validation", () => {
         test("should allow valid string values in metadata map", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -52,7 +52,7 @@ describe("Map Validation Integration", () => {
 
             // This should work - adding valid string values to string map
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     emp.metadata!.set("department", "Engineering");
                     emp.metadata!.set("level", "Senior");
                     emp.metadata!.set("location", "Remote");
@@ -65,7 +65,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("should reject object values in string map", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -88,7 +88,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("should reject number values in string map", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -105,7 +105,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("should reject boolean values in string map", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -122,7 +122,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("should handle updating existing keys gracefully", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -131,13 +131,13 @@ describe("Map Validation Integration", () => {
             });
 
             // Set initial value
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.metadata!.set("department", "Engineering");
             }, employee);
 
             // Update the same key with new value - should work
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     emp.metadata!.set("department", "Product");
                 }, employee);
             }).not.toThrow();
@@ -146,7 +146,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("should reject null and undefined values", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -161,6 +161,9 @@ describe("Map Validation Integration", () => {
                 }, employee);
             }).toThrow(/Cannot set null or undefined to collection property 'metadata'/);
 
+            // Refresh to current state to avoid stale reference on next update
+            employee = store.findByUUID<Employee>(store.getUUID(employee))!;
+
             expect(() => {
                 store.update((emp) => {
                     (emp.metadata as any).set("level", undefined);
@@ -171,7 +174,7 @@ describe("Map Validation Integration", () => {
 
     describe("Map operations that should not require validation", () => {
         test("get operation should work normally", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -180,7 +183,7 @@ describe("Map Validation Integration", () => {
             });
 
             // Set a value first
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.metadata!.set("department", "Engineering");
             }, employee);
 
@@ -190,7 +193,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("delete operation should work normally", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -199,13 +202,13 @@ describe("Map Validation Integration", () => {
             });
 
             // Set a value first
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.metadata!.set("department", "Engineering");
             }, employee);
 
             // Delete should work without validation
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     emp.metadata!.delete("department");
                 }, employee);
             }).not.toThrow();
@@ -214,7 +217,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("clear operation should work normally", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -223,14 +226,14 @@ describe("Map Validation Integration", () => {
             });
 
             // Set some values first
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.metadata!.set("department", "Engineering");
                 emp.metadata!.set("level", "Senior");
             }, employee);
 
             // Clear should work without validation
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     emp.metadata!.clear();
                 }, employee);
             }).not.toThrow();
@@ -239,7 +242,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("has operation should work normally", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -248,7 +251,7 @@ describe("Map Validation Integration", () => {
             });
 
             // Set a value first
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.metadata!.set("department", "Engineering");
             }, employee);
 
@@ -258,7 +261,7 @@ describe("Map Validation Integration", () => {
         });
 
         test("size operation should work normally", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -270,7 +273,7 @@ describe("Map Validation Integration", () => {
             expect(employee.metadata!.size).toBe(0);
 
             // Set some values
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.metadata!.set("department", "Engineering");
                 emp.metadata!.set("level", "Senior");
             }, employee);

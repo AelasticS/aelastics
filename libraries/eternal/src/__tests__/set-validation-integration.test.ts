@@ -42,7 +42,7 @@ describe("Set Validation Integration", () => {
 
     describe("Set add validation", () => {
         test("should allow valid string elements in skills set", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -52,7 +52,7 @@ describe("Set Validation Integration", () => {
 
             // This should work - adding valid string elements
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     emp.skills!.add("JavaScript");
                     emp.skills!.add("TypeScript");
                     emp.skills!.add("React");
@@ -65,7 +65,7 @@ describe("Set Validation Integration", () => {
         });
 
         test("should reject object values in string set", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -81,14 +81,14 @@ describe("Set Validation Integration", () => {
 
             // This should fail - adding object to string set
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     (emp.skills as any).add(badge);
                 }, employee);
             }).toThrow(/Expected string, but received object/);
         });
 
         test("should reject number values in string set", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -98,14 +98,14 @@ describe("Set Validation Integration", () => {
 
             // This should fail - adding number to string set
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     (emp.skills as any).add(123);
                 }, employee);
             }).toThrow(/Expected string, but received number/);
         });
 
         test("should reject boolean values in string set", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -115,14 +115,14 @@ describe("Set Validation Integration", () => {
 
             // This should fail - adding boolean to string set
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     (emp.skills as any).add(true);
                 }, employee);
             }).toThrow(/Expected string, but received boolean/);
         });
 
         test("should handle duplicate additions gracefully", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -132,7 +132,7 @@ describe("Set Validation Integration", () => {
 
             // Add the same skill multiple times - should not throw but also not duplicate
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     emp.skills!.add("JavaScript");
                     emp.skills!.add("JavaScript"); // Duplicate
                     emp.skills!.add("JavaScript"); // Another duplicate
@@ -144,7 +144,7 @@ describe("Set Validation Integration", () => {
         });
 
         test("should reject null and undefined values", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -159,6 +159,9 @@ describe("Set Validation Integration", () => {
                 }, employee);
             }).toThrow(/Cannot add null or undefined to collection property 'skills'/);
 
+            // Refresh to current state before next failing update
+            employee = store.findByUUID<Employee>(store.getUUID(employee))!;
+
             expect(() => {
                 store.update((emp) => {
                     (emp.skills as any).add(undefined);
@@ -169,7 +172,7 @@ describe("Set Validation Integration", () => {
 
     describe("Set operations that should not require validation", () => {
         test("delete operation should work normally", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -178,13 +181,13 @@ describe("Set Validation Integration", () => {
             });
 
             // Add a skill first
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.skills!.add("JavaScript");
             }, employee);
 
             // Delete should work without validation
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     emp.skills!.delete("JavaScript");
                 }, employee);
             }).not.toThrow();
@@ -193,7 +196,7 @@ describe("Set Validation Integration", () => {
         });
 
         test("clear operation should work normally", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -202,14 +205,14 @@ describe("Set Validation Integration", () => {
             });
 
             // Add some skills first
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.skills!.add("JavaScript");
                 emp.skills!.add("TypeScript");
             }, employee);
 
             // Clear should work without validation
             expect(() => {
-                store.update((emp) => {
+                employee = store.update((emp) => {
                     emp.skills!.clear();
                 }, employee);
             }).not.toThrow();
@@ -218,7 +221,7 @@ describe("Set Validation Integration", () => {
         });
 
         test("has operation should work normally", () => {
-            const employee = store.create<Employee>("/company/Employee", {
+            let employee = store.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -227,7 +230,7 @@ describe("Set Validation Integration", () => {
             });
 
             // Add a skill first
-            store.update((emp) => {
+            employee = store.update((emp) => {
                 emp.skills!.add("JavaScript");
             }, employee);
 

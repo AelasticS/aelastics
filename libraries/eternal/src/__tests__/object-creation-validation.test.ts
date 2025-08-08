@@ -73,7 +73,7 @@ describe("Object Creation Validation", () => {
             }).not.toThrow();
         });
 
-        test("should allow creation with valid object properties", () => {
+    test("should allow creation with valid object properties", () => {
             const company = store.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp",
@@ -88,7 +88,7 @@ describe("Object Creation Validation", () => {
             });
 
             expect(() => {
-                const employee = store.create<Employee>("/company/Employee", {
+                let employee = store.create<Employee>("/company/Employee", {
                     id: "emp-001",
                     firstName: "John",
                     lastName: "Doe",
@@ -97,9 +97,14 @@ describe("Object Creation Validation", () => {
                     badge: badge,
                     company: company
                 });
-                
-                expect(employee.badge).toBe(badge);
-                expect(employee.company).toBe(company);
+
+                // Refresh all involved references to current state to avoid stale identity
+                employee = store.findByUUID<Employee>(store.getUUID(employee))!;
+                const freshBadge = store.findByUUID<Badge>(store.getUUID(badge))!;
+                const freshCompany = store.findByUUID<Company>(store.getUUID(company))!;
+
+                expect(employee.badge).toBe(freshBadge);
+                expect(employee.company).toBe(freshCompany);
             }).not.toThrow();
         });
 

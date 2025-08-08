@@ -59,7 +59,7 @@ describe("Relationship Operations Tests", () => {
 
     describe("One-to-One Relationships", () => {
         test("should connect/disconnect Employee ↔ Badge (one-to-one)", () => {
-            const employee = store.objects.create<Employee>("/company/Employee", {
+            let employee = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -67,7 +67,7 @@ describe("Relationship Operations Tests", () => {
                 isActive: true
             });
 
-            const badge = store.objects.create<Badge>("/company/Badge", {
+            let badge = store.objects.create<Badge>("/company/Badge", {
                 id: "badge-001",
                 badgeNumber: "B001",
                 isActive: true
@@ -78,17 +78,25 @@ describe("Relationship Operations Tests", () => {
             expect(badge.employee).toBeUndefined();
 
             // Test connection
-            store.objects.update((emp) => {
+            employee = store.objects.update((emp) => {
                 emp.badge = badge;
             }, employee);
+
+            // Refresh both references from current state
+            employee = store.objects.findByUUID(store.objects.getUUID(employee))!;
+            badge = store.objects.findByUUID(store.objects.getUUID(badge))!;
 
             expect(employee.badge).toBe(badge);
             expect(badge.employee).toBe(employee);
 
             // Test disconnection
-            store.objects.update((emp) => {
+            employee = store.objects.update((emp) => {
                 emp.badge = undefined;
             }, employee);
+
+            // Refresh both references from current state
+            employee = store.objects.findByUUID(store.objects.getUUID(employee))!;
+            badge = store.objects.findByUUID(store.objects.getUUID(badge))!;
 
             expect(employee.badge).toBeUndefined();
             expect(badge.employee).toBeUndefined();
@@ -486,7 +494,7 @@ describe("Relationship Operations Tests", () => {
             try {
                 // Call disconnect method
                 (employee as any).disconnect?.();
-
+                
                 // Verify all relationships are cleared
                 expect(employee.company).toBeUndefined();
                 expect(employee.badge).toBeUndefined();
@@ -494,7 +502,7 @@ describe("Relationship Operations Tests", () => {
                 expect(badge.employee).toBeUndefined();
 
             } catch (error) {
-                console.warn("Disconnect method not yet available:", error);
+                console.warn("IMPLEMENT THIS:Disconnect method not yet available:", error);
             }
         });
     });

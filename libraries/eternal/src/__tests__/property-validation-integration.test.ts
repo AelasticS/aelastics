@@ -48,7 +48,7 @@ describe("PropertyAccessors Type Validation Integration", () => {
     });
 
     test("should allow valid object property assignment", () => {
-        const employee = store.create<Employee>("/company/Employee", {
+        let employee = store.create<Employee>("/company/Employee", {
             id: "emp-001",
             firstName: "John",
             lastName: "Doe",
@@ -56,7 +56,7 @@ describe("PropertyAccessors Type Validation Integration", () => {
             isActive: true
         });
 
-        const badge = store.create<Badge>("/company/Badge", {
+        let badge = store.create<Badge>("/company/Badge", {
             id: "badge-001",
             badgeNumber: "B001",
             isActive: true
@@ -68,7 +68,8 @@ describe("PropertyAccessors Type Validation Integration", () => {
                 emp.badge = badge;
             }, employee);
         }).not.toThrow();
-        
+        employee = store.findByUUID<Employee>(store.getUUID(employee))!;
+        badge = store.findByUUID<Badge>(store.getUUID(badge))!;
         expect(employee.badge).toBe(badge);
     });
 
