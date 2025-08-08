@@ -147,8 +147,9 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
   if (!objectTypeMeta.properties || !(objectTypeMeta.properties instanceof Map)) {
     throw new Error(`Invalid properties for typeMeta: ${typeMeta.qName}`)
   }
-  const allProps = store.getAllProperties(typeMeta.qName)
-  for (const [key, propertyMeta] of allProps) {
+
+  const immediateProps = objectTypeMeta.properties; // Only current type's properties, due to inhertance in dynamic classes
+    for (const [key, propertyMeta] of immediateProps) {
     const privateKey = makePrivatePropertyKey(key)
     const proxyKey = makePrivateProxyKey(key)
     const inverseUpdaterKey = makeUpdateInverseKey(key)
@@ -448,7 +449,7 @@ export function addPropertyAccessors(prototype: any, typeMeta: TypeMeta, store: 
 }
 
 // add dynamically method to shallow copy props (including observables) from one instance to another
-export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
+export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta, store: StoreClass) {
   prototype.copyProps = function (newObj: any, currentPrototype: any) {
     // Recursively copy properties from the superclass
     const superClass = Object.getPrototypeOf(currentPrototype)
@@ -458,13 +459,15 @@ export function addCopyPropsMethod(prototype: any, typeMeta: TypeMeta) {
     // Copy properties of the current type
     for (const [key, propertyMeta] of (typeMeta as ObjectTypeMeta).properties || new Map()) {
       const privateKey = makePrivatePropertyKey(key)
-      if (propertyMeta.typeRef.includes("array")) {
+      const propTypeKind = getPropertyTypeKind(propertyMeta.typeRef, store)
+      
+      if (propTypeKind === "array") {
         ;(newObj[privateKey] as [any]).push(...this[privateKey])
-      } else if (propertyMeta.typeRef.includes("set")) {
+      } else if (propTypeKind === "set") {
         ;(this[privateKey] as Set<any>).forEach((value) => {
           ;(newObj[privateKey] as Set<any>).add(value)
         })
-      } else if (propertyMeta.typeRef.includes("map")) {
+      } else if (propTypeKind === "map") {
         ;(this[privateKey] as Map<any, any>).forEach((value, key) => {
           ;(newObj[privateKey] as Map<any, any>).set(key, value)
         })

@@ -1,10 +1,17 @@
 import { __StoreSuperClass__, StoreObject, uuid, createdAt } from "./InternalTypes"
 import { RegistryService } from "../registry/RegistryService"
-import { TypeMeta, PropertyMeta, ObjectTypeMeta, isSimpleType, isComplexType } from "../registry/TypeDefinitions"
+import {
+  TypeMeta,
+  PropertyMeta,
+  ObjectTypeMeta,
+  isSimpleType,
+  isComplexType,
+  isObjectType,
+} from "../registry/TypeDefinitions"
 import { SubscriptionManager } from "../events/SubscriptionManager"
 import { State } from "./State"
 import { generateUUID, uniqueTimestamp, makePrivatePropertyKey, makePrivateProxyKey } from "./utils"
-import { addPropertyAccessors } from "./PropertyAccessors"
+import { addCopyPropsMethod, addPropertyAccessors } from "./PropertyAccessors"
 import { createImmutableArray } from "../handlers/ArrayHandlers"
 import { createImmutableSet } from "../handlers/SetHandlers"
 import { createImmutableMap } from "../handlers/MapHandlers"
@@ -24,222 +31,267 @@ export class StoreClass {
 
   constructor(registryService: RegistryService) {
     this.registryService = registryService
-    this.initializeRegistryTypes();
-    this.initializeInitialState();
-    this.validator = new TypeValidator(this);
+    this.initializeRegistryTypes()
+    this.initializeInitialState()
+    this.validator = new TypeValidator(this)
   }
 
   private initializeInitialState(): void {
     // Create initial state
-    this.currentState = new State(this);
-    this.stateHistory.push(this.currentState);
-    this.currentStateIndex = 0;
+    this.currentState = new State(this)
+    this.stateHistory.push(this.currentState)
+    this.currentStateIndex = 0
   }
 
   private initializeRegistryTypes(): void {
     // Initialize dynamic classes from registry types
     for (const namespacePath of this.registryService.listNamespaces()) {
-      const availableTypes = this.registryService.getAvailableTypesInNamespace(namespacePath);
+      const availableTypes = this.registryService.getAvailableTypesInNamespace(namespacePath)
       for (const typeName of availableTypes) {
-        const typeMeta = this.registryService.getTypeInNamespace(typeName, namespacePath);
-        if (typeMeta && isComplexType(typeMeta)) {
-          this.createDynamicClass(typeMeta as ObjectTypeMeta);
+        const typeMeta = this.registryService.getTypeInNamespace(typeName, namespacePath)
+        if (typeMeta && isObjectType(typeMeta)) {
+          this.createDynamicClass(typeMeta as ObjectTypeMeta)
         }
       }
     }
   }
 
   private createDynamicClass(typeMeta: ObjectTypeMeta): void {
-    const className = typeMeta.qName 
-    const store = this; // Capture store reference for use in class methods
-    
-    // Create dynamic class that extends __StoreSuperClass__
-    const DynamicClass = class extends __StoreSuperClass__ {
+    const className = typeMeta.qName
+    const store = this // Capture store reference for use in class methods
+
+    // Handle inheritance properly
+    let BaseClass: any = __StoreSuperClass__
+
+    if (typeMeta.extends) {
+      // First try to get already created class
+      const superClass = this.typeToClassMap.get(typeMeta.extends)
+
+      if (superClass) {
+        BaseClass = superClass
+      } else {
+        // Superclass not created yet - resolve and create it recursively
+        const superTypeMeta = this.getTypeMeta(typeMeta.extends)
+
+        if (!superTypeMeta) {
+          throw new Error(`Base type '${typeMeta.extends}' not found in registry for type '${typeMeta.qName}'`)
+        }
+
+        if (!isComplexType(superTypeMeta)) {
+          throw new Error(`Base type '${typeMeta.extends}' is not a complex type and cannot be extended`)
+        }
+
+        // Recursively create the superclass first
+        this.createDynamicClass(superTypeMeta as ObjectTypeMeta)
+
+        // Now get the created superclass
+        BaseClass = this.typeToClassMap.get(typeMeta.extends)
+
+        if (!BaseClass) {
+          throw new Error(`Failed to create base class for type '${typeMeta.extends}'`)
+        }
+      }
+    }
+
+    // Create dynamic class that extends its supertypes
+    const DynamicClass = class extends BaseClass {
       constructor() {
-        super();
-        this[uuid] = generateUUID();
-        this[createdAt] = uniqueTimestamp();
-        
+        super()
+        ;(this as any)[uuid] = generateUUID()
+        ;(this as any)[createdAt] = uniqueTimestamp()
+
         // Initialize properties from type metadata using private keys to bypass setters
         if (typeMeta.properties) {
           for (const [propName, propMeta] of typeMeta.properties) {
-            const defaultValue = this.getDefaultValue(propMeta);
-            const propTypeKind = this.getPropertyTypeKind(propMeta.typeRef);
-            
+            const defaultValue = this.getDefaultValue(propMeta)
+            const propTypeKind = this.getPropertyTypeKind(propMeta.typeRef)
+
             if (propTypeKind === "array") {
-              const privateKey = makePrivatePropertyKey(propName);
-              const proxyKey = makePrivateProxyKey(propName);
-              (this as any)[privateKey] = [];
-              (this as any)[proxyKey] = createImmutableArray((this as any)[privateKey], {
+              const privateKey = makePrivatePropertyKey(propName)
+              const proxyKey = makePrivateProxyKey(propName)
+              ;(this as any)[privateKey] = []
+              ;(this as any)[proxyKey] = createImmutableArray((this as any)[privateKey], {
                 store,
                 object: this as any,
                 propDes: propMeta,
-              });
+              })
             } else if (propTypeKind === "set") {
-              const privateKey = makePrivatePropertyKey(propName);
-              const proxyKey = makePrivateProxyKey(propName);
-              (this as any)[privateKey] = new Set();
-              (this as any)[proxyKey] = createImmutableSet((this as any)[privateKey], {
+              const privateKey = makePrivatePropertyKey(propName)
+              const proxyKey = makePrivateProxyKey(propName)
+              ;(this as any)[privateKey] = new Set()
+              ;(this as any)[proxyKey] = createImmutableSet((this as any)[privateKey], {
                 store,
                 object: this as any,
                 propDes: propMeta,
-              });
+              })
             } else if (propTypeKind === "map") {
-              const privateKey = makePrivatePropertyKey(propName);
-              const proxyKey = makePrivateProxyKey(propName);
-              (this as any)[privateKey] = new Map();
-              (this as any)[proxyKey] = createImmutableMap((this as any)[privateKey], {
+              const privateKey = makePrivatePropertyKey(propName)
+              const proxyKey = makePrivateProxyKey(propName)
+              ;(this as any)[privateKey] = new Map()
+              ;(this as any)[proxyKey] = createImmutableMap((this as any)[privateKey], {
                 store,
                 object: this as any,
                 propDes: propMeta,
-              });
+              })
             } else {
               // For primitives and objects, store in private key
-              const privateKey = makePrivatePropertyKey(propName);
-              (this as any)[privateKey] = defaultValue;
+              const privateKey = makePrivatePropertyKey(propName)
+              ;(this as any)[privateKey] = defaultValue
             }
           }
         }
       }
-      
+
       copyProps(newObj: any): void {
         if (typeMeta.properties) {
           for (const [propName] of typeMeta.properties) {
             if (this.hasOwnProperty(propName)) {
-              newObj[propName] = (this as any)[propName];
+              newObj[propName] = (this as any)[propName]
             }
-            
+
             // Also copy private property storage
-            const privateKey = `_${propName}`;
+            const privateKey = `_${propName}`
             if (this.hasOwnProperty(privateKey)) {
-              const value = (this as any)[privateKey];
+              const value = (this as any)[privateKey]
               if (value instanceof Array) {
-                newObj[privateKey] = [...value];
+                newObj[privateKey] = [...value]
               } else if (value instanceof Set) {
-                newObj[privateKey] = new Set(value);
+                newObj[privateKey] = new Set(value)
               } else if (value instanceof Map) {
-                newObj[privateKey] = new Map(value);
+                newObj[privateKey] = new Map(value)
               } else {
-                newObj[privateKey] = value;
+                newObj[privateKey] = value
               }
             }
           }
         }
       }
-      
+
       private getDefaultValue(propMeta: PropertyMeta): any {
         if (propMeta.defaultValue !== undefined) {
-          return propMeta.defaultValue;
+          return propMeta.defaultValue
         }
-        
+
         // Extract namespace from typeMeta.qName (e.g., "/company/Employee" -> "/company")
-        const namespacePath = typeMeta.qName.substring(0, typeMeta.qName.lastIndexOf('/'));
-        const contextNamespace = store.registryService.getNamespace(namespacePath);
-        
+        const namespacePath = typeMeta.qName.substring(0, typeMeta.qName.lastIndexOf("/"))
+        const contextNamespace = store.registryService.getNamespace(namespacePath)
+
         if (contextNamespace) {
           // Use enhanced registry resolution
           const resolvedTypeRef = store.registryService.resolveAndValidateTypeReference(
             propMeta.typeRef,
             contextNamespace
-          );
-          
+          )
+
           if (resolvedTypeRef) {
-            const resolvedType = store.registryService.getType(resolvedTypeRef);
+            const resolvedType = store.registryService.getType(resolvedTypeRef)
             if (resolvedType) {
-              return this.getDefaultValueForResolvedType(resolvedType, propMeta.optional);
+              return this.getDefaultValueForResolvedType(resolvedType, propMeta.optional)
             }
           }
         }
-        
+
         // Fallback to string-based detection for compatibility
-        const typeRef = propMeta.typeRef;
-        if (typeRef.includes('string')) return propMeta.optional ? undefined : '';
-        if (typeRef.includes('number')) return propMeta.optional ? undefined : 0;
-        if (typeRef.includes('boolean')) return propMeta.optional ? undefined : false;
-        if (typeRef.includes('date')) return propMeta.optional ? undefined : new Date();
-        if (typeRef.includes('array')) return []; // Arrays are always initialized
-        if (typeRef.includes('set')) return new Set(); // Sets are always initialized
-        if (typeRef.includes('map')) return new Map(); // Maps are always initialized
-        return propMeta.optional ? undefined : null;
+        const typeRef = propMeta.typeRef
+        if (typeRef.includes("string")) return propMeta.optional ? undefined : ""
+        if (typeRef.includes("number")) return propMeta.optional ? undefined : 0
+        if (typeRef.includes("boolean")) return propMeta.optional ? undefined : false
+        if (typeRef.includes("date")) return propMeta.optional ? undefined : new Date()
+        if (typeRef.includes("array")) return [] // Arrays are always initialized
+        if (typeRef.includes("set")) return new Set() // Sets are always initialized
+        if (typeRef.includes("map")) return new Map() // Maps are always initialized
+        return propMeta.optional ? undefined : null
       }
-      
+
       private getDefaultValueForResolvedType(resolvedType: TypeMeta, optional: boolean): any {
         if (isSimpleType(resolvedType)) {
           switch (resolvedType.kind) {
-            case 'string': return optional ? undefined : '';
-            case 'number': return optional ? undefined : 0;
-            case 'boolean': return optional ? undefined : false;
-            case 'date': return optional ? undefined : new Date();
-            case 'bigint': return optional ? undefined : 0n;
-            case 'null': return null;
-            case 'undefined': return undefined;
-            default: return optional ? undefined : null;
+            case "string":
+              return optional ? undefined : ""
+            case "number":
+              return optional ? undefined : 0
+            case "boolean":
+              return optional ? undefined : false
+            case "date":
+              return optional ? undefined : new Date()
+            case "bigint":
+              return optional ? undefined : 0n
+            case "null":
+              return null
+            case "undefined":
+              return undefined
+            default:
+              return optional ? undefined : null
           }
         } else if (isComplexType(resolvedType)) {
           switch (resolvedType.kind) {
-            case 'array': return []; // Arrays are always initialized
-            case 'set': return new Set(); // Sets are always initialized
-            case 'map': return new Map(); // Maps are always initialized
-            case 'object':
-            case 'entity':
-              return optional ? undefined : null; // Object references
-            default: return optional ? undefined : null;
+            case "array":
+              return [] // Arrays are always initialized
+            case "set":
+              return new Set() // Sets are always initialized
+            case "map":
+              return new Map() // Maps are always initialized
+            case "object":
+            case "entity":
+              return optional ? undefined : null // Object references
+            default:
+              return optional ? undefined : null
           }
         }
-        return optional ? undefined : null;
+        return optional ? undefined : null
       }
-      
+
       private getPropertyTypeKind(typeRef: string): string {
         // Extract namespace from typeMeta.qName
-        const namespacePath = typeMeta.qName.substring(0, typeMeta.qName.lastIndexOf('/'));
-        const contextNamespace = store.registryService.getNamespace(namespacePath);
-        
+        const namespacePath = typeMeta.qName.substring(0, typeMeta.qName.lastIndexOf("/"))
+        const contextNamespace = store.registryService.getNamespace(namespacePath)
+
         if (contextNamespace) {
           // Use enhanced registry resolution
-          const resolvedTypeRef = store.registryService.resolveAndValidateTypeReference(
-            typeRef,
-            contextNamespace
-          );
-          
+          const resolvedTypeRef = store.registryService.resolveAndValidateTypeReference(typeRef, contextNamespace)
+
           if (resolvedTypeRef) {
-            const resolvedType = store.registryService.getType(resolvedTypeRef);
+            const resolvedType = store.registryService.getType(resolvedTypeRef)
             if (resolvedType) {
               if (isSimpleType(resolvedType)) {
-                return "primitive";
+                return "primitive"
               } else if (isComplexType(resolvedType)) {
                 switch (resolvedType.kind) {
-                  case 'array': return "array";
-                  case 'map': return "map";
-                  case 'set': return "set";
-                  case 'object':
-                  case 'entity':
-                    return "object";
-                  default: return "primitive";
+                  case "array":
+                    return "array"
+                  case "map":
+                    return "map"
+                  case "set":
+                    return "set"
+                  case "object":
+                  case "entity":
+                    return "object"
+                  default:
+                    return "primitive"
                 }
               }
             }
           }
         }
-        
+
         // Fallback to string-based detection for compatibility
-        if (typeRef.includes("array")) return "array";
-        if (typeRef.includes("map")) return "map";
-        if (typeRef.includes("set")) return "set";
-        if (typeRef.includes("object")) return "object";
-        return "primitive";
+        if (typeRef.includes("array")) return "array"
+        if (typeRef.includes("map")) return "map"
+        if (typeRef.includes("set")) return "set"
+        if (typeRef.includes("object")) return "object"
+        return "primitive"
       }
-    };
-    
-    // Set the class name for debugging
-    Object.defineProperty(DynamicClass, 'name', { value: className });
-    
-    // Add property accessors for object/entity types that have properties
-    if ((typeMeta.kind === 'object' || typeMeta.kind === 'entity') && typeMeta.properties) {
-      addPropertyAccessors(DynamicClass.prototype, typeMeta, this);
     }
-    
+
+    // Set the class name for debugging
+    Object.defineProperty(DynamicClass, "name", { value: className })
+
+    // Add property accessors for object/entity types that have properties
+    addPropertyAccessors(DynamicClass.prototype, typeMeta, this)
+    // Add the copyProps method to the prototype
+    addCopyPropsMethod(DynamicClass.prototype, typeMeta, this)
     // Store the class in the map
-    this.typeToClassMap.set(typeMeta.qName, DynamicClass);
+    this.typeToClassMap.set(typeMeta.qName, DynamicClass)
   }
 
   public get objectManager(): this {
@@ -251,43 +303,43 @@ export class StoreClass {
   }
 
   public getMeta(type: string): TypeMeta | undefined {
-    return this.getTypeMeta(type);
+    return this.getTypeMeta(type)
   }
 
   public getTypeMeta(type: string): TypeMeta | undefined {
     // Try to get type by qualified name
-    const typeMeta = this.registryService.getType(type);
+    const typeMeta = this.registryService.getType(type)
     if (typeMeta) {
-      return typeMeta;
+      return typeMeta
     }
-    
+
     // Try to get type by name in each namespace
     for (const namespacePath of this.registryService.listNamespaces()) {
-      const localTypeMeta = this.registryService.getTypeInNamespace(type, namespacePath);
+      const localTypeMeta = this.registryService.getTypeInNamespace(type, namespacePath)
       if (localTypeMeta) {
-        return localTypeMeta;
+        return localTypeMeta
       }
     }
-    
-    return undefined;
+
+    return undefined
   }
 
   public getAllAvailableTypes(): string[] {
-    const types: string[] = [];
-    
+    const types: string[] = []
+
     // Add types from registry service
     for (const namespacePath of this.registryService.listNamespaces()) {
-      const availableTypes = this.registryService.getAvailableTypesInNamespace(namespacePath);
-      types.push(...Array.from(availableTypes));
+      const availableTypes = this.registryService.getAvailableTypesInNamespace(namespacePath)
+      types.push(...Array.from(availableTypes))
     }
-    
+
     // Remove duplicates
-    return [...new Set(types)];
+    return [...new Set(types)]
   }
 
   public addNamespace(namespacePath: string): void {
     // TODO: Add namespace dynamic class creation with new registry types
-    console.log(`Adding namespace: ${namespacePath}`);
+    console.log(`Adding namespace: ${namespacePath}`)
   }
 
   public get subscriptionManager(): SubscriptionManager {
@@ -304,24 +356,25 @@ export class StoreClass {
 
   // Enhanced create API - overloaded methods for unambiguous type resolution
   public create<T>(qualifiedNameOrTypeMeta: string | TypeMeta, initialState?: Partial<T>): T {
-    let typeMeta: TypeMeta | undefined;
-    
-    if (typeof qualifiedNameOrTypeMeta === 'string') {
+    let typeMeta: TypeMeta | undefined
+
+    if (typeof qualifiedNameOrTypeMeta === "string") {
       // Handle qualified name with optimized resolution
-      typeMeta = this.getTypeMetaByQualifiedName(qualifiedNameOrTypeMeta);
+      typeMeta = this.getTypeMetaByQualifiedName(qualifiedNameOrTypeMeta)
     } else {
       // Handle TypeMeta object directly
-      typeMeta = qualifiedNameOrTypeMeta;
+      typeMeta = qualifiedNameOrTypeMeta
     }
-    
+
     if (!typeMeta) {
-      const typeIdentifier = typeof qualifiedNameOrTypeMeta === 'string' 
-        ? qualifiedNameOrTypeMeta 
-        : qualifiedNameOrTypeMeta.qName || 'unknown';
-      throw new Error(`Type '${typeIdentifier}' not found in registry`);
+      const typeIdentifier =
+        typeof qualifiedNameOrTypeMeta === "string"
+          ? qualifiedNameOrTypeMeta
+          : qualifiedNameOrTypeMeta.qName || "unknown"
+      throw new Error(`Type '${typeIdentifier}' not found in registry`)
     }
-    
-    return this.createFromTypeMeta<T>(typeMeta, initialState);
+
+    return this.createFromTypeMeta<T>(typeMeta, initialState)
   }
 
   /**
@@ -330,27 +383,27 @@ export class StoreClass {
    */
   private getTypeMetaByQualifiedName(qualifiedName: string): TypeMeta | undefined {
     // Validate qualified name format
-    if (!qualifiedName.startsWith('/')) {
-      throw new Error(`Invalid qualified name '${qualifiedName}'. Must start with '/' (e.g., '/company/Employee')`);
+    if (!qualifiedName.startsWith("/")) {
+      throw new Error(`Invalid qualified name '${qualifiedName}'. Must start with '/' (e.g., '/company/Employee')`)
     }
-    
+
     // Extract namespace path and type name efficiently
-    const lastSlashIndex = qualifiedName.lastIndexOf('/');
+    const lastSlashIndex = qualifiedName.lastIndexOf("/")
     if (lastSlashIndex === 0) {
-      throw new Error(`Invalid qualified name '${qualifiedName}'. Must contain at least one namespace level`);
+      throw new Error(`Invalid qualified name '${qualifiedName}'. Must contain at least one namespace level`)
     }
-    
-    const namespacePath = qualifiedName.substring(0, lastSlashIndex);
-    const typeName = qualifiedName.substring(lastSlashIndex + 1);
-    
+
+    const namespacePath = qualifiedName.substring(0, lastSlashIndex)
+    const typeName = qualifiedName.substring(lastSlashIndex + 1)
+
     // Direct namespace lookup (O(1) instead of O(n) iteration)
-    const namespace = this.registryService.getNamespace(namespacePath);
+    const namespace = this.registryService.getNamespace(namespacePath)
     if (!namespace) {
-      return undefined; // Namespace doesn't exist
+      return undefined // Namespace doesn't exist
     }
-    
+
     // Direct type lookup within namespace
-    return namespace.types.get(typeName);
+    return namespace.types.get(typeName)
   }
 
   /**
@@ -358,85 +411,107 @@ export class StoreClass {
    */
   private createFromTypeMeta<T>(typeMeta: TypeMeta, initialState?: Partial<T>): T {
     if (!isComplexType(typeMeta)) {
-      throw new Error(`Cannot create instance of simple type '${typeMeta.qName}'. Only complex types (object, entity) can be instantiated.`);
+      throw new Error(
+        `Cannot create instance of simple type '${typeMeta.qName}'. Only complex types (object, entity) can be instantiated.`
+      )
     }
-    
-    const objectTypeMeta = typeMeta as ObjectTypeMeta;
-    if (objectTypeMeta.kind !== 'object' && objectTypeMeta.kind !== 'entity') {
-      throw new Error(`Cannot create instance of type '${typeMeta.qName}' with kind '${objectTypeMeta.kind}'`);
+
+    const objectTypeMeta = typeMeta as ObjectTypeMeta
+    if (objectTypeMeta.kind !== "object" && objectTypeMeta.kind !== "entity") {
+      throw new Error(`Cannot create instance of type '${typeMeta.qName}' with kind '${objectTypeMeta.kind}'`)
     }
-    
-    const DynamicClass = this.typeToClassMap.get(typeMeta.qName);
+
+    const DynamicClass = this.typeToClassMap.get(typeMeta.qName)
     if (!DynamicClass) {
-      throw new Error(`Dynamic class for type '${typeMeta.qName}' not found. Make sure the type is properly registered.`);
+      throw new Error(
+        `Dynamic class for type '${typeMeta.qName}' not found. Make sure the type is properly registered.`
+      )
     }
-    
+
     if (!this.currentState) {
-      throw new Error('No current state available. Store may not be properly initialized.');
+      throw new Error("No current state available. Store may not be properly initialized.")
     }
-    
-    const instance = new DynamicClass();
-    
-    // Add to current state first (before applying initial state)
-    this.currentState.addObject(instance, 'created');
-    
-    // Apply initial state if provided with validation
-    if (initialState) {
-      // Remember original update mode state
-      const wasInUpdateMode = this.inUpdateMode;
-      
-      try {
-        // Temporarily enter update mode to allow setters to work
-        this.inUpdateMode = true;
-        this.validateAndApplyInitialState(instance, initialState, objectTypeMeta);
-      } finally {
-        // Restore original update mode state
-        this.inUpdateMode = wasInUpdateMode;
+
+    const wasInUpdateMode = this.inUpdateMode // Check if the store is already in update mode
+    let hasError = false // Track if an error occurred
+    try {
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = true // Enter update mode if not already in it
+        this.makeNewState() // Create a new state for the transaction
       }
+
+      const instance = new DynamicClass()
+
+      // Add to current state first (before applying initial state)
+      this.currentState.addObject(instance, "created")
+
+      // Apply initial state if provided with validation
+      if (initialState) {
+        this.validateAndApplyInitialState(instance, initialState, objectTypeMeta)
+      }
+
+      return instance as T
+    } catch (error) {
+      hasError = true // Set error flag
+      console.error("An error occurred while creating the object:", error)
+
+      if (!wasInUpdateMode) {
+        this.revertToPreviousState() // Revert the state if this method started the transaction
+      }
+      throw error // Re-throw the error after logging and reverting
+    } finally {
+      if (!wasInUpdateMode) {
+        this.inUpdateMode = false // Exit update mode if it was set by this method
+
+        //  Notify subscribers only if create was standalone (not part of update operation)
+        if (!hasError) {
+          this.subscriptionManager.notifySubscribers() // Notify all subscribers of the store and objects
+        }
+      }
+      // If wasInUpdateMode was true, then create is part of update operation
+      // and update method will handle the notification
     }
-    
-    return instance as T;
   }
 
   private validateAndApplyInitialState(instance: any, initialState: any, typeMeta: ObjectTypeMeta): void {
-    if (typeof initialState !== 'object' || initialState === null) {
-      throw new Error('Initial state must be an object');
+    if (typeof initialState !== "object" || initialState === null) {
+      throw new Error("Initial state must be an object")
     }
-    
+
     // Validate that all provided properties exist in the type definition and apply them
     for (const [propName, value] of Object.entries(initialState)) {
-      const propertyMeta = typeMeta.properties?.get(propName);
+      const propertyMeta = typeMeta.properties?.get(propName)
       if (!propertyMeta) {
-        throw new Error(`Property '${propName}' does not exist in type '${typeMeta.qName}'`);
+        throw new Error(`Property '${propName}' does not exist in type '${typeMeta.qName}'`)
       }
-      
+
       // Get property type kind to determine how to handle the value
-      const propTypeKind = this.getPropertyTypeKind(propertyMeta.typeRef);
-      
+      const propTypeKind = this.getPropertyTypeKind(propertyMeta.typeRef)
+
       if (propTypeKind === "array" || propTypeKind === "set" || propTypeKind === "map") {
         // Collection properties: cannot be set directly, must add elements to existing collection
         if (value && Array.isArray(value) && value.length > 0) {
           // Get the collection proxy that was created during object construction
-          const collection = instance[propName];
+          const collection = instance[propName]
           if (collection) {
             // Add each element to the collection with validation
             for (const element of value) {
               // Use TypeValidator to validate collection element types
-              this.validator.validateCollectionElement(element, propertyMeta, "initial_state");
-              
+              this.validator.validateCollectionElement(element, propertyMeta, "initial_state")
+
               // Validate that object elements are properly registered in store
               if (propTypeKind === "array" && this.isObjectElement(propertyMeta.typeRef, element)) {
-                this.validateObjectIsRegistered(element, propName);
+                this.validateObjectIsRegistered(element, propName)
               }
-              
+
               if (Array.isArray(collection)) {
-                collection.push(element);
+                collection.push(element)
               } else if (collection instanceof Set) {
-                collection.add(element);
+                collection.add(element)
               } else if (collection instanceof Map) {
                 // For maps, expect element to be [key, value] tuple
                 if (Array.isArray(element) && element.length === 2) {
-                  collection.set(element[0], element[1]);
+                  collection.set(element[0], element[1])
                 }
               }
             }
@@ -446,60 +521,64 @@ export class StoreClass {
         // Object property: validate type and registration
         if (value !== null && value !== undefined) {
           // Use TypeValidator to validate object property type
-          this.validator.validateObjectProperty(value, propertyMeta);
+          this.validator.validateObjectProperty(value, propertyMeta)
           // Validate that object is registered in store (only during creation)
-          this.validateObjectIsRegistered(value, propName);
+          this.validateObjectIsRegistered(value, propName)
         }
         // Use setter to maintain inverse relationships
-        instance[propName] = value;
+        instance[propName] = value
       } else {
         // Primitive property: validate type and use setter for consistency
         if (value !== null && value !== undefined) {
-          this.validator.validatePrimitiveType(value, propertyMeta.typeRef, propertyMeta.name);
+          this.validator.validatePrimitiveType(value, propertyMeta.typeRef, propertyMeta.name)
         }
-        instance[propName] = value;
+        instance[propName] = value
       }
     }
   }
-  
+
   private getPropertyTypeKind(typeRef: string): string {
-    const typeMeta = this.getTypeMeta(typeRef);
+    const typeMeta = this.getTypeMeta(typeRef)
     if (!typeMeta) {
-      return "primitive"; // Default fallback
+      return "primitive" // Default fallback
     }
-    
-    if (typeMeta.kind === 'object' || typeMeta.kind === 'entity') {
-      return "object";
+
+    if (typeMeta.kind === "object" || typeMeta.kind === "entity") {
+      return "object"
     }
-    return typeMeta.kind;
+    return typeMeta.kind
   }
-  
+
   private isObjectElement(typeRef: string, element: any): boolean {
     // Check if the collection contains object/entity elements
-    const typeMeta = this.getTypeMeta(typeRef);
-    if (!typeMeta || typeMeta.kind !== 'array') {
-      return false;
+    const typeMeta = this.getTypeMeta(typeRef)
+    if (!typeMeta || typeMeta.kind !== "array") {
+      return false
     }
-    
-    const arrayTypeMeta = typeMeta as any; // ArrayTypeMeta
-    const elementTypeMeta = this.getTypeMeta(arrayTypeMeta.elementType);
-    return !!(elementTypeMeta && (elementTypeMeta.kind === 'object' || elementTypeMeta.kind === 'entity'));
+
+    const arrayTypeMeta = typeMeta as any // ArrayTypeMeta
+    const elementTypeMeta = this.getTypeMeta(arrayTypeMeta.elementType)
+    return !!(elementTypeMeta && (elementTypeMeta.kind === "object" || elementTypeMeta.kind === "entity"))
   }
-  
+
   private validateObjectIsRegistered(obj: any, propName: string): void {
-    if (typeof obj !== 'object' || obj === null) {
-      return; // Not an object, no validation needed
+    if (typeof obj !== "object" || obj === null) {
+      return // Not an object, no validation needed
     }
-    
+
     // Check if object has UUID (required for store objects)
     if (!obj[uuid]) {
-      throw new Error(`Object assigned to property '${propName}' must have a UUID. Objects must be created through the store or imported.`);
+      throw new Error(
+        `Object assigned to property '${propName}' must have a UUID. Objects must be created through the store or imported.`
+      )
     }
-    
+
     // Check if object is registered in current state
-    const storeObj = this.findByUUID(obj[uuid]);
+    const storeObj = this.findByUUID(obj[uuid])
     if (!storeObj) {
-      throw new Error(`Object assigned to property '${propName}' with UUID '${obj[uuid]}' is not registered in the store. Objects must be created through store.create() or imported with store.import().`);
+      throw new Error(
+        `Object assigned to property '${propName}' with UUID '${obj[uuid]}' is not registered in the store. Objects must be created through store.create() or imported with store.import().`
+      )
     }
   }
 
@@ -541,93 +620,93 @@ export class StoreClass {
 
   public import<T>(obj: T, type?: string): T {
     if (!this.currentState) {
-      throw new Error('No current state available for import');
+      throw new Error("No current state available for import")
     }
-    
+
     // If type is provided, validate against registry
     if (type) {
-      const typeMeta = this.getTypeMeta(type);
+      const typeMeta = this.getTypeMeta(type)
       if (!typeMeta) {
-        throw new Error(`Type '${type}' not found in registry`);
+        throw new Error(`Type '${type}' not found in registry`)
       }
     }
-    
-    const storeObj = obj as any as StoreObject;
-    
+
+    const storeObj = obj as any as StoreObject
+
     // Ensure object has required internal properties
     if (!storeObj[uuid]) {
-      storeObj[uuid] = generateUUID();
+      storeObj[uuid] = generateUUID()
     }
     if (!storeObj[createdAt]) {
-      storeObj[createdAt] = uniqueTimestamp();
+      storeObj[createdAt] = uniqueTimestamp()
     }
-    
+
     // Add to current state
-    this.currentState.addObject(storeObj, 'imported');
-    
-    return obj;
+    this.currentState.addObject(storeObj, "imported")
+
+    return obj
   }
 
   public export<T>(storeObject: T): any {
-    const obj = storeObject as any;
-    const exported: any = {};
-    
+    const obj = storeObject as any
+    const exported: any = {}
+
     // Copy all enumerable properties except internal symbols
     for (const key in obj) {
-      if (obj.hasOwnProperty(key) && typeof key === 'string') {
-        exported[key] = obj[key];
+      if (obj.hasOwnProperty(key) && typeof key === "string") {
+        exported[key] = obj[key]
       }
     }
-    
-    return exported;
+
+    return exported
   }
 
   public deserialize(json: string): any {
     try {
-      const data = JSON.parse(json);
-      
+      const data = JSON.parse(json)
+
       // If it's a single object with UUID, import it
-      if (data && typeof data === 'object' && data[uuid]) {
-        return this.import(data);
+      if (data && typeof data === "object" && data[uuid]) {
+        return this.import(data)
       }
-      
+
       // If it's a collection of objects by UUID
-      if (data && typeof data === 'object') {
-        const importedObjects: any = {};
+      if (data && typeof data === "object") {
+        const importedObjects: any = {}
         for (const [objectUuid, objectData] of Object.entries(data)) {
-          if (objectData && typeof objectData === 'object') {
-            const imported = this.import(objectData);
-            importedObjects[objectUuid] = imported;
+          if (objectData && typeof objectData === "object") {
+            const imported = this.import(objectData)
+            importedObjects[objectUuid] = imported
           }
         }
-        return importedObjects;
+        return importedObjects
       }
-      
-      return data;
+
+      return data
     } catch (error) {
-      throw new Error(`Failed to deserialize: ${error}`);
+      throw new Error(`Failed to deserialize: ${error}`)
     }
   }
 
   public serialize(obj?: any): string {
     if (obj) {
       // Serialize single object
-      return JSON.stringify(this.export(obj));
+      return JSON.stringify(this.export(obj))
     }
-    
+
     if (!this.currentState) {
-      return JSON.stringify({});
+      return JSON.stringify({})
     }
-    
-    const allObjects: any = {};
-    
+
+    const allObjects: any = {}
+
     // Get all objects from current state
     for (const storeObj of (this.currentState as any).objectMap.values()) {
-      const exported = this.export(storeObj);
-      allObjects[storeObj[uuid]] = exported;
+      const exported = this.export(storeObj)
+      allObjects[storeObj[uuid]] = exported
     }
-    
-    return JSON.stringify(allObjects);
+
+    return JSON.stringify(allObjects)
   }
 
   public makeNewState(): void {
@@ -638,6 +717,7 @@ export class StoreClass {
     }
     this.stateHistory.push(new State(this, this.stateHistory.length > 0 ? this.getState() : undefined))
     this.currentStateIndex++
+    this.currentState = this.stateHistory[this.currentStateIndex]
   }
 
   private revertToPreviousState(): boolean {
@@ -671,110 +751,130 @@ export class StoreClass {
   public clearHistory(): void {
     // Keep only the current state
     if (this.currentState) {
-      this.stateHistory = [this.currentState];
-      this.currentStateIndex = 0;
+      this.stateHistory = [this.currentState]
+      this.currentStateIndex = 0
     }
   }
 
   public getAllProperties(typeName: string): Map<string, PropertyMeta> {
-    const typeMeta = this.getTypeMeta(typeName);
-    if (!typeMeta || !isComplexType(typeMeta)) {
-      return new Map();
+    const result = new Map<string, PropertyMeta>()
+
+    // Recursive function to collect properties from the type and its supertypes
+    const collectProperties = (currentTypeName: string) => {
+      const typeMeta = this.getTypeMeta(currentTypeName)
+      if (!typeMeta || !isComplexType(typeMeta)) {
+        return
+      }
+
+      const objectTypeMeta = typeMeta as ObjectTypeMeta
+
+      // Recursively collect properties from the supertype first
+      if (objectTypeMeta.extends) {
+        collectProperties(objectTypeMeta.extends)
+      }
+
+      // Add properties from the current type (overrides will replace existing entries)
+      if (objectTypeMeta.properties) {
+        for (const [propName, propMeta] of objectTypeMeta.properties) {
+          result.set(propName, propMeta)
+        }
+      }
     }
-    
-    const objectTypeMeta = typeMeta as ObjectTypeMeta;
-    return objectTypeMeta.properties || new Map();
+
+    // Start collecting properties from the specified type
+    collectProperties(typeName)
+    return result
   }
 
   public getClassByName(typeName: string): any {
-    const typeMeta = this.getTypeMeta(typeName);
+    const typeMeta = this.getTypeMeta(typeName)
     if (!typeMeta) {
-      throw new Error(`Type '${typeName}' not found in registry`);
+      throw new Error(`Type '${typeName}' not found in registry`)
     }
-    
-    const dynamicClass = this.typeToClassMap.get(typeMeta.qName);
+
+    const dynamicClass = this.typeToClassMap.get(typeMeta.qName)
     if (!dynamicClass) {
-      throw new Error(`Dynamic class for type '${typeName}' not found`);
+      throw new Error(`Dynamic class for type '${typeName}' not found`)
     }
-    
-    return dynamicClass;
+
+    return dynamicClass
   }
-  
+
   // Additional methods needed by adapters
   public find<T extends object>(type: string, predicate?: (obj: T) => boolean, stateIndex?: number): T[] {
-    const state = stateIndex !== undefined ? this.stateHistory[stateIndex] : this.currentState;
+    const state = stateIndex !== undefined ? this.stateHistory[stateIndex] : this.currentState
     if (!state) {
-      return [];
+      return []
     }
-    
-    const DynamicClass = this.typeToClassMap.get(type);
+
+    const DynamicClass = this.typeToClassMap.get(type)
     if (!DynamicClass) {
-      return [];
+      return []
     }
-    
-    return state.findObjects(DynamicClass, predicate);
+
+    return state.findObjects(DynamicClass, predicate)
   }
-  
+
   public findByUUID<T extends object>(uuid: string, stateIndex?: number): T | undefined {
-    const state = stateIndex !== undefined ? this.stateHistory[stateIndex] : this.currentState;
+    const state = stateIndex !== undefined ? this.stateHistory[stateIndex] : this.currentState
     if (!state) {
-      return undefined;
+      return undefined
     }
-    
-    return state.getObject<T>(uuid);
+
+    return state.getObject<T>(uuid)
   }
-  
+
   public getState(): State {
     if (!this.currentState) {
-      throw new Error('No current state available');
+      throw new Error("No current state available")
     }
-    return this.currentState;
+    return this.currentState
   }
-  
+
   public getStateByIndex(index: number): State {
     if (index < 0 || index >= this.stateHistory.length) {
-      throw new Error('Invalid state index');
+      throw new Error("Invalid state index")
     }
-    return this.stateHistory[index];
+    return this.stateHistory[index]
   }
-  
+
   public fromState<T>(stateIndex: number, target: string | T): T | undefined {
-    const state = this.getStateByIndex(stateIndex);
-    if (typeof target === 'string') {
-      return state.getObject<T>(target);
+    const state = this.getStateByIndex(stateIndex)
+    if (typeof target === "string") {
+      return state.getObject<T>(target)
     }
-    return target;
+    return target
   }
-  
+
   public isInUpdateMode(): boolean {
-    return this.inUpdateMode;
+    return this.inUpdateMode
   }
 
   public getTypeClass(typeRef: string): any {
-    return this.typeToClassMap.get(typeRef);
+    return this.typeToClassMap.get(typeRef)
   }
-  
+
   public getAllChanges(option?: "all" | "only_modifications"): any[] {
     if (!this.currentState) {
-      return [];
+      return []
     }
-    return this.currentState.getChangeLog(option);
+    return this.currentState.getChangeLog(option)
   }
-  
+
   public consolidateStates(): void {
     // Keep only the current state and clear history
-    this.clearHistory();
+    this.clearHistory()
   }
 
   // Additional methods that might be expected by tests
   public toImmutable(): any {
     // TODO: Implement proper immutable object creation
-    console.warn('toImmutable not yet implemented with new registry system');
-    return this.currentState;
+    console.warn("toImmutable not yet implemented with new registry system")
+    return this.currentState
   }
 
   public fromImmutable(immutableState: any): void {
     // TODO: Implement proper immutable state restoration
-    console.warn('fromImmutable not yet implemented with new registry system');
+    console.warn("fromImmutable not yet implemented with new registry system")
   }
 }
