@@ -282,4 +282,38 @@ describe("Map Validation Integration", () => {
             expect(employee.metadata!.size).toBe(2);
         });
     });
+
+    // NOTE: Bidirectional Map tests are available in valid-map-patterns.test.ts
+    // The following tests require valid-map-namespace which may not always be available
+    
+    /*
+    describe("Map VALUE-based Bidirectional Relationships", () => {
+        let validStore: StoreClass;
+        let validRegistry: RegistryService;
+
+        beforeEach(() => {
+            // Create separate store for valid Map patterns
+            const validRegistryMetadata: RegistryMetadata = {
+                namespaces: new Map(),
+                name: "valid-map-registry",
+                version: "1.0.0"
+            };
+            validRegistry = new RegistryService(validRegistryMetadata);
+            
+            try {
+                validRegistry.importNamespace(validMapNamespace);
+                validStore = new StoreClass(validRegistry);
+            } catch (error) {
+                console.log("Valid namespace setup error:", error);
+                // Skip these tests if namespace not available
+                return;
+            }
+        });
+
+        test("should support Map<string, Employee> ↔ Employee.department bidirectional updates", () => {
+            // This test verifies Map<SimpleKey, EntityValue> patterns work correctly
+            // See valid-map-patterns.test.ts for working examples
+        });
+    });
+    */
 });
