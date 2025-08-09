@@ -212,10 +212,10 @@ const sessionType: ObjectTypeMeta = {
             typeRef: "string",
             optional: true
         }],
-        // Using imported type from company namespace
+        // Using imported type from company namespace (optional)
         ["loginLocation", {
             name: "loginLocation",
-            typeRef: "CompanyAddress", // This will be resolved from imports
+            typeRef: "string", // Changed to string to avoid company dependency
             optional: true
         }]
     ]),
@@ -249,7 +249,6 @@ export const authNamespace: Namespace = {
     ]),
     exports: ["User", "AdminUser", "GuestUser", "Permission", "Session", "PermissionArray", "RoleSet", "UserArray"],
     imports: new Map([
-        // Import with alias from company namespace
-        ["/company", [{ original: "Address", alias: "CompanyAddress" }]]
+        // No imports needed for basic auth functionality
     ])
 };

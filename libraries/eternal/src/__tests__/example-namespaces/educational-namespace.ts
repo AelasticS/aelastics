@@ -39,6 +39,22 @@ const gradeMapType: MapTypeMeta = {
     valueType: "number"
 };
 
+// Map type for student grades in courses (Course -> grade)
+const courseGradeMapType: MapTypeMeta = {
+    qName: "/educational/CourseGradeMap", 
+    kind: "map",
+    keyType: "/educational/Course",
+    valueType: "number"
+};
+
+// Map type for course student grades (Student -> grade)
+const studentGradeMapType: MapTypeMeta = {
+    qName: "/educational/StudentGradeMap",
+    kind: "map", 
+    keyType: "/educational/Student",
+    valueType: "number"
+};
+
 // ===== MAIN ENTITY TYPES =====
 
 // Student entity
@@ -96,6 +112,14 @@ const studentType: ObjectTypeMeta = {
             // One-to-many: Student has many assignments
             inverseProp: "student",
             inverseTypeRef: "/educational/Assignment",
+        }],
+        ["courseGrades", {
+            name: "courseGrades",
+            typeRef: "/educational/CourseGradeMap", 
+            optional: true,
+            // Bidirectional Map: Student's grades per course
+            inverseProp: "studentGrades",
+            inverseTypeRef: "/educational/Course",
         }]
     ]),
     identityKeys: ["id"],
@@ -106,7 +130,7 @@ const studentType: ObjectTypeMeta = {
 const teacherType: ObjectTypeMeta = {
     qName: "/educational/Teacher",
     kind: "entity",
-    extends: "BaseUser", // This will be resolved from imports
+    extends: "/auth/User", // Proper inheritance from auth User
     properties: new Map<string, PropertyMeta>([
         ["employeeId", {
             name: "employeeId",
@@ -214,6 +238,14 @@ const courseType: ObjectTypeMeta = {
             name: "grades",
             typeRef: "/educational/GradeMap",
             optional: true
+        }],
+        ["studentGrades", {
+            name: "studentGrades", 
+            typeRef: "/educational/StudentGradeMap",
+            optional: true,
+            // Bidirectional Map: Course's grades per student
+            inverseProp: "courseGrades",
+            inverseTypeRef: "/educational/Student",
         }]
     ]),
     identityKeys: ["id"],
@@ -294,12 +326,14 @@ export const educationalNamespace: Namespace = {
         ["CourseArray", courseArrayType],
         ["AssignmentArray", assignmentArrayType],
         ["SubjectSet", subjectSetType],
-        ["GradeMap", gradeMapType]
+        ["GradeMap", gradeMapType],
+        ["CourseGradeMap", courseGradeMapType],
+        ["StudentGradeMap", studentGradeMapType]
     ]),
-    exports: ["Student", "Teacher", "Course", "Assignment", "StudentArray", "CourseArray", "AssignmentArray", "SubjectSet", "GradeMap"],
+    exports: ["Student", "Teacher", "Course", "Assignment", "StudentArray", "CourseArray", "AssignmentArray", "SubjectSet", "GradeMap", "CourseGradeMap", "StudentGradeMap"],
     imports: new Map([
-        // Mixed import: wildcard + specific + alias
-        ["/auth", ["*", { original: "User", alias: "BaseUser" }]],
+        // Import User from auth namespace
+        ["/auth", ["User"]],
         ["/core", ["AuditableRole", "TimestampableRole"]]
     ])
 };

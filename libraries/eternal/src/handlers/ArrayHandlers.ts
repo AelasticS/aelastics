@@ -3,7 +3,7 @@ import { getClassName, isStoreObject, makePrivatePropertyKey, makePrivateProxyKe
 import { checkWriteAccess, checkReadAccess } from "../store/PropertyAccessors"
 import { StoreObject, uuid } from "../store/InternalTypes"
 import { ObservableExtra } from "../events/EventTypes"
-import { BaseTypeMeta, PropertyMeta, getPropertyItemTypeKind } from "../registry/TypeDefinitions"
+import { BaseTypeMeta, PropertyMeta, getPropertyItemTypeKind, isObjectType } from "../registry/TypeDefinitions"
 import { StoreClass } from "../store/StoreClass"
 
 import * as invUpd from "../store/inverseUpdaters"
@@ -12,10 +12,15 @@ import { ChangeLogEntry } from "../events/ChangeLog"
 import { State } from "../store/State"
 
 
-// TODO: replace getPropertyItemTypeKind with isObjectType and test
+// Helper function to check if property elements are objects that need UUID conversion
+const isObjectElementProperty = (propDes: PropertyMeta, store: StoreClass): boolean => {
+  const elementTypeKind = getPropertyItemTypeKind(propDes, store);
+  return elementTypeKind === "object" || elementTypeKind === "entity";
+}
+
 // Convert UUID to Object
 const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) => {
-  return (propDes.inverseType === "object" && item) ? store.objectManager.findByUUID(item) : item;
+  return (isObjectElementProperty(propDes, store) && item) ? store.objectManager.findByUUID(item) : item;
 }
 
 /** Convert UUIDs to Objects */
@@ -23,11 +28,14 @@ const mapToObjects = (items: any[], store: StoreClass, propDes: PropertyMeta): a
   items.map((item) => toObject(item, store, propDes))
 
 // Convert object to UUID if needed
-const toUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any => (propDes.inverseType === "object" && value ? value[uuid] : value)
+const toUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any => 
+  (isObjectElementProperty(propDes, store) && value ? 
+    value[uuid] 
+        : value)
 
 /** Map Objects to UUIDs */
 const mapToUUIDs = (items: any[], propDes: PropertyMeta, store: StoreClass): any[] =>
-  propDes.inverseType === "object" && items ? items.map((item) => item[uuid]) : items
+  isObjectElementProperty(propDes, store) && items ? items.map((item) => item[uuid]) : items
 
 /** Creates typed array handlers to track UUIDs and object references */
 export const createArrayHandlers = <T extends StoreObject>({
@@ -180,7 +188,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Perform the actual operation
       obj[privateKey].splice(index, 1);
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         updater(obj, oldValueUUID, undefined);
       }
@@ -255,7 +263,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Perform the actual operation
       const newLength = obj[privateKey].push(...itemsUUIDs);
     
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
         items.forEach((item) => {
@@ -327,7 +335,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Perform the actual operation
       const poppedItem = obj[privateKey].pop();
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, poppedItem, undefined)
       }
@@ -396,7 +404,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
     
       // Perform the actual operation
       const shiftedItemUUID = obj[privateKey].shift();
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, shiftedItemUUID, undefined)
       }
@@ -472,7 +480,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Perform the actual operation
       const newLength = obj[privateKey].unshift(...itemsUUIDs);
     
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
         items.forEach((item) => {
@@ -568,7 +576,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Perform the actual operation
       const deletedItemsUUIDs = obj[privateKey].splice(start, deleteCount, ...itemsUUIDs);
     
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of deleted items to null
         deletedItemsUUIDs.forEach((item: any) => {
@@ -728,7 +736,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle fill */
     fill: (target: T[], value: T, start?: number, end?: number) => {
-      if (getPropertyItemTypeKind(propDes, store) === "object") {
+      if (isObjectElementProperty(propDes, store)) {
         throw new Error("Fill operation is not allowed for arrays of object UUIDs.");
       }
     
@@ -840,7 +848,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       // Perform the actual operation
       const newArray = obj[privateKey].concat(itemsUUIDs);
     
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
         itemsUUIDs.forEach((item) => {
@@ -1015,7 +1023,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
 
     /** Handle copyWithin */
     copyWithin: (target: T[], targetIndex: number, start: number = 0, end: number = target.length) => {
-      if (getPropertyItemTypeKind(propDes, store) === "object") {
+      if (isObjectElementProperty(propDes, store)) {
         throw new Error("copyWithin operation is not allowed for arrays of object UUIDs.");
       }
     

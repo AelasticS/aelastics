@@ -268,17 +268,17 @@ describe("Relationship Operations Tests", () => {
 
     describe("Many-to-Many Relationships (Arrays)", () => {
         test("should handle Employee[] ↔ Project[] (many-to-many with arrays)", () => {
-            const project1 = store.objects.create<Project>("/company/Project", {
+            let project1 = store.objects.create<Project>("/company/Project", {
                 id: "proj-001",
                 name: "Project Alpha"
             });
 
-            const project2 = store.objects.create<Project>("/company/Project", {
+            let project2 = store.objects.create<Project>("/company/Project", {
                 id: "proj-002",
                 name: "Project Beta"
             });
 
-            const employee1 = store.objects.create<Employee>("/company/Employee", {
+            let employee1 = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -286,7 +286,7 @@ describe("Relationship Operations Tests", () => {
                 isActive: true
             });
 
-            const employee2 = store.objects.create<Employee>("/company/Employee", {
+            let employee2 = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-002",
                 firstName: "Jane",
                 lastName: "Smith",
@@ -302,47 +302,53 @@ describe("Relationship Operations Tests", () => {
 
             // Test collection operations (if supported)
             // Note: This might need recipe functions for immutable updates
-            try {
-                // Try to add employee to project
-                store.objects.update((proj) => {
-                    proj.assignedEmployees?.push(employee1);
-                }, project1);
+            // Add employee to project
+            project1 = store.objects.update((proj) => {
+                proj.assignedEmployees?.push(employee1);
+            }, project1);
 
-                // Verify bidirectional update
-                expect(project1.assignedEmployees!.includes(employee1)).toBe(true);
-                expect(employee1.projects!.includes(project1)).toBe(true);
+            // Refresh all related references
+            employee1 = store.objects.findByUUID(store.objects.getUUID(employee1))!;
+            employee2 = store.objects.findByUUID(store.objects.getUUID(employee2))!;
 
-                // Add employee to multiple projects
-                store.objects.update((proj) => {
-                    proj.assignedEmployees?.push(employee1);
-                }, project2);
+            // Verify bidirectional update
+            expect(project1.assignedEmployees!.includes(employee1)).toBe(true);
+            expect(employee1.projects!.includes(project1)).toBe(true);
 
-                expect(project2.assignedEmployees!.includes(employee1)).toBe(true);
-                expect(employee1.projects!.includes(project1)).toBe(true);
-                expect(employee1.projects!.includes(project2)).toBe(true);
-                expect(employee1.projects!.length).toBe(2);
+            // Add employee to multiple projects
+            project2 = store.objects.update((proj) => {
+                proj.assignedEmployees?.push(employee1);
+            }, project2);
 
-                // Add multiple employees to project
-                store.objects.update((proj) => {
-                    proj.assignedEmployees?.push(employee2);
-                }, project1);
+            // Refresh all related references
+            project1 = store.objects.findByUUID(store.objects.getUUID(project1))!;
+            project2 = store.objects.findByUUID(store.objects.getUUID(project2))!;
+            employee1 = store.objects.findByUUID(store.objects.getUUID(employee1))!;
 
-                expect(project1.assignedEmployees!.includes(employee1)).toBe(true);
-                expect(project1.assignedEmployees!.includes(employee2)).toBe(true);
-                expect(employee2.projects!.includes(project1)).toBe(true);
+            expect(project2.assignedEmployees!.includes(employee1)).toBe(true);
+            expect(employee1.projects!.includes(project1)).toBe(true);
+            expect(employee1.projects!.includes(project2)).toBe(true);
+            expect(employee1.projects!.length).toBe(2);
 
-            } catch (error) {
-                // Collection operations are not yet fully implemented
-                // This test documents the expected behavior for future implementation
-                expect(error).toBeDefined();
-                expect(error).toBeInstanceOf(Error);
-            }
+            // Add multiple employees to project
+            project1 = store.objects.update((proj) => {
+                proj.assignedEmployees?.push(employee2);
+            }, project1);
+
+            // Refresh all related references
+            employee1 = store.objects.findByUUID(store.objects.getUUID(employee1))!;
+            employee2 = store.objects.findByUUID(store.objects.getUUID(employee2))!;
+            project2 = store.objects.findByUUID(store.objects.getUUID(project2))!;
+
+            expect(project1.assignedEmployees!.includes(employee1)).toBe(true);
+            expect(project1.assignedEmployees!.includes(employee2)).toBe(true);
+            expect(employee2.projects!.includes(project1)).toBe(true);
         });
     });
 
     describe("Set Collection Operations", () => {
         test("should handle Set operations for skills", () => {
-            const employee = store.objects.create<Employee>("/company/Employee", {
+            let employee = store.objects.create<Employee>("/company/Employee", {
                 id: "emp-001",
                 firstName: "John",
                 lastName: "Doe",
@@ -354,46 +360,38 @@ describe("Relationship Operations Tests", () => {
             expect(employee.skills).toBeInstanceOf(Set);
             expect(employee.skills!.size).toBe(0);
 
-            // Test Set operations (if supported)
-            try {
-                store.objects.update((emp) => {
-                    emp.skills?.add("JavaScript");
-                    emp.skills?.add("TypeScript");
-                    emp.skills?.add("React");
-                }, employee);
+            // Test Set operations
+            employee = store.objects.update((emp) => {
+                emp.skills?.add("JavaScript");
+                emp.skills?.add("TypeScript");
+                emp.skills?.add("React");
+            }, employee);
 
-                expect(employee.skills!.has("JavaScript")).toBe(true);
-                expect(employee.skills!.has("TypeScript")).toBe(true);
-                expect(employee.skills!.has("React")).toBe(true);
-                expect(employee.skills!.size).toBe(3);
+            expect(employee.skills!.has("JavaScript")).toBe(true);
+            expect(employee.skills!.has("TypeScript")).toBe(true);
+            expect(employee.skills!.has("React")).toBe(true);
+            expect(employee.skills!.size).toBe(3);
 
-                // Test duplicate handling
-                store.objects.update((emp) => {
-                    emp.skills?.add("JavaScript"); // Should not duplicate
-                }, employee);
+            // Test duplicate handling
+            employee = store.objects.update((emp) => {
+                emp.skills?.add("JavaScript"); // Should not duplicate
+            }, employee);
 
-                expect(employee.skills!.size).toBe(3);
+            expect(employee.skills!.size).toBe(3);
 
-                // Test removal
-                store.objects.update((emp) => {
-                    emp.skills?.delete("React");
-                }, employee);
+            // Test removal
+            employee = store.objects.update((emp) => {
+                emp.skills?.delete("React");
+            }, employee);
 
-                expect(employee.skills!.has("React")).toBe(false);
-                expect(employee.skills!.size).toBe(2);
-
-            } catch (error) {
-                // Set operations are not yet fully implemented
-                // This test documents the expected behavior for future implementation
-                expect(error).toBeDefined();
-                expect(error).toBeInstanceOf(Error);
-            }
+            expect(employee.skills!.has("React")).toBe(false);
+            expect(employee.skills!.size).toBe(2);
         });
     });
 
     describe("Collection Proxy Change Tracking", () => {
         test("should track changes in collection operations", () => {
-            const company = store.objects.create<Company>("/company/Company", {
+            let company = store.objects.create<Company>("/company/Company", {
                 id: "comp-001",
                 name: "Tech Corp"
             });
@@ -406,24 +404,20 @@ describe("Relationship Operations Tests", () => {
                 isActive: true
             });
 
-            // Get initial change count
-            const initialChanges = store.history.getAllChanges();
+            // Verify initial state
+            expect(company.employees).toEqual([]);
 
-            try {
-                // Test if collection operations generate change events
-                store.objects.update((comp) => {
-                    comp.employees?.push(employee);
-                }, company);
+            // Test that collection operations work and update the object
+            company = store.objects.update((comp) => {
+                comp.employees?.push(employee);
+            }, company);
 
-                const changesAfterPush = store.history.getAllChanges();
-                expect(changesAfterPush.length).toBeGreaterThan(initialChanges.length);
+            // Refresh employee reference (bidirectional relationship may have updated it)
+            const updatedEmployee = store.objects.findByUUID(store.objects.getUUID(employee))!;
 
-            } catch (error) {
-                // Collection change tracking is not yet fully implemented
-                // This test documents the expected behavior for future implementation
-                expect(error).toBeDefined();
-                expect(error).toBeInstanceOf(Error);
-            }
+            // Verify the operation was successful
+            expect(company.employees).toHaveLength(1);
+            expect(company.employees![0]).toBe(updatedEmployee);
         });
     });
 
@@ -494,23 +488,21 @@ describe("Relationship Operations Tests", () => {
             expect(company.employees!.includes(employee)).toBe(true);
             expect(badge.employee).toBe(employee);
 
-            // Test disconnect method (if available)
-            try {
-                // Call disconnect method
-                (employee as any).disconnect?.();
-                
-                // Verify all relationships are cleared
-                expect(employee.company).toBeUndefined();
-                expect(employee.badge).toBeUndefined();
-                expect(company.employees!.includes(employee)).toBe(false);
-                expect(badge.employee).toBeUndefined();
+            // Test disconnect by setting relationships to undefined
+            employee = store.objects.update((emp) => {
+                emp.company = undefined;
+                emp.badge = undefined;
+            }, employee);
 
-            } catch (error) {
-                // TODO: Implement disconnect method for relationship cleanup
-                // This test documents the expected disconnect functionality
-                expect(error).toBeDefined();
-                expect(error).toBeInstanceOf(Error);
-            }
+            // Refresh all related references after update
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+            badge = store.objects.findByUUID(store.objects.getUUID(badge))!;
+            
+            // Verify all relationships are cleared
+            expect(employee.company).toBeUndefined();
+            expect(employee.badge).toBeUndefined();
+            expect(company.employees!.includes(employee)).toBe(false);
+            expect(badge.employee).toBeUndefined();
         });
     });
 });

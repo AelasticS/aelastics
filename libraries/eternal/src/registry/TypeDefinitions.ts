@@ -216,7 +216,9 @@ export function getKeyType(typeMeta: TypeMeta): string | undefined {
 /** Get item type kind from PropertyMeta by resolving through registry */
 export function getPropertyItemTypeKind(propMeta: PropertyMeta, store: StoreClass): TypeKind | undefined {
   const typeMeta = store.getTypeMeta(propMeta.typeRef)
-  if (!typeMeta) return undefined
+  if (!typeMeta) {
+    throw new Error(`Type metadata not found for property '${propMeta.name}' with type reference '${propMeta.typeRef}'. This indicates a broken type schema.`)
+  }
 
   const itemTypeRef = getItemType(typeMeta)
   if (!itemTypeRef) return undefined
@@ -228,7 +230,9 @@ export function getPropertyItemTypeKind(propMeta: PropertyMeta, store: StoreClas
 /** Get key type kind from PropertyMeta by resolving through registry (for maps) */
 export function getPropertyKeyTypeKind(propMeta: PropertyMeta, store: StoreClass): TypeKind | undefined {
   const typeMeta = store.getTypeMeta(propMeta.typeRef)
-  if (!typeMeta) return undefined
+  if (!typeMeta) {
+    throw new Error(`Type metadata not found for property '${propMeta.name}' with type reference '${propMeta.typeRef}'. This indicates a broken type schema.`)
+  }
 
   const keyTypeRef = getKeyType(typeMeta)
   if (!keyTypeRef) return undefined

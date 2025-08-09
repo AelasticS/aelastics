@@ -10,21 +10,32 @@ import { ChangeLogEntry } from "../events/ChangeLog"
 import { EventPayload, Result } from "../events/EventTypes"
 import { uuid } from "../store/InternalTypes"
 
+// Helper functions to check if map elements need UUID conversion
+const isObjectValueProperty = (propDes: PropertyMeta, store: StoreClass): boolean => {
+  const valueTypeKind = getPropertyItemTypeKind(propDes, store);
+  return valueTypeKind === "object" || valueTypeKind === "entity";
+}
+
+const isObjectKeyProperty = (propDes: PropertyMeta, store: StoreClass): boolean => {
+  const keyTypeKind = getPropertyKeyTypeKind(propDes, store);
+  return keyTypeKind === "object" || keyTypeKind === "entity";
+}
+
 // Convert value UUID to Object
 const toValueObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  getPropertyItemTypeKind(propDes, store) === "object" && item ? store.objectManager.findByUUID(item) : item
+  isObjectValueProperty(propDes, store) && item ? store.objectManager.findByUUID(item) : item
 
 // Convert key UUID to Object
 const toKeyObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  getPropertyKeyTypeKind(propDes, store) === "object" && item ? store.objectManager.findByUUID(item) : item
+  isObjectKeyProperty(propDes, store) && item ? store.objectManager.findByUUID(item) : item
 
 // Convert value object to UUID if needed
 const valueToUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any =>
-  getPropertyItemTypeKind(propDes, store) === "object" && value ? value[uuid] : value
+  isObjectValueProperty(propDes, store) && value ? value[uuid] : value
 
 // Convert key object to UUID if needed
 const keyToUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any =>
-  getPropertyKeyTypeKind(propDes, store) === "object" && value ? value[uuid] : value
+  isObjectKeyProperty(propDes, store) && value ? value[uuid] : value
 
 export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: ObservableExtra): MapHandlers<K, V> => {
   const privateKey = makePrivatePropertyKey(propDes.name)
@@ -89,7 +100,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       // Perform the actual operation
       const res = obj[privateKey].set(newKey, newValue)
 
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectValueProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, oldValue, newValue)
       }
@@ -182,7 +193,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       // Perform the actual operation
       const res = obj[privateKey].delete(keyUUID)
 
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectValueProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, oldValue, undefined)
       }
@@ -258,7 +269,7 @@ export const createImmutableMapHandlers = <K, V>({ store, object, propDes }: Obs
       // Perform the actual operation
       obj[privateKey].clear()
 
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectValueProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         changes.forEach((change) => {
           updater(obj, change.oldValue, undefined)

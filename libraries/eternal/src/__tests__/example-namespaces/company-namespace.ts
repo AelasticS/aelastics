@@ -32,6 +32,28 @@ const metadataMapType: MapTypeMeta = {
     valueType: "string"
 };
 
+// Map type for skill levels (skill name -> proficiency level)
+const skillLevelMapType: MapTypeMeta = {
+    qName: "/company/SkillLevelMap",
+    kind: "map", 
+    keyType: "string",
+    valueType: "number"
+};
+
+// Set type for employees in departments
+const employeeSetType: SetTypeMeta = {
+    qName: "/company/EmployeeSet",
+    kind: "set",
+    elementType: "/company/Employee"
+};
+
+// Set type for departments
+const departmentSetType: SetTypeMeta = {
+    qName: "/company/DepartmentSet", 
+    kind: "set",
+    elementType: "/company/Department"
+};
+
 // ===== BASIC OBJECT TYPES =====
 
 // Address value object (no bidirectional relationships)
@@ -60,6 +82,38 @@ const addressType: ObjectTypeMeta = {
             optional: true
         }]
     ])
+};
+
+// Department entity - for bidirectional Set relationships  
+const departmentType: ObjectTypeMeta = {
+    qName: "/company/Department",
+    kind: "entity",
+    properties: new Map<string, PropertyMeta>([
+        ["id", {
+            name: "id",
+            typeRef: "string",
+            optional: false
+        }],
+        ["name", {
+            name: "name", 
+            typeRef: "string",
+            optional: false
+        }],
+        ["description", {
+            name: "description",
+            typeRef: "string", 
+            optional: true
+        }],
+        ["employees", {
+            name: "employees",
+            typeRef: "/company/EmployeeSet",
+            optional: true,
+            // One-to-many: Department has many employees (using Set)
+            inverseProp: "departments",
+            inverseTypeRef: "/company/Employee",
+        }]
+    ]),
+    identityKeys: ["id"]
 };
 
 // Badge entity - ONE-TO-ONE with Employee
@@ -144,6 +198,19 @@ const employeeType: ObjectTypeMeta = {
             name: "skills",
             typeRef: "/company/SkillSet",
             optional: true
+        }],
+        ["skillLevels", {
+            name: "skillLevels",
+            typeRef: "/company/SkillLevelMap", 
+            optional: true
+        }],
+        ["departments", {
+            name: "departments",
+            typeRef: "/company/DepartmentSet",
+            optional: true,
+            // Many-to-many: Employee belongs to many departments (using Set)
+            inverseProp: "employees", 
+            inverseTypeRef: "/company/Department",
         }],
         ["metadata", {
             name: "metadata",
@@ -271,6 +338,7 @@ export const companyNamespace: Namespace = {
     version: "1.0.0",
     types: new Map<string, TypeMeta>([
         ["Address", addressType],
+        ["Department", departmentType],
         ["Badge", badgeType],
         ["Employee", employeeType],
         ["Company", companyType],
@@ -278,8 +346,11 @@ export const companyNamespace: Namespace = {
         ["EmployeeArray", employeeArrayType],
         ["ProjectArray", projectArrayType],
         ["SkillSet", skillSetType],
-        ["MetadataMap", metadataMapType]
+        ["MetadataMap", metadataMapType],
+        ["SkillLevelMap", skillLevelMapType],
+        ["EmployeeSet", employeeSetType],
+        ["DepartmentSet", departmentSetType]
     ]),
-    exports: ["Address", "Badge", "Employee", "Company", "Project", "EmployeeArray", "ProjectArray", "SkillSet", "MetadataMap"],
+    exports: ["Address", "Department", "Badge", "Employee", "Company", "Project", "EmployeeArray", "ProjectArray", "SkillSet", "MetadataMap", "SkillLevelMap", "EmployeeSet", "DepartmentSet"],
     imports: new Map() // System namespace is auto-imported
 };

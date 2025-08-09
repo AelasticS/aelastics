@@ -24,6 +24,20 @@ const categorySetType: SetTypeMeta = {
     elementType: "string"
 };
 
+// Set type for products (for bidirectional relationships)
+const productSetType: SetTypeMeta = {
+    qName: "/ecommerce/ProductSet",
+    kind: "set", 
+    elementType: "/ecommerce/Product"
+};
+
+// Set type for customers (for bidirectional relationships)
+const customerSetType: SetTypeMeta = {
+    qName: "/ecommerce/CustomerSet",
+    kind: "set",
+    elementType: "/ecommerce/Customer"
+};
+
 // Map type for product attributes (key: attribute name, value: attribute value)
 const productAttributeMapType: MapTypeMeta = {
     qName: "/ecommerce/ProductAttributeMap",
@@ -84,6 +98,14 @@ const customerType: ObjectTypeMeta = {
             // One-to-many: Customer has many orders
             inverseProp: "customer",
             inverseTypeRef: "/ecommerce/Order",
+        }],
+        ["favoriteProducts", {
+            name: "favoriteProducts",
+            typeRef: "/ecommerce/ProductSet",
+            optional: true,
+            // Many-to-many: Customer favorites many products (using Set)
+            inverseProp: "favoritedByCustomers",
+            inverseTypeRef: "/ecommerce/Product",
         }]
     ]),
     identityKeys: ["id"],
@@ -142,6 +164,14 @@ const productType: ObjectTypeMeta = {
             // One-to-many: Product has many order items
             inverseProp: "product",
             inverseTypeRef: "/ecommerce/OrderItem",
+        }],
+        ["favoritedByCustomers", {
+            name: "favoritedByCustomers", 
+            typeRef: "/ecommerce/CustomerSet",
+            optional: true,
+            // Many-to-many: Product favorited by many customers (using Set)
+            inverseProp: "favoriteProducts",
+            inverseTypeRef: "/ecommerce/Customer",
         }]
     ]),
     identityKeys: ["id"],
@@ -266,9 +296,11 @@ export const ecommerceNamespace: Namespace = {
         ["ProductArray", productArrayType],
         ["CategorySet", categorySetType],
         ["ProductAttributeMap", productAttributeMapType],
-        ["InventoryRecord", inventoryRecordType]
+        ["InventoryRecord", inventoryRecordType],
+        ["ProductSet", productSetType],
+        ["CustomerSet", customerSetType]
     ]),
-    exports: ["Customer", "Product", "Order", "OrderItem", "OrderItemArray", "OrderArray", "ProductArray", "CategorySet", "ProductAttributeMap", "InventoryRecord"],
+    exports: ["Customer", "Product", "Order", "OrderItem", "OrderItemArray", "OrderArray", "ProductArray", "CategorySet", "ProductAttributeMap", "InventoryRecord", "ProductSet", "CustomerSet"],
     imports: new Map([
         // Wildcard import - imports all exported types from company namespace
         ["/company", ["*"]]

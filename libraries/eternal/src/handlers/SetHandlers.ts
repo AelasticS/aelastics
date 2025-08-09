@@ -10,12 +10,18 @@ import { EventPayload, Result } from "../events/EventTypes"
 import { ChangeLogEntry } from "../events/ChangeLog"
 import { uuid } from "../store/InternalTypes"
 
+// Helper function to check if set elements are objects that need UUID conversion
+const isObjectElementProperty = (propDes: PropertyMeta, store: StoreClass): boolean => {
+  const elementTypeKind = getPropertyItemTypeKind(propDes, store);
+  return elementTypeKind === "object" || elementTypeKind === "entity";
+}
+
 // Convert UUID to Object
 const toObject = (item: any, store: StoreClass, propDes: PropertyMeta) =>
-  getPropertyItemTypeKind(propDes, store) === "object" && item ? store.objectManager.findByUUID(item) : item
+  isObjectElementProperty(propDes, store) && item ? store.objectManager.findByUUID(item) : item
 
 // Convert object to UUID if needed
-const toUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any => (getPropertyItemTypeKind(propDes, store) === "object" && value ? value[uuid] : value)
+const toUUID = (value: any, propDes: PropertyMeta, store: StoreClass): any => (isObjectElementProperty(propDes, store) && value ? value[uuid] : value)
 
 /** Creates handlers for observable sets */
 export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra): SetHandlers<V> => {
@@ -73,7 +79,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       // Perform the actual operation
       obj[privateKey].add(valueUUID)
 
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, undefined, valueUUID)
       }
@@ -148,7 +154,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       // Perform the actual operation
       obj[privateKey].delete(valueUUID)
 
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         updater(obj, valueUUID, undefined)
       }
@@ -223,7 +229,7 @@ export const createSetHandlers = <V>({ store, object, propDes }: ObservableExtra
       // Perform the actual operation
       obj[privateKey].clear()
 
-      if (getPropertyItemTypeKind(propDes, store) === "object" && propDes.inverseProp) {
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey]
         changes.forEach((change) => {
           updater(obj, change.oldValue, undefined)
