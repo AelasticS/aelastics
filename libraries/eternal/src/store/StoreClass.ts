@@ -453,12 +453,11 @@ export class StoreClass {
       return instance as T
     } catch (error) {
       hasError = true // Set error flag
-      console.error("An error occurred while creating the object:", error)
 
       if (!wasInUpdateMode) {
         this.revertToPreviousState() // Revert the state if this method started the transaction
       }
-      throw error // Re-throw the error after logging and reverting
+      throw error // Re-throw the error for the caller to handle
     } finally {
       if (!wasInUpdateMode) {
         this.inUpdateMode = false // Exit update mode if it was set by this method
@@ -605,9 +604,8 @@ export class StoreClass {
       }
     } catch (error) {
       hasError = true // Set error flag
-      console.error("An error occurred while applying the recipe:", error)
       this.revertToPreviousState()
-      throw error // Re-throw the error after logging it
+      throw error // Re-throw the error for the caller to handle
     } finally {
       if (!wasInUpdateMode) {
         this.inUpdateMode = false // Exit update mode if it was set by this method

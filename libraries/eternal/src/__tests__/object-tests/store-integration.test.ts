@@ -388,8 +388,6 @@ describe("Store Integration Tests", () => {
             
             // Should complete reasonably quickly (adjust threshold as needed)
             expect(duration).toBeLessThan(5000); // 5 seconds max
-            
-            console.log(`Created 100 Employee objects using qualified names in ${duration}ms`);
         });
 
         test("should create objects even faster using TypeMeta references", () => {
@@ -415,8 +413,6 @@ describe("Store Integration Tests", () => {
             
             // Should complete even faster than qualified names
             expect(duration).toBeLessThan(5000); // 5 seconds max
-            
-            console.log(`Created 100 Employee objects using TypeMeta references in ${duration}ms`);
         });
     });
 

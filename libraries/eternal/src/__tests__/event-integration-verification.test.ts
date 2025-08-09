@@ -36,10 +36,6 @@ describe("Event Integration Verification", () => {
             name: "Tech Corp"
         });
 
-        // Check if the listener was called
-        console.log("Create listener call count:", createListener.mock.calls.length);
-        console.log("Created company:", company);
-
         // This test will reveal whether events are integrated with real operations
         expect(createListener).toHaveBeenCalledTimes(1);
 

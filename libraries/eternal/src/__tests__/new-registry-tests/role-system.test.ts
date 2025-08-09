@@ -228,8 +228,8 @@ describe("Role System Tests", () => {
                 if (type && isComplexType(type)) {
                     // Check if non-entity complex types have roles (should not happen)
                     if (type.kind !== "entity" && type.kind === "object" && type.roles) {
-                        // This is informational - current implementation may allow roles on non-entities
-                        console.log(`Non-entity type ${typeName} has roles:`, type.roles);
+                        // This is informational - roles on non-entities are tracked but not logged
+                        expect(type.roles).toBeDefined(); // Just verify the structure exists
                     }
                 }
             }
