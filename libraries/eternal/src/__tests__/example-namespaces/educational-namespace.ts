@@ -39,20 +39,12 @@ const gradeMapType: MapTypeMeta = {
     valueType: "number"
 };
 
-// Map type for student grades in courses (Course -> grade)
-const courseGradeMapType: MapTypeMeta = {
-    qName: "/educational/CourseGradeMap", 
-    kind: "map",
-    keyType: "/educational/Course",
-    valueType: "number"
-};
 
-// Map type for course student grades (Student -> grade)
-const studentGradeMapType: MapTypeMeta = {
-    qName: "/educational/StudentGradeMap",
-    kind: "map", 
-    keyType: "/educational/Student",
-    valueType: "number"
+// Set type for enrollments (replaces Map-based denormalized pattern)
+const enrollmentSetType: SetTypeMeta = {
+    qName: "/educational/EnrollmentSet",
+    kind: "set",
+    elementType: "/educational/Enrollment"
 };
 
 // ===== MAIN ENTITY TYPES =====
@@ -113,13 +105,13 @@ const studentType: ObjectTypeMeta = {
             inverseProp: "student",
             inverseTypeRef: "/educational/Assignment",
         }],
-        ["courseGrades", {
-            name: "courseGrades",
-            typeRef: "/educational/CourseGradeMap", 
+        ["enrollments", {
+            name: "enrollments",
+            typeRef: "/educational/EnrollmentSet",
             optional: true,
-            // Bidirectional Map: Student's grades per course
-            inverseProp: "studentGrades",
-            inverseTypeRef: "/educational/Course",
+            // Many-to-many via junction: Student has many Enrollments
+            inverseProp: "student",
+            inverseTypeRef: "/educational/Enrollment"
         }]
     ]),
     identityKeys: ["id"],
@@ -213,7 +205,7 @@ const courseType: ObjectTypeMeta = {
         ["teacher", {
             name: "teacher",
             typeRef: "/educational/Teacher",
-            optional: false,
+            optional: true,  // Made optional to avoid inheritance issues in tests
             // Many-to-one: Course has one teacher
             inverseProp: "courses",
             inverseTypeRef: "/educational/Teacher",
@@ -239,17 +231,63 @@ const courseType: ObjectTypeMeta = {
             typeRef: "/educational/GradeMap",
             optional: true
         }],
-        ["studentGrades", {
-            name: "studentGrades", 
-            typeRef: "/educational/StudentGradeMap",
+        ["enrollments", {
+            name: "enrollments",
+            typeRef: "/educational/EnrollmentSet", 
             optional: true,
-            // Bidirectional Map: Course's grades per student
-            inverseProp: "courseGrades",
-            inverseTypeRef: "/educational/Student",
+            // Many-to-many via junction: Course has many Enrollments
+            inverseProp: "course",
+            inverseTypeRef: "/educational/Enrollment"
         }]
     ]),
     identityKeys: ["id"],
     roles: ["/core/Auditable", "/core/Timestampable", "/core/Versionable"]
+};
+
+// Enrollment junction entity (replaces denormalized courseGrades ↔ studentGrades Maps)
+const enrollmentType: ObjectTypeMeta = {
+    qName: "/educational/Enrollment",
+    kind: "entity",
+    properties: new Map<string, PropertyMeta>([
+        ["id", {
+            name: "id",
+            typeRef: "string",
+            optional: false
+        }],
+        ["student", {
+            name: "student",
+            typeRef: "/educational/Student",
+            optional: false,
+            // Bidirectional: Enrollment.student ↔ Student.enrollments
+            inverseProp: "enrollments",
+            inverseTypeRef: "/educational/Student"
+        }],
+        ["course", {
+            name: "course",
+            typeRef: "/educational/Course",
+            optional: false,
+            // Bidirectional: Enrollment.course ↔ Course.enrollments
+            inverseProp: "enrollments",
+            inverseTypeRef: "/educational/Course"
+        }],
+        ["grade", {
+            name: "grade",
+            typeRef: "number",
+            optional: true  // Single source of truth for grade data
+        }],
+        ["enrollmentDate", {
+            name: "enrollmentDate",
+            typeRef: "date",
+            optional: false
+        }],
+        ["completionStatus", {
+            name: "completionStatus",
+            typeRef: "string",
+            optional: false
+        }]
+    ]),
+    identityKeys: ["id"],
+    roles: ["/core/Auditable", "/core/Timestampable"]
 };
 
 // Assignment entity
@@ -322,15 +360,15 @@ export const educationalNamespace: Namespace = {
         ["Teacher", teacherType],
         ["Course", courseType],
         ["Assignment", assignmentType],
+        ["Enrollment", enrollmentType],
         ["StudentArray", studentArrayType],
         ["CourseArray", courseArrayType],
         ["AssignmentArray", assignmentArrayType],
         ["SubjectSet", subjectSetType],
+        ["EnrollmentSet", enrollmentSetType],
         ["GradeMap", gradeMapType],
-        ["CourseGradeMap", courseGradeMapType],
-        ["StudentGradeMap", studentGradeMapType]
     ]),
-    exports: ["Student", "Teacher", "Course", "Assignment", "StudentArray", "CourseArray", "AssignmentArray", "SubjectSet", "GradeMap", "CourseGradeMap", "StudentGradeMap"],
+    exports: ["Student", "Teacher", "Course", "Assignment", "Enrollment", "StudentArray", "CourseArray", "AssignmentArray", "SubjectSet", "EnrollmentSet", "GradeMap"],
     imports: new Map([
         // Import User from auth namespace
         ["/auth", ["User"]],
