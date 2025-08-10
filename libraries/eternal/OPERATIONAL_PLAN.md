@@ -279,3 +279,50 @@ export { PHASE1_TASKS, PHASE2_TASKS, PHASE3_TASKS, EXECUTION_PLAN, VALIDATION_ST
 
 **PHASE 2 STATUS**: ✅ COMPLETE - Both Map and Set bidirectional relationships working perfectly
 
+---
+
+## ✅ ADDITIONAL COMPLETIONS (Post Phase 2)
+
+### Array Inverse-Managed Ordered-Set Semantics ✅
+Implemented runtime uniqueness for inverse-managed array relationships (arrays of entities/objects that declare an inverse property):
+
+* Duplicate prevention on mutators: push, unshift, splice (add part), concat (add part)
+* setByIndex now enforces uniqueness and throws on attempted duplicate insertion (only when inverse-managed)
+* Removal operations (delete/splice/pop/shift) naturally compact arrays; tests verify no gaps and inverse cleanup
+* Tests added under `relationship-operations.test.ts`: duplicate prevention (one-to-many & many-to-many), compaction on removal, duplicate rejection via index assignment (setByIndex path)
+
+### Pending Enhancements Related to Arrays
+* Event change log accuracy: exclude filtered duplicate adds from before/after changes arrays
+* Mirror duplicate prevention assertions on reverse sides (e.g. employee.projects) where not already implicit
+* Documentation: add section to developer docs clarifying that inverse-managed arrays behave as ordered sets (no duplicates, stable order otherwise)
+
+---
+
+## ▶ NEXT EXECUTION SEQUENCE (Updated)
+
+1. Event change log normalization for filtered duplicates (low-risk correctness)
+2. Symmetry tests (reverse-side duplicate scenarios & splice/unshift edge cases)
+3. Documentation update (array ordered-set semantics + error behavior for setByIndex)
+4. PHASE 1 validation (simple property & invalid Map inverse patterns) – preventive hardening
+5. Coverage lift & targeted tests (ChangeLog, inverseUpdaters edge paths) to satisfy global branch threshold
+6. Optional: performance micro-benchmark for duplicate filtering overhead
+
+---
+
+## QUICK STATUS MATRIX
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Map bidirectional (value-based) | ✅ | Completed & tested |
+| Set bidirectional | ✅ | Completed & tested |
+| Array uniqueness (inverse-managed) | ✅ | All major mutators guarded |
+| setByIndex duplicate handling | ✅ | Throws error; test added |
+| Event change log filtering | ⏳ | Duplicates still appear in change list (cosmetic) |
+| Reverse-side array duplicate tests | ⏳ | To add for completeness |
+| Simple property inverse validation (Phase 1) | ⏳ | Not started (planned) |
+| Map invalid pattern validation (Phase 1) | ⏳ | Not started |
+| Docs (ordered-set semantics) | ⏳ | Pending |
+| Coverage threshold (branches) | ⏳ | Slightly below target |
+
+---
+
