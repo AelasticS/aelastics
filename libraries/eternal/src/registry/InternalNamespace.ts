@@ -1,5 +1,5 @@
 import { Namespace, ImportEntry, RegistryMetadata } from './NamespaceMetadata';
-import { TypeMeta, ObjectTypeMeta, isObjectType, TypeKind } from './TypeDefinitions';
+import { TypeMeta, ObjectTypeMeta, isObjectType, isSimpleType, TypeKind } from './TypeDefinitions';
 
 /**
  * Internal namespace implementation with resolved types optimization
@@ -272,6 +272,16 @@ export class InternalNamespace implements Namespace {
                 // Process each property in the object type
                 for (const [propName, propertyMeta] of objectType.properties) {
                     if (propertyMeta.inverseTypeRef && propertyMeta.inverseProp) {
+                        // Validate that simple properties cannot have inverse relationships
+                        const currentPropertyType = this.resolveTypeReference(propertyMeta.typeRef, registry);
+                        if (currentPropertyType && isSimpleType(currentPropertyType)) {
+                            errors.push(
+                                `Simple property '${propName}' of type '${propertyMeta.typeRef}' cannot have inverse relationship. ` +
+                                `Inverse relationships are only allowed for entity/object properties and collections.`
+                            );
+                            continue;
+                        }
+                        
                         try {
                             // Resolve the type containing the inverse property
                             const inverseContainerType = this.resolveTypeReference(propertyMeta.inverseTypeRef, registry);
