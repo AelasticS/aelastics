@@ -505,4 +505,97 @@ describe("Relationship Operations Tests", () => {
             expect(badge.employee).toBeUndefined();
         });
     });
+
+    describe("Array Inverse Integrity (inverse-managed only)", () => {
+        test("should prevent duplicate entries in company.employees when inverse Employee.company already set", () => {
+            let company = store.objects.create<Company>("/company/Company", { id: "comp-dup", name: "Dup Corp" });
+            let employee = store.objects.create<Employee>("/company/Employee", {
+                id: "emp-dup",
+                firstName: "Alice",
+                lastName: "Dup",
+                email: "alice@company.com",
+                isActive: true
+            });
+
+            // Establish via inverse side (authoritative linkage)
+            employee = store.objects.update(e => { e.company = company; }, employee);
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+            employee = store.objects.findByUUID(store.objects.getUUID(employee))!;
+
+            expect(company.employees!.length).toBe(1);
+            expect(company.employees![0]).toBe(employee);
+
+            // Push same employee again directly on collection side
+            company = store.objects.update(c => { c.employees?.push(employee); }, company);
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+
+            // Should still be exactly one (treat as ordered set under inverse management)
+            expect(company.employees!.length).toBe(1);
+        });
+
+        test("setByIndex should throw when attempting to introduce duplicate employee in inverse-managed company.employees", () => {
+            let company = store.objects.create<Company>("/company/Company", { id: "comp-set-dup", name: "Dup Corp Set" });
+            let e1 = store.objects.create<Employee>("/company/Employee", { id: "emp-set-1", firstName: "E1", lastName: "Dup", email: "e1@company.com", isActive: true });
+            let e2 = store.objects.create<Employee>("/company/Employee", { id: "emp-set-2", firstName: "E2", lastName: "Dup", email: "e2@company.com", isActive: true });
+
+            // Link both employees via inverse side
+            e1 = store.objects.update(emp => { emp.company = company; }, e1);
+            e2 = store.objects.update(emp => { emp.company = company; }, e2);
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+            expect(company.employees!.length).toBe(2);
+
+            // Attempt to set index 1 to the same as index 0 (duplicate) - should throw
+            const attempt = () => {
+                company = store.objects.update(c => { (c.employees as Employee[])[1] = e1; }, company);
+            };
+            expect(attempt).toThrow(/duplicate/i);
+        });
+
+        test("should prevent duplicate entries in project.assignedEmployees and employee.projects (many-to-many)", () => {
+            let project = store.objects.create<Project>("/company/Project", { id: "proj-dup", name: "Dup Project" });
+            let employee = store.objects.create<Employee>("/company/Employee", {
+                id: "emp-mtm-dup",
+                firstName: "Bob",
+                lastName: "Multi",
+                email: "bob@company.com",
+                isActive: true
+            });
+
+            // Add employee first time
+            project = store.objects.update(p => { p.assignedEmployees?.push(employee); }, project);
+            project = store.objects.findByUUID(store.objects.getUUID(project))!;
+            employee = store.objects.findByUUID(store.objects.getUUID(employee))!;
+            expect(project.assignedEmployees!.length).toBe(1);
+            expect(employee.projects!.length).toBe(1);
+
+            // Add same employee again
+            project = store.objects.update(p => { p.assignedEmployees?.push(employee); }, project);
+            project = store.objects.findByUUID(store.objects.getUUID(project))!;
+            employee = store.objects.findByUUID(store.objects.getUUID(employee))!;
+
+            expect(project.assignedEmployees!.length).toBe(1);
+            expect(employee.projects!.length).toBe(1);
+        });
+
+        test("removal should compact array with no empty slots (company.employees)", () => {
+            let company = store.objects.create<Company>("/company/Company", { id: "comp-rem", name: "Rem Corp" });
+            let e1 = store.objects.create<Employee>("/company/Employee", { id: "emp-r1", firstName: "R1", lastName: "L", email: "r1@c.com", isActive: true });
+            let e2 = store.objects.create<Employee>("/company/Employee", { id: "emp-r2", firstName: "R2", lastName: "L", email: "r2@c.com", isActive: true });
+
+            e1 = store.objects.update(e => { e.company = company; }, e1);
+            e2 = store.objects.update(e => { e.company = company; }, e2);
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+            expect(company.employees!.map(e => e.id)).toEqual(["emp-r1", "emp-r2"]);
+
+            // Remove first (set inverse to undefined)
+            e1 = store.objects.update(e => { e.company = undefined; }, e1);
+            company = store.objects.findByUUID(store.objects.getUUID(company))!;
+            e2 = store.objects.findByUUID(store.objects.getUUID(e2))!;
+
+            // Ensure compaction (no undefined, remaining first element is e2, length ==1)
+            expect(company.employees!.length).toBe(1);
+            expect(company.employees![0]).toBe(e2);
+            expect(company.employees!.every(e => !!e)).toBe(true);
+        });
+    });
 });

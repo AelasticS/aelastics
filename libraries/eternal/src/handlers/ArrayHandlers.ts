@@ -63,6 +63,7 @@ export const createArrayHandlers = <T extends StoreObject>({
       const res = toObject(newValue, store, propDes)
       return [false, res]
     },
+    // Public helper to align with other mutators (used in tests)
 setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
   const obj = checkWriteAccess(object, store, propDes.name);
   
@@ -71,6 +72,14 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
   
   const newValueUUID = toUUID(value, propDes, store);
   const oldValueUUID = obj[privateKey][index];
+
+  // Enforce uniqueness if inverse-managed array of objects/entities and new value already exists at different index
+  if (propDes.inverseProp && isObjectElementProperty(propDes, store) && newValueUUID !== undefined) {
+    const existingIndex = obj[privateKey].indexOf(newValueUUID);
+    if (existingIndex !== -1 && existingIndex !== index) {
+      throw new Error(`Cannot set duplicate element in inverse-managed array '${propDes.name}': value already present at index ${existingIndex}`);
+    }
+  }
 
   // Check if there are changes to be made
   if (oldValueUUID === newValueUUID) {
@@ -261,12 +270,20 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       }
     
       // Perform the actual operation
-      const newLength = obj[privateKey].push(...itemsUUIDs);
+      // If inverse-managed (object element with inverseProp), prevent duplicate UUIDs
+      let filteredItemsUUIDs = itemsUUIDs;
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
+        const existing = new Set(obj[privateKey]);
+        filteredItemsUUIDs = itemsUUIDs.filter(id => !existing.has(id));
+      }
+      const newLength = filteredItemsUUIDs.length > 0 ? obj[privateKey].push(...filteredItemsUUIDs) : obj[privateKey].length;
     
       if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
-        items.forEach((item) => {
+        items.forEach((item, idx) => {
+          // Skip inverse update if duplicate was filtered out
+          if (filteredItemsUUIDs.indexOf(itemsUUIDs[idx]) === -1) return;
           updater(obj, undefined, item);
         });
       }
@@ -444,7 +461,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         store.validator.validateCollectionElement(item, propDes, "unshift");
       });
       
-      const itemsUUIDs = mapToUUIDs(items, propDes, store)
+  const itemsUUIDs = mapToUUIDs(items, propDes, store)
     
       // Check if there are changes to be made
       if (itemsUUIDs.length === 0) {
@@ -477,13 +494,19 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
       }
     
-      // Perform the actual operation
-      const newLength = obj[privateKey].unshift(...itemsUUIDs);
-    
+      // Perform the actual operation with duplicate filtering if inverse-managed
+      let filteredItemsUUIDs = itemsUUIDs;
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
+        const existing = new Set(obj[privateKey]);
+        filteredItemsUUIDs = itemsUUIDs.filter(id => !existing.has(id));
+      }
+      const newLength = filteredItemsUUIDs.length > 0 ? obj[privateKey].unshift(...filteredItemsUUIDs) : obj[privateKey].length;
+
       if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of newValue to object (connect to new value)
-        items.forEach((item) => {
+        items.forEach((item, idx) => {
+          if (filteredItemsUUIDs.indexOf(itemsUUIDs[idx]) === -1) return; // skip filtered duplicates
           updater(obj, undefined, item);
         });
       }
@@ -525,7 +548,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         });
       }
       
-      const itemsUUIDs = mapToUUIDs(items, propDes, store)
+  const itemsUUIDs = mapToUUIDs(items, propDes, store)
       const deletedItems:any[] = obj[privateKey].slice(start, start + deleteCount)
     
       // Check if there are changes to be made
@@ -573,17 +596,29 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
       }
     
-      // Perform the actual operation
-      const deletedItemsUUIDs = obj[privateKey].splice(start, deleteCount, ...itemsUUIDs);
-    
+      // Perform the actual operation with duplicate filtering for additions if inverse-managed
+      let filteredItemsUUIDs = itemsUUIDs;
+      if (itemsUUIDs.length > 0 && isObjectElementProperty(propDes, store) && propDes.inverseProp) {
+        const existing = new Set(obj[privateKey]);
+        // Exclude the segment that will be deleted so re-adding those values is allowed
+        deletedItems.forEach(id => existing.delete(id));
+        filteredItemsUUIDs = itemsUUIDs.filter(id => {
+          if (existing.has(id)) return false;
+          existing.add(id);
+          return true;
+        });
+      }
+      const deletedItemsUUIDs = obj[privateKey].splice(start, deleteCount, ...filteredItemsUUIDs);
+
       if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
         // set inverse of deleted items to null
         deletedItemsUUIDs.forEach((item: any) => {
           updater(obj, item, undefined);
         });
-        // set inverse of new items to object
-        items.forEach((item: any) => {
+        // set inverse of new items to object (skip filtered duplicates)
+        items.forEach((item: any, idx: number) => {
+          if (filteredItemsUUIDs.indexOf(itemsUUIDs[idx]) === -1) return;
           updater(obj, undefined, item);
         });
       }
@@ -812,7 +847,7 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
       const originalArray = [...obj[privateKey]]; // Copy the original array for comparison
     
       // Flatten the items array and map to UUIDs
-      const itemsUUIDs = items.flat().map(item => toUUID(item, propDes, store));
+  const itemsUUIDs = items.flat().map(item => toUUID(item, propDes, store));
     
       // Check if there are changes to be made
       if (itemsUUIDs.length === 0) {
@@ -845,14 +880,25 @@ setByIndex: (target: T[], index: number, value: any): [boolean, T] => {
         throw new Error(`Transaction cancelled by before.update event: ${result.errors.map(e => e.message).join(', ')}`);
       }
     
-      // Perform the actual operation
-      const newArray = obj[privateKey].concat(itemsUUIDs);
-    
+      // Perform the actual operation with duplicate filtering if inverse-managed
+      let filteredItemsUUIDs = itemsUUIDs;
+      if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
+        const existing = new Set(obj[privateKey]);
+        filteredItemsUUIDs = itemsUUIDs.filter(id => {
+          if (existing.has(id)) return false;
+          existing.add(id);
+          return true;
+        });
+      }
+      const newArray = obj[privateKey].concat(filteredItemsUUIDs);
+
       if (isObjectElementProperty(propDes, store) && propDes.inverseProp) {
         const updater: invUpd.inverseUpdater = obj[inverseUpdaterKey];
-        // set inverse of newValue to object (connect to new value)
-        itemsUUIDs.forEach((item) => {
-          updater(obj, undefined, item);
+        filteredItemsUUIDs.forEach((id, idx) => {
+          // Use original flattened items list to locate object value if needed
+          const originalIdx = itemsUUIDs.indexOf(id);
+          const flatItems: any[] = items.flat() as any[]; // flattened objects/values
+            updater(obj, undefined, flatItems[originalIdx]);
         });
       }
     
