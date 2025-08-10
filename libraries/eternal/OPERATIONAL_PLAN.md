@@ -2,7 +2,7 @@
 
 This document outlines the complete plan for both the bidirectional Map relationships we were working on AND the new requirement to forbid simple properties as inverse.
 
-# Phase 1: Validation Rules for Inverse Relationships
+## Phase 1: Validation Rules for Inverse Relationships (Planned)
 
 ## Overview
 
@@ -119,55 +119,7 @@ Department.employeesByRole: Map<string, Employee> ↔ Employee.departments: Set<
 * Both import-time and runtime validation scenarios
 
 // =============================================================================
-// PHASE 2: BIDIRECTIONAL MAP RELATIONSHIPS (ORIGINAL WORK)
-// =============================================================================
-
-> OBJECTIVE: Complete the bidirectional Map relationship implementation focusing ONLY on VALUE-based inverse updates (KEY-based inverses are invalid).
-
-```ts
-const PHASE2_TASKS = {
-    "2.1_IMPLEMENT_VALUE_BASED_INVERSE_UPDATES": {
-        file: "src/handlers/MapHandlers.ts",
-        objective: "Fix VALUE-based inverse updates for valid Map patterns",
-        details: [
-            "Current issue: VALUE-based inverse updates don't work in runtime tests",
-            "Valid pattern: Map<SimpleKey, EntityValue> where EntityValue has inverse entity property",
-            "Example: Department.employeesByRole: Map<string, Employee> ↔ Employee.department: Department",
-            "When map.set('manager', johnEmployee), update johnEmployee.department = thisDepartment",
-            "When map.delete('manager'), update johnEmployee.department = undefined",
-            "Fix the existing VALUE-based inverse logic in MapHandlers.ts for entity-to-entity inverses"
-        ]
-    },
-    
-    "2.2_IMPLEMENT_ENTITY_TO_COLLECTION_MAP_BIDIRECTIONAL": {
-        file: "src/handlers/MapHandlers.ts", 
-        objective: "Implement Map<SimpleKey, Entity> ↔ Entity.collection patterns",
-        details: [
-            "Valid pattern: Map<SimpleKey, EntityValue> ↔ EntityValue.entityCollection",
-            "Example: Department.employeesByRole: Map<string, Employee> ↔ Employee.departments: Set<Department>",
-            "When map.set('manager', johnEmployee), add thisDepartment to johnEmployee.departments",
-            "When map.delete('manager'), remove thisDepartment from johnEmployee.departments",
-            "Focus on entity-to-collection inverse updates"
-        ]
-    },
-    
-    "2.3_UPDATE_RUNTIME_TESTS": {
-        file: "src/__tests__/bidirectional-tests/map-inverse-runtime.test.ts",
-        objective: "Replace invalid educational namespace with valid Map patterns",
-        details: [
-            "Remove educational namespace tests (Student.courseGrades ↔ Course.studentGrades) - violates simple value rule",
-            "Create valid pattern 1: Department.employeesByRole: Map<string, Employee> ↔ Employee.department: Department",
-            "Create valid pattern 2: Team.membersBySkill: Map<string, Employee> ↔ Employee.teams: Set<Team>",
-            "Test: department.employeesByRole.set('manager', john) updates john.department = department",
-            "Test: team.membersBySkill.set('developer', alice) adds team to alice.teams",
-            "Verify proper entity-to-entity and entity-to-collection inverse updates work"
-        ]
-    }
-};
-```
-
-// =============================================================================
-// PHASE 3: ARCHITECTURAL CLEANUP (AFTER PHASES 1 & 2)
+// PHASE 3: ARCHITECTURAL CLEANUP (UPCOMING)
 // =============================================================================
 
 ```ts
@@ -194,23 +146,19 @@ const PHASE3_TASKS = {
 ```
 
 // =============================================================================
-// EXECUTION ORDER & PRIORITIES (USER SPECIFIED ORDER)
+// UPDATED EXECUTION ORDER (ONLY REMAINING WORK)
 // =============================================================================
 
 ```ts
 const EXECUTION_PLAN = {
-    priority: "PHASE 2 (Map bidirectional relationships) - FIRST",
-    reasoning: [
-        "User explicitly requested Phase 2 and 3 before Phase 1",
-        "Complete the bidirectional Map work we started", 
-        "Then clean up architectural issues",
-        "Finally add validation to prevent future simple property inverses"
-    ],
-    
     sequence: [
-        "1. PHASE 2: Complete Map bidirectional relationships (finish original work)",
-        "2. PHASE 3: Architectural cleanup and documentation", 
-        "3. PHASE 1: Implement simple property inverse validation (prevents future bad patterns)"
+        "1. Tactical: Event change log normalization (duplicate array add filtering)",
+        "2. Tactical: Reverse-side symmetry duplicate tests (array ordered-set)",
+        "3. Docs: Ordered-set semantics + setByIndex duplicate error section",
+        "4. Phase 1: Validation implementation (simple property + invalid Map inverses)",
+        "5. Phase 3: Architectural cleanup (remove denormalized pattern, add junction examples)",
+        "6. Coverage: Edge inverseUpdaters branches + residual gaps",
+        "7. Optional: Micro-benchmark (post-validation)"
     ]
 };
 ```
@@ -252,105 +200,52 @@ const VALIDATION_STRATEGY = {
 ```
 
 ```ts
-export { PHASE1_TASKS, PHASE2_TASKS, PHASE3_TASKS, EXECUTION_PLAN, VALIDATION_STRATEGY };
+const PHASE1_TASKS = {
+    "1.1_TYPE_DETECTION_HELPER": "Implement isSimplePropertyType() in TypeDefinitions.ts",
+    "1.2_NAMESPACE_IMPORT_VALIDATION": "Enforce invalid inverse rejection in InternalNamespace.deriveInverseTypeOptimizations()",
+    "1.3_RUNTIME_PROPERTY_VALIDATION": "Add runtime guard in createPropertyAccessors() before wiring updaters",
+    "1.4_VALIDATION_TEST_COVERAGE": "Add comprehensive rejection/acceptance tests in simple-property-inverse-validation.test.ts"
+};
+
+export { PHASE1_TASKS, PHASE3_TASKS, EXECUTION_PLAN, VALIDATION_STRATEGY };
 ```
 
 // =============================================================================
 // PROGRESS UPDATE  
 // =============================================================================
 
-## ✅ PHASE 2: BIDIRECTIONAL RELATIONSHIPS COMPLETED
+## Current Focus (2025-08-10)
 
-### Map Bidirectional Relationships ✅ WORKING
+* Event change log normalization (remove ghost duplicate add entries)
+* Symmetry duplicate tests for reverse sides of array relationships
+* Documentation addition: ordered-set semantics + error behavior (setByIndex duplicate)
+* Phase 1 validation implementation
+* Phase 3 architectural cleanup (junction entity, remove denormalized pattern)
+* Coverage improvements for inverseUpdaters edge branches
 
-**Status**: MapHandlers.ts VALUE-based inverse updates implemented correctly!
+## Execution Sequence (Remaining Only)
 
-**Tests**: map-bidirectional-inverse.test.ts (4/4 passing)
-
-**Patterns Verified**:
-
-1. **Department.employeesByRole: Map<string, Employee> ↔ Employee.department: Department** ✅
-2. **Team.membersBySkill: Map&lt;string, Employee&gt; ↔ Employee.teams: Set&lt;Team&gt;** ✅
-
-### Set Bidirectional Relationships ✅ WORKING
-
-**Status**: SetHandlers.ts VALUE-based inverse updates working perfectly!
-
-**Tests**: set-bidirectional-inverse.test.ts (4/4 passing)
-
-**Patterns Verified**:
-
-1. **Department.employees: Set&lt;Employee&gt; ↔ Employee.departments: Set&lt;Department&gt;** ✅
-2. **Many-to-many relationships with bidirectional add/delete operations** ✅
-
-### Key Architecture Findings ✅
-
-* `isObjectValueProperty()` correctly identifies VALUE-based entity patterns for both Map and Set
-* Inverse updates work for entity/object values only (normalized relationships)
-* Educational namespace failed because it used simple values (denormalized)
-* Both Map and Set handlers implement consistent bidirectional inverse logic
-
-**PHASE 2 STATUS**: ✅ COMPLETE - Both Map and Set bidirectional relationships working perfectly
-
----
-
-## ✅ ADDITIONAL COMPLETIONS (Post Phase 2)
-
-### Array Inverse-Managed Ordered-Set Semantics ✅
-
-Implemented runtime uniqueness for inverse-managed array relationships (arrays of entities/objects that declare an inverse property):
-
-* Duplicate prevention on mutators: push, unshift, splice (add part), concat (add part)
-* setByIndex now enforces uniqueness and throws on attempted duplicate insertion (only when inverse-managed)
-* Removal operations (delete/splice/pop/shift) naturally compact arrays; tests verify no gaps and inverse cleanup
-* Tests added under `relationship-operations.test.ts`: duplicate prevention (one-to-many & many-to-many), compaction on removal, duplicate rejection via index assignment (setByIndex path)
-
-### Pending Enhancements Related to Arrays
-
-* Event change log accuracy: exclude filtered duplicate adds from before/after changes arrays
-* Mirror duplicate prevention assertions on reverse sides (e.g. employee.projects) where not already implicit
-* Documentation: add section to developer docs clarifying that inverse-managed arrays behave as ordered sets (no duplicates, stable order otherwise)
-
----
-
-## ▶ NEXT EXECUTION SEQUENCE (Updated)
-
-Immediate tactical tasks precede Phase 1 validation to finalize and document already-implemented runtime semantics.
-
-PRIORITY ORDER (Highest → Lower):
-
-1. Event change log normalization (filter out suppressed duplicate array adds)
-2. Reverse-side symmetry duplicate tests (array ordered-set behavior from both mutation directions)
-3. Documentation update: ordered-set semantics + setByIndex duplicate error behavior
-4. Phase 1 validation implementation (simple property & invalid Map inverse patterns)
-5. Targeted inverseUpdaters edge / steal / idempotent coverage tests
-6. Coverage gap fill (minor remaining branches after step 5)
-7. Optional micro-benchmark (duplicate filtering overhead) – only after correctness & validation solid
-
-Rationale: Steps 1–3 close correctness + clarity gaps on features already merged; Step 4 prevents regression; Steps 5–6 raise reliability; Step 7 is optimization.
-
----
+1. Event change log normalization
+2. Reverse-side symmetry duplicate tests
+3. Ordered-set semantics documentation update
+4. Phase 1 validation implementation
+5. Phase 3 architectural cleanup
+6. Coverage edge cases & inverseUpdaters branches
+7. Optional micro-benchmark
 
 ## QUICK STATUS MATRIX
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Map bidirectional (value-based) | ✅ | Completed & tested |
-| Set bidirectional | ✅ | Completed & tested |
-| Array uniqueness (inverse-managed) | ✅ | All major mutators guarded |
-| setByIndex duplicate handling | ✅ | Throws error; test added |
-| Event change log filtering | ⏳ | Duplicates still appear in change list (cosmetic) |
-| Reverse-side array duplicate tests | ⏳ | To add for completeness |
-| Simple property inverse validation (Phase 1) | ⏳ | Not started (planned) |
+| Event change log filtering | ⏳ | Duplicates still appear (to normalize) |
+| Reverse-side array duplicate tests | ⏳ | Not added yet |
+| Simple property inverse validation (Phase 1) | ⏳ | Not started |
 | Map invalid pattern validation (Phase 1) | ⏳ | Not started |
-| Docs (ordered-set semantics) | ⏳ | Pending |
-| Coverage threshold (branches) | ⏳ | Slightly below target |
-| Deprecated duplicate test file removal | ✅ | Removed: src/__tests__/bidirectional-tests/relationship-operations.test.ts |
+| Docs (ordered-set semantics) | ⏳ | Pending addition |
+| Coverage edge branches (inverseUpdaters) | ⏳ | Planned |
+| Phase 3 cleanup (junction entity) | ⏳ | Planned |
 
-### Recent Maintenance (2025-08-10)
+### Notes
 
-* Removed deprecated duplicate test file `src/__tests__/bidirectional-tests/relationship-operations.test.ts` (all authoritative relationship operation tests consolidated under `src/__tests__/relationship-operations.test.ts`).
-* Priority order section updated to reflect near-term tactical tasks before formal Phase 1 validation.
-
----
+Completed phases (previously detailed) removed for brevity; refer to repository history if historical implementation specifics are needed.
 
