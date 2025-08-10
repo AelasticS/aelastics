@@ -236,7 +236,7 @@ export { REMAINING_PHASE1_TASKS, REMAINING_EXECUTION_PLAN, VALIDATION_STRATEGY }
 | **Phase 3: Denormalized pattern removal** | ✅ | **COMPLETED** - Educational namespace updated |
 | Event change log filtering | ⏳ | Duplicates still appear (to normalize) |
 | Reverse-side array duplicate tests | ⏳ | Not added yet |
-| Simple property inverse validation (Phase 1) | ⏳ | **NEXT PRIORITY** |
+| **Phase 1: Simple property inverse validation** | ✅ | **COMPLETED** - Validation rules implemented and tested |
 | Map invalid pattern validation (Phase 1) | ⏳ | Part of Phase 1 |
 | Docs (ordered-set semantics) | ⏳ | Pending addition |
 | Coverage edge branches (inverseUpdaters) | ⏳ | Planned |
