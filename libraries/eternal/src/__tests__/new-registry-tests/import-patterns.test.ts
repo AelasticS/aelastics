@@ -149,7 +149,6 @@ describe("Import Pattern Tests", () => {
                 registry.importNamespace(authNamespace);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping auth namespace import due to dependencies:", error.validationResult.errors);
                     return;
                 }
                 throw error;
@@ -177,7 +176,6 @@ describe("Import Pattern Tests", () => {
                 }
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping alias import test due to educational namespace dependencies:", error.validationResult.errors);
                     return;
                 }
                 throw error;
@@ -191,7 +189,6 @@ describe("Import Pattern Tests", () => {
                 registry.importNamespace(authNamespace);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping auth namespace import due to dependencies:", error.validationResult.errors);
                     return;
                 }
                 throw error;
@@ -217,7 +214,6 @@ describe("Import Pattern Tests", () => {
                 }
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping aliased types test due to educational namespace dependencies:", error.validationResult.errors);
                     return;
                 }
                 throw error;
@@ -229,7 +225,6 @@ describe("Import Pattern Tests", () => {
                 registry.importNamespace(authNamespace);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping auth namespace for alias validation due to dependencies:", error.validationResult.errors);
                     return;
                 }
                 throw error;
@@ -260,7 +255,6 @@ describe("Import Pattern Tests", () => {
                 registry.importNamespace(authNamespace);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping auth namespace import due to dependencies:", error.validationResult.errors);
                     return;
                 }
                 throw error;
@@ -299,7 +293,6 @@ describe("Import Pattern Tests", () => {
                 }
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping mixed import patterns test due to educational namespace dependencies:", error.validationResult.errors);
                     return;
                 }
                 throw error;
@@ -332,7 +325,6 @@ describe("Import Pattern Tests", () => {
                 expect(registry.hasNamespace("/auth")).toBe(true);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping auth namespace import test due to dependencies:", error.validationResult.errors);
                     // Just verify core was imported
                     expect(registry.hasNamespace("/core")).toBe(true);
                     return;

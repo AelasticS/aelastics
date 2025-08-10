@@ -43,25 +43,13 @@ describe('Set Bidirectional Inverse Relationships', () => {
                 isActive: true
             });
 
-            // Verify initial state
-            console.log("Initial state:");
-            console.log("department.employees.size:", department.employees.size);
-            console.log("employee.departments.size:", employee.departments.size);
-
             // Test Set bidirectional inverse update: Department.employees.add(employee)
-            console.log("Adding employee to department.employees");
             department = store.update((d: any) => {
                 d.employees.add(employee);
             }, department);
 
             // Refresh employee reference after update
             employee = store.findByUUID(store.getUUID(employee))!;
-
-            console.log("After department.employees.add(employee):");
-            console.log("department.employees.size:", department.employees.size);
-            console.log("department.employees.has(employee):", department.employees.has(employee));
-            console.log("employee.departments.size:", employee.departments.size);
-            console.log("employee.departments.has(department):", employee.departments.has(department));
 
             // Verify both sides were updated correctly
             expect(department.employees.size).toBe(1);
@@ -97,24 +85,13 @@ describe('Set Bidirectional Inverse Relationships', () => {
             expect(department.employees.has(employee)).toBe(true);
             expect(employee.departments.has(department)).toBe(true);
 
-            console.log("Before removal:");
-            console.log("department.employees.size:", department.employees.size);
-            console.log("employee.departments.size:", employee.departments.size);
-
             // Test Set bidirectional inverse delete: Department.employees.delete(employee)
-            console.log("Removing employee from department.employees");
             department = store.update((d: any) => {
                 d.employees.delete(employee);
             }, department);
 
             // Refresh employee reference after update
             employee = store.findByUUID(store.getUUID(employee))!;
-
-            console.log("After department.employees.delete(employee):");
-            console.log("department.employees.size:", department.employees.size);
-            console.log("department.employees.has(employee):", department.employees.has(employee));
-            console.log("employee.departments.size:", employee.departments.size);
-            console.log("employee.departments.has(department):", employee.departments.has(department));
 
             // Verify both sides were updated correctly
             expect(department.employees.size).toBe(0);
@@ -141,19 +118,12 @@ describe('Set Bidirectional Inverse Relationships', () => {
             });
 
             // Test reverse direction: Employee.departments.add(department)
-            console.log("Adding department to employee.departments");
             employee = store.update((e: any) => {
                 e.departments.add(department);
             }, employee);
 
             // Refresh department reference after update
             department = store.findByUUID(store.getUUID(department))!;
-
-            console.log("After employee.departments.add(department):");
-            console.log("employee.departments.size:", employee.departments.size);
-            console.log("employee.departments.has(department):", employee.departments.has(department));
-            console.log("department.employees.size:", department.employees.size);
-            console.log("department.employees.has(employee):", department.employees.has(employee));
 
             // Verify both sides were updated correctly
             expect(employee.departments.size).toBe(1);
@@ -214,12 +184,6 @@ describe('Set Bidirectional Inverse Relationships', () => {
             alice = store.findByUUID(store.getUUID(alice))!;
             bob = store.findByUUID(store.getUUID(bob))!;
 
-            console.log("Final state:");
-            console.log("Engineering employees:", engineering.employees.size);
-            console.log("Marketing employees:", marketing.employees.size);
-            console.log("Alice departments:", alice.departments.size);
-            console.log("Bob departments:", bob.departments.size);
-
             // Verify complex many-to-many relationships
             expect(engineering.employees.size).toBe(2); // Alice and Bob
             expect(marketing.employees.size).toBe(1);   // Only Alice
@@ -236,5 +200,89 @@ describe('Set Bidirectional Inverse Relationships', () => {
             expect(bob.departments.has(engineering)).toBe(true);
             expect(bob.departments.has(marketing)).toBe(false);
         });
+    });
+});
+
+describe('Set Bidirectional Inverse Relationships - Edge Cases', () => {
+    let registry: RegistryService;
+    let store: StoreClass;
+
+    beforeEach(() => {
+        const registryMetadata: RegistryMetadata = {
+            namespaces: new Map(),
+            name: "test-registry",
+            version: "1.0.0"
+        };
+        registry = new RegistryService(registryMetadata);
+        registry.importNamespace(coreNamespace);
+        registry.importNamespace(companyNamespace);
+        store = new StoreClass(registry);
+    });
+
+    it('should ignore duplicate add on Set (no duplicate inverse linkage)', () => {
+        let department: any = store.create("/company/Department", { id: 'deptD', name: 'Design' });
+        let employee: any = store.create("/company/Employee", { id: 'empD', firstName: 'Dan', lastName: 'Lee', email: 'dan@company.com', isActive: true });
+
+        // First add
+        department = store.update((d: any) => { d.employees.add(employee); }, department);
+        employee = store.findByUUID(store.getUUID(employee))!;
+        expect(department.employees.size).toBe(1);
+        expect(employee.departments.size).toBe(1);
+
+        // Duplicate add (should be ignored)
+        department = store.update((d: any) => { d.employees.add(employee); }, department);
+        employee = store.findByUUID(store.getUUID(employee))!;
+        expect(department.employees.size).toBe(1);
+        expect(employee.departments.size).toBe(1);
+    });
+
+    it('should ignore delete of non-existent element (no inverse side change)', () => {
+        let department: any = store.create("/company/Department", { id: 'deptE', name: 'Editorial' });
+        let employee1: any = store.create("/company/Employee", { id: 'empE1', firstName: 'Eve', lastName: 'Cole', email: 'eve@company.com', isActive: true });
+        let employee2: any = store.create("/company/Employee", { id: 'empE2', firstName: 'Eli', lastName: 'Roe', email: 'eli@company.com', isActive: true });
+
+        // Add only employee1
+        department = store.update((d: any) => { d.employees.add(employee1); }, department);
+        employee1 = store.findByUUID(store.getUUID(employee1))!;
+        employee2 = store.findByUUID(store.getUUID(employee2))!;
+        expect(department.employees.size).toBe(1);
+        expect(department.employees.has(employee1)).toBe(true);
+
+        // Attempt delete of employee2 (not present)
+        department = store.update((d: any) => { d.employees.delete(employee2); }, department);
+        employee1 = store.findByUUID(store.getUUID(employee1))!;
+        employee2 = store.findByUUID(store.getUUID(employee2))!;
+        expect(department.employees.size).toBe(1);
+        expect(department.employees.has(employee1)).toBe(true);
+        expect(department.employees.has(employee2)).toBe(false);
+        expect(employee1.departments.size).toBe(1);
+        expect(employee2.departments.size).toBe(0);
+    });
+
+    it('should no-op clear on empty Set', () => {
+        let department: any = store.create("/company/Department", { id: 'deptF', name: 'Finance' });
+        expect(department.employees.size).toBe(0);
+        department = store.update((d: any) => { d.employees.clear(); }, department);
+        expect(department.employees.size).toBe(0);
+    });
+
+    it('should clear non-empty Set and update inverses', () => {
+        let department: any = store.create("/company/Department", { id: 'deptG', name: 'Growth' });
+        let emp1: any = store.create("/company/Employee", { id: 'empG1', firstName: 'Gina', lastName: 'Miles', email: 'gina@company.com', isActive: true });
+        let emp2: any = store.create("/company/Employee", { id: 'empG2', firstName: 'Gus', lastName: 'Nash', email: 'gus@company.com', isActive: true });
+
+        department = store.update((d: any) => { d.employees.add(emp1); d.employees.add(emp2); }, department);
+        emp1 = store.findByUUID(store.getUUID(emp1))!;
+        emp2 = store.findByUUID(store.getUUID(emp2))!;
+        expect(department.employees.size).toBe(2);
+        expect(emp1.departments.size).toBe(1);
+        expect(emp2.departments.size).toBe(1);
+
+        department = store.update((d: any) => { d.employees.clear(); }, department);
+        emp1 = store.findByUUID(store.getUUID(emp1))!;
+        emp2 = store.findByUUID(store.getUUID(emp2))!;
+        expect(department.employees.size).toBe(0);
+        expect(emp1.departments.size).toBe(0);
+        expect(emp2.departments.size).toBe(0);
     });
 });

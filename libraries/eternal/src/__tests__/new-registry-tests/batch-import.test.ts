@@ -133,7 +133,6 @@ describe("Batch Import Tests", () => {
                 registry.importNamespaceBatch([namespaceA, namespaceB]);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Batch import errors:", error.validationResult.errors);
                 }
                 throw error;
             }

@@ -23,7 +23,6 @@ describe("Inheritance and Subtype Tests", () => {
                 registry.importNamespace(subtypeExamplesNamespace);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Subtype namespace import errors:", error.validationResult.errors);
                 }
                 throw error;
             }

@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsc",
     "test": "heft test",
-    "test:integration": "heft test --test-match \"src/__integration__/**/*.test.ts\""
+  "test:integration": "heft test --test-match \"src/__integration__/**/*.test.ts\"",
+  "clean": "heft clean"
   },
   "devDependencies": {
     "@types/node": "18.11.9",

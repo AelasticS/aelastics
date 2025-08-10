@@ -129,7 +129,6 @@ describe("Role System Tests", () => {
                 registry.importNamespace(ecommerceNamespace);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping ecommerce namespace role tests due to dependencies:", error.validationResult.errors);
                     return;
                 }
                 throw error;

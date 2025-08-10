@@ -128,7 +128,6 @@ describe("Collection Type Tests", () => {
             } catch (error) {
                 // Skip this test if educational namespace has dependency issues
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping map type tests due to educational namespace dependencies");
                     return;
                 }
                 throw error;
@@ -143,7 +142,6 @@ describe("Collection Type Tests", () => {
                 registry.importNamespace(educationalNamespace);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping map type validation due to educational namespace dependencies");
                     return;
                 }
                 throw error;
@@ -170,7 +168,6 @@ describe("Collection Type Tests", () => {
                 registry.importNamespace(ecommerceNamespace);
             } catch (error) {
                 if (error instanceof NamespaceImportError) {
-                    console.log("Skipping ecommerce namespace import due to validation errors:", error.validationResult.errors);
                     return; // Skip the rest of the test
                 }
                 throw error;
