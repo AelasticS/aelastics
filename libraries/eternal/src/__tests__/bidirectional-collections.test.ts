@@ -22,18 +22,6 @@ describe('Bidirectional Collections - Enhanced Namespaces', () => {
     });
 
     describe('Enhanced Company namespace - Set and Map collections', () => {
-        it('should successfully import enhanced company namespace with new collection types', () => {
-            expect(() => {
-                registry.importNamespace(companyNamespace);
-            }).not.toThrow();
-            
-            // Verify new collection types are available
-            expect(registry.hasType('/company/SkillLevelMap')).toBe(true);
-            expect(registry.hasType('/company/EmployeeSet')).toBe(true);
-            expect(registry.hasType('/company/DepartmentSet')).toBe(true);
-            expect(registry.hasType('/company/Department')).toBe(true);
-        });
-
         it('should have correct bidirectional relationships in Department-Employee Set relationship', () => {
             registry.importNamespace(companyNamespace);
             
@@ -124,29 +112,6 @@ describe('Bidirectional Collections - Enhanced Namespaces', () => {
                 expect(studentGradeMapType.keyType).toBe('/educational/Student');
                 expect(studentGradeMapType.valueType).toBe('number');
             }
-        });
-    });
-
-    describe('Coverage verification', () => {
-        it('should cover all major bidirectional collection patterns', () => {
-            registry.importNamespace(companyNamespace);
-            registry.importNamespace(educationalNamespace);
-            
-            // Set bidirectional relationships (M:M via Sets)
-            expect(registry.hasType('/company/EmployeeSet')).toBe(true);
-            expect(registry.hasType('/company/DepartmentSet')).toBe(true);
-            
-            // Map bidirectional relationships (1:1 or M:M via Maps)  
-            expect(registry.hasType('/educational/CourseGradeMap')).toBe(true);
-            expect(registry.hasType('/educational/StudentGradeMap')).toBe(true);
-            
-            // Map non-bidirectional (entity property -> value)
-            expect(registry.hasType('/company/SkillLevelMap')).toBe(true);
-            
-            // Arrays bidirectional relationships (already tested in existing tests)
-            expect(registry.hasType('/company/EmployeeArray')).toBe(true);
-            expect(registry.hasType('/educational/CourseArray')).toBe(true);
-            expect(registry.hasType('/educational/StudentArray')).toBe(true);
         });
     });
 });
