@@ -3,8 +3,8 @@
 
 import { hm } from "../../jsx/handle";
 import { Element } from "../../jsx/element";
-import * as gdmT from "../1.generic-decision-model/generic-decision-meta.model";
-import { CompositeOption, GenericDecisionModel, Issue, Option, SimpleOption, SubIssue } from "../1.generic-decision-model/generic-decision-meta.model-components";
+import * as gdmT from "../1.design-decision/design-decision-meta.model";
+import { CompositeOption, DecisionModel, Issue, Option, SimpleOption, SubIssue } from "../1.design-decision/design-decision-meta.model-components";
 
 
 import { Context } from "../../jsx/context";
@@ -17,8 +17,8 @@ import { TypeString } from "../../types-metamodel/predefined-types";
 const testStore = new ModelStore();
 const context = new Context();
 
-export const NamingConventionGDM: Element<gdmT.IGenericDecisionModel> = (
-    <GenericDecisionModel
+export const NamingConventionGDM: Element<gdmT.IDecisionModel> = (
+    <DecisionModel
         name="Naming convention-gdm"
         description="This is a generic decision model for naming convention"
         store={testStore}
@@ -54,10 +54,10 @@ export const NamingConventionGDM: Element<gdmT.IGenericDecisionModel> = (
             </Option>
         </Issue>
 
-    </GenericDecisionModel>);
+    </DecisionModel>);
 
-export const PerformanceOptimizationGMD: Element<gdmT.IGenericDecisionModel> = (
-    <GenericDecisionModel
+export const PerformanceOptimizationGMD: Element<gdmT.IDecisionModel> = (
+    <DecisionModel
         name="Performance optimization - gdm"
         description="This is a generic decision model for performance optimization"
         store={testStore}
@@ -76,7 +76,7 @@ export const PerformanceOptimizationGMD: Element<gdmT.IGenericDecisionModel> = (
                 </SubIssue>
             </Option>
         </Issue>
-    </GenericDecisionModel>
+    </DecisionModel>
 );
 
 // const m1: gdmT.IGenericDecisionModel = NamingConventionGDM.render(context);

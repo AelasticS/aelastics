@@ -202,36 +202,69 @@ type IRelationship3 = {
         SeparateTable: {
             isSelected: true,
             NamingConventionForTable: {
-                ByRoleName: true,
-                ByEntitiesName: false
+                ByRoleName: {
+                    isSelected: true
+                },
+                ByEntitiesName: {
+                    isSelected: false
+                }
             } | {
-                ByRoleName: false,
-                ByEntitiesName: true
+                ByRoleName: {
+                    isSelected: false
+                },
+                ByEntitiesName: {
+                    isSelected: true
+                }
             }
         }
     },
     FKNamingConvention: {
-        ByRoleName: true,
-        ByPKFromOriginTable: false
+        ByRoleName: {
+            isSelected: true
+        },
+        ByPKFromOriginTable: {
+            isSelected: false
+        }
     } | {
-        ByRoleName: false,
-        ByPKFromOriginTable: true
+        ByRoleName: {
+            isSelected: false
+        },
+        ByPKFromOriginTable: {
+            isSelected: true
+        }
     },
     PKNamingConvention: {
         AddPrefix: {
-            isSlected: true,
+            isSelected: true,
             value: string
         },
-        AddSufix: false,
-        NoPrefixSufix: false
+        AddSufix: {
+            isSelected: false
+        },
+        NoPrefixSufix: {
+            isSelected: false
+        }
     } | {
-        AddPrefix: false,
-        AddSufix: false,
-        NoPrefixSufix: true
+        AddPrefix: {
+            isSelected: false
+        },
+        AddSufix: {
+            isSelected: false
+        },
+        NoPrefixSufix: {
+            isSelected: true
+        }
     } | {
-        AddPrefix: false,
-        AddSufix: true,
-        NoPrefixSufix: false
+        AddPrefix: {
+            isSelected: false
+        },
+        AddSufix: {
+            isSelected: true,
+            value: string
+        },
+        NoPrefixSufix: {
+            isSelected: false
+        }
     }
 };
 

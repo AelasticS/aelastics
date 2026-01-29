@@ -6,34 +6,29 @@ import * as t from "../../types-metamodel/types-meta.model"
 import {
     TypeObject,
     Property,
-    TypeSupertype,
     TypeModel,
-    TypeSubtype,
     TypeOptional,
     TypeOfOptional,
-    PropertyDomain, TypeObjectReference, TypeArray, ArrayElementType,
-    TypeEntity,
+    PropertyDomain,
     TypeUnion,
     UnionElement,
 } from "../../types-metamodel/types-components"
 
-import { Context } from "../../jsx/context"
-import { ModelStore, P } from "../../index"
-import { IIssue, IOption, Issue } from "../1.generic-decision-model/generic-decision-meta.model"
+import { ModelStore } from "../../index"
+import { IIssue, IOption } from "../1.design-decision/design-decision-meta.model"
 import { IModelElement } from "generic-metamodel"
-import { IDecisionBindingElement } from "../2.decision-binding-model/decision-binding-meta.model"
+import { IModelingLanguageBindingElement } from "../2.modeling-language-binding/modeling-language-binding-meta.model"
 
 const store = new ModelStore();
 
-export const typeForDecisionModel = (store: ModelStore, element: IModelElement, bindings: IDecisionBindingElement[]): Element<t.ITypeModel> => {
+export const typeForDecisionModel = (store: ModelStore, element: IModelElement, bindings: IModelingLanguageBindingElement[]): Element<t.ITypeModel> => {
 
     const definedProperties: Map<string, boolean> = new Map(); // Map<propertyName, isOptional>
-
 
     return <TypeModel name="AelasticsTypes" store={store}>
         <TypeObject name={`${element.name}Type`}>
             {
-                bindings.flatMap((binding: IDecisionBindingElement) => {
+                bindings.flatMap((binding: IModelingLanguageBindingElement) => {
                     const hasCondition: boolean = binding.condition !== undefined && binding.condition !== "";
 
                     return binding.decisionIssues.map((issue: IIssue) => {
@@ -49,7 +44,6 @@ export const typeForDecisionModel = (store: ModelStore, element: IModelElement, 
                                         <TypeOfOptional $refByName={propertyType.props.name} />;
                                     </TypeOptional>;
                             }
-
                             return (
                                 <Property
                                     name={issue.name}
@@ -65,14 +59,9 @@ export const typeForDecisionModel = (store: ModelStore, element: IModelElement, 
                             console.warn(`Property ${issue.name} is already defined for ${element.name}Type`);
                         }
                     });
-
-
-
                 })
             }
         </TypeObject>
-
-
     </TypeModel >
 };
 

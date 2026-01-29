@@ -10,13 +10,13 @@ import { ModelStore } from '../../index';
 import * as etT from "../../types-metamodel/types-meta.model";
 import * as eerM from "../../types-metamodel/models/eer-metamodel-aelasticTypes";
 
-import * as dbmT from "../2.decision-binding-model/decision-binding-meta.model";
+import * as dbmT from "../2.modeling-language-binding/modeling-language-binding-meta.model";
 import * as dbme from "./decision-binding-model-example";
 
 import * as gdmM from "./generic-decision-model-example"
 
-import * as sm2smwdbmT from "../3.source-model-2-decision-binding-for-source/sourceModelToSourceModelWithDecisionModelBinding";
-import * as sm2ddm from "../5.source-model-2-decision-model/SourceModel2DefaultDecisionDocument";
+import * as sm2smwdbmT from "../source-model-2-decision-binding-for-source/sourceModelToSourceModelWithDecisionModelBinding";
+import * as sm2ddm from "../4.source-model-2-default-transformation-configuration-model/SourceModel2DefaultDecisionDocument";
 
 import * as eerT from "../../test/eer-model/EER.meta.model.type";
 import * as eerModel from "./eer-model-example.testx"
@@ -43,10 +43,10 @@ describe("Transformation Process", () => {
 
 
 
-        const sm2smwdbmTransformation = new sm2smwdbmT.SourceModelToSourceModelWithDecisionModelBinding(testStore, { 'bindingModel': bindingModel as dbmT.IDecisionBindingModel });
+        const sm2smwdbmTransformation = new sm2smwdbmT.SourceModelToSourceModelWithDecisionModelBinding(testStore, { 'bindingModel': bindingModel as dbmT.IModelingLanguageBindingModel });
         const sourceBindingModel = sm2smwdbmTransformation.transform(eerSchema as eerT.IEERSchema);
 
-        const sm2ddmTransformation = new sm2ddm.SourceModelToDefaultDecisionDocument(testStore, { 'bindingModel': bindingModel });
+        const sm2ddmTransformation = new sm2ddm.SourceModelToDefaultTransformationConfigurationModel(testStore, { 'bindingModel': bindingModel });
         const defaultDecisionModel = sm2ddmTransformation.transform(eerSchema as eerT.IEERSchema);
 
         expect(sourceBindingModel).toBeDefined();

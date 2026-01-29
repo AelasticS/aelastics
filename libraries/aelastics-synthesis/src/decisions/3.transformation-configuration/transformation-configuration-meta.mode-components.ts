@@ -1,14 +1,13 @@
-import * as dm from './decision-meta.model';
+import * as dm from './transformation-configuration-meta.model';
 import { ModelStore } from '../../index';
 import { CpxTemplate, Element, Template, WithRefProps } from "../../jsx/element";
-import { IOption } from '../1.generic-decision-model/generic-decision-meta.model';
 
-export type IModelProps = WithRefProps<dm.IDecisionModel> & {
+export type IModelProps = WithRefProps<dm.ITransformationConfigurationModel> & {
     store?: ModelStore;
 };
 
-export const DecisionModel: CpxTemplate<IModelProps, dm.IDecisionModel> = (props) => {
-    return new Element(dm.DecisionModel, props, undefined);
+export const TransformationConfigurationModel: CpxTemplate<IModelProps, dm.ITransformationConfigurationModel> = (props) => {
+    return new Element(dm.TransformationConfigurationModel, props, undefined);
 }
 
 // export const SelectedOption = (option: IOption) => {
@@ -32,7 +31,7 @@ export const DecisionForElement: Template<dm.IDecisionForElement> = (props) => {
 
 export const SimpleOption: Template<dm.ISimpleOption> = (props) => {
     return new Element(dm.SimpleOption, props, 'value');
-}   
+}
 
 export const CompositeOption: Template<dm.ICompositeOption> = (props) => {
     return new Element(dm.CompositeOption, props, 'value');

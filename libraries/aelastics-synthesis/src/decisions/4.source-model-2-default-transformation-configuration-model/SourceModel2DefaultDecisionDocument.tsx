@@ -2,37 +2,36 @@
 
 import { hm } from "../../jsx/handle";
 import { abstractM2M } from "../../transformations/abstractM2M";
-import { Element, Resolve } from "../../jsx/element";
-import { Context } from "../../jsx/context";
-import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../../index";
+import { Element } from "../../jsx/element";
+import { E2E, ModelStore, M2M } from "../../index";
 import { IModel, IModelElement, Model, ModelElement } from "generic-metamodel";
 
-import * as gdmT from "../1.generic-decision-model/generic-decision-meta.model";
-import * as dbmT from "../2.decision-binding-model/decision-binding-meta.model";
+import * as gdmT from "../1.design-decision/design-decision-meta.model";
+import * as dbmT from "../2.modeling-language-binding/modeling-language-binding-meta.model";
 
-import * as dmT from "../4.decision-model/decision-meta.model";
-import * as dmC from "../4.decision-model/decision-meta.mode-components";
+import * as dmT from "../3.transformation-configuration/transformation-configuration-meta.model";
+import * as dmC from "../3.transformation-configuration/transformation-configuration-meta.mode-components";
 
 @M2M({
     input: Model,
-    output: dmT.DecisionModel,
+    output: dmT.TransformationConfigurationModel,
 })
-export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dmT.IDecisionModel, { 'bindingModel': dbmT.IDecisionBindingModel }> {
-    constructor(store: ModelStore, extra: { 'bindingModel': dbmT.IDecisionBindingModel }) {
+export class SourceModelToDefaultTransformationConfigurationModel extends abstractM2M<IModel, dmT.ITransformationConfigurationModel, { 'bindingModel': dbmT.IModelingLanguageBindingModel }> {
+    constructor(store: ModelStore, extra: { 'bindingModel': dbmT.IModelingLanguageBindingModel }) {
         super(store, extra);
     }
 
     template(s: IModel) {
         return (
-            <dmC.DecisionModel
-                name={s.name + " Default Decision Model"}
+            <dmC.TransformationConfigurationModel
+                name={s.name + " Default Transformation Configuration Model"}
                 description={s.description}
                 relatedModel={s as IModel}
             >
                 {s.elements.map((r) => {
                     return this.createDecisionForSourceModelElement(r as IModelElement);
                 })}
-            </dmC.DecisionModel>
+            </dmC.TransformationConfigurationModel>
 
         );
     }
@@ -55,7 +54,7 @@ export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dm
             >
                 {decisionBindingElements.flatMap((e) => {
                     return e.decisionIssues.map((issue) => {
-                        return this.createSelectedOptionForIssue(issue, sourceModelElement);
+                        return this.createChosenOptionForIssue(issue, sourceModelElement);
                     })
                 })}
 
@@ -68,7 +67,7 @@ export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dm
         output: dmT.BaseSelectedOption, // Use the concrete base type
         ruleName: "Issue2SelectedOption",
     })
-    private createSelectedOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.IBaseSelectedOption> {
+    private createChosenOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.IBaseSelectedOption> {
 
         let defaultOption: gdmT.IOption | undefined = issue.possibleOptions.find((o: gdmT.IOption) => {
             return o.isDefault === true;
@@ -101,26 +100,36 @@ export class SourceModelToDefaultDecisionDocument extends abstractM2M<IModel, dm
                         defaultValue={"defaultString"}
                     />
                 ) : (
-                    <dmC.CompositeOption name={`Composite option for ${defaultOption.name} for ${sourceModelElement.name}`}>
-                        {(defaultOption.optionType as gdmT.ICompositeOption).subIssues.map((subIssue: gdmT.IIssue) => {
-                            return this.createSelectedOptionForIssue(subIssue, sourceModelElement);
-                        })}
-                    </dmC.CompositeOption>
+                    // Debugging CompositeOption
+                    (() => {
+                        const optType = defaultOption.optionType as gdmT.ICompositeOption;
+                        if (!optType.subIssues) {
+                            console.log("Error: subIssues is undefined for option:", defaultOption.name);
+                            console.log("OptionType object:", JSON.stringify(optType, null, 2));
+                        }
+                        return (
+                            <dmC.CompositeOption name={`Composite option for ${defaultOption.name} for ${sourceModelElement.name}`}>
+                                {(defaultOption.optionType as gdmT.ICompositeOption).subIssues?.map((subIssue: gdmT.IIssue) => {
+                                    return this.createChosenOptionForIssue(subIssue, sourceModelElement);
+                                })}
+                            </dmC.CompositeOption>
+                        );
+                    })()
                 )}>
             </dmC.SelectedOption>
         );
     }
 
-    private getBindingElementBySourceModelElement(sourceModelElement: IModelElement): dbmT.IDecisionBindingElement[] {
-        return this.extra?.bindingModel.elements.filter((e) => {
+    private getBindingElementBySourceModelElement(sourceModelElement: IModelElement): dbmT.IModelingLanguageBindingElement[] {
+        return this.extra?.bindingModel.bindings.filter((e) => {
             const type = this.context.store.getTypeOf(sourceModelElement);
-            const fn = (e as dbmT.IDecisionBindingElement).condition === undefined || new Function((e as dbmT.IDecisionBindingElement).condition!)();
+            const fn = (e as dbmT.IModelingLanguageBindingElement).condition === undefined || new Function((e as dbmT.IModelingLanguageBindingElement).condition!)();
 
-            const res = (e as dbmT.IDecisionBindingElement).sourceModelElementRef.name === type.name
+            const res = (e as dbmT.IModelingLanguageBindingElement).sourceModelElementRef.name === type.name
                 && (typeof fn !== "function" || (typeof fn === "function" && fn(sourceModelElement)));
 
             return res;
-        }) as dbmT.IDecisionBindingElement[] || [] as dbmT.IDecisionBindingElement[];
+        }) as dbmT.IModelingLanguageBindingElement[] || [] as dbmT.IModelingLanguageBindingElement[];
     }
 
 }

@@ -1,9 +1,8 @@
 import * as t from 'aelastics-types';
 import { Model, ModelElement } from 'generic-metamodel';
-import * as gdm from '../1.generic-decision-model/generic-decision-meta.model';
-import { Type } from '../../types-metamodel/types-meta.model';
+import * as gdm from '../1.design-decision/design-decision-meta.model';
 
-export const DecisionModel_TypeSchema = t.schema('DecisionModel_TypeSchema');
+export const TransformationConfigurationModel_TypeSchema = t.schema('TransformationConfigurationModel_TypeSchema');
 
 export const SimpleOption = t.subtype(
     ModelElement,
@@ -14,12 +13,12 @@ export const SimpleOption = t.subtype(
         optionType: t.literal('simple')
     },
     'SimpleOption',
-    DecisionModel_TypeSchema);
+    TransformationConfigurationModel_TypeSchema);
 
 export const CompositeOption = t.subtype(
     ModelElement,
     {
-        selectedOptions: t.arrayOf(t.link(DecisionModel_TypeSchema, 'SelectedOption')),
+        selectedOptions: t.arrayOf(t.link(TransformationConfigurationModel_TypeSchema, 'SelectedOption')),
         optionType: t.literal('composite')
     },
     'CompositeOption'
@@ -39,7 +38,7 @@ export const BaseSelectedOption = t.subtype(
         ref: gdm.Option,
     },
     'BaseSelectedOption',
-    DecisionModel_TypeSchema
+    TransformationConfigurationModel_TypeSchema
 );
 
 // Factory function that creates specific SelectedOption types based on the option
@@ -57,7 +56,7 @@ export const SelectedOption = t.subtype(
         )
     },
     'SelectedOption',
-    DecisionModel_TypeSchema
+    TransformationConfigurationModel_TypeSchema
 );
 
 export const DecisionForElement = t.subtype(
@@ -67,21 +66,21 @@ export const DecisionForElement = t.subtype(
         selectedOptions: t.arrayOf(SelectedOption), // Use the base type for arrays
     },
     'DecisionForElement',
-    DecisionModel_TypeSchema
+    TransformationConfigurationModel_TypeSchema
 );
 
-export const DecisionModel = t.subtype(
+export const TransformationConfigurationModel = t.subtype(
     Model,
     {
         decisions: t.arrayOf(DecisionForElement),
         relatedModel: Model,
     },
-    'DecisionModel',
-    DecisionModel_TypeSchema
+    'TransformationConfigurationModel',
+    TransformationConfigurationModel_TypeSchema
 );
 
 
-export type IDecisionModel = t.TypeOf<typeof DecisionModel>;
+export type ITransformationConfigurationModel = t.TypeOf<typeof TransformationConfigurationModel>;
 export type IBaseSelectedOption = t.TypeOf<typeof BaseSelectedOption>; // Type for the base
 export type ISelectedOption = t.TypeOf<typeof SelectedOption>;
 export type IDecisionForElement = t.TypeOf<typeof DecisionForElement>;

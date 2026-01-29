@@ -3,25 +3,27 @@ import { Model, ModelElement } from "generic-metamodel";
 import { Type } from "../../types-metamodel/types-meta.model";
 
 
-export const GenericDecisionModel_TypeSchema = t.schema("GenericDecisionModel_TypeSchema");
+export const DesignDecision_TypeSchema = t.schema("DesignDecision_TypeSchema");
 
 export const Issue = t.subtype(
   ModelElement,
   {
-    possibleOptions: t.arrayOf(t.link(GenericDecisionModel_TypeSchema, "Option")),
+    possibleOptions: t.arrayOf(t.link(DesignDecision_TypeSchema, "Option")),
   },
   "Issue",
-  GenericDecisionModel_TypeSchema
+  DesignDecision_TypeSchema
 );
 
-export const GenericDecisionModel = t.subtype(
+export const DesignDecisionModel = t.subtype(
   Model,
   {
     issues: t.arrayOf(Issue),
   },
-  "GenericDecisionModel",
-  GenericDecisionModel_TypeSchema
+  "DesignDecisionModel",
+  DesignDecision_TypeSchema
 );
+
+(DesignDecisionModel as any).objectClassification = "Model";
 
 export const SimpleOption = t.subtype(
   ModelElement,
@@ -30,7 +32,7 @@ export const SimpleOption = t.subtype(
     optionType: t.literal('simple')
   },
   'SimpleOption',
-  GenericDecisionModel_TypeSchema);
+  DesignDecision_TypeSchema);
 
 export const CompositeOption = t.subtype(ModelElement,
   {
@@ -38,12 +40,13 @@ export const CompositeOption = t.subtype(ModelElement,
     optionType: t.literal('composite')
   },
   'CompositeOption',
-  GenericDecisionModel_TypeSchema
+  DesignDecision_TypeSchema
 );
 
 export const Option = t.subtype(
   ModelElement,
   {
+    ParentIssue: Issue,
     Pros: t.string,
     Cons: t.string,
     isDefault: t.optional(t.boolean), // if is not optional, default value is true 
@@ -55,12 +58,12 @@ export const Option = t.subtype(
       },
       'optionType',
       'OptionType',
-      GenericDecisionModel_TypeSchema
+      DesignDecision_TypeSchema
     )
-  
+
   },
   "Option",
-  GenericDecisionModel_TypeSchema
+  DesignDecision_TypeSchema
 );
 
 export const ConstraintType = t.string.derive("ConstraintType").oneOf(["Requires", "Exclude"]);
@@ -72,10 +75,10 @@ export const Constraint = t.subtype(
     target: Option,
   },
   "Constraint",
-  GenericDecisionModel_TypeSchema
+  DesignDecision_TypeSchema
 );
 
-export type IGenericDecisionModel = t.TypeOf<typeof GenericDecisionModel>;
+export type IDecisionModel = t.TypeOf<typeof DesignDecisionModel>;
 export type IIssue = t.TypeOf<typeof Issue>;
 export type IOption = t.TypeOf<typeof Option>;
 export type IDependency = t.TypeOf<typeof Constraint>;

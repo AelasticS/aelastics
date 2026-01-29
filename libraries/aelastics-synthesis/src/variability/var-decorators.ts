@@ -2,7 +2,7 @@
 
 import { Any } from "aelastics-types";
 import { abstractM2M, M2MContext, _privatePop, _privatePush } from "../transformations/abstractM2M";
-import * as dm from "../decisions/4.decision-model/decision-meta.model"; // import decision model types for decision model transformation
+import * as tcM from "../decisions/3.transformation-configuration/transformation-configuration-meta.model"; // import decision model types for decision model transformation
 
 // https://stackoverflow.com/questions/55179461/reflection-in-javascript-how-to-intercept-an-object-for-function-enhancement-d
 
@@ -35,11 +35,11 @@ export const VarPoint = () => {
 
       const element = args[0];
 
-      var selectedOptions: dm.ISelectedOption[] = (this as abstractM2M<any, any, any, dm.IDecisionModel>).decisionModel?.decisions
-        .filter((d: dm.IDecisionForElement) => d.elementId === element.id)
-        .flatMap((d: dm.IDecisionForElement) => d.selectedOptions) || [] as dm.ISelectedOption[];
+      var selectedOptions: tcM.ISelectedOption[] = (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).decisionModel?.decisions
+        .filter((d: tcM.IDecisionForElement) => d.elementId === element.id)
+        .flatMap((d: tcM.IDecisionForElement) => d.selectedOptions) || [] as tcM.ISelectedOption[];
 
-      (this as abstractM2M<any, any, any, dm.IDecisionModel>).context.currendElementDecision[_privatePush](selectedOptions);
+      (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).context.currendElementDecision[_privatePush](selectedOptions);
 
       const option = options.find((option) => {
         return option.evalCondition(selectedOptions);
@@ -50,8 +50,8 @@ export const VarPoint = () => {
       }
       let result = (this as any)[option.methodName](...args);
 
-      (this as abstractM2M<any, any, any, dm.IDecisionModel>).context.currendElementDecision[_privatePop]();
-      
+      (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).context.currendElementDecision[_privatePop]();
+
       return result;
     };
     descriptor.value[__VarPoint] = propertyKey;

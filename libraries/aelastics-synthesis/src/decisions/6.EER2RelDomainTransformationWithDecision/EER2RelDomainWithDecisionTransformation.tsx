@@ -7,24 +7,24 @@
 
 
 
-import { hm } from "./../../jsx/handle";
-import { VarPoint, VarOption } from "./../../variability/var-decorators";
+import { hm } from "../../jsx/handle";
+import { VarPoint, VarOption } from "../../variability/var-decorators";
 import * as et from "../../test/eer-model/EER.meta.model.type";
 import * as rt from "../../test/relational-model/REL.meta.model.type.v2";
 import * as e from "../../test/eer-model/EER-components";
 import * as r from "../../test/relational-model/REL-components.v2";
-import { abstractM2M } from "./../../transformations/abstractM2M";
+import { abstractM2M } from "../../transformations/abstractM2M";
 import { Element, Resolve } from "../../jsx/element";
 import { Context } from "../../jsx/context";
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../../index";
-import * as dm from "./../4.decision-model/decision-meta.model"; // import decision model types for decision model transformation
+import * as dm from "../3.transformation-configuration/transformation-configuration-meta.model"; // import decision model types for decision model transformation
 
 const testStore = new ModelStore();
 const ctx = new Context();
 
 @M2M({ input: et.EERSchema, output: rt.RelSchema })
-class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema, {}, dm.IDecisionModel> {
-  constructor(store: ModelStore, { }, decisionModel?: dm.IDecisionModel) {
+class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema, {}, dm.ITransformationConfigurationModel> {
+  constructor(store: ModelStore, { }, decisionModel?: dm.ITransformationConfigurationModel) {
     super(store, {}, decisionModel);
   }
 
