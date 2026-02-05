@@ -4,9 +4,9 @@ import { hm } from "../../jsx/handle";
 import { ModelStore } from '../../index';
 import { EERSchema, Attribute, Domain, Relationship, Role, Entity } from "../../test/eer-model/EER-components";
 
-export const createCompanyModel = (store: ModelStore) => {
+export const CompanySchema = (store: ModelStore) => {
     return (
-        <EERSchema name="Company" MDA_level="M1" store={store}>
+        <EERSchema name="CompanySchema" MDA_level="M1" store={store}>
             <Entity name="Person">
                 <Attribute name="personId" isKey={true}>
                     <Domain name="number" />

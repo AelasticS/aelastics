@@ -8,19 +8,19 @@ import * as mlbC from "../2.modeling-language-binding/modeling-language-binding-
 import * as etC from "../../types-metamodel/types-components";
 import * as ddC from "../1.design-decision/design-decision-meta.model-components";
 
-// We assume the DDM and Source Metamodel are loaded in the store
-export const createBindingModel = (store: ModelStore) => (
+
+export const ER_Bindungs = (store: ModelStore) => (
     <mlbC.ModelingLanguageBindingModel
-        name="Company_Persistence_Binding"
-        description="Binding Company EER Model to Persistence Decisions"
+        name="ER_Bindungs"
+        description="Binding EER Model concepts to relation schema design issues"
     >
         <mlbC.ModelingLanguageBindingElement
             name="PKStrategyBinding"
             description="Binding Primary Key Strategy to EER Model"
-            sourceModelElementRef={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Kernel" />}  // Rename Kernel to Entity
+            sourceModelElementRef={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Entity" />}  
             decisionIssues={[
-                <ddC.DecisionModel $refByName="//www.aelastics.org/Persistence_DDM/PrimaryKeyStrategy" />,
-                <ddC.DecisionModel $refByName="//www.aelastics.org/Persistence_DDM/NamingConvention" />,
+                <ddC.DecisionModel $refByName="//www.aelastics.org/RelationSchemaDesignIssues/PrimaryKeyStrategy" />,
+                <ddC.DecisionModel $refByName="//www.aelastics.org/RelationSchemaDesignIssues/NamingConvention" />,
             ]}
         />
 
@@ -29,7 +29,7 @@ export const createBindingModel = (store: ModelStore) => (
             description="Binding 1:N Relationship Strategy to EER Model"
             sourceModelElementRef={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Relationship" />}
             decisionIssues={[
-                <ddC.DecisionModel $refByName="//www.aelastics.org/Persistence_DDM/OneToManyImplement" />
+                <ddC.DecisionModel $refByName="//www.aelastics.org/RelationSchemaDesignIssues/OneToManyImplement" />
             ]}
 
             condition='return (e) => {

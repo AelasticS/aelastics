@@ -4,9 +4,9 @@ import { hm } from "../../jsx/handle";
 import { ModelStore } from '../../index';
 import { DecisionModel, Issue, Option, SimpleOption } from "../1.design-decision/design-decision-meta.model-components";
 
-export const createPersistenceDecisionModel = (store: ModelStore) => (
+export const RelationSchemaDesignIssues = (store: ModelStore) => (
     <DecisionModel
-        name="Persistence_DDM"
+        name="RelationSchemaDesignIssues"
         description="Design space for persistence strategies"
         store={store}
     >
