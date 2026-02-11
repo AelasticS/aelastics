@@ -85,7 +85,6 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
 
   }
 
-
   @VarPoint()
   transformNameByNamingConvention(name: string): string {
     return name;

@@ -1,4 +1,4 @@
-import * as ddm from './design-decision-meta.model';
+import * as ddm from './decision-meta.model';
 import { ModelStore } from '../../index';
 import { CpxTemplate, Element, Template, WithRefProps } from "../../jsx/element";
 
@@ -7,21 +7,27 @@ export type IDecisionModelProps = WithRefProps<ddm.IDecisionModel> & {
 };
 
 export const DecisionModel: CpxTemplate<IDecisionModelProps, ddm.IDecisionModel> = (props) => {
-    return new Element(ddm.DesignDecisionModel, props, undefined);
+    return new Element(ddm.DecisionModel, props, undefined);
 };
 
 export const Option: Template<ddm.IOption> = (props) => {
     return new Element(ddm.Option, props, 'possibleOptions');
 }
 
-export const Issue: Template<ddm.IIssue> = (props) => {
-    // todo: there is a problem with 3rd parameter, when structure is recursive. Sometimes it is 'roots' and sometimes 'elements'
-    return new Element(ddm.Issue, props, 'issues');
+export const ElementIssue: Template<ddm.IElementIssue> = (props) => {
+    return new Element(ddm.ElementIssue, props, 'issues');
 }
 
-export const SubIssue: Template<ddm.IIssue> = (props) => {
-    // todo: there is a problem with 3rd parameter, when structure is recursive. Sometimes it is 'roots' and sometimes 'elements'
-    return new Element(ddm.Issue, props, 'subIssues');
+export const ModelIssue: Template<ddm.IModelIssue> = (props) => {
+    return new Element(ddm.ModelIssue, props, 'issues');
+}
+
+export const ElementSubIssue: Template<ddm.IElementIssue> = (props) => {
+    return new Element(ddm.ElementIssue, props, 'subIssues');
+}
+
+export const ModelSubIssue: Template<ddm.IModelIssue> = (props) => {
+    return new Element(ddm.ModelIssue, props, 'subIssues');
 }
 
 export const Dependency: Template<ddm.IDependency> = (props) => {

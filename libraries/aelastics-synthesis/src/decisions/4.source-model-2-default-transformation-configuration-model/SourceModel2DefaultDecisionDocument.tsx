@@ -6,24 +6,24 @@ import { Element } from "../../jsx/element";
 import { E2E, ModelStore, M2M } from "../../index";
 import { IModel, IModelElement, Model, ModelElement } from "generic-metamodel";
 
-import * as gdmT from "../1.design-decision/design-decision-meta.model";
-import * as dbmT from "../2.modeling-language-binding/modeling-language-binding-meta.model";
+import * as gdmT from "../1.decision-model/decision-meta.model";
+import * as dbmT from "../2.binding-model/binding-meta.model";
 
-import * as dmT from "../3.transformation-configuration/transformation-configuration-meta.model";
-import * as dmC from "../3.transformation-configuration/transformation-configuration-meta.mode-components";
+import * as dmT from "../3.configuration-model/configuration-meta.model";
+import * as dmC from "../3.configuration-model/configuration-meta.model-components";
 
 @M2M({
     input: Model,
-    output: dmT.TransformationConfigurationModel,
+    output: dmT.ConfigurationModel,
 })
-export class SourceModelToDefaultTransformationConfigurationModel extends abstractM2M<IModel, dmT.ITransformationConfigurationModel, { 'bindingModel': dbmT.IModelingLanguageBindingModel }> {
-    constructor(store: ModelStore, extra: { 'bindingModel': dbmT.IModelingLanguageBindingModel }) {
+export class SourceModelToDefaultTransformationConfigurationModel extends abstractM2M<IModel, dmT.IConfigurationModel, { 'bindingModel': dbmT.IBindingModel }> {
+    constructor(store: ModelStore, extra: { 'bindingModel': dbmT.IBindingModel }) {
         super(store, extra);
     }
 
     template(s: IModel) {
         return (
-            <dmC.TransformationConfigurationModel
+            <dmC.ConfigurationModel
                 name={s.name + " Default Transformation Configuration Model"}
                 description={s.description}
                 relatedModel={s as IModel}
@@ -31,43 +31,43 @@ export class SourceModelToDefaultTransformationConfigurationModel extends abstra
                 {s.elements.map((r) => {
                     return this.createDecisionForSourceModelElement(r as IModelElement);
                 })}
-            </dmC.TransformationConfigurationModel>
+            </dmC.ConfigurationModel>
 
         );
     }
 
     @E2E({
         input: ModelElement,
-        output: dmT.DecisionForElement,
+        output: dmT.ElementDecision,
         ruleName: "SourceModelElement2DecisionModelForElement",
     })
-    private createDecisionForSourceModelElement(sourceModelElement: IModelElement): Element<dmT.IDecisionForElement> {
+    private createDecisionForSourceModelElement(sourceModelElement: IModelElement): Element<dmT.IDecision> {
         const type = this.context.store.getTypeOf(sourceModelElement);
         // this shuld be one binding element for each source model element, but eventually it can be more than one, so we need to handle thats
         const decisionBindingElements = this.getBindingElementBySourceModelElement(sourceModelElement);
 
         return (
-            <dmC.DecisionForElement
+            <dmC.ElementChoice
                 name={`Decision for ${sourceModelElement.name} of type ${type.name}`}
                 description={`Decision for ${sourceModelElement.name} of type ${type.name}`}
-                elementId={sourceModelElement.id}
+                element={sourceModelElement}
             >
                 {decisionBindingElements.flatMap((e) => {
-                    return e.decisionIssues.map((issue) => {
+                    return e.issues.map((issue) => {
                         return this.createChosenOptionForIssue(issue, sourceModelElement);
                     })
                 })}
 
-            </dmC.DecisionForElement>
+            </dmC.ElementChoice>
         );
     }
 
     @E2E({
         input: gdmT.Issue,
-        output: dmT.BaseSelectedOption, // Use the concrete base type
+        output: dmT.BaseChoice, // Use the concrete base type
         ruleName: "Issue2SelectedOption",
     })
-    private createChosenOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.IBaseSelectedOption> {
+    private createChosenOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.IBaseChoice> {
 
         let defaultOption: gdmT.IOption | undefined = issue.possibleOptions.find((o: gdmT.IOption) => {
             return o.isDefault === true;
@@ -120,16 +120,16 @@ export class SourceModelToDefaultTransformationConfigurationModel extends abstra
         );
     }
 
-    private getBindingElementBySourceModelElement(sourceModelElement: IModelElement): dbmT.IModelingLanguageBindingElement[] {
+    private getBindingElementBySourceModelElement(sourceModelElement: IModelElement): dbmT.IBindingElement[] {
         return this.extra?.bindingModel.bindings.filter((e) => {
             const type = this.context.store.getTypeOf(sourceModelElement);
-            const fn = (e as dbmT.IModelingLanguageBindingElement).condition === undefined || new Function((e as dbmT.IModelingLanguageBindingElement).condition!)();
+            const fn = (e as dbmT.IBindingElement).condition === undefined || new Function((e as dbmT.IBindingElement).condition!)();
 
-            const res = (e as dbmT.IModelingLanguageBindingElement).sourceModelElementRef.name === type.name
+            const res = (e as dbmT.IBindingElement).element.name === type.name
                 && (typeof fn !== "function" || (typeof fn === "function" && fn(sourceModelElement)));
 
             return res;
-        }) as dbmT.IModelingLanguageBindingElement[] || [] as dbmT.IModelingLanguageBindingElement[];
+        }) as dbmT.IBindingElement[] || [] as dbmT.IBindingElement[];
     }
 
 }

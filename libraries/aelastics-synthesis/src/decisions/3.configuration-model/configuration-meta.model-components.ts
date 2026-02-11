@@ -1,13 +1,13 @@
-import * as dm from './transformation-configuration-meta.model';
+import * as dm from './configuration-meta.model';
 import { ModelStore } from '../../index';
 import { CpxTemplate, Element, Template, WithRefProps } from "../../jsx/element";
 
-export type IModelProps = WithRefProps<dm.ITransformationConfigurationModel> & {
+export type IModelProps = WithRefProps<dm.IConfigurationModel> & {
     store?: ModelStore;
 };
 
-export const TransformationConfigurationModel: CpxTemplate<IModelProps, dm.ITransformationConfigurationModel> = (props) => {
-    return new Element(dm.TransformationConfigurationModel, props, undefined);
+export const ConfigurationModel: CpxTemplate<IModelProps, dm.IConfigurationModel> = (props) => {
+    return new Element(dm.ConfigurationModel, props, undefined);
 }
 
 // export const SelectedOption = (option: IOption) => {
@@ -21,12 +21,16 @@ export const TransformationConfigurationModel: CpxTemplate<IModelProps, dm.ITran
 //     };
 // };
 
-export const SelectedOption: Template<dm.ISelectedOption> = (props) => {
-    return new Element(dm.SelectedOption, props, 'selectedOptions');
+export const SelectedOption: Template<dm.IChoice> = (props) => {
+    return new Element(dm.Choice, props, 'selectedOptions');
 }
 
-export const DecisionForElement: Template<dm.IDecisionForElement> = (props) => {
-    return new Element(dm.DecisionForElement, props, 'decisions');
+export const ElementChoice: Template<dm.IElementDecision> = (props) => {
+    return new Element(dm.ElementDecision, props, 'decisions');
+}
+
+export const GlobalChoice: Template<dm.IDecision> = (props)=>{
+    return new Element(dm.Decision, props, 'decisions');
 }
 
 export const SimpleOption: Template<dm.ISimpleOption> = (props) => {
@@ -35,4 +39,8 @@ export const SimpleOption: Template<dm.ISimpleOption> = (props) => {
 
 export const CompositeOption: Template<dm.ICompositeOption> = (props) => {
     return new Element(dm.CompositeOption, props, 'value');
+}
+
+export const Choice: Template<dm.IChoice> = (props)=>{
+    return new Element(dm.Choice, props, undefined);
 }

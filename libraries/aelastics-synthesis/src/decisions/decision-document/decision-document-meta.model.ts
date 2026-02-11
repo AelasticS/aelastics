@@ -1,13 +1,13 @@
 import * as t from "aelastics-types";
 import { Model, ModelElement } from "generic-metamodel";
-import { TransformationConfigurationModel } from "../3.transformation-configuration/transformation-configuration-meta.model";
+import { ConfigurationModel } from "../3.transformation-configuration/transformation-configuration-meta.model";
 
 export const DecisionDocument_TypeSchema = t.schema("DecisionDocument_TypeSchema");
 
 export const GlobalDecision = t.subtype(
     ModelElement,
     {
-        decision: TransformationConfigurationModel,
+        decision: ConfigurationModel,
     },
     "GlobalDecisionDocument",
     DecisionDocument_TypeSchema

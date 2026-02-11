@@ -17,7 +17,7 @@ import * as tm from "./transformation.model.type";
 import { CpxTemplate, Element, Super, Template } from "../jsx/element";
 import { ModelStore } from "./../index";
 import { Model } from "generic-metamodel/src/models.type";
-import { ITransformationConfigurationModel, ISelectedOption, IBaseSelectedOption } from "../decisions/3.transformation-configuration/transformation-configuration-meta.model";
+import { ITransformationConfigurationModel, IChoice, IBaseChoice } from "../decisions/3.transformation-configuration/transformation-configuration-meta.model";
 
 
 type IODescr = { type?: t.Any; instance?: IModel };
@@ -58,7 +58,7 @@ export class M2MContext extends Context {
   public input: IODescr = {};
   public output: IODescr = {};
   public transformation: TransformationDescr = {};
-  public currendElementDecision: Stack<ISelectedOption[]> = new Stack<ISelectedOption[]>();
+  public currendElementDecision: Stack<IChoice[]> = new Stack<IChoice[]>();
 
   public readonly traceMap: Map<IModelElement, Array<ITraceRecord>> = new Map();
 

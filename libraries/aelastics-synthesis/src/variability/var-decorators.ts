@@ -35,9 +35,9 @@ export const VarPoint = () => {
 
       const element = args[0];
 
-      var selectedOptions: tcM.ISelectedOption[] = (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).decisionModel?.decisions
+      var selectedOptions: tcM.IChoice[] = (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).decisionModel?.decisions
         .filter((d: tcM.IDecisionForElement) => d.elementId === element.id)
-        .flatMap((d: tcM.IDecisionForElement) => d.selectedOptions) || [] as tcM.ISelectedOption[];
+        .flatMap((d: tcM.IDecisionForElement) => d.selectedOptions) || [] as tcM.IChoice[];
 
       (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).context.currendElementDecision[_privatePush](selectedOptions);
 
