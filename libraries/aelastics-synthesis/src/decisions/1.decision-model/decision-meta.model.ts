@@ -100,3 +100,4 @@ export type IDependency = t.TypeOf<typeof Constraint>;
 export type IConstraintType = t.TypeOf<typeof ConstraintType>;
 export type ISimpleOption = t.TypeOf<typeof SimpleOption>;
 export type ICompositeOption = t.TypeOf<typeof CompositeOption>;
+export type IIssue = t.TypeOf<typeof Issue>;

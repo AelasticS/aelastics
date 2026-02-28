@@ -19,6 +19,7 @@ import { Context } from "../../jsx/context";
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../../index";
 import * as dm from "../3.transformation-configuration/transformation-configuration-meta.model"; // import decision model types for decision model transformation
 
+
 const testStore = new ModelStore();
 const ctx = new Context();
 

@@ -17,7 +17,7 @@ import * as tm from "./transformation.model.type";
 import { CpxTemplate, Element, Super, Template } from "../jsx/element";
 import { ModelStore } from "./../index";
 import { Model } from "generic-metamodel/src/models.type";
-import { ITransformationConfigurationModel, IChoice, IBaseChoice } from "../decisions/3.transformation-configuration/transformation-configuration-meta.model";
+import { IConfigurationModel, IChoice } from "./../decisions/3.configuration-model/configuration-meta.model";
 
 
 type IODescr = { type?: t.Any; instance?: IModel };
@@ -120,7 +120,7 @@ export class M2MContext extends Context {
   }
 }
 
-export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends ITransformationConfigurationModel = never> {
+export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends IConfigurationModel = never> {
   context: M2MContext;
   m2mTransformation?: tm.IM2M_Transformation;
   template(props: S): Element<S, D>;
@@ -131,18 +131,18 @@ export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: str
 
 // TODO DM extends Record<string, IModel> = Record<never, never>
 // TODO Map<string, IModel> = Map<never, never>
-export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends ITransformationConfigurationModel = never>
+export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, CM extends IConfigurationModel = never>
   implements IM2M<S, D, EM> {
   // transformation type
   public m2mTransformation?: tm.IM2M_Transformation;
   public context: M2MContext = new M2MContext();
   public extra?: EM;
-  public decisionModel?: DM;
+  public configModel?: CM;
 
-  public constructor(store?: ModelStore, extra?: EM, decisionModel?: DM) {
+  public constructor(store?: ModelStore, extra?: EM, decisionModel?: CM) {
     if (store) this.context.pushStore(store);
     this.extra = extra;
-    this.decisionModel = decisionModel;
+    this.configModel = decisionModel;
   }
 
   abstract template(props: S): Element<S, D>;

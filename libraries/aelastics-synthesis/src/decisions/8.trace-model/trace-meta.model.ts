@@ -1,6 +1,6 @@
 import * as t from "aelastics-types"
 import { Model, ModelElement } from "generic-metamodel"
-import { ConfigurationModel } from "./../3.configuration-model/configuration-meta.model";
+import { Choice, ConfigurationModel } from "./../3.configuration-model/configuration-meta.model";
 
 export const TraceModel_TypeSchema = t.schema("TraceModel_TypeSchema")
 
@@ -10,9 +10,10 @@ export const TraceEntry = t.subtype(
         rule: t.string,
         timestamp: t.number,
         source: ModelElement,
-        target: t.arrayOf(ModelElement),
+        targets: t.arrayOf(ModelElement),
         ruleType: t.string.derive().oneOf(["RegularRule", "VariabilityPoint"]),
         variabilityOption: t.optional(t.string),
+        choices: t.optional(t.arrayOf(Choice))
 
 
     },

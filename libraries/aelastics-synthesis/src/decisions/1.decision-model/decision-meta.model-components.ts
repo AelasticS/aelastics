@@ -22,6 +22,10 @@ export const ModelIssue: Template<ddm.IModelIssue> = (props) => {
     return new Element(ddm.ModelIssue, props, 'issues');
 }
 
+export const GlobalIssue: Template<ddm.IModelIssue> = (props) => {
+    return new Element(ddm.ModelIssue, props, 'issues');
+}
+
 export const ElementSubIssue: Template<ddm.IElementIssue> = (props) => {
     return new Element(ddm.ElementIssue, props, 'subIssues');
 }

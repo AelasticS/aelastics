@@ -120,8 +120,8 @@ export const Mapping = t.subtype(
   ERConcept,
   {
     domain: Entity,
-    lowerBound: t.string.derive().oneOf(["0", "1", "M", "m", "*"]), // .defaultValue("0"),
-    upperBound: t.string.derive().oneOf(["1", "M", "m", "*"]), // .defaultValue("M"),
+    lb: t.string.derive().oneOf(["0", "1", "M", "m", "*"]), // .defaultValue("0"),
+    ub: t.string.derive().oneOf(["1", "M", "m", "*"]), // .defaultValue("M"),
     cnMapp: IntegityRule,
     dcnMapp: IntegityRule,
   },
@@ -182,7 +182,7 @@ export const Specialization = t.subtype(
 export const Relationship = t.subtype(
   ERConcept,
   {
-    ordinaryMappings: t.arrayOf(OrdinaryMapping),
+    roles: t.arrayOf(OrdinaryMapping),
   },
   "Relationship",
   EERModel_TypeSchema
@@ -229,14 +229,14 @@ export const getCodomain = (mapping: IOrdinaryMapping): IEntity => {
 
 export const getInverse = (mapping: IOrdinaryMapping): IOrdinaryMapping => {
   const first: IOrdinaryMapping = (mapping.relationship as IRelationship)
-    .ordinaryMappings[0];
+    .roles[0];
   const second: IOrdinaryMapping = (mapping.relationship as IRelationship)
-    .ordinaryMappings[1];
+    .roles[1];
 
   return first === mapping ? second : first;
 };
 
 function asdf(r: IRelationship) {
-  return ((r.ordinaryMappings[0].lowerBound === "0" || r.ordinaryMappings[0].upperBound === "1") && r.ordinaryMappings[1].upperBound === "M") ||
-    ((r.ordinaryMappings[1].lowerBound === "0" || r.ordinaryMappings[1].upperBound === "1") && r.ordinaryMappings[0].upperBound === "M");
+  return ((r.roles[0].lb === "0" || r.roles[0].ub === "1") && r.roles[1].ub === "M") ||
+    ((r.roles[1].lb === "0" || r.roles[1].ub === "1") && r.roles[0].ub === "M");
 }

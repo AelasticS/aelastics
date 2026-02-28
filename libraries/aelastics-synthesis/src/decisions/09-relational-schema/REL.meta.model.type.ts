@@ -19,12 +19,13 @@ export const Domain = t.subtype(ModelElement, {
 }, "Domain", RelModel_TypeSchema);
 
 export const Column = t.subtype(ModelElement, {
-  domain: Domain,
+  type: t.string,
   isKey: t.boolean,
   ownerTable: t.link(RelModel_TypeSchema, 'Table'),
   indexes: t.arrayOf(t.link(RelModel_TypeSchema, "Index")),
   isForeignKey: t.link(RelModel_TypeSchema, 'Column'),
-  references: t.string
+  references: t.string,
+  isNullable: t.boolean
 }, "Column", RelModel_TypeSchema);
 
 export const Table = t.subtype(ModelElement, {

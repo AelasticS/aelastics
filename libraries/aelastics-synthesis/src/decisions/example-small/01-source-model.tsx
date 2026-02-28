@@ -11,14 +11,10 @@ export const CompanySchema = (store: ModelStore) => {
         <Attribute name="personId" isKey={true}>
           <Domain name="number" />
         </Attribute>
-        <Attribute name="firstName" isKey={false}>
+        <Attribute name="name" isKey={false}>
           <Domain name="string" />
         </Attribute>
-        <Attribute name="lastName" isKey={false}>
-          <Domain $refByName="string" />
-        </Attribute>
       </Entity>
-
       <Entity name="Company">
         <Attribute name="companyId" isKey={true}>
           <Domain $refByName="number" />
@@ -26,27 +22,24 @@ export const CompanySchema = (store: ModelStore) => {
         <Attribute name="companyName" isKey={false}>
           <Domain $refByName="string" />
         </Attribute>
-        <Attribute name="address" isKey={false}>
-          <Domain $refByName="string" />
-        </Attribute>
       </Entity>
-
       {/* 0:1 to 0:M Relationship: Person works in Company */}
       <Relationship name="Employment">
         <Role
           name="WorksIn"
-          lowerBound="0"
-          upperBound="1"
+          lb="0"
+          ub="1"
           domain={<Entity $refByName="Company"></Entity>}
         />
         <Role
           name="Hires"
-          lowerBound="0"
-          upperBound="M"
+          lb="0"
+          ub="M"
           domain={<Entity $refByName="Person"></Entity>}
         />
       </Relationship>
-
     </EERSchema>
-  )
-}
+  )}
+
+
+

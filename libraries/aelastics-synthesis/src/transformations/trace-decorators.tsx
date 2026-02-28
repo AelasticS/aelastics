@@ -19,6 +19,7 @@ import { IModel } from "generic-metamodel";
 import { CpxTemplate, Element } from "../jsx/element";
 import { AnySchema } from "aelastics-types/lib/annotations/Annotation";
 import { Sec } from "../m2t";
+import { IConfigurationModel } from "../decisions/3.configuration-model/configuration-meta.model";
 
 export interface IM2MDecorator {
   input: t.Any;
@@ -154,8 +155,8 @@ export const M2M_v0 = ({ input, output }: IM2MDecorator) => {
 // TODO: enable rules to return array of JSXElements
 // TODO: remove input and output parameters, can be found from objects
 export const E2E = function ({ input, output, ruleName }: IE2EDecorator) {
-  return function (
-    target: abstractM2M<IModel, IModel>,
+  return function <DM extends IConfigurationModel | never = never>(
+    target: abstractM2M<IModel, IModel, any, DM>,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
@@ -164,7 +165,7 @@ export const E2E = function ({ input, output, ruleName }: IE2EDecorator) {
     // save a reference to the original function
     const original = descriptor.value;
     // set the new function
-    descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
+    descriptor.value = function (this: abstractM2M<any, any, any, DM>, ...args: any[]) {
       // find or create E2E_Transformation
       const ruleType = this.context.transformation.type?.elements.find(
         (e) => e.name == ruleName

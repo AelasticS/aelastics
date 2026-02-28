@@ -4,37 +4,34 @@ import { hm } from "../../jsx/handle"
 import { ModelStore } from "../../index"
 import {
   Column,
-  Domain,
   RelSchema,
   Table,
 } from "./../09-relational-schema/REL-components"
 
 export const RelationalSchema_Company = (store: ModelStore) => (
   <RelSchema name="CompanyRelationalSchema">
-    <Table name="Person">
-      <Column name="PersonId" domain={<Domain $refByName="number" />} isKey={true} />
-      <Column name="FirstName" domain={<Domain $refByName="varchar" />} />
-      <Column name="LastName" domain={<Domain $refByName="varchar" />} />
+    <Table name="person">
+      <Column name="person_id" type="INTEGER" isKey={true} />
+      <Column name="name" type="VARCHAR" />
     </Table>
 
-    <Table name="Company">
-      <Column name="CompanyId" domain={<Domain $refByName="number" />} isKey={true} />
-      <Column name="CompanyName" domain={<Domain $refByName="varchar" />} />
-      <Column name="Address" domain={<Domain $refByName="varchar" />} />
+    <Table name="company">
+      <Column name="company_id" type="INTEGER" isKey={true} />
+      <Column name="company_name" type="VARCHAR" />
     </Table>
 
-    <Table name="WorksIn">
-      <Column name="PersonId"
-              domain={<Domain $refByName="number" />}
-              isKey={true}
+    <Table name="employment">
+      <Column name="person_id"
+              type="INTEGER"
               isForeignKey={true}
-              references={<Column $refByName="//www.aelastic.com/CompanyRelationalSchema/Person/PersonId" />}
+              isKey={true}
+              references={<Column $refByName="//www.aelastics.org/CompanyRelationalSchema/person/person_id" />}
       />
-      <Column name="CompanyId"
-              domain={<Domain $refByName="number" />}
-              isKey={true}
+      <Column name="company_id"
+              type="INTEGER"
               isForeignKey={true}
-              references={<Column $refByName="//www.aelastic.com/CompanyRelationalSchema/Company/CompanyId" />} />
+              isKey={true}
+              references={<Column $refByName="//www.aelastics.org/CompanyRelationalSchema/company/company_id" />} />
     </Table>
   </RelSchema>
 )

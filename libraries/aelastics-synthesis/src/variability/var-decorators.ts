@@ -1,86 +1,140 @@
 // https://luckylibora.medium.com/typescript-method-decorators-in-depth-problems-and-solutions-74387d51e6a
 
-import { Any } from "aelastics-types";
-import { abstractM2M, M2MContext, _privatePop, _privatePush } from "../transformations/abstractM2M";
-import * as tcM from "../decisions/3.transformation-configuration/transformation-configuration-meta.model"; // import decision model types for decision model transformation
+import { abstractM2M, _privatePop, _privatePush } from "../transformations/abstractM2M"
+// import * as tcM from "../decisions/3.transformation-configuration/transformation-configuration-meta.model";  // import decision model types for decision model transformation
+import * as tcM from "./../decisions/3.configuration-model/configuration-meta.model"
+import { EvalCondition, __OptionName, optionConditionFromName } from "./eval-operators"
 
 // https://stackoverflow.com/questions/55179461/reflection-in-javascript-how-to-intercept-an-object-for-function-enhancement-d
 
-const __VarPoint = "__VarPoint";
+const __VarPoint = "__VarPoint"
+const __VarOptionRef = "__VarOptionRef"
 
 interface IOption {
   methodName: string;
-  evalCondition: (...args: any[]) => boolean;
+  evalCondition: EvalCondition;
+  isDefault?: boolean;
 }
 
-export interface IVarOption {
-  varMethod: string;
-  evalFun: (
-    inputElem: Any,
-    annotElem: any,
-    transform: abstractM2M<any, any>
-  ) => boolean;
-  default: boolean;
-}
+// @deprecated - Koristi IOption umesto ovoga
+// export interface IVarOption {
+//   varMethod: string;
+//   evalFun: (
+//     inputElem: Any,
+//     annotElem: any,
+//     transform: abstractM2M<any, any>,
+//   ) => boolean;
+//   default: boolean;
+// }
 
 // method decorator
-export const VarPoint = () => {
-  return function (
+export const VarPoint = (
+  issue: string
+) => {
+  return function(
     target: any,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
-    descriptor.value = function (...args: any[]) {
-      const options: IOption[] = descriptor.value[propertyKey];
+    // Inicijalizuj niz opcija
+    descriptor.value[propertyKey] = []
 
-      const element = args[0];
+    descriptor.value = function(...args: any[]) {
+      const options: IOption[] = descriptor.value[propertyKey]
 
-      var selectedOptions: tcM.IChoice[] = (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).decisionModel?.decisions
-        .filter((d: tcM.IDecisionForElement) => d.elementId === element.id)
-        .flatMap((d: tcM.IDecisionForElement) => d.selectedOptions) || [] as tcM.IChoice[];
+      const element = args[0]
+      const currentContext = (this as abstractM2M<any, any, any, tcM.IConfigurationModel>).context
 
-      (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).context.currendElementDecision[_privatePush](selectedOptions);
+      var selectedOptions: tcM.IChoice[] = (this as abstractM2M<any, any, any, tcM.IConfigurationModel>).configModel?.decisions
+        .filter((d: tcM.IDecision) => !currentContext.store.isTypeOf(d, tcM.ElementDecision) || (currentContext.store.isTypeOf(d, tcM.ElementDecision) && (d as unknown as tcM.IElementDecision).element.id === element.id))
+        .flatMap((d: tcM.IDecision) => d.choices) || [] as tcM.IChoice[]
+
+      currentContext.currendElementDecision[_privatePush](selectedOptions)
 
       const option = options.find((option) => {
-        return option.evalCondition(selectedOptions);
-      });
+        return !option.isDefault && option.evalCondition.call(this, selectedOptions, element, currentContext)
+      })
 
-      if (!option) {
-        throw new Error(`No option condition evaluated to true`);
+      const fallbackOption = options.find((option) => option.isDefault)
+
+      const selectedOption = option || fallbackOption
+
+      if (!selectedOption) {
+        throw new Error(`No option condition evaluated to true and no default option provided`)
       }
-      let result = (this as any)[option.methodName](...args);
+      let result = (this as any)[selectedOption.methodName](...args);
 
-      (this as abstractM2M<any, any, any, tcM.ITransformationConfigurationModel>).context.currendElementDecision[_privatePop]();
+      (this as abstractM2M<any, any, any, tcM.IConfigurationModel>).context.currendElementDecision[_privatePop]()
 
-      return result;
-    };
-    descriptor.value[__VarPoint] = propertyKey;
-    descriptor.value[propertyKey] = [];
-    return descriptor;
-  };
-};
+      return result
+    }
+    descriptor.value[__VarPoint] = propertyKey
+    return descriptor
+  }
+}
 
 // method decorator
 export const VarOption = (
   methodName: string,
-  condition: (...args: any[]) => boolean,
-  defaultValue: boolean = false
+  option?: EvalCondition
 ) => {
-  return function (
+  return function(
     target: any,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
-    const method: Function = target[methodName];
+    const method: Function = target[methodName]
     // @ts-ignore
     if (method[__VarPoint]) {
+      const optionName = descriptor.value?.[__OptionName]
+      const evalCondition = option || (optionName ? optionConditionFromName(optionName) : undefined)
+
+      if (!evalCondition) {
+        throw new Error(`VarOption("${methodName}") requires EvalCondition or @Option decorator`)
+      }
+
       let o: IOption = {
         methodName: propertyKey,
-        evalCondition: condition,
-      };
+        evalCondition: evalCondition,
+      }
       // @ts-ignore
-      method[method[__VarPoint]].push(o);
+      method[method[__VarPoint]].push(o)
+
+      // Čuvaj referencu na VarPoint metodu na ovoj metodi
+      descriptor.value[__VarOptionRef] = methodName
     }
-    return descriptor;
-  };
-};
+    return descriptor
+  }
+}
+
+export const Default = () => {
+  return function(
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor,
+  ) {
+    // Pronađi VarOption na istoj metodi
+    const varOptionRef = descriptor.value[__VarOptionRef]
+
+    if (varOptionRef) {
+      // Pronađi VarPoint metodu koju referencira VarOption
+      const varPointMethod: Function = target[varOptionRef]
+      // @ts-ignore
+      if (varPointMethod && varPointMethod[__VarPoint]) {
+        // @ts-ignore
+        const varPointPropertyKey = varPointMethod[__VarPoint]
+
+        let defaultOption: IOption = {
+          methodName: propertyKey,
+          evalCondition: () => true,
+          isDefault: true,
+        }
+
+        // @ts-ignore
+        varPointMethod[varPointPropertyKey].push(defaultOption)
+      }
+    }
+
+    return descriptor
+  }
+}

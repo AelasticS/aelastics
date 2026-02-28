@@ -15,7 +15,7 @@ export const BindingElement: Template<mlbm.IBindingElement> = (props) => {
     return new Element(mlbm.BindingElement, props, 'bindings');
 }
 
-export const Bind: Template<mlbm.IBindingElement> = (props) => {
+export const Binding: Template<mlbm.IBindingElement> = (props) => {
     return new Element(mlbm.BindingElement, props, 'bindings');
 }
 
