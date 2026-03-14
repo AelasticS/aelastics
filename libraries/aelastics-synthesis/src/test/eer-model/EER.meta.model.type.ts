@@ -190,7 +190,7 @@ export const Relationship = t.subtype(
 
 t.inverseProps(
   Relationship,
-  "ordinaryMappings",
+  "roles",
   OrdinaryMapping,
   "relationship"
 );

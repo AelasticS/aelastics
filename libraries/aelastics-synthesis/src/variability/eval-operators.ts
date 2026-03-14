@@ -8,34 +8,57 @@ import * as tcM from "../decisions/3.configuration-model/configuration-meta.mode
  */
 export type EvalCondition = (selectedOptions: any[], element?: any, currentContext?: any) => boolean
 
-export const __OptionName = "__OptionName"
+type ChoiceLike = {
+  selectedOption?: { name?: string }
+  option?: { name?: string }
+  name?: string
+}
 
-const resolveSelectedOptions = (self: any, element: any, currentContext: any): any[] => {
+type ConditionContext = {
+  context?: { store?: { isTypeOf?: (value: unknown, type: unknown) => boolean } }
+  configModel?: { decisions?: unknown[] }
+}
+
+type ContextStore = NonNullable<ConditionContext["context"]>["store"]
+
+const isElementDecision = (store: ContextStore, decision: unknown): boolean => {
+  return !!store?.isTypeOf?.(decision, (tcM as any).ElementDecision)
+}
+
+const isElementScopedDecision = (decision: unknown, element: any): boolean => {
+  return (decision as any)?.element?.id === element?.id
+}
+
+const decisionChoices = (decision: unknown): any[] => {
+  const choices = (decision as any)?.choices
+  return Array.isArray(choices) ? choices : []
+}
+
+const hasOptionName = (choice: unknown, optionName: string): boolean => {
+  const candidate = choice as ChoiceLike
+  return candidate?.selectedOption?.name === optionName
+    || candidate?.option?.name === optionName
+    || candidate?.name === optionName
+    || choice === optionName
+}
+
+const resolveSelectedOptions = (self: ConditionContext | undefined, element: any, currentContext: any): any[] => {
   const context = currentContext || self?.context
   const decisions = self?.configModel?.decisions || []
   const store = context?.store
 
   return decisions
-    .filter((d: any) => !store?.isTypeOf?.(d, (tcM as any).ElementDecision)
-      || (store?.isTypeOf?.(d, (tcM as any).ElementDecision)
-        && (d as any)?.element?.id === element?.id))
-    .flatMap((d: any) => d.choices) || []
+    .filter((d: unknown) => !isElementDecision(store, d) || (isElementDecision(store, d) && isElementScopedDecision(d, element)))
+    .flatMap((d: unknown) => decisionChoices(d))
 }
 
 export function optionConditionFromName(optionName: string): EvalCondition {
-  return function(selectedOptions: any[] = [], element?: any, currentContext?: any): boolean {
-    // @ts-ignore
+  return function(this: ConditionContext, selectedOptions: any[] = [], element?: any, currentContext?: any): boolean {
     const effectiveOptions = selectedOptions.length > 0
       ? selectedOptions
-      // @ts-ignore
-      : resolveSelectedOptions(this as any, element, currentContext)
+      : resolveSelectedOptions(this, element, currentContext)
 
-    return (effectiveOptions || []).some((choice: any) => {
-      const selectedName = choice?.selectedOption?.name
-      const optionNameFallback = choice?.option?.name
-      const choiceName = choice?.name
-      return selectedName === optionName || optionNameFallback === optionName || choiceName === optionName || choice === optionName
-    })
+    return effectiveOptions.some((choice: unknown) => hasOptionName(choice, optionName))
   }
 }
 
@@ -113,18 +136,5 @@ export function Not(condition: EvalCondition): EvalCondition {
  * 4. Return EvalCondition that checks whether that option is in selectedOptions
  */
 export function Option(optionName: string) {
-  const condition = optionConditionFromName(optionName)
-
-  return (...args: any[]): any => {
-    if (args.length >= 2 && typeof args[1] === "string") {
-      const descriptor = args[2] as PropertyDescriptor | undefined
-      if (descriptor?.value) {
-        descriptor.value[__OptionName] = optionName
-      }
-      return descriptor
-    }
-
-    // @ts-ignore
-    return condition.call(this, args[0] as any[], args[1], args[2])
-  }
+  return optionConditionFromName(optionName)
 }

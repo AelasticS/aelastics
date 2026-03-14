@@ -206,9 +206,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     // return null as unknown as Element<rt.IForeignKey> | Element<rt.ITable>;
   }
 
-  @VarOption("RelationshipToElement", (trans) => {
-    return false;
-  })
+  @VarOption("RelationshipToElement", Option('OptionToFk'))
   RelatioshipToFK(rel: et.IRelationship): Element<rt.IForeignKey> {
     // const aaa = this.context.resolve(rel.ordinaryMapping[0]);
 
@@ -219,7 +217,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @VarOption("RelationshipToElement", Option('nekiOption'))
+  @VarOption("RelationshipToElement", Option('optionToTable'))
   RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
     const codomain = et.getCodomain(rel.roles[0]);
     const domain = et.getInverse(rel.roles[0]);
