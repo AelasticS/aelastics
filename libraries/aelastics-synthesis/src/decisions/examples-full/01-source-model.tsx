@@ -82,14 +82,14 @@ export const createUniversityModel = (store: ModelStore) => {
       <Relationship name="Enrolls">
         <OrdinaryMapping
           name="student_enrolls"
-          lowerBound="0"
-          upperBound="M"
+          lb="0"
+          ub="M"
           domain={<Subtype $refByName="Student"></Subtype>}
         />
         <OrdinaryMapping
           name="course_enrollments"
-          lowerBound="0"
-          upperBound="M"
+          lb="0"
+          ub="M"
           domain={<Kernel $refByName="Course"></Kernel>}
         />
       </Relationship>
@@ -98,14 +98,14 @@ export const createUniversityModel = (store: ModelStore) => {
       <Relationship name="BelongsTo">
         <OrdinaryMapping
           name="students"
-          lowerBound="0"
-          upperBound="M"
+          lb="0"
+          ub="M"
           domain={<Kernel $refByName="Department"></Kernel>}
         />
         <OrdinaryMapping
           name="department"
-          lowerBound="0"
-          upperBound="1"
+          lb="0"
+          ub="1"
           domain={<Subtype $refByName="Student"></Subtype>}
         />
       </Relationship>

@@ -16,7 +16,7 @@ import * as r from "../test/relational-model/REL-components.v2";
 import { abstractM2M } from "./../transformations/abstractM2M";
 import { Element, Resolve } from "../jsx/element";
 import { Context } from "../jsx/context";
-import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../index";
+import { E2E, ModelStore, M2M, SpecPoint, SpecOption, Option } from "../index"
 
 const testStore = new ModelStore();
 
@@ -41,14 +41,14 @@ const eerSchema1: Element<et.IEERSchema> = (
     <e.Relationship name="worksIn">
       <e.OrdinaryMapping
         name="works_in"
-        lowerBound="0"
-        upperBound="1"
+        lb="0"
+        ub="1"
         domain={<e.Kernel $refByName="Person"></e.Kernel>}
       ></e.OrdinaryMapping>
       <e.OrdinaryMapping
         name="has_employees"
-        lowerBound="0"
-        upperBound="M"
+        lb="0"
+        ub="M"
         domain={<e.Kernel $refByName="Organization"></e.Kernel>}
       ></e.OrdinaryMapping>
     </e.Relationship>
@@ -198,7 +198,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     </Resolve>;
   }
 
-  @VarPoint()
+  @VarPoint('Neki issue')
   RelationshipToElement(
     rel: et.IRelationship
   ): Element<rt.IForeignKey> | Element<rt.ITable> {
@@ -219,10 +219,10 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
-  @VarOption("RelationshipToElement", (decision) => true)
+  @VarOption("RelationshipToElement", Option('nekiOption'))
   RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
-    const codomain = et.getCodomain(rel.ordinaryMappings[0]);
-    const domain = et.getInverse(rel.ordinaryMappings[0]);
+    const codomain = et.getCodomain(rel.roles[0]);
+    const domain = et.getInverse(rel.roles[0]);
 
     return <r.Table name="RelationshipToElement table"></r.Table >;
   }

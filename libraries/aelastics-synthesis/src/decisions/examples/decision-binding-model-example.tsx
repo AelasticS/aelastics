@@ -6,55 +6,55 @@ import { Element } from "../../jsx/element";
 import { Context } from "../../jsx/context";
 import { ModelStore } from '../../index';
 
-import * as gdmC from "../1.design-decision/design-decision-meta.model-components";
-import * as gdmT from "../1.design-decision/design-decision-meta.model";
+import * as gdmC from "../1.decision-model/decision-meta.model-components";
+import * as gdmT from "../1.decision-model/decision-meta.model";
 import * as gdmM from "./generic-decision-model-example"
 
 import * as etC from "../../types-metamodel/types-components"
 import * as etT from "../../types-metamodel/types-meta.model";
 import * as eerM from "../../types-metamodel/models/eer-metamodel-aelasticTypes";
 
-import * as dbmT from "../2.modeling-language-binding/modeling-language-binding-meta.model";
-import * as dbmC from "../2.modeling-language-binding/modeling-language-binding-meta.model-components";
+import * as dbmT from "../2.binding-model/binding-meta.model";
+import * as dbmC from "../2.binding-model/binding-meta.model-components";
 
 const context = new Context();
 // const store = new ModelStore();
 
 export const bindingModel = (store: ModelStore) => (
-    <dbmC.ModelingLanguageBindingModel
+    <dbmC.BindingModel
         name="Decision Binding Model"
         description="This is a decision binding model"
         sourceModel={<etC.TypeModel $refByName="//www.aelastics.org/aelastic-EERModel" />}
-        decisionModel={<dbmC.ModelingLanguageBindingModel $refByName="//www.aelastics.org/Namingconvention-gdm" />}
+        decisionModel={<dbmC.BindingModel $refByName="//www.aelastics.org/Namingconvention-gdm" />}
         store={store}
     >
-        <dbmC.ModelingLanguageBindingElement
+        <dbmC.BindingElement
             name="Strategy for 01.0M relationships"
             description="This is a Strategy for 01:0M relationships"
 
-            sourceModelElementRef={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Relationship" />}
+            element={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Relationship" />}
 
-            decisionIssues={[
+            issues={[
                 <gdmC.DecisionModel $refByName="//www.aelastics.org/Namingconvention-gdm/ForeignkeyorSeparateTable" />,
             ]}
             condition='return (r) => {return (r.ordinaryMappings[0].lowerBound === "0" && r.ordinaryMappings[0].upperBound === "1" && r.ordinaryMappings[1].upperBound === "M") ||
     (r.ordinaryMappings[1].lowerBound === "0" && r.ordinaryMappings[1].upperBound === "1" && r.ordinaryMappings[0].upperBound === "M");}'
         />
 
-        <dbmC.ModelingLanguageBindingElement
+        <dbmC.BindingElement
             name="FK Naming conventions for relationships"
             description="This is a generic decision model for naming convention"
 
-            sourceModelElementRef={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Relationship" />}
+            element={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Relationship" />}
 
-            decisionIssues={[
+            issues={[
                 <gdmC.DecisionModel $refByName="//www.aelastics.org/Namingconvention-gdm/PKNamingconvention" />,
                 <gdmC.DecisionModel $refByName="//www.aelastics.org/Namingconvention-gdm/FKNamingconvention" />
             ]}
         // TODO: if condition is empty, it means true
         />
 
-    </dbmC.ModelingLanguageBindingModel>
+    </dbmC.BindingModel>
 );
 
 

@@ -1,6 +1,6 @@
 import * as t from "aelastics-types";
 import { Model, ModelElement } from "generic-metamodel";
-import { ConfigurationModel } from "../3.transformation-configuration/transformation-configuration-meta.model";
+import { ConfigurationModel } from "../3.configuration-model/configuration-meta.model";
 
 export const DecisionDocument_TypeSchema = t.schema("DecisionDocument_TypeSchema");
 

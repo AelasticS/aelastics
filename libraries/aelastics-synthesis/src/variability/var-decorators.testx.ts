@@ -1,4 +1,5 @@
 import {VarOption, VarPoint} from "./var-decorators"
+import { Option } from "./eval-operators"
 
 describe("Test  variability decorators", () => {
 
@@ -9,17 +10,17 @@ describe("Test  variability decorators", () => {
 
             // }
 
-            @VarPoint()
+            @VarPoint('Issue')
             myVarMethod(a:number) {
                 return a+1;
             }
 
-            @VarOption("myVarMethod",()=>false, true)
+            @VarOption("myVarMethod", Option('nekiOption'))
             myOption1(a:number) {
                 return a+1;
             }   
 
-            @VarOption("myVarMethod",(a)=>true, false)
+            @VarOption("myVarMethod",Option('nekiOption2'))
             myOption2(a:number) {
                 return a*100;
             } 

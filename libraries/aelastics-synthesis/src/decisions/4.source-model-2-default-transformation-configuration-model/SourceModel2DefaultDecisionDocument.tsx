@@ -26,7 +26,8 @@ export class SourceModelToDefaultTransformationConfigurationModel extends abstra
             <dmC.ConfigurationModel
                 name={s.name + " Default Transformation Configuration Model"}
                 description={s.description}
-                relatedModel={s as IModel}
+                sourceModel={s as IModel}
+                bindingModel={this.extra?.bindingModel as dbmT.IBindingModel}
             >
                 {s.elements.map((r) => {
                     return this.createDecisionForSourceModelElement(r as IModelElement);
@@ -67,7 +68,7 @@ export class SourceModelToDefaultTransformationConfigurationModel extends abstra
         output: dmT.BaseChoice, // Use the concrete base type
         ruleName: "Issue2SelectedOption",
     })
-    private createChosenOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.IBaseChoice> {
+    private createChosenOptionForIssue(issue: gdmT.IIssue, sourceModelElement: IModelElement): Element<dmT.IChoice> {
 
         let defaultOption: gdmT.IOption | undefined = issue.possibleOptions.find((o: gdmT.IOption) => {
             return o.isDefault === true;
@@ -94,7 +95,7 @@ export class SourceModelToDefaultTransformationConfigurationModel extends abstra
                 assumptions="Default assumptions"
                 justification="Default justification"
                 consequences="Default consequences"
-                ref={defaultOption as gdmT.IOption}
+                selectedOption={defaultOption as gdmT.IOption}
                 value={isSimpleOption ? (
                     <dmC.SimpleOption name={`Simple option for ${defaultOption.name} for ${sourceModelElement.name}`}
                         defaultValue={"defaultString"}

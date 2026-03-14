@@ -4,13 +4,13 @@ import { hm } from "../../jsx/handle"
 import { Element } from "../../jsx/element"
 import { ModelStore } from "../../index"
 
-import * as dbmC from "../2.modeling-language-binding/modeling-language-binding-meta.model-components"
+import * as dbmC from "../2.binding-model/binding-meta.model-components"
 import * as etC from "../../types-metamodel/types-components"
-import * as gdmC from "../1.design-decision/design-decision-meta.model-components"
+import * as gdmC from "../1.decision-model/decision-meta.model-components"
 
 // We assume the GDM and Source Metamodel are loaded in the store
 export const createBindingModel = (store: ModelStore) => (
-  <dbmC.ModelingLanguageBindingModel
+  <dbmC.BindingModel
     name="University_Persistence_Binding"
     description="Binding University EER Model to Persistence Decisions"
     // Reference to the Metamodel of EER (not the instance 'University')
@@ -20,14 +20,14 @@ export const createBindingModel = (store: ModelStore) => (
     store={store}
   >
     {/* Bind all Kernels (Entities) and Subtypes to PK Strategy and Table Strategy */}
-    <dbmC.ModelingLanguageBindingElement
+    <dbmC.BindingElement
       name="EntityPersistenceStrategy"
       description="Decisions for all entities"
 
       // This references the 'Kernel' class in EER Metamodel
-      sourceModelElementRef={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Kernel" />}
+      element={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Kernel" />}
 
-      decisionIssues={[
+      issues={[
         <gdmC.DecisionModel $refByName="//www.aelastics.org/Persistence_GDM/TableStrategy" />,
         <gdmC.DecisionModel $refByName="//www.aelastics.org/Persistence_GDM/PrimaryKeyStrategy" />,
       ]}
@@ -46,13 +46,13 @@ export const createBindingModel = (store: ModelStore) => (
             
             Let's use the condition to target "Staff".
         */}
-    <dbmC.ModelingLanguageBindingElement
+    <dbmC.BindingElement
       name="StaffInheritanceStrategy"
       description="Specific strategy for Staff hierarchy"
 
-      sourceModelElementRef={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Subtype" />}
+      element={<etC.TypeObjectReference $refByName="//www.aelastics.org/aelastic-EERModel/Subtype" />}
 
-      decisionIssues={[
+      issues={[
         <gdmC.DecisionModel $refByName="//www.aelastics.org/Persistence_GDM/TableStrategy" />,
       ]}
 
@@ -61,13 +61,13 @@ export const createBindingModel = (store: ModelStore) => (
     />
 
     {/* Bind Many-to-Many Relationships to Implementation Strategy */}
-    <dbmC.ModelingLanguageBindingElement
+    <dbmC.BindingElement
       name="MNRelationshipStrategy"
 
-      sourceModelElementRef={<etC.TypeObjectReference
+      element={<etC.TypeObjectReference
         $refByName="//www.aelastics.org/aelastic-EERModel/Relationship" />}
 
-      decisionIssues={[
+      issues={[
         <gdmC.DecisionModel $refByName="//www.aelastics.org/Persistence_GDM/ManyToManyImplement" />,
       ]}
 
@@ -80,18 +80,18 @@ export const createBindingModel = (store: ModelStore) => (
     />
 
     {/* Bind 0:1-0:M Relationships (One-to-Many) */}
-    <dbmC.ModelingLanguageBindingElement
+    <dbmC.BindingElement
       name="OneNRelationshipStrategy"
       description="Strategy for One-to-Many relationships"
 
-      sourceModelElementRef={<etC.TypeObjectReference
+      element={<etC.TypeObjectReference
         $refByName="//www.aelastics.org/aelastic-EERModel/Relationship" />}
 
       // We could add a new decision issue for this if we had one in GDM (e.g. FK location)
       // For now, reusing PK naming convention or similar if applicable, or just demonstrating selection.
       // Let's assume we want to decide PK strategy for the relation? No, that's for entities.
       // Let's just bind it to a placeholder or existing issue to show we caught it.
-      decisionIssues={[
+      issues={[
         // For example, ask about FK Naming
         <gdmC.DecisionModel $refByName="//www.aelastics.org/Persistence_GDM/ManyToManyImplement" />, // Reusing just for demo, usually would be "FK Strategy"
       ]}
@@ -106,5 +106,5 @@ export const createBindingModel = (store: ModelStore) => (
             }'
     />
 
-  </dbmC.ModelingLanguageBindingModel>
+  </dbmC.BindingModel>
 )

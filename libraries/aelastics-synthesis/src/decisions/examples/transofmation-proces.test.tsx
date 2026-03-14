@@ -10,7 +10,7 @@ import { ModelStore } from '../../index';
 import * as etT from "../../types-metamodel/types-meta.model";
 import * as eerM from "../../types-metamodel/models/eer-metamodel-aelasticTypes";
 
-import * as dbmT from "../2.modeling-language-binding/modeling-language-binding-meta.model";
+import * as dbmT from "../2.binding-model/binding-meta.model";
 import * as dbme from "./decision-binding-model-example";
 
 import * as gdmM from "./generic-decision-model-example"
@@ -43,7 +43,7 @@ describe("Transformation Process", () => {
 
 
 
-        const sm2smwdbmTransformation = new sm2smwdbmT.SourceModelToSourceModelWithDecisionModelBinding(testStore, { 'bindingModel': bindingModel as dbmT.IModelingLanguageBindingModel });
+        const sm2smwdbmTransformation = new sm2smwdbmT.SourceModelToSourceModelWithDecisionModelBinding(testStore, { 'bindingModel': bindingModel as dbmT.IBindingModel });
         const sourceBindingModel = sm2smwdbmTransformation.transform(eerSchema as eerT.IEERSchema);
 
         const sm2ddmTransformation = new sm2ddm.SourceModelToDefaultTransformationConfigurationModel(testStore, { 'bindingModel': bindingModel });

@@ -16,16 +16,16 @@ import * as r from "../../test/relational-model/REL-components.v2";
 import { abstractM2M } from "../../transformations/abstractM2M";
 import { Element, Resolve } from "../../jsx/element";
 import { Context } from "../../jsx/context";
-import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../../index";
-import * as dm from "../3.transformation-configuration/transformation-configuration-meta.model"; // import decision model types for decision model transformation
+import { E2E, ModelStore, M2M, SpecPoint, SpecOption, Option, Or, Not, And } from "../../index"
+import * as cmT from "../3.configuration-model/configuration-meta.model"; // import decision model types for decision model transformation
 
 
 const testStore = new ModelStore();
 const ctx = new Context();
 
 @M2M({ input: et.EERSchema, output: rt.RelSchema })
-class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema, {}, dm.ITransformationConfigurationModel> {
-  constructor(store: ModelStore, { }, decisionModel?: dm.ITransformationConfigurationModel) {
+class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema, {}, cmT.IConfigurationModel> {
+  constructor(store: ModelStore, { }, decisionModel?: cmT.IConfigurationModel) {
     super(store, {}, decisionModel);
   }
 
@@ -154,7 +154,7 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
     </Resolve>;
   }
 
-  @VarPoint()
+  @VarPoint('Neki Issue')
   RelationshipToElement(
     rel: et.IRelationship
   ): Element<rt.IForeignKey> | Element<rt.ITable> {
@@ -163,10 +163,7 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
   }
 
   // TODO Input for this rule expression should be DecisionForElement OR array of SelectedOption
-  @VarOption("RelationshipToElement", (decision: dm.IDecisionForElement): boolean => {
-
-    return !!decision.selectedOptions.find((o) => o.name == "RelToFK");
-  })
+  @VarOption("RelationshipToElement", Option('nekiOption'))
   RelatioshipToFK(rel: et.IRelationship): Element<rt.IForeignKey> {
     // const aaa = this.context.resolve(rel.ordinaryMapping[0]);
 
@@ -178,12 +175,10 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
   }
 
   // TODO Type of decision should be defined by type of element (e.g. Relationship, Entity, etc.) or by specific element (e.g. RelationshipWorksIn, etc.)
-  @VarOption("RelationshipToElement", (decision: dm.IDecisionForElement): boolean => {
-    return !!decision.selectedOptions.find((o) => o.name == "RelToTable");
-  })
+  @VarOption("RelationshipToElement", Option('nekiOption'))
   RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
-    const codomain = et.getCodomain(rel.ordinaryMappings[0]);
-    const domain = et.getInverse(rel.ordinaryMappings[0]);
+    const codomain = et.getCodomain(rel.roles[0]);
+    const domain = et.getInverse(rel.roles[0]);
 
     return <r.Table name="RelationshipToElement table"></r.Table >;
   }

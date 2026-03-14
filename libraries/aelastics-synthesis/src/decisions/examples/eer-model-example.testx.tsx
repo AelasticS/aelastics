@@ -35,14 +35,14 @@ export const eerSchema1: Element<et.IEERSchema> = (
         <Relationship name="worksIn">
             <OrdinaryMapping
                 name="works_in"
-                lowerBound="0"
-                upperBound="1"
+                lb="0"
+                ub="1"
                 domain={<Kernel $refByName="Person"></Kernel>}
             ></OrdinaryMapping>
             <OrdinaryMapping
                 name="has_employees"
-                lowerBound="0"
-                upperBound="M"
+                lb="0"
+                ub="M"
                 domain={<Kernel $refByName="Organization"></Kernel>}
             ></OrdinaryMapping>
         </Relationship>
@@ -57,15 +57,15 @@ export const eerSchema1: Element<et.IEERSchema> = (
         <Relationship name="livesIn">
             <OrdinaryMapping
                 name="lives_in"
-                lowerBound="1"
-                upperBound="1"
+                lb="1"
+                ub="1"
                 domain={<Kernel $refByName="Person"></Kernel>}
 
             ></OrdinaryMapping>
             <OrdinaryMapping
                 name="has_residents"
-                lowerBound="0"
-                upperBound="M"
+                lb="0"
+                ub="M"
                 domain={<Kernel $refByName="City"></Kernel>}
             ></OrdinaryMapping>
         </Relationship>

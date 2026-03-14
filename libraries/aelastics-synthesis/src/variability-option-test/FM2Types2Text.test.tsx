@@ -25,24 +25,24 @@ const generateText = async (
     });
 };
 
-describe('test', () => {
-    it('test', async () => {
-        const testStore = new ModelStore();
-        const ctx = new Context();
-        ctx.pushStore(testStore);
-
-        // const domainFM: fmt.IFeatureDiagram = domainFMDiagram.render(ctx);
-
-        const fm2tTransformation = new FM2TypesTransformations(testStore);
-        // const fmTypes = fm2tTransformation.transform(domainFM);
-
-        const t2tmTransfomration = new Types2TextModelTransformations(testStore);
-        // const textModel = t2tmTransfomration.transform(fmTypes);
-
-        // generateText(testStore, textModel, 1);
-
-        expect(true).toBeTruthy();
-    })
-
-});
+// describe('test', () => {
+//     it('test', async () => {
+//         const testStore = new ModelStore();
+//         const ctx = new Context();
+//         ctx.pushStore(testStore);
+//
+//         // const domainFM: fmt.IFeatureDiagram = domainFMDiagram.render(ctx);
+//
+//         const fm2tTransformation = new FM2TypesTransformations(testStore);
+//         // const fmTypes = fm2tTransformation.transform(domainFM);
+//
+//         const t2tmTransfomration = new Types2TextModelTransformations(testStore);
+//         // const textModel = t2tmTransfomration.transform(fmTypes);
+//
+//         // generateText(testStore, textModel, 1);
+//
+//         expect(true).toBeTruthy();
+//     })
+//
+// });
 

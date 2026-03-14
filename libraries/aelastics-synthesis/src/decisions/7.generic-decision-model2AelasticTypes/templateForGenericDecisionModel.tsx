@@ -15,23 +15,23 @@ import {
 } from "../../types-metamodel/types-components"
 
 import { ModelStore } from "../../index"
-import { IIssue, IOption } from "../1.design-decision/design-decision-meta.model"
+import { IIssue, IOption } from "../1.decision-model/decision-meta.model"
 import { IModelElement } from "generic-metamodel"
-import { IModelingLanguageBindingElement } from "../2.modeling-language-binding/modeling-language-binding-meta.model"
+import { IBindingElement } from "../2.binding-model/binding-meta.model"
 
 const store = new ModelStore();
 
-export const typeForDecisionModel = (store: ModelStore, element: IModelElement, bindings: IModelingLanguageBindingElement[]): Element<t.ITypeModel> => {
+export const typeForDecisionModel = (store: ModelStore, element: IModelElement, bindings: IBindingElement[]): Element<t.ITypeModel> => {
 
     const definedProperties: Map<string, boolean> = new Map(); // Map<propertyName, isOptional>
 
     return <TypeModel name="AelasticsTypes" store={store}>
         <TypeObject name={`${element.name}Type`}>
             {
-                bindings.flatMap((binding: IModelingLanguageBindingElement) => {
+                bindings.flatMap((binding: IBindingElement) => {
                     const hasCondition: boolean = binding.condition !== undefined && binding.condition !== "";
 
-                    return binding.decisionIssues.map((issue: IIssue) => {
+                    return binding.issues.map((issue: IIssue) => {
                         if (!definedProperties.has(issue.name)) {
                             definedProperties.set(issue.name, hasCondition);
 

@@ -11,7 +11,7 @@ import { createBindingModel } from "./03-binding-model";
 
 // Import transformation logic
 import * as sm2ddm from "../4.source-model-2-default-transformation-configuration-model/SourceModel2DefaultDecisionDocument";
-import * as dbmT from "../2.modeling-language-binding/modeling-language-binding-meta.model";
+import * as dbmT from "../2.binding-model/binding-meta.model";
 
 // Metamodel imports (needed for type assertions or store loading)
 import * as eerM from "../../types-metamodel/models/eer-metamodel-aelasticTypes";
@@ -63,7 +63,7 @@ describe("Decision Process Example", () => {
         // --- STEP 3: DEFINE BINDING MODEL ---
         // Map EER Types to Persistence Decisions
         const bindingModelEl = createBindingModel(testStore);
-        const bindingModel = bindingModelEl.render(context) as dbmT.IModelingLanguageBindingModel;
+        const bindingModel = bindingModelEl.render(context) as dbmT.IBindingModel;
         expect(bindingModel).toBeDefined();
 
         // --- STEP 4: GENERATE DECISION DOCUMENT (Configuration) ---

@@ -4,10 +4,10 @@ import { hm } from "../../jsx/handle"
 import { Context } from "../../jsx/context"
 import { ModelStore } from "../../index"
 import { IModel } from "generic-metamodel"
-import * as dbmT from "../2.modeling-language-binding/modeling-language-binding-meta.model"
+import * as dbmT from "../2.binding-model/binding-meta.model"
 import * as sm2ddm
   from "../4.source-model-2-default-transformation-configuration-model/SourceModel2DefaultDecisionDocument"
-import { DesignDecisionModel } from "../1.design-decision/design-decision-meta.model"
+import { DecisionModel } from "../1.decision-model/decision-meta.model"
 
 // Import the specific examples
 import { createUniversityModel } from "./01-source-model"
@@ -22,7 +22,7 @@ describe("Generate Default Configuration for University Model", () => {
 
   it("should generate a default decision model based on binding and design space", () => {
     // Debug: Check objectClassification
-    console.log("GenericDecisionModel objectClassification:", (DesignDecisionModel as any).objectClassification);
+    console.log("GenericDecisionModel objectClassification:", (DecisionModel as any).objectClassification);
 
     (eerM.EERModel.props as any).store = testStore
     // 0. Render EER Metamodel (required by BindingModel references)
@@ -52,7 +52,7 @@ describe("Generate Default Configuration for University Model", () => {
     // 4. Run Transformation
     const sm2ddmTransformation = new sm2ddm.SourceModelToDefaultTransformationConfigurationModel(
       testStore,
-      { "bindingModel": bindingModel as dbmT.IModelingLanguageBindingModel },
+      { "bindingModel": bindingModel as dbmT.IBindingModel },
     )
 
     const defaultDecisionModel = sm2ddmTransformation.transform(universityModel as IModel)
