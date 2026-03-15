@@ -9,7 +9,7 @@ import {
 } from "./../09-relational-schema/REL-components"
 
 export const RelationalSchema_Company = (store: ModelStore) => (
-  <RelSchema name="CompanyRelationalSchema">
+  <RelSchema name="CompanyRelationalSchema" store={store}>
     <Table name="person">
       <Column name="person_id" type="INTEGER" isKey={true} />
       <Column name="name" type="VARCHAR" />

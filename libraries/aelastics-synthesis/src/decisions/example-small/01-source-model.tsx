@@ -1,10 +1,11 @@
 /** @jsx hm */
 
 import { hm } from "../../jsx/handle"
-import { ModelStore } from "../../index"
+import { Element, ModelStore } from "../../index"
 import { EERSchema, Attribute, Domain, Relationship, Role, Entity } from "../../test/eer-model/EER-components"
+import * as t from "./../../test/eer-model/EER.meta.model.type"
 
-export const CompanySchema = (store: ModelStore) => {
+export const CompanySchema = (store: ModelStore): Element<t.IEERSchema> => {
   return (
     <EERSchema name="CompanySchema" MDA_level="M1" store={store}>
       <Entity name="Person">
@@ -39,7 +40,8 @@ export const CompanySchema = (store: ModelStore) => {
         />
       </Relationship>
     </EERSchema>
-  )}
+  )
+}
 
 
 

@@ -1,24 +1,27 @@
 /** @jsx hm */
 
 import { hm } from "../../jsx/handle"
+import { Element } from "../../jsx/element"
 import { ModelStore } from "../../index"
 
 import { BindingModel, Binding } from "../2.binding-model/binding-meta.model-components"
-import { Model, Element } from "../../types-metamodel/models-component"
+import * as t from "./../2.binding-model/binding-meta.model"
+import { Model, Element as ModelElement } from "../../types-metamodel/models-component"
 import { DecisionModel, ElementIssue } from "../1.decision-model/decision-meta.model-components"
 
 
-export const ER_Bindings = (store: ModelStore) => (
+export const ER_Bindings = (store: ModelStore): Element<t.IBindingModel> => (
   <BindingModel
     name="ER_Bindings"
     description="Binding EER Model concepts to relation schema design issues"
     sourceModel={<Model $refByName="//www.aelastics.org/ERMetamodel" />}
     decisionModel={<DecisionModel $refByName="//www.aelastics.org/RelationSchemaDesign" />}
+    store={store}
   >
     <Binding
       name="PKStrategyBinding"
       description="Binding Primary Key Strategy to EER Model"
-      element={<Element $refByName="//www.aelastics.org/ERMetamodel/Entity" />}
+      element={<ModelElement $refByName="//www.aelastics.org/ERMetamodel/Kernel" />}
       issues={[
         <ElementIssue $refByName="//www.aelastics.org/RelationSchemaDesign/PrimaryKeyStrategy" />,
       ]}
@@ -27,7 +30,7 @@ export const ER_Bindings = (store: ModelStore) => (
     <Binding
       name="OneToManyBinding"
       description="Binding 1:N Relationship Strategy to EER Model"
-      element={<Element $refByName="//www.aelastics.org/CompanySchema/Relationship" />}
+      element={<ModelElement $refByName="//www.aelastics.org/ERMetamodel/Relationship" />}
       issues={[
         <ElementIssue $refByName="//www.aelastics.org/RelationSchemaDesign/OneToManyStrategy" />,
       ]}

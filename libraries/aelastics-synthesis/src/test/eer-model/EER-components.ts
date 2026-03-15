@@ -79,7 +79,7 @@ export const AggregationMapping: Template<e.IAggregationMapping> = (props) => {
 }
 
 export const Role: Template<e.IOrdinaryMapping> = (props) => {
-  return new Element(e.OrdinaryMapping, props, "ordinaryMappings")
+  return new Element(e.OrdinaryMapping, props, "roles")
 }
 
 export const Entity: Template<e.IKernel> = (props) => {

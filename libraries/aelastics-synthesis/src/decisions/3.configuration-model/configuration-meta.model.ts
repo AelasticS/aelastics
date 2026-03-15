@@ -33,9 +33,9 @@ const getOptionType = (option: gdm.IOption): t.Any => {
 export const BaseChoice = t.subtype(
   ModelElement,
   {
-    assumptions: t.string,
-    justification: t.string,
-    consequences: t.string,
+    assumptions: t.optional(t.string),
+    justification: t.optional(t.string),
+    consequences: t.optional(t.string),
     issue: gdm.Issue,
     selectedOption: gdm.Option,
 
@@ -49,14 +49,14 @@ export const Choice = t.subtype(
   BaseChoice, // Extend the base type
   {
     // newIssues: t.arrayOf(t.link(DecisionModel_TypeSchema, 'Choice')), // todo selected options for new issues
-    value: t.taggedUnion(
+    value: t.optional(t.taggedUnion(
       {
         simple: SimpleOption,
         composite: CompositeOption,
       },
       "optionType",
       "OptionType",
-    ),
+    )),
   },
   "Choice",
   ConfigurationModel_TypeSchema,

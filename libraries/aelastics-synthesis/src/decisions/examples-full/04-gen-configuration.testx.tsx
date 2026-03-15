@@ -6,7 +6,7 @@ import { ModelStore } from "../../index"
 import { IModel } from "generic-metamodel"
 import * as dbmT from "../2.binding-model/binding-meta.model"
 import * as sm2ddm
-  from "../4.source-model-2-default-transformation-configuration-model/SourceModel2DefaultDecisionDocument"
+  from "../4.source-model-2-default-configuration-model/SourceModel2DefaultConfigurationModel"
 import { DecisionModel } from "../1.decision-model/decision-meta.model"
 
 // Import the specific examples
@@ -24,9 +24,9 @@ describe("Generate Default Configuration for University Model", () => {
     // Debug: Check objectClassification
     console.log("GenericDecisionModel objectClassification:", (DecisionModel as any).objectClassification);
 
-    (eerM.EERModel.props as any).store = testStore
+    const smm = eerM.EERModel(testStore);
     // 0. Render EER Metamodel (required by BindingModel references)
-    const eerMetamodel = eerM.EERModel.render(context)
+    const eerMetamodel = smm.render(context)
     expect(eerMetamodel).toBeDefined()
 
     // Debug: Check if EER model is registered in store
@@ -50,7 +50,7 @@ describe("Generate Default Configuration for University Model", () => {
     expect(bindingModel).toBeDefined()
 
     // 4. Run Transformation
-    const sm2ddmTransformation = new sm2ddm.SourceModelToDefaultTransformationConfigurationModel(
+    const sm2ddmTransformation = new sm2ddm.SourceModelToDefaultConfigurationModel(
       testStore,
       { "bindingModel": bindingModel as dbmT.IBindingModel },
     )

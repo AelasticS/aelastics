@@ -3,7 +3,6 @@
 import { Context, ModelStore } from "../../index"
 import { Element } from "../../jsx/element"
 import { hm } from "../../jsx/handle"
-import { TypeString } from "../predefined-types"
 import {
   InverseProperty,
   Property,
@@ -13,15 +12,17 @@ import {
   TypeObject,
   TypeOptional,
   TypeSubtype,
-} from "../types-components"
-import * as t from "../types-meta.model"
-import { importPredefinedTypes } from "../predefined-model"
+} from "../../types-metamodel/types-components"
+import * as t from "../../types-metamodel/types-meta.model"
+import { TypeBoolean, TypeNumber, TypeString } from "../../types-metamodel/predefined-types"
 
 const store = new ModelStore()
 
 export const EERModel = (store: ModelStore): Element<t.ITypeModel> => (
-  <TypeModel name="ERModel" store={store}>
-    {importPredefinedTypes("../aelastic-EERModel")}
+  <TypeModel name="ERMetamodel" store={store}>
+    <TypeNumber name="number"></TypeNumber>
+    <TypeString name="string"></TypeString>
+    <TypeBoolean name="boolean"></TypeBoolean>
 
     <TypeObject name="ERConcept">
       <Property name="conceptType">
@@ -205,12 +206,3 @@ export const EERModel = (store: ModelStore): Element<t.ITypeModel> => (
 
   </TypeModel>
 )
-
-
-// describe("Test aelastic EER model", () => {
-//   it("Test aelastic EER model created", () => {
-//     const model = EERModel.render(new Context())
-//     expect(model).toHaveProperty("name", "aelastic-EERModel")
-//   })
-// })
-
