@@ -19,29 +19,26 @@ export const RelationSchemaDesignIssues = (store: ModelStore): Element<t.IDecisi
     store={store}
   >
     <ElementIssue name="OneToManyStrategy" description="How to implement 1:N relationships">
-      <Option name="ForeignKey" description="Use Foreign Key in the Many side table" isDefault={true}
+      <Option name="ForeignKey" description="Use Foreign Key in the Many side table" isDefault={false}
               optionType={<SimpleOption name="FK" />}
       />
-      <Option name="JoinTable" description="Use a separate join table"
+      <Option name="JoinTable" description="Use a separate join table" isDefault={true}
               optionType={<SimpleOption name="JoinTableOption" />}
       />
     </ElementIssue>
-    <ElementIssue name="PrimaryKeyStrategy" description="How to generate primary keys">
-      <Option name="AutoIncrement" description="Database auto increment" isDefault={true}
+    <ElementIssue name="PrimaryKeyStrategy" description="How to implement primary keys">
+      <Option name="UseAutoIncrement" description="Database auto increment" isDefault={true}
               optionType={<SimpleOption name="PK_AutoInc" />}
       />
-      <Option name="UUID" description="Use UUID strings"
-              optionType={<SimpleOption name="PK_UUID" />}
-      />
-      <Option name="Sequence" description="Use database sequence"
-              optionType={<SimpleOption name="PK_Seq" />}
+      <Option name="UseManualIncrement" description="Use manual increment" isDefault={false}
+              optionType={<SimpleOption name="PK_ManInc" />}
       />
     </ElementIssue>
     <ModelIssue name="NamingConvention" description="How to name the database tables">
       <Option name="CamelCase" description="Use camelCase for table names" isDefault={true}
               optionType={<SimpleOption name="CamelCaseOption" />}
       />
-      <Option name="SnakeCase" description="Use snake_case for table names"
+      <Option name="SnakeCase" description="Use snake_case for table names" isDefault={false}
               optionType={<SimpleOption name="SnakeCaseOption" />}
       />
     </ModelIssue>

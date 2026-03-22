@@ -13,10 +13,7 @@ import * as cmT from "../3.configuration-model/configuration-meta.model"
 import * as cmC from "../3.configuration-model/configuration-meta.model-components"
 import { Choice } from "../3.configuration-model/configuration-meta.model-components"
 
-@M2M({
-  input: Model,
-  output: cmT.ConfigurationModel,
-})
+
 export class SourceModelToDefaultConfigurationModel extends abstractM2M<IModel, cmT.IConfigurationModel, {
   "bindingModel": bmT.IBindingModel
 }> {
@@ -48,11 +45,6 @@ export class SourceModelToDefaultConfigurationModel extends abstractM2M<IModel, 
     )
   }
 
-  @E2E({
-    input: ModelElement,
-    output: cmT.ElementDecision,
-    ruleName: "SourceModelElement2DecisionModelForElement",
-  })
   private createElementChoices(sourceModelElement: IModelElement): Element<cmT.IDecision> | null {
 
     const decisionBindingElements = this.getBindingElementBySourceModelElement(sourceModelElement)
@@ -82,11 +74,6 @@ export class SourceModelToDefaultConfigurationModel extends abstractM2M<IModel, 
     )
   }
 
-  @E2E({
-    input: dmT.Issue,
-    output: cmT.BaseChoice, // Use the concrete base type
-    ruleName: "Issue2SelectedOption",
-  })
   private createChosenOptionForIssue(issue: dmT.IIssue): Element<cmT.IChoice> {
 
     let defaultOption: dmT.IOption | undefined = issue.possibleOptions.find((o: dmT.IOption) => {

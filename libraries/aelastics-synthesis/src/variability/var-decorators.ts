@@ -7,60 +7,52 @@ import { EvalCondition } from "./eval-operators"
 
 // https://stackoverflow.com/questions/55179461/reflection-in-javascript-how-to-intercept-an-object-for-function-enhancement-d
 
-interface IOption {
+interface IVarOption {
   methodName: string
   evalCondition: EvalCondition
   isDefault?: boolean
 }
 
-const __VarPoint = "__VarPoint"
 const __VarOptionRef = "__VarOptionRef"
 
 type DecoratedMethod = ((this: any, ...args: any[]) => any) & {
-  [__VarPoint]?: string
   [__VarOptionRef]?: string
   [key: string]: unknown
 }
 
-// Metadata lives on the function object itself so VarOption/Default can register against VarPoint.
-const getVarPointPropertyKey = (method: DecoratedMethod | undefined): string | undefined => {
-  return method?.[__VarPoint]
+// WeakMap registry: prototype → (varPointName → IVarOption[])
+// Decouples option registration from the function object so that outer decorators
+// (e.g. @E2E) can freely wrap a @VarPoint method without destroying the options bucket.
+const varPointRegistry = new WeakMap<object, Map<string, IVarOption[]>>()
+
+const isVarPoint = (target: object, methodName: string): boolean =>
+  varPointRegistry.get(target)?.has(methodName) ?? false
+
+const getRegisteredVarOptions = (target: object, methodName: string): IVarOption[] | undefined =>
+  varPointRegistry.get(target)?.get(methodName)
+
+const registerVarPoint = (target: object, propertyKey: string): void => {
+  if (!varPointRegistry.has(target)) {
+    varPointRegistry.set(target, new Map())
+  }
+  const map = varPointRegistry.get(target)!
+  if (!map.has(propertyKey)) {
+    map.set(propertyKey, [])
+  }
 }
 
-const getVarPointOptions = (method: DecoratedMethod | undefined): IOption[] | undefined => {
-  const varPointPropertyKey = getVarPointPropertyKey(method)
-  if (!method || !varPointPropertyKey) {
-    return undefined
-  }
-
-  if (!Array.isArray(method[varPointPropertyKey])) {
-    method[varPointPropertyKey] = []
-  }
-
-  return method[varPointPropertyKey] as IOption[]
-}
-
-// Ensures the method is marked as VarPoint and has an option bucket allocated.
-const initializeVarPointMethod = (method: DecoratedMethod, propertyKey: string): DecoratedMethod => {
-  method[__VarPoint] = propertyKey
-  getVarPointOptions(method)
-  return method
+const registerVarOption = (target: object, varPointName: string, varOption: IVarOption): void => {
+  getRegisteredVarOptions(target, varPointName)?.push(varOption)
 }
 
 const setVarOptionReference = (method: DecoratedMethod, methodName: string): void => {
   method[__VarOptionRef] = methodName
 }
 
-const getVarOptionReference = (method: DecoratedMethod | undefined): string | undefined => {
-  return method?.[__VarOptionRef]
-}
+const getVarOptionReference = (method: DecoratedMethod | undefined): string | undefined =>
+  method?.[__VarOptionRef]
 
-// Option registration is centralized to keep VarOption and Default behavior identical.
-const registerOption = (method: DecoratedMethod | undefined, option: IOption): void => {
-  getVarPointOptions(method)?.push(option)
-}
-
-const resolveSelectedOptions = (
+const resolveConfiguredChoices = (
   transformation: abstractM2M<any, any, any, tcM.IConfigurationModel>,
   element: any,
 ): tcM.IChoice[] => {
@@ -79,40 +71,40 @@ const resolveSelectedOptions = (
     .flatMap((d: tcM.IDecision) => d.choices)
 }
 
-const evaluateOption = (
-  option: IOption,
+const evaluateVarOption = (
+  varOption: IVarOption,
   context: {
     self: any
-    selectedOptions: tcM.IChoice[]
+    configChoices: tcM.IChoice[]
     element: any
     currentContext: abstractM2M<any, any, any, tcM.IConfigurationModel>["context"]
   },
 ): boolean => {
-  return option.evalCondition.call(
+  return varOption.evalCondition.call(
     context.self,
-    context.selectedOptions,
+    context.configChoices,
     context.element,
     context.currentContext,
   )
 }
 
-const selectOption = (
-  options: IOption[],
+const selectVarOption = (
+  varOptions: IVarOption[],
   context: {
     self: any
-    selectedOptions: tcM.IChoice[]
+    configChoices: tcM.IChoice[]
     element: any
     currentContext: abstractM2M<any, any, any, tcM.IConfigurationModel>["context"]
   },
-): IOption | undefined => {
-  // First matching non-default option wins; otherwise use the default option if provided.
-  const matchingOption = options.find((option) => !option.isDefault && evaluateOption(option, context))
+): IVarOption | undefined => {
+  // First matching non-default option wins; otherwise fall back to the default option.
+  const matchingVarOption = varOptions.find((varOption) => !varOption.isDefault && evaluateVarOption(varOption, context))
 
-  return matchingOption || options.find((option) => option.isDefault)
+  return matchingVarOption || varOptions.find((varOption) => varOption.isDefault)
 }
 
-const invokeSelectedMethod = (self: any, option: IOption, args: any[]) => {
-  return self[option.methodName](...args)
+const invokeVarOption = (self: any, varOption: IVarOption, args: any[]) => {
+  return self[varOption.methodName](...args)
 }
 
 // @deprecated - Koristi IOption umesto ovoga
@@ -133,43 +125,39 @@ export const VarPoint = (_issue: string) => {
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
-    let wrappedMethod: DecoratedMethod
+    // Register the options bucket in the WeakMap registry keyed by (prototype, propertyKey).
+    // This allows outer decorators (e.g. @E2E) to wrap this method without breaking registration.
+    registerVarPoint(target, propertyKey)
 
-    wrappedMethod = initializeVarPointMethod((function(this: any, ...args: any[]) {
+    descriptor.value = function(this: any, ...args: any[]) {
       const transformation = this as abstractM2M<any, any, any, tcM.IConfigurationModel>
       const currentContext = transformation.context
       const element = args[0]
-      const selectedOptions = resolveSelectedOptions(transformation, element)
-      const options = getVarPointOptions(wrappedMethod) || []
+      const configChoices = resolveConfiguredChoices(transformation, element)
+      // VarOptions are looked up from the registry at call time, not from the function object.
+      const varOptions = getRegisteredVarOptions(target, propertyKey) || []
 
       // Keep context stack balanced even if condition evaluation or option method throws.
-      currentContext.currendElementDecision[_privatePush](selectedOptions)
+      currentContext.currendElementDecision[_privatePush](configChoices)
 
       try {
-        const selectedOption = selectOption(options, {
+        const chosenVarOption = selectVarOption(varOptions, {
           self: this,
-          selectedOptions,
+          configChoices,
           element,
           currentContext,
         })
 
-        if (!selectedOption) {
+        if (!chosenVarOption) {
           throw new Error(`No option condition evaluated to true and no default option provided`)
         }
 
-        return invokeSelectedMethod(this, selectedOption, args)
+        return invokeVarOption(this, chosenVarOption, args)
       } finally {
         currentContext.currendElementDecision[_privatePop]()
       }
-    } as unknown) as DecoratedMethod, propertyKey)
-
-    const registeredOptions = getVarPointOptions(descriptor.value as DecoratedMethod)
-    if (registeredOptions?.length) {
-      // Preserve options registered before wrapping (decorator evaluation order).
-      getVarPointOptions(wrappedMethod)?.push(...registeredOptions)
     }
 
-    descriptor.value = wrappedMethod
     return descriptor
   }
 }
@@ -184,20 +172,19 @@ export const VarOption = (
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
-    const method = target[methodName] as DecoratedMethod | undefined
-    if (getVarPointPropertyKey(method)) {
+    // Use registry lookup — independent of what's currently in target[methodName],
+    // so @E2E or any other decorator wrapping the VarPoint method doesn't break registration.
+    if (isVarPoint(target, methodName)) {
       if (!option) {
         throw new Error(`VarOption("${methodName}") requires EvalCondition, for example Option("...")`)
       }
 
-      const varOption: IOption = {
+      registerVarOption(target, methodName, {
         methodName: propertyKey,
         evalCondition: option,
-      }
+      })
 
-      registerOption(method, varOption)
-
-      // Čuvaj referencu na VarPoint metodu na ovoj metodi
+      // Čuvaj referencu na VarPoint metodu na ovoj metodi (potrebno za @Default)
       setVarOptionReference(descriptor.value as DecoratedMethod, methodName)
     }
     return descriptor
@@ -210,19 +197,14 @@ export const Default = () => {
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
-    // Pronađi VarOption na istoj metodi
+    // Reads __VarOptionRef set by @VarOption, then registers via registry (not target[ref]).
     const varOptionRef = getVarOptionReference(descriptor.value as DecoratedMethod)
 
-    if (varOptionRef) {
-      // Pronađi VarPoint metodu koju referencira VarOption
-      const varPointMethod = target[varOptionRef] as DecoratedMethod | undefined
-      if (getVarPointPropertyKey(varPointMethod)) {
-        // Default is just a regular option flagged as fallback.
-        registerOption(varPointMethod, {
-          methodName: propertyKey,
-          evalCondition: () => true,
-          isDefault: true,
-        })
+    if (varOptionRef && isVarPoint(target, varOptionRef)) {
+      // Mark the already-registered VarOption as default instead of adding a duplicate entry.
+      const existing = getRegisteredVarOptions(target, varOptionRef)?.find((v) => v.methodName === propertyKey)
+      if (existing) {
+        existing.isDefault = true
       }
     }
 

@@ -21,7 +21,7 @@ export const ER_Bindings = (store: ModelStore): Element<t.IBindingModel> => (
     <Binding
       name="PKStrategyBinding"
       description="Binding Primary Key Strategy to EER Model"
-      element={<ModelElement $refByName="//www.aelastics.org/ERMetamodel/Kernel" />}
+      element={<ModelElement $refByName="//www.aelastics.org/ERMetamodel/Attribute" />}
       issues={[
         <ElementIssue $refByName="//www.aelastics.org/RelationSchemaDesign/PrimaryKeyStrategy" />,
       ]}

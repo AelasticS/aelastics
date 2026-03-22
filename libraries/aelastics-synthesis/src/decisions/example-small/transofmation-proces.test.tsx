@@ -18,13 +18,15 @@ import * as smFn from "./01-source-model"
 import * as dmFn from "./02-decision-model"
 import * as bmFn from "./03-binding-model"
 
+import * as ee2RelT from "./EER2RelDomainWithDecisionTransformation"
+
 const testStore = new ModelStore()
 const context = new Context()
 
 
 describe("Transformation Process", () => {
 
-  it("should create a transformation context", () => {
+  it("should create a transformation context small example", () => {
 
     const smm = eerMMFn.EERModel(testStore)
     const dm = dmFn.RelationSchemaDesignIssues(testStore)
@@ -40,6 +42,9 @@ describe("Transformation Process", () => {
 
     const sm2ddmTransformation = new sm2ddm.SourceModelToDefaultConfigurationModel(testStore, { "bindingModel": bindingModel })
     const defaultDecisionModel = sm2ddmTransformation.transform(eerSchema as eerT.IEERSchema)
+
+    const eer2RelTransformation = new ee2RelT.EER2RelDomainWithDecisionTransformation(testStore, {}, defaultDecisionModel)
+    const relSchema = eer2RelTransformation.transform(eerSchema as eerT.IEERSchema)
 
     // expect(defaultDecisionModel).toBeDefined()
     expect(true).toBe(true)

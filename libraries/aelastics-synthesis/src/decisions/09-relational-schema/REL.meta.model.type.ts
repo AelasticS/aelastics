@@ -22,10 +22,11 @@ export const Column = t.subtype(ModelElement, {
   type: t.string,
   isKey: t.boolean,
   ownerTable: t.link(RelModel_TypeSchema, 'Table'),
-  indexes: t.arrayOf(t.link(RelModel_TypeSchema, "Index")),
-  isForeignKey: t.link(RelModel_TypeSchema, 'Column'),
+  // isForeignKey: t.link(RelModel_TypeSchema, 'Column'),
+  isForeignKey: t.boolean,
   references: t.string,
-  isNullable: t.boolean
+  isNullable: t.boolean,
+  isAutoincrement: t.boolean,
 }, "Column", RelModel_TypeSchema);
 
 export const Table = t.subtype(ModelElement, {

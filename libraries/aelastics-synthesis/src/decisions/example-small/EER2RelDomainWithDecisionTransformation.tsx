@@ -5,7 +5,6 @@
 
 // const EER = getEER({} as IModel, null)
 
-
 import { hm } from "../../jsx/handle"
 import { VarPoint, VarOption, Default } from "../../variability/var-decorators"
 import { Option, And, Not, Or } from "./../../variability/eval-operators"
@@ -18,34 +17,31 @@ import {
   IOrdinaryMapping,
   Relationship,
   Entity,
-  IDomain
+  IDomain,
+  Attribute,
 } from "../../test/eer-model/EER.meta.model.type"
-import { IColumn, ITable, IForeignKey, IRelSchema, RelSchema as RSchema, Table} from "../../test/relational-model/REL.meta.model.type.v2"
+import * as rmT from "./../09-relational-schema/REL.meta.model.type"
 import { abstractM2M } from "../../transformations/abstractM2M"
 import { Element, Resolve } from "../../jsx/element"
-import { Context } from "../../jsx/context"
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../../index"
 import * as cm from "./../3.configuration-model/configuration-meta.model"
 
-import { RelSchema, Table as Tble, Column } from "./../09-relational-schema/REL-components"
-import * as dm from "./../1.decision-model/decision-meta.model"
+import { RelSchema, Table, Column } from "./../09-relational-schema/REL-components"
 
-const testStore = new ModelStore()
-const ctx = new Context()
-
-@M2M({ input: EERSchema, output: RSchema })
-class EER2RelDomainWithDecisionTransformation extends abstractM2M<IEERSchema, IRelSchema, {}, cm.IConfigurationModel> {
+@M2M({ input: EERSchema, output: rmT.RelSchema })
+export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
+  IEERSchema,
+  rmT.IRelSchema,
+  {},
+  cm.IConfigurationModel
+> {
   constructor(store: ModelStore, {}, configModel?: cm.IConfigurationModel) {
     super(store, {}, configModel)
   }
 
   template(s: IEERSchema) {
     return (
-      <RelSchema
-        name={`${s.name}_Relational_Schema_with_Decision_Model`}
-        content=""
-        MDA_level="M1"
-      >
+      <RelSchema name={`${s.name}_Relational_Schema_with_Decision_Model`} content="" MDA_level="M1">
         {s.elements
           .filter((el) => this.context.store.isTypeOf(el, Entity))
           .map((el) => this.Entity2Table(el as IEntity))}
@@ -59,92 +55,89 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<IEERSchema, IR
 
   @E2E({
     input: Entity,
-    output: Table,
-    ruleName: "Entity2Table",
+    output: rmT.Table,
   })
-  Entity2Table(e: IEntity): Element<ITable> {
-    return (
-      <Tble name={this.applyNaming(e.name)}>
-        {e.attributes.map((a) => this.Attribute2Column(a))}
-      </Tble>
-    )
+  Entity2Table(e: IEntity): Element<rmT.ITable> {
+    return <Table name={this.applyNaming(e.name)}>{e.attributes.map((a) => this.Attribute2Column(a))}</Table>
   }
 
-  // @E2E({ input: Attribute, output: Column })
-  Attribute2Column(a: IAttribute): Element<IColumn> {
-    return <Column name={a.name} isKey={a.isKey}></Column>
+  @E2E({ input: Attribute, output: rmT.Column })
+  Attribute2Column(a: IAttribute): Element<rmT.IColumn> {
+    return <Column name={a.name} isKey={a.isKey} isAutoincrement={this.primaryKeyStrategy(a)}></Column>
   }
 
-
-  // Note: E2E doesn't support union types, so we use a base type here for tracing
-  @E2E({ input: Relationship, output: Table, ruleName: "RelationshipMapping" })
+  // @E2E is outermost: wraps the VarPoint dispatcher, so tracing happens after VarPoint selects
+  // and calls the matching VarOption method. @VarPoint must be inner (applied first) so it
+  // registers its options bucket in the registry before @VarOption decorators run on later methods.
+  @E2E({ input: Relationship, output: rmT.Table })
   @VarPoint("OneToManyStrategy")
-  RelationshipMapping(
-    rel: IRelationship,
-  ): Element<IColumn> | Element<ITable> {
+  RelationshipMapping(rel: IRelationship): Element<rmT.IColumn> | Element<rmT.ITable> {
     throw new Error("Not implemented VarOptions for VarPoint RelationshipMapping")
     // return null as unknown as Element<IForeignKey> | Element<ITable>;
   }
 
   @Default()
   @VarOption("RelationshipMapping", Option("ForeignKey"))
-  relationshipAsForeignKey(rel: IRelationship): Element<IColumn> {
+  relationshipAsForeignKey(rel: IRelationship): Element<rmT.IColumn> {
     const fkSide = this.getFKSide(rel)
     const pkSide = this.getPKSide(rel)
 
     return (
-      <Column name={this.applyNaming(pkSide.domain.name + "Id")}
-              type={this.getColumnType(pkSide.domain)}
-              isForeignKey={true}
-              isKey={false}
-              references={pkSide.domain.name}
-              isNullable={fkSide.lb === "0"}
-      />
+      <Table $refByName={this.applyNaming(pkSide.domain.name)}>
+        <Column
+          name={this.applyNaming(fkSide.domain.name + "Id_FK")}
+          type={this.getColumnType(fkSide.domain)}
+          isForeignKey={true}
+          isKey={false}
+          references={fkSide.domain.name}
+          isNullable={fkSide.lb === "0"}
+        />
+      </Table>
     )
   }
 
   @VarOption("RelationshipMapping", Option("JoinTable"))
-  relationshipAsJoinTable(rel: IRelationship): Element<ITable> {
+  relationshipAsJoinTable(rel: IRelationship): Element<rmT.ITable> {
     const role1 = rel.roles[0]
     const role2 = rel.roles[1]
 
-    return <Tble name={this.applyNaming(rel.name)}>
-      <Column
-        name={this.applyNaming(role1.domain.name + "Id")}
-        type={this.getColumnType(role1)}
-        isForeignKey={true}
-        references={role1.name}
-        isNullable={role1.lb !== "1"}
-        isKey={role1.ub === "1"}
-      />
-      <Column
-        name={this.applyNaming(role2.domain.name + "Id")}
-        type={this.getColumnType(role2)}
-        isForeignKey={true}
-        references={role2.name}
-        isNullable={role2.lb !== "1"}
-        isKey={role2.ub === "1"}
-      />
-      <Column />
-    </Tble>
+    return (
+      <Table name={this.applyNaming(rel.name)}>
+        <Column
+          name={this.applyNaming(role1.domain.name + "Id")}
+          type={this.getColumnType(role1)}
+          isForeignKey={true}
+          references={role1.name}
+          isNullable={role1.lb !== "1"}
+          isKey={role1.ub === "1"}
+        />
+        <Column
+          name={this.applyNaming(role2.domain.name + "Id")}
+          type={this.getColumnType(role2)}
+          isForeignKey={true}
+          references={role2.name}
+          isNullable={role2.lb !== "1"}
+          isKey={role2.ub === "1"}
+        />
+      </Table>
+    )
   }
 
   // ######### START PrimaryKeyStrategy variations #############
 
   @VarPoint("PrimaryKeyStrategy")
-  primaryKeyStrategy(e: IEntity): void {
+  primaryKeyStrategy(a: IAttribute): boolean {
+    throw new Error("Not implemented VarOptions for VarPoint PrimaryKeyStrategy")
   }
 
-  @VarOption("primaryKeyStrategy", Option("AutoIncrement"))
-  primaryKeyAutoIncrement(e: IEntity): void {
+  @VarOption("primaryKeyStrategy", Option("UseAutoIncrement"))
+  useAutoIncrement(a: IAttribute): boolean {
+    return a.isKey ? true : false
   }
 
-  @VarOption("primaryKeyStrategy", Option("UUID"))
-  primaryKeyUUID(e: IEntity): void {
-  }
-
-  @VarOption("primaryKeyStrategy", Option("Sequence"))
-  primaryKeySequence(e: IEntity): void {
+  @VarOption("primaryKeyStrategy", Option("UseManualIncrement"))
+  useManualIncrement(a: IAttribute): boolean {
+    return false
   }
 
   // ######### END PrimaryKeyStrategy variations #############
@@ -152,7 +145,7 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<IEERSchema, IR
   // ######### START NamingConvention variations #############
   @VarPoint("NamingConvention")
   applyNaming(name: string): string {
-    return name
+    throw new Error("Not implemented VarOptions for VarPoint NamingConvention")
   }
 
   @VarOption("applyNaming", Option("CamelCase"))
@@ -169,12 +162,12 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<IEERSchema, IR
 
   private getFKSide(rel: IRelationship): IOrdinaryMapping {
     // Return the side with upperBound = 1 (many-to-one side becomes FK side)
-    return rel.roles.find(m => m.ub === "1") || rel.roles[0]
+    return rel.roles.find((m) => m.ub === "1") || rel.roles[0]
   }
 
   private getPKSide(rel: IRelationship): IOrdinaryMapping {
     // Return the side with upperBound = N (one-to-many side becomes PK side)
-    return rel.roles.find(m => m.ub !== "1") || rel.roles[1]
+    return rel.roles.find((m) => m.ub !== "1") || rel.roles[1]
   }
 
   private getColumnType(domain: IDomain): string {
@@ -207,6 +200,4 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<IEERSchema, IR
         return "VARCHAR(255)" // Default fallback
     }
   }
-
-
 }
