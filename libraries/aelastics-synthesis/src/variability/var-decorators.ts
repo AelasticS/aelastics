@@ -138,7 +138,7 @@ export const VarPoint = (_issue: string) => {
       const varOptions = getRegisteredVarOptions(target, propertyKey) || []
 
       // Keep context stack balanced even if condition evaluation or option method throws.
-      currentContext.currendElementDecision[_privatePush](configChoices)
+      currentContext.currentElementDecision[_privatePush](configChoices)
 
       try {
         const chosenVarOption = selectVarOption(varOptions, {
@@ -154,7 +154,7 @@ export const VarPoint = (_issue: string) => {
 
         return invokeVarOption(this, chosenVarOption, args)
       } finally {
-        currentContext.currendElementDecision[_privatePop]()
+        currentContext.currentElementDecision[_privatePop]()
       }
     }
 

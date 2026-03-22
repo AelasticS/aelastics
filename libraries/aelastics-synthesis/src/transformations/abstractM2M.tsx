@@ -55,10 +55,10 @@ export class Stack<T> {
 }
 
 export class M2MContext extends Context {
-  public input: IODescr = {};
-  public output: IODescr = {};
-  public transformation: TransformationDescr = {};
-  public currendElementDecision: Stack<IChoice[]> = new Stack<IChoice[]>();
+  public input: IODescr = {}
+  public output: IODescr = {}
+  public transformation: TransformationDescr = {}
+  public currentElementDecision: Stack<IChoice[]> = new Stack<IChoice[]>()
 
   public readonly traceMap: Map<IModelElement, Array<ITraceRecord>> = new Map();
 

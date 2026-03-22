@@ -14,8 +14,6 @@ export const TraceEntry = t.subtype(
         ruleType: t.string.derive().oneOf(["RegularRule", "VariabilityPoint"]),
         variabilityOption: t.optional(t.string),
         choices: t.optional(t.arrayOf(Choice))
-
-
     },
     "TraceEntry",
     TraceModel_TypeSchema,
