@@ -57,7 +57,7 @@ type M2M_Ctor = {
 type Class<T = any> = new (...args: any[]) => T;
 
 export const M2M = ({ input, output, transformationName }: IM2MDecorator) => {
-  return function <T extends Class<IM2M<any, any>>>(target: T) {
+  return function <T extends Class<IM2M<any, any, any, any, any>>>(target: T) {
     if (!transformationName) transformationName = target.name
 
     //return function _M2M<T extends new (...args:any[]) => abstractM2M<any, any>>(target: T){
@@ -159,7 +159,7 @@ export const M2M_v0 = ({ input, output }: IM2MDecorator) => {
 // TODO: remove input and output parameters, can be found from objects
 export const E2E = function({ input, output, ruleName }: IE2EDecorator) {
   return function <DM extends IConfigurationModel | never = never>(
-    target: abstractM2M<IModel, IModel, any, DM>,
+    target: abstractM2M<IModel, IModel, any, DM, any>,
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {

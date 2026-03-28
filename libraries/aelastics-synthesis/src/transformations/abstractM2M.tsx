@@ -54,7 +54,8 @@ export class Stack<T> {
   }
 }
 
-export class M2MContext extends Context {
+export class M2MContext<P = undefined> extends Context {
+  
   public input: IODescr = {}
   public output: IODescr = {}
   public transformation: TransformationDescr = {}
@@ -63,6 +64,10 @@ export class M2MContext extends Context {
   public readonly traceMap: Map<IModelElement, Array<ITraceRecord>> = new Map();
 
   public readonly resolveMap: Map<Element<IModelElement>, IModelElement | undefined> = new Map();
+
+  // param is used to keep additional information during transformation
+  // passed from transform() method of abstractM2M
+  public param?:P
 
   constructor() {
     super();
@@ -120,8 +125,8 @@ export class M2MContext extends Context {
   }
 }
 
-export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends IConfigurationModel = never> {
-  context: M2MContext;
+export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends IConfigurationModel = never, P = undefined> {
+  context: M2MContext<P>;
   m2mTransformation?: tm.IM2M_Transformation;
   template(props: S): Element<S, D>;
   transform(source: S): D;
@@ -131,11 +136,11 @@ export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: str
 
 // TODO DM extends Record<string, IModel> = Record<never, never>
 // TODO Map<string, IModel> = Map<never, never>
-export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, CM extends IConfigurationModel = never>
-  implements IM2M<S, D, EM> {
+export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, CM extends IConfigurationModel = never, P = undefined>
+  implements IM2M<S, D, EM, never, P> {
   // transformation type
   public m2mTransformation?: tm.IM2M_Transformation;
-  public context: M2MContext = new M2MContext();
+  public context: M2MContext<P> = new M2MContext<P>();
   public extra?: EM;
   public configModel?: CM;
 
@@ -147,10 +152,10 @@ export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends
 
   abstract template(props: S): Element<S, D>;
 
-  // TODO: add arguments: globalConfig and localConfig
-  public transform(source: S): D {
+  public transform(source: S, param?: P): D {
+    this.context.param = param;
     const targetModel = this.template(source).render<D>(this.context);
-
+    
     this.context.input.instance = source;
     this.context.output.instance = targetModel;
 
