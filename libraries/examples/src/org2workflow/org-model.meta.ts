@@ -15,7 +15,7 @@ export const OrgUnit = t.subtype(ModelElement, {
 }, "OrgUnit", Org_Schema)
 
 export const Department = t.subtype(OrgUnit, {
-    manager: t.link(Org_Schema, "Worker"),
+    manager: Worker,
 }, "Department", Org_Schema)
 
 export const Board = t.subtype(OrgUnit, {
