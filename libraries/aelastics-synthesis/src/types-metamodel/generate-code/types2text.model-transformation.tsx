@@ -143,8 +143,8 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
-  @SpecPoint()
   @E2E()
+  @SpecPoint()
   transformObject(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
       <Sec name={t.name + "_type_sec"}>

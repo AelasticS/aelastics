@@ -4,6 +4,7 @@ import { Any } from "aelastics-types";
 import { IModelElement } from "generic-metamodel";
 import { Element } from "../jsx/element";
 import { abstractM2M } from "./abstractM2M";
+import { __isE2E } from "./trace-decorators";
 
 // https://stackoverflow.com/questions/55179461/reflection-in-javascript-how-to-intercept-an-object-for-function-enhancement-d
 
@@ -14,15 +15,38 @@ export interface ISpecOption {
   inputType: Any;
 }
 
-// method decorator
+/**
+ * Method decorator — marks a transformation rule as a specialization point.
+ *
+ * Required decorator ordering (when combined with @E2E):
+ *
+ *   @E2E()          ← outer (applied second) — handles tracing
+ *   @SpecPoint()    ← inner (applied first)  — handles specialization
+ *   Entity2Table(e: IEntity) { ... }
+ *
+ * @E2E must be outermost so it sees the final specialized result.
+ * Placing @SpecPoint above @E2E will throw an error at decoration time.
+ */
 export const SpecPoint = () => {
   return function (
     target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    // save original method
-    const original: (...a: any[]) => Element<any> = target[propertyKey];
+    // Detect incorrect ordering: if descriptor.value is already an @E2E wrapper,
+    // then @SpecPoint is being applied AFTER @E2E (SpecPoint is outer, E2E is inner).
+    // This is wrong because E2E would trace the abstract element before specialization.
+    if (descriptor.value && (descriptor.value as any)[__isE2E]) {
+      throw new Error(
+        `@SpecPoint() on "${propertyKey}" wraps an @E2E() decorator. ` +
+        `@E2E() must be the outer (upper) decorator so it traces the final specialized result.\n` +
+        `  Correct order:\n    @E2E()\n    @SpecPoint()\n    ${propertyKey}(...) { ... }`
+      );
+    }
+
+    // Read from descriptor.value (not target[propertyKey]) to preserve any inner decorator wrappers.
+    const original: (...a: any[]) => Element<any> = descriptor.value;
+
     descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
       const a: IModelElement = args[0];
       const aType = this.context.store.getTypeOf(a);
@@ -34,7 +58,7 @@ export const SpecPoint = () => {
       });
       
       if (!option) {
-        throw new Error(`No specilized method found`);
+        throw new Error(`No specialized method found`);
       }
 
       // TODO handle if orgResult and specResult are arrays
@@ -46,7 +70,7 @@ export const SpecPoint = () => {
       let specResult: Element<IModelElement> = (this as any)[option.specMethod](
         ...args
       );
-      // connect corresponding results(elemnets)
+      // connect corresponding results (elements)
       orgResult.subElement = specResult;
       orgResult.isAbstract = true;
       // return result from original method

@@ -108,7 +108,18 @@ const invokeVarOption = (self: any, varOption: IVarOption, args: any[]) => {
   return self[varOption.methodName](...args)
 }
 
-// method decorator
+/**
+ * Method decorator — marks a transformation rule as a variability point.
+ *
+ * Required decorator ordering (when combined with @E2E):
+ *
+ *   @E2E()                ← outer (applied second) — handles tracing
+ *   @VarPoint("issue")    ← inner (applied first)  — handles variability
+ *   method(e: IEntity) { ... }
+ *
+ * @E2E must be outermost so it sees the VarPoint's result and reads lastVarResolution.
+ * Placing @VarPoint above @E2E will throw an error at decoration time.
+ */
 export const VarPoint = (_issue: string) => {
   return function(
     target: any,
@@ -120,11 +131,12 @@ export const VarPoint = (_issue: string) => {
     registerVarPoint(target, propertyKey)
 
     // Throw error if @VarPoint wraps an @E2E method (incorrect decorator order).
-    // The correct order is @E2E @VarPoint (E2E outer, VarPoint inner).
+    // The correct order is @E2E outer (upper), @VarPoint inner (lower).
     if (descriptor.value && (descriptor.value as any)[__isE2E]) {
       throw new Error(
-        `@VarPoint("${_issue}") on "${propertyKey}" wraps an @E2E-decorated method. ` +
-        `Reverse the order: @E2E() must be the outer (upper) decorator and @VarPoint the inner (lower) one.`
+        `@VarPoint("${_issue}") on "${propertyKey}" wraps an @E2E() decorator. ` +
+        `@E2E() must be the outer (upper) decorator so it traces the VarPoint result.\n` +
+        `  Correct order:\n    @E2E()\n    @VarPoint("${_issue}")\n    ${propertyKey}(...) { ... }`
       )
     }
 
@@ -161,7 +173,7 @@ export const VarPoint = (_issue: string) => {
       } finally {
         currentContext.currentElementDecision[_privatePop]()
         // POP from stack and save to lastVarResolution
-        // E2E will read lastVarResolution after original.apply()
+        // E2E (outer) will read lastVarResolution after original.apply()
         const popped = currentContext.varResolutionStack[_privatePop]()
         if (popped) {
           currentContext.lastVarResolution = popped

@@ -40,8 +40,8 @@ export class Org2WorkflowTransformation extends abstractM2M<
     )
   }
 
-  @SpecPoint()
   @E2E()
+  @SpecPoint()
   OrgUnit2Approval(unit: ot.IOrgUnit): Element<wt.IStep> {
     return (
       <w.Task name={`ApproveBy${unit.name}`} />

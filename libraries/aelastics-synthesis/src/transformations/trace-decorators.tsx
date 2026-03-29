@@ -28,15 +28,24 @@ export const M2M = () => {
   }
 }
 
-// Sentinel used by @VarPoint to detect incorrect decorator ordering (@VarPoint wrapping @E2E).
+// Sentinel used by @SpecPoint/@VarPoint to detect incorrect ordering (they must not wrap @E2E).
 export const __isE2E = "__isE2E"
 
 // Sentinel set by @VarPoint on its wrapper function so that @E2E can detect at decoration time
 // whether the method itself is a VarPoint (both decorators present → VariabilityPoint trace).
 export const __isVarPoint = "__isVarPoint"
 
-// Method decorator — parameter-free
-// Infers fromType/toType from runtime objects, reads lastVarResolution after original.apply()
+/**
+ * Method decorator — adds end-to-end tracing to a transformation rule.
+ *
+ * @E2E must always be the outermost decorator so it sees the final result:
+ *
+ *   @E2E()                               ← outer: traces the final result
+ *   @SpecPoint() / @VarPoint("issue")    ← inner: specialization / variability
+ *   method(e: IEntity) { ... }
+ *
+ * Placing @SpecPoint or @VarPoint above @E2E will throw an error at decoration time.
+ */
 export const E2E = function() {
   return function <DM extends IConfigurationModel | never = never>(
     target: abstractM2M<IModel, IModel, any, DM, any>,
@@ -46,8 +55,7 @@ export const E2E = function() {
     const original = descriptor.value
 
     // Determine at decoration time whether this method is ALSO a @VarPoint.
-    // When decorators are correctly ordered (@E2E outer/upper, @VarPoint inner/lower),
-    // @VarPoint runs first and marks its wrapper with __isVarPoint.
+    // When @E2E is outer (wraps @VarPoint), @VarPoint runs first and marks its wrapper with __isVarPoint.
     // Only methods that are themselves VarPoints should be traced as "VariabilityPoint".
     // Methods that merely call VarPoints internally (e.g. Attribute2Column calling applyNaming)
     // are always "RegularRule".
@@ -89,7 +97,7 @@ export const E2E = function() {
 
         return result
       }
-      // Mark the wrapper so @VarPoint can detect incorrect ordering
+      // Mark the wrapper so @SpecPoint/@VarPoint can detect incorrect ordering
     ;(wrapped as any)[__isE2E] = true
     descriptor.value = wrapped
     return descriptor

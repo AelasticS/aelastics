@@ -402,9 +402,17 @@ export abstract class abstractM2M<
     const traceJSXEntries = this.context.rawTraceEntries.map((raw) => {
       const sourceElementNamespace = raw.sourceModelElement.path
 
-      const targetElements = raw.jsxElements.map((jsx) => (
-        <TargetElement $refByName={`${targetElementNamespace}/${jsx.props.name}`} />
-      ))
+      const targetElements = raw.jsxElements.map((jsx) => {
+        // For abstract elements (from @SpecPoint), the actual rendered element is the subElement.
+        // Use subElement's name since the abstract element itself is never created in the store.
+        let resolved = jsx
+        while (resolved.isAbstract && resolved.subElement) {
+          resolved = resolved.subElement
+        }
+        return (
+          <TargetElement $refByName={`${targetElementNamespace}/${resolved.props.name}`} />
+        )
+      })
 
       if (raw.ruleType === "VariabilityPoint") {
         return (

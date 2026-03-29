@@ -147,8 +147,8 @@ This approach enables explicit separation of design issues (abstract rules) and 
 For instance, the transformation from ER entities to relational tables is defined as:
 
 ```typescript
+@E2E()
 @SpecPoint()
-@E2E({input: et.Entity,  output: rt.Table})
 Entity2Table(e: et.IEntity): Element<rt.ITable> {
     return (
         <r.Table name={e.name}>
