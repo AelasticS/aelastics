@@ -15,7 +15,6 @@ import * as tmC from "./../decisions/8.trace-model/trace-model-meta.model-compon
 type Class<T = any> = new (...args: any[]) => T;
 
 // Class decorator — parameter-free
-// Creates M2M_Transformation in constructor (before render), infers from/to in transform()
 export const M2M = () => {
   return function <T extends Class<IM2M<any, any, any, any, any>>>(target: T): T {
     const transformationName = target.name
@@ -23,12 +22,6 @@ export const M2M = () => {
     const decorated = class extends target {
       constructor(...args: any[]) {
         super(...args)
-
-        // // Create M2M_Transformation type (meta level)
-        // const trType = this.context.store.newModel<IM2M_Transformation>(M2M_Transformation, {
-        //   name: transformationName,
-        // })
-        // this.context.transformation.type = trType
       }
     }
     return decorated as unknown as T
