@@ -3,78 +3,94 @@
 //  * Copyright (c) AelasticS 2022.
 //  */
 
-import { hm, Template } from "aelastics-synthesis";
-import * as t from "aelastics-types";
-import {
-  Process,
-  Sequence,
-  Task,
-  Document,
-  OutputDocument,
-  InputDocument,
-  Parallel,
-} from "./BPM.jsx-comps";
-import { IProcess, ISequence, ITask } from "./BPM.meta.model.type";
-import { dep1 } from "../Organization/example-department";
-import { IOrganization } from "../Organization/organization.model.type";
-import { ModelStore } from "aelastics-synthesis";
-import { Element } from "aelastics-synthesis";
+import { hm, Template } from "aelastics-synthesis"
+import * as t from "aelastics-types"
+import { Process, Sequence, Task, Document, OutputDocument, InputDocument, Parallel } from "./BPM.jsx-comps"
+import { IProcess, ISequence, ITask } from "./BPM.meta.model.type"
+import { dep1 } from "../Organization/example-department"
+import { IOrganization } from "../Organization/organization.model.type"
+import { ModelStore } from "aelastics-synthesis"
+import { Element } from "aelastics-synthesis"
+
+export const StaticApproval: IProcess = (
+  <Process name="Approval">
+    <Sequence>
+      <Task name="Write proposal" />
+      <Task name="Approve proposal" />
+    </Sequence>
+  </Process>
+)
 
 
-export const StaticApproval:IProcess =  
-      <Process name="Approval">
-        <Sequence>
-          <Task name="Write proposal" />
-          <Task name="Approve proposal" />
-        </Sequence>
-      </Process>
-  
-
-
-export type IApprovalConfiguration = {
-    processName: string,
-    howManyApprovers: number,
-    isParallel?:boolean
+export type IApprovalConfig = {
+  document: string
+  howManyApprovers: number
+  isParallel?: boolean
 }
 
-export const DynamicApproval = ({processName, howManyApprovers } :IApprovalConfiguration) => {
+export const DynamicApproval = ({ document, howManyApprovers }: IApprovalConfig) => {
   return (
-    <Process name={processName}>
+    <Process name={`Approve ${document}`}>
       <Sequence>
-        <Task name="write proposal" />
+        <Task name={`Write ${document}`} />
         <Parallel>
-        { // create parallel approval tasks
-          new Array(howManyApprovers).map((_, i) => <Task name={`approval ${i}`} />)
-        }
+          {
+            // create parallel approval tasks
+            new Array(howManyApprovers).map((_, i) => (
+              <Task name={`${document}Approval-${i}`} />
+            ))
+          }
         </Parallel>
       </Sequence>
     </Process>
-  );
-};
+  )
+}
 
-const myDynamicApproval:IProcess = <DynamicApproval processName="My Approval" howManyApprovers={3}/>
+const myDynamicApproval: IProcess = <DynamicApproval document="My Approval" howManyApprovers={3} />
 
-
-export const MoreDynamicApproval = ({processName, isParallel, howManyApprovers } :IApprovalConfiguration) => {
+export const MoreDynamicApproval = ({ document, isParallel, howManyApprovers }: IApprovalConfig) => {
   // create approval tasks
-  const tasks = new Array(howManyApprovers).map((_, i) => <Task name={`approval ${i}`}/>);
+  const tasks = new Array(howManyApprovers).map((_, i) => <Task name={`${document}Approval-${i}`} />)
   return (
-    <Process name={processName}>
+    <Process name={`Approve ${document}`}>
       <Sequence>
-        <Task name="write" />
-        {isParallel ? <Parallel> {tasks} </Parallel>
-                    : <Sequence> {tasks} </Sequence>
-         }
+        <Task name={`Write ${document}`} />
+        {isParallel ? <Parallel> {tasks} </Parallel> : <Sequence> {tasks} </Sequence>}
       </Sequence>
     </Process>
-  );
-};
+  )
+}
 
-const myModel:IProcess = <MoreDynamicApproval processName="Approval" isParallel={false} howManyApprovers={3}/>
+const myModel: IProcess = <MoreDynamicApproval document="Approval" isParallel={false} howManyApprovers={3} />
 
+export const GenericApproval = (WorkerTask: Template<ITask>) => (c: IApprovalConfig) => {
+  // create approval tasks
+  const tasks = new Array(c.howManyApprovers).map((_, i) => <Task name={`${c.document}Approval-${i}`} />)
+  return (
+    <Sequence>
+      <WorkerTask name={`Write ${c.document}`} />
+      {c.isParallel ? <Parallel> {tasks} </Parallel> : <Sequence> {tasks} </Sequence>}
+    </Sequence>
+  )
+}
 
+const WithTwoStepWrite: Template<ITask> = ({ name }) => (
+  <Sequence>
+    <Task name={`${name}-draft`} />
+    <Task name={`${name}-final`} />
+  </Sequence>
+)
 
-export const GenericApproval = (WorkerTask: Template<ITask>) => (c:IApprovalConfiguration) => {
+const GenericGroupWorkApproval = GenericApproval(WithTwoStepWrite)
+
+const myGroupWorkApproval = (
+  <GenericGroupWorkApproval document="myGroupWorkApproval" howManyApprovers={2} isParallel={true} />
+)
+
+/*
+    
+export const GenericApproval = (WorkerTaskFactory: (c:IApprovalConfiguration) => Template<ITask>) => (c:IApprovalConfiguration) => {
+    const WorkerTask = WorkerTaskFactory(c);
     // create approval tasks
     const tasks = new Array(c.howManyApprovers).map((_, i) => <Task name={`approval ${i}`} />);
     return (
@@ -87,9 +103,9 @@ export const GenericApproval = (WorkerTask: Template<ITask>) => (c:IApprovalConf
     );
   };
 
-const GroupWork = () => 
+const GroupWork = (c: IApprovalConfiguration): Template<ITask> => () =>
   <Sequence>
-    <Task name="T1"/>
+    <Task name={`${c.processName}-T1 (approvers: ${c.howManyApprovers})`} />
     <Parallel>
         <Task name="T2"/>
         <Task name="T3"/>
@@ -104,25 +120,29 @@ const myGroupWorkApproval = <GenericGroupWorkApproval
             isParallel={true}
     />
 
+    */
 
 type IOrgUnit = {
-    name:string,
-    boss:string
-    parent?:IOrgUnit
+  name: string
+  boss: string
+  parent?: IOrgUnit
 }
 
 const MyOrgApproval = (org: IOrgUnit) => {
-  return <DynamicApproval processName={org.name} howManyApprovers={countLevels(org)}/>
+  return <DynamicApproval document={org.name} howManyApprovers={countLevels(org)} />
 
-  function countLevels(o:IOrgUnit) {
+  function countLevels(o: IOrgUnit) {
     let i = 1
-    while (o.parent) { i++; o = o.parent}
-    return i
+    while (o.parent) {
+      i++
+      o = o.parent
     }
+    return i
+  }
 }
 
 describe("Dummy test", () => {
   it("works if true is truthy", () => {
-    expect(true).toBeTruthy();
-  });
-});
+    expect(true).toBeTruthy()
+  })
+})

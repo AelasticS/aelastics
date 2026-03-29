@@ -11,6 +11,9 @@ export const WorkflowModel: CpxTemplate<IModelProps, wf.IWorkflowModel> = (props
 export const Process: Template<wf.IProcess> = (props) => {
     return new Element(wf.Process, props, 'processes')
 }
+export const SubProcess: Template<wf.IProcess> = (props) => {
+    return new Element(wf.Process, props, 'steps')
+}
 
 export const Flow: Template<wf.ISequence> = (props) => {
     return new Element(wf.Sequence, props, 'flow')
