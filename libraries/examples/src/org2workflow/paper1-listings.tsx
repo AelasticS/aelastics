@@ -6,7 +6,7 @@
 import { hm, Template } from "aelastics-synthesis"
 import * as t from "aelastics-types"
 import { Process, Sequence, Task, Parallel, WorkflowModel, SubProcess } from "./workflow.jsx-comps"
-import { IProcess, ISequence, ITask, IWorkflowModel} from "./workflow.meta"
+import { IProcess, ISequence, ITask, IWorkflowModel } from "./workflow.meta"
 import { dep1 } from "../Organization/example-department"
 import { IOrganization } from "../Organization/organization.model.type"
 import { ModelStore } from "aelastics-synthesis"
@@ -16,72 +16,84 @@ const processName = "DocumentApproval"
 const approverCount = 2
 
 export const Approval =
-  <WorkflowModel name="SimpleApproval">
-    <Process name="Publishing">
-        <Sequence>
-            <Task name="Format" />
-            <Task name="Publish" />
-        </Sequence>
-    </Process>
-    <Process name={processName}>
-      <Sequence>
-        <Task name="Write proposal" />
-        <Parallel name="reviews">
-          {Array.from({length: approverCount}, (_, i) =>
-            <Task name={`Approve ${i + 1}`} />
-          )}
-        </Parallel>
-        < SubProcess $refByName="Publishing" />
-      </Sequence>
-    </Process>
-  </WorkflowModel>
+    <WorkflowModel name="SimpleApproval">
+        <Process name="Publishing">
+            <Sequence>
+                <Task name="Format" />
+                <Task name="Publish" />
+            </Sequence>
+        </Process>
+        <Process name={processName}>
+            <Sequence>
+                <Task name="Write proposal" />
+                <Parallel name="reviews">
+                    {Array.from({ length: approverCount }, (_, i) =>
+                        <Task name={`Approve ${i + 1}`} />
+                    )}
+                </Parallel>
+                < SubProcess $refByName="Publishing" />
+            </Sequence>
+        </Process>
+    </WorkflowModel>
 
 
 export type IApprovalConfig = {
-  document: string
-  approvers: number
-  mode?: "parallel" | "sequential"
+    document: string
+    approvers: number
+    mode?: "parallel" | "sequential"
 }
 
 
 export const ConfigurableApproval = ({ document, approvers, mode }: IApprovalConfig) => {
-  const tasks = new Array(approvers).map((_, i) => <Task name={`${document}Approval-${i}`} />)
-  return (<WorkflowModel name={`ApprovalWF-${document}`}>
-            <Process name={`Approve ${document}`}>
+    const tasks = new Array(approvers).map((_, i) => <Task name={`${document}Approval-${i}`} />)
+    return (<WorkflowModel name={`ApprovalWF-${document}`}>
+        <Process name={`Approve ${document}`}>
             <Sequence>
                 <Task name={`Write ${document}`} />
-                {mode === "parallel" 
-                    ? <Parallel> {tasks} </Parallel> 
+                {mode === "parallel"
+                    ? <Parallel> {tasks} </Parallel>
                     : <Sequence> {tasks} </Sequence>}
             </Sequence>
-            </Process>
-        </WorkflowModel>)
+        </Process>
+    </WorkflowModel>)
 }
 
 const ContractApproval = <ConfigurableApproval document="Contract" approvers={3} mode="parallel" />
 
-export const GenericApproval = (WorkerTask: Template<ITask>) => (c: IApprovalConfig) => {
-  const tasks = new Array(c.approvers).map((_, i) => <Task name={`${c.document}Approval-${i}`} />)
-  return (
+const store = new ModelStore()
+const contractApprovalModel = store.evaluate(ContractApproval)
+
+export const GenericApproval = (WorkerTask: Template<ITask>) =>
+    (c: IApprovalConfig) => {
+        const tasks = new Array(c.approvers)
+            .map((_, i) => <Task name={`${c.document}Approval-${i}`} />)
+        return (
+            <WorkflowModel name={`ApprovalWF-${c.document}`}>
+                <Process name={`Approve ${c.document}`}>
+                    <Sequence>
+                        <WorkerTask name={`Write ${c.document}`} />
+                        {c.mode === "parallel"
+                            ? <Parallel> {tasks} </Parallel>
+                            : <Sequence> {tasks} </Sequence>}
+                    </Sequence>
+                </Process>
+            </WorkflowModel>
+        )
+    }
+
+const TwoStepWrite: Template<ITask> = ({ name }) => (
     <Sequence>
-      <WorkerTask name={`Write ${c.document}`} />
-      {c.mode === "parallel" ? <Parallel> {tasks} </Parallel> : <Sequence> {tasks} </Sequence>}
+        <Task name={`${name}-draft`} />
+        <Task name={`${name}-final`} />
     </Sequence>
-  )
-}
-
-const WithTwoStepWrite: Template<ITask> = ({ name }) => (
-  <Sequence>
-    <Task name={`${name}-draft`} />
-    <Task name={`${name}-final`} />
-  </Sequence>
 )
 
-const GenericGroupWorkApproval = GenericApproval(WithTwoStepWrite)
+const TwoStepApproval = GenericApproval(TwoStepWrite)
 
-const myGroupWorkApproval = (
-  <GenericGroupWorkApproval document="myGroupWorkApproval" approvers={2} mode="parallel" />
+const contractTwoStep = (
+    <TwoStepApproval document="Contract" approvers={2} mode="parallel" />
 )
+const contractTwoStepModel = store.evaluate(contractTwoStep)
 
 /*
     

@@ -36,9 +36,8 @@ export const DynamicApproval = ({ document, howManyApprovers }: IApprovalConfig)
         <Parallel>
           {
             // create parallel approval tasks
-            new Array(howManyApprovers).map((_, i) => (
-              <Task name={`${document}Approval-${i}`} />
-            ))
+            new Array(howManyApprovers)
+              .map((_, i) => (<Task name={`${document}Approval-${i}`} />))
           }
         </Parallel>
       </Sequence>
