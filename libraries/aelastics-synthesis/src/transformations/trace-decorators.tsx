@@ -17,7 +17,7 @@ type Class<T = any> = new (...args: any[]) => T;
 // Class decorator — parameter-free
 // Creates M2M_Transformation in constructor (before render), infers from/to in transform()
 export const M2M = () => {
-  return function <T extends Class<IM2M<any, any, any, any>>>(target: T): T {
+  return function <T extends Class<IM2M<any, any, any, any, any>>>(target: T): T {
     const transformationName = target.name
 
     const decorated = class extends target {
@@ -46,7 +46,7 @@ export const __isVarPoint = "__isVarPoint"
 // Infers fromType/toType from runtime objects, reads lastVarResolution after original.apply()
 export const E2E = function() {
   return function <DM extends IConfigurationModel | never = never>(
-    target: abstractM2M<IModel, IModel, any, DM>,
+    target: abstractM2M<IModel, IModel, any, DM, any>,
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {

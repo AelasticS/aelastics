@@ -74,7 +74,8 @@ export class Stack<T> {
   }
 }
 
-export class M2MContext extends Context {
+export class M2MContext<P = undefined> extends Context {
+
   public input: IODescr = {}
   public output: IODescr = {}
   public transformation: TransformationDescr = {}
@@ -95,6 +96,10 @@ export class M2MContext extends Context {
 
   // Last VarResolution — set by VarPoint in finally, read and cleared by E2E
   public lastVarResolution?: IVarResolution
+
+  // param is used to keep additional information during transformation
+  // passed from transform() method of abstractM2M
+  public param?:P
 
   constructor() {
     super()
@@ -224,8 +229,9 @@ export interface IM2M<
   D extends IModel,
   EM extends { [key: string]: IModel } = {},
   CM extends IConfigurationModel = never,
+  P = undefined
 > {
-  context: M2MContext
+  context: M2MContext<P>
   extra?: EM
   configModel?: CM
 
@@ -239,9 +245,10 @@ export abstract class abstractM2M<
   D extends IModel,
   EM extends { [key: string]: IModel } = {},
   CM extends IConfigurationModel = never,
-> implements IM2M<S, D, EM, CM> {
+  P = undefined
+> implements IM2M<S, D, EM, CM, P> {
   // transformation type
-  public context: M2MContext = new M2MContext()
+  public context: M2MContext<P> = new M2MContext<P>()
   public configModel?: CM
   public extra?: EM
 
@@ -253,7 +260,8 @@ export abstract class abstractM2M<
 
   abstract template(props: S): Element<S, D>
 
-  public transform(source: S): D {
+  public transform(source: S, param?: P): D {
+    this.context.param = param
     const targetJSXTree = this.template(source)
     const targetModel = targetJSXTree.render<D>(this.context)
 
