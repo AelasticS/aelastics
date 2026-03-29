@@ -3,7 +3,7 @@ export enum PathType {
   ABS_NO_PROTOCOL,    // absolute path without protocol, starting with double slash (e.g. //aelastics.com/n1/n2)
   REL_NAME,           // relative path with names and '..' (e.g. "../../n2")
   REL_POINT,          // relative path starting with point  (e.g. "./n0/n1/n2")
-  REL_SLASH           // relative path startimg with single slash "/n1/n2"
+  REL_SLASH           // relative path starting with single slash "/n1/n2"
 }
 
 

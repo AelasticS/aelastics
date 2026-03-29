@@ -27,9 +27,9 @@ export const String = t.subtype(DataType, {
 }, "String", UMLSchema);
 
 export const Class = t.subtype(Classifier, {
-    subClasses:t.arrayOf(t.link(UMLSchema, "Class")),
-    superClass: t.arrayOf(t.link(UMLSchema, "Class")),
-    properties:t.arrayOf(Property),
+    subClasses:t.arrayOf(t.link(UMLSchema, "Class"), "ArrayOf_Class_subClasses", UMLSchema),
+    superClass: t.arrayOf(t.link(UMLSchema, "Class"), "ArrayOf_Class_superClass", UMLSchema),
+    properties:t.arrayOf(Property, "ArrayOf_Property", UMLSchema),
 }, "Class", UMLSchema);
 
 export const Association = t.subtype(ModelElement, {

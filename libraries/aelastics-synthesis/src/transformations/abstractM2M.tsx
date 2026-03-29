@@ -13,7 +13,7 @@ import { ModelStore } from "./../index"
 import { IConfigurationModel, IChoice } from "../decisions/3.configuration-model/configuration-meta.model"
 import * as tmT from "../decisions/8.trace-model/trace-meta.model"
 import * as tmC from "../decisions/8.trace-model/trace-model-meta.model-components"
-import { Element as CModelElement } from "../types-metamodel/models-component"
+import { Element as CModelElement, Model } from "../types-metamodel/models-component"
 import { TargetElement } from "../decisions/8.trace-model/trace-model-meta.model-components"
 
 type IODescr = { type?: t.Any; instance?: IModel; jsx?: string }
@@ -29,11 +29,22 @@ export interface IVarResolution {
 
 // Lightweight runtime record for resolve lookups (sourceIndex, jsxIndex).
 // The full trace info (source, ruleType, variabilityOption, choices, timestamps)
-// lives in traceJSXEntries and is rendered into a persistent TraceModel.
+// lives in rawTraceEntries and is rendered into a persistent TraceModel lazily.
 export interface TraceEntryRecord {
   rule: string // for lookup by ruleName
   targets: IModelElement[] // populated by resolveTargetForJSX during render
   _jsxElements: Element<IModelElement>[] // for resolveJSXElement / resolveAllJSXElements
+}
+
+// Raw data stored during template() execution; converted to trace JSX
+// in createTraceModel() when output.instance is available.
+export interface RawTraceEntryData {
+  sourceModelElement: IModelElement
+  jsxElements: Element<IModelElement>[]
+  ruleName: string
+  ruleType: "RegularRule" | "VariabilityPoint"
+  variabilityOption?: string
+  choices?: IChoice[]
 }
 
 export const _privatePop = Symbol("privatePop")
@@ -76,8 +87,8 @@ export class M2MContext extends Context {
   // Fast O(1) lookup by JSX element — private, used only by resolveTargetForJSX()
   private readonly jsxIndex: Map<Element<IModelElement>, TraceEntryRecord> = new Map()
 
-  // JSX elements for trace model creation (rendered later into a persistent trace model)
-  public readonly traceJSXEntries: Element<tmT.ITraceEntry>[] = []
+  // Raw trace data collected during template(); converted to JSX lazily in createTraceModel()
+  public readonly rawTraceEntries: RawTraceEntryData[] = []
 
   // Stack for nested VarPoint calls — VarPoint pushes/pops, E2E reads lastVarResolution
   public readonly varResolutionStack: Stack<IVarResolution> = new Stack<IVarResolution>()
@@ -101,40 +112,16 @@ export class M2MContext extends Context {
       throw new Error("VariabilityPoint trace entry requires variabilityOption and choices")
     }
 
-    let entryJSX
-
-    const sourceElementNamespace = sourceModelElement.path
-    const targetElementNamespace = this.output.instance ? `${this.output.instance.path}/${this.output.instance.name}` : ""
-
-    if (ruleType === "VariabilityPoint") {
-      entryJSX = (
-        <tmC.VarPointTraceEntry
-          source={<CModelElement $refByName={`${sourceElementNamespace}/${sourceModelElement.name}`} />}
-          rule={ruleName}
-          ruleType={"VariabilityPoint"}
-          variabilityOption={variabilityOption}
-          choices={choices}
-        >
-          {jsxElements.map((jsx) => (
-            <TargetElement $refByName={`${targetElementNamespace}/${jsx.props.name}`} />
-          ))}
-        </tmC.VarPointTraceEntry>
-      )
-    } else {
-      entryJSX = (
-        <tmC.TraceEntry
-          source={<CModelElement $refByName={`${sourceElementNamespace}/${sourceModelElement.name}`} />}
-          rule={ruleName}
-          ruleType={ruleType}
-        >
-          {jsxElements.map((jsx) => (
-            <TargetElement $refByName={`${targetElementNamespace}/${jsx.props.name}`} />
-          ))}
-        </tmC.TraceEntry>
-      )
-    }
-
-    this.traceJSXEntries.push(entryJSX)
+    // Store raw data — JSX entries will be created lazily in createTraceModel()
+    // when output.instance is available and targetElementNamespace can be resolved.
+    this.rawTraceEntries.push({
+      sourceModelElement,
+      jsxElements,
+      ruleName,
+      ruleType,
+      variabilityOption,
+      choices,
+    })
 
     const entry: TraceEntryRecord = {
       rule: ruleName,
@@ -287,9 +274,9 @@ export abstract class abstractM2M<
       // Type inference failed for cross-schema types — from/to remain unset
     }
 
-    const traceJSXTree = this.createTraceModel()
-    console.log("Generated Trace Model JSX:\n", this.renderToJsx(traceJSXTree))
-    const traceModel = traceJSXTree.render<tmT.ITraceModel>(this.context)
+    this.context.traceModel = this.createTraceModel()
+    console.log("Generated Trace Model JSX:\n", this.renderToJsx(this.context.traceModel))
+    const traceModel = this.context.traceModel.render<tmT.ITraceModel>(this.context)
 
     // Serialize the target model to JSX notation
     this.context.output.jsx = this.renderToJsx(targetJSXTree)
@@ -379,7 +366,7 @@ export abstract class abstractM2M<
         parts.push(`${key}={${value}}`)
       } else if (Array.isArray(value)) {
         const items = value.map((v) => {
-          if (v instanceof Element) return `<${v.name ?? v.type.name} />`
+          if (v instanceof Element) return this.renderToJsx(v, 0, indent).trim()
           if (typeof v === "string") return `"${v}"`
           if (typeof v === "object" && v !== null && "name" in v) return v.name
           return String(v)
@@ -399,13 +386,51 @@ export abstract class abstractM2M<
   }
 
   private createTraceModel(): Element<tmT.ITraceModel> {
-    //TODO check this props for trace model
+    // Now output.instance is available — build trace JSX entries from raw data
+    const targetElementNamespace = this.context.output.instance
+      ? `${this.context.output.instance.path}/${this.context.output.instance.name}`
+      : ""
+
+    const traceJSXEntries = this.context.rawTraceEntries.map((raw) => {
+      const sourceElementNamespace = raw.sourceModelElement.path
+
+      const targetElements = raw.jsxElements.map((jsx) => (
+        <TargetElement $refByName={`${targetElementNamespace}/${jsx.props.name}`} />
+      ))
+
+      if (raw.ruleType === "VariabilityPoint") {
+        return (
+          <tmC.VarPointTraceEntry
+            source={<CModelElement $refByName={`${sourceElementNamespace}/${raw.sourceModelElement.name}`} />}
+            rule={raw.ruleName}
+            ruleType={"VariabilityPoint"}
+            variabilityOption={raw.variabilityOption}
+            choices={raw.choices}
+            targets={targetElements}
+          />
+        )
+      } else {
+        return (
+          <tmC.TraceEntry
+            source={<CModelElement $refByName={`${sourceElementNamespace}/${raw.sourceModelElement.name}`} />}
+            rule={raw.ruleName}
+            ruleType={raw.ruleType}
+            targets={targetElements}
+          />
+        )
+      }
+    })
+
     return (
       <tmC.TraceModel
         name={`${this.context.input.instance?.name} to ${this.context.output.instance?.name}`}
         store={this.context.store}
+        timestamp={new Date().toISOString()}
+        source={<Model $refByName={`${this.context.input.instance!.path}/${this.context.input.instance!.name}`} />}
+        config={this.configModel ? <Model $refByName={`${this.configModel.path}/${this.configModel.name}`} /> : null}
+        targets={[<Model $refByName={`${this.context.output.instance!.path}/${this.context.output.instance!.name}`} />]}
       >
-        {this.context.traceJSXEntries}
+        {traceJSXEntries}
       </tmC.TraceModel>
     )
   }

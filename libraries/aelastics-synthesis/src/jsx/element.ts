@@ -157,7 +157,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       let ctxArray = ctx.namespaceStack.elements;
       //
       if (urlType === PathType.ABS_PROTOCOL) {
-        urlSegments.shift;
+        urlSegments.shift();
         return `/${urlSegments.join("/")}`;
       }
       if (urlType === PathType.ABS_NO_PROTOCOL) {
@@ -165,7 +165,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       }
       // remove slash or point
       if (urlType === PathType.REL_SLASH || urlType === PathType.REL_POINT) {
-        urlSegments.shift;
+        urlSegments.shift();
       }
       let ctxArrayIndex = ctxArray.length - 1;
       let urlSegmentIndex = 0;

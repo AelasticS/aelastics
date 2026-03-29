@@ -13,7 +13,6 @@ export const TraceEntry = t.subtype(
     source: ModelElement,
     targets: t.arrayOf(ModelElement),
     ruleType: t.string.derive().oneOf(["RegularRule", "VariabilityPoint"]),
-    model: t.link(TraceModel_TypeSchema, "TraceModel"),
   },
   "TraceEntry",
   TraceModel_TypeSchema,
@@ -47,8 +46,6 @@ export const TraceModel = t.subtype(
   "TraceModel",
   TraceModel_TypeSchema,
 )
-
-t.inverseProps(TraceEntry, 'model', TraceModel, 'traceEntries');
 
 export type ITraceModel = t.TypeOf<typeof TraceModel>;
 export type ITraceEntry = t.TypeOf<typeof TraceEntry>;
