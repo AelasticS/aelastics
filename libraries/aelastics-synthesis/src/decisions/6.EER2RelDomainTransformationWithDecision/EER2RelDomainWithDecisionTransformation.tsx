@@ -23,7 +23,7 @@ import * as cmT from "../3.configuration-model/configuration-meta.model"; // imp
 const testStore = new ModelStore();
 const ctx = new Context();
 
-@M2M({ input: et.EERSchema, output: rt.RelSchema })
+@M2M()
 class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema, {}, cmT.IConfigurationModel> {
   constructor(store: ModelStore, { }, decisionModel?: cmT.IConfigurationModel) {
     super(store, {}, decisionModel);

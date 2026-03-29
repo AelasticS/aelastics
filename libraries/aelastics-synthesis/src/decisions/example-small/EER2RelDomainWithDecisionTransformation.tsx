@@ -28,7 +28,7 @@ import * as cm from "./../3.configuration-model/configuration-meta.model"
 
 import { RelSchema, Table, Column } from "./../09-relational-schema/REL-components"
 
-@M2M({ input: EERSchema, output: rmT.RelSchema })
+@M2M()
 export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
   IEERSchema,
   rmT.IRelSchema,
@@ -41,7 +41,7 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
 
   template(s: IEERSchema) {
     return (
-      <RelSchema name={`${s.name}_Relational_Schema_with_Decision_Model`} content="" MDA_level="M1">
+      <RelSchema name={`${s.name}_Relational_Schema_with_Decision_Model`} content="" MDA_level="M1" store={this.context.store}>
         {s.elements
           .filter((el) => this.context.store.isTypeOf(el, Entity))
           .map((el) => this.Entity2Table(el as IEntity))}
@@ -53,23 +53,32 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
     )
   }
 
-  @E2E({
-    input: Entity,
-    output: rmT.Table,
-  })
+  @E2E()
   Entity2Table(e: IEntity): Element<rmT.ITable> {
     return <Table name={this.applyNaming(e.name)}>{e.attributes.map((a) => this.Attribute2Column(a))}</Table>
   }
 
-  @E2E({ input: Attribute, output: rmT.Column })
+  /*
+
+<TraceEntry
+      source={<ModelElement $refByName={a.name} />}
+      targets={[<ModelElement $refByName={a.name} />]}
+      rule={target.constructor.name}
+      ruleType={this.context.lastVarResolution?.ruleType || "RegularRule"}
+    />
+
+
+
+  */
+  @E2E()
   Attribute2Column(a: IAttribute): Element<rmT.IColumn> {
-    return <Column name={a.name} isKey={a.isKey} isAutoincrement={this.primaryKeyStrategy(a)}></Column>
+    return <Column name={this.applyNaming(a.name)} isKey={a.isKey} isAutoincrement={this.primaryKeyStrategy(a)}></Column>
   }
 
   // @E2E is outermost: wraps the VarPoint dispatcher, so tracing happens after VarPoint selects
   // and calls the matching VarOption method. @VarPoint must be inner (applied first) so it
   // registers its options bucket in the registry before @VarOption decorators run on later methods.
-  @E2E({ input: Relationship, output: rmT.Table })
+  @E2E()
   @VarPoint("OneToManyStrategy")
   RelationshipMapping(rel: IRelationship): Element<rmT.IColumn> | Element<rmT.ITable> {
     throw new Error("Not implemented VarOptions for VarPoint RelationshipMapping")
@@ -108,7 +117,7 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
           type={this.getColumnType(role1)}
           isForeignKey={true}
           references={role1.name}
-          isNullable={role1.lb !== "1"}
+          isNullable={role1.lb !== "1" && role1.ub !== "1"}
           isKey={role1.ub === "1"}
         />
         <Column

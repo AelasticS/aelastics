@@ -2,7 +2,7 @@
 
 import { hm } from "../../jsx/handle"
 import { ModelStore } from "../../index"
-import { TraceModel, TraceEntry } from "../8.trace-model/trace-model-meta.model-components"
+import { TraceModel, TraceEntry, VarPointTraceEntry } from "../8.trace-model/trace-model-meta.model-components"
 import { EERSchema as ERSchema, Attribute, Kernel as Entity, Relationship } from "../../test/eer-model/EER-components"
 import { RelSchema, Column, Table } from "../09-relational-schema/REL-components"
 import { ConfigurationModel, Choice } from "../3.configuration-model/configuration-meta.model-components"
@@ -60,7 +60,7 @@ export const traceModel = (store: ModelStore) => (
       ruleType="RegularRule"
     />
 
-    <TraceEntry
+    <VarPointTraceEntry
       source={<Relationship $refByName="//www.aelastics.org/CompanySchema/Employment" />}
       targets={[<Table $refByName="//www.aelastics.org/CompanyRelationalSchema/employment" />]}
       rule="RelationshipMapping"

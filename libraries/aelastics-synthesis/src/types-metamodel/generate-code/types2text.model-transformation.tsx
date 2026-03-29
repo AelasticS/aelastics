@@ -16,10 +16,7 @@ import { SpecPoint, SpecOption } from "./../../transformations/spec-decorators";
 import * as t from "aelastics-types"
 
 
-@M2M({
-  input: tmm.TypeModel,
-  output: m2tmm.M2T_Model,
-})
+@M2M()
 export class Types2TextModelTransformations extends abstractM2M<
   tmm.ITypeModel,
   m2tmm.M2T_Model
@@ -98,12 +95,7 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
-  @E2E(
-    {
-      input: tmm.TypeModel,
-      output: t.arrayOf(m2tmm.Paragraph),
-    }
-  )
+  @E2E()
   transformToModel(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> | null {
     return [
       <P parentSection={<Sec $refByName="typeDefinition"></Sec>}>
@@ -116,21 +108,16 @@ export class Types2TextModelTransformations extends abstractM2M<
     ];
   }
 
-  @E2E({
-    input: tmm.Type,
-    output: m2tmm.M2T_Item,
-  })
+  @E2E()
   transformType(
     t: tmm.IType
   ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
-    if (this.context.resolveJSXElement(t)) {
+    if (this.context.sourceIndex.has(t)) {
       return null;
     }
 
     if (this.context.store.isTypeOf(t, tmm.SimpleType)) {
       // TODO How to map simple types
-      this.context.makeTrace(t, { target: undefined, ruleName: 'transformType' });
-
       return null;
     }
 
@@ -157,10 +144,7 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @SpecPoint()
-  @E2E({
-    input: tmm.Object,
-    output: m2tmm.Section,
-  })
+  @E2E()
   transformObject(t: tmm.IObject): Element<m2tmm.ISection> {
     return (
       <Sec name={t.name + "_type_sec"}>
@@ -201,10 +185,7 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
-  @E2E({
-    input: tmm.Object,
-    output: m2tmm.M2T_Item,
-  })
+  @E2E()
   transformProperty(p: tmm.IProperty): Element<m2tmm.IParagraph> {
     const domainText: string = this.context.store.isTypeOf(
       p.domain,
@@ -228,7 +209,7 @@ export class Types2TextModelTransformations extends abstractM2M<
         // TODO Add transformUnion
         return ``;
       default:
-        if (!this.context.resolveJSXElement(t)) {
+        if (!this.context.sourceIndex.has(t)) {
           return `t.link(${t.parentModel.name}_Schema, '${t.name}')`;
         }
 

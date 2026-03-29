@@ -8,7 +8,7 @@ import * as t from "aelastics-types"
 import { ModelElement, Model } from "generic-metamodel"
 
 // tslint:disable-next-line:variable-name
-export const RelModel_TypeSchema = t.schema("EERModelSchema");
+export const RelModel_TypeSchema = t.schema("RelModel_TypeSchema");
 
 export const RelSchema = t.subtype(Model, {
 }, "RelSchema", RelModel_TypeSchema);
@@ -24,7 +24,7 @@ export const Column = t.subtype(ModelElement, {
   ownerTable: t.link(RelModel_TypeSchema, 'Table'),
   // isForeignKey: t.link(RelModel_TypeSchema, 'Column'),
   isForeignKey: t.boolean,
-  references: t.string,
+  references: t.optional(t.string),
   isNullable: t.boolean,
   isAutoincrement: t.boolean,
 }, "Column", RelModel_TypeSchema);

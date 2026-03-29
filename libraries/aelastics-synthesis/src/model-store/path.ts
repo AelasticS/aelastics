@@ -23,8 +23,9 @@ export function doParseURL(url:string): [type: PathType, segments: string[]] {
   if (segments[0].length === 1 && segments[0] === ".")
     return [PathType.REL_POINT, segments]
 
-  if (segments[0].length === 0 && segments[1]?.length >= 0)
-    return [PathType.REL_POINT, segments]
+  // single leading slash: "/n1/n2" → ["", "n1", "n2"]
+  if (segments[0].length === 0 && segments[1]?.length > 0)
+    return [PathType.REL_SLASH, segments]
 
   return [PathType.REL_NAME, segments]
 }

@@ -119,7 +119,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
             const modelElement = v.render(ctx, isImport);
 
             if (ctx instanceof M2MContext) {
-              (ctx as M2MContext).resolveMap.set(v, modelElement);
+              (ctx as M2MContext).resolveTargetForJSX(v, modelElement);
             }
 
             return modelElement;
@@ -131,7 +131,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         tmp = value.render(ctx, isImport);
 
         if (ctx instanceof M2MContext) {
-          (ctx as M2MContext).resolveMap.set(value, tmp);
+          (ctx as M2MContext).resolveTargetForJSX(value, tmp);
         }
       } else {
         tmp = value;
@@ -394,16 +394,13 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
         const m2mctx: M2MContext = ctx as M2MContext;
 
-        // find JSXElement from source ModelElemet
-        let targetJSXElement = m2mctx.resolveJSXElement(tempE.props.input as g.IModelElement, tempE.props.ruleName);
-
-        // find target ModelElement from resolveMap
-        const targetModelElement = m2mctx.resolveMap.get(targetJSXElement);
+        // find target ModelElement directly via sourceIndex — O(1)
+        const targetModelElement = m2mctx.resolveTarget(tempE.props.input as g.IModelElement, tempE.props.ruleName);
 
         // TODO Should this be an Error or Null? The target JSXElement does not exist because of an error during the transformation or because the transformation rule is N/A
         if (!targetModelElement) {
           throw new Error(
-            `Target model element for ${tempE.props.input} source model element does not exists!`
+            `Target model element for ${tempE.props.input} source model element does not exist!`
           );
         }
 
@@ -431,7 +428,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
         const childModelElement = childElement.render(ctx, isImport);
         if (ctx instanceof M2MContext) {
-          (ctx as M2MContext).resolveMap.set(childElement, childModelElement);
+          (ctx as M2MContext).resolveTargetForJSX(childElement, childModelElement);
         }
 
         if (childElement.connectionInfo) {

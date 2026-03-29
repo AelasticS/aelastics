@@ -1,6 +1,7 @@
 // https://luckylibora.medium.com/typescript-method-decorators-in-depth-problems-and-solutions-74387d51e6a
 
 import { abstractM2M, _privatePop, _privatePush } from "../transformations/abstractM2M"
+import { __isE2E, __isVarPoint } from "../transformations/trace-decorators"
 // import * as tcM from "../decisions/3.transformation-configuration/transformation-configuration-meta.model";  // import decision model types for decision model transformation
 import * as tcM from "./../decisions/3.configuration-model/configuration-meta.model"
 import { EvalCondition } from "./eval-operators"
@@ -107,17 +108,6 @@ const invokeVarOption = (self: any, varOption: IVarOption, args: any[]) => {
   return self[varOption.methodName](...args)
 }
 
-// @deprecated - Koristi IOption umesto ovoga
-// export interface IVarOption {
-//   varMethod: string;
-//   evalFun: (
-//     inputElem: Any,
-//     annotElem: any,
-//     transform: abstractM2M<any, any>,
-//   ) => boolean;
-//   default: boolean;
-// }
-
 // method decorator
 export const VarPoint = (_issue: string) => {
   return function(
@@ -128,6 +118,15 @@ export const VarPoint = (_issue: string) => {
     // Register the options bucket in the WeakMap registry keyed by (prototype, propertyKey).
     // This allows outer decorators (e.g. @E2E) to wrap this method without breaking registration.
     registerVarPoint(target, propertyKey)
+
+    // Throw error if @VarPoint wraps an @E2E method (incorrect decorator order).
+    // The correct order is @E2E @VarPoint (E2E outer, VarPoint inner).
+    if (descriptor.value && (descriptor.value as any)[__isE2E]) {
+      throw new Error(
+        `@VarPoint("${_issue}") on "${propertyKey}" wraps an @E2E-decorated method. ` +
+        `Reverse the order: @E2E() must be the outer (upper) decorator and @VarPoint the inner (lower) one.`
+      )
+    }
 
     descriptor.value = function(this: any, ...args: any[]) {
       const transformation = this as abstractM2M<any, any, any, tcM.IConfigurationModel>
@@ -152,11 +151,26 @@ export const VarPoint = (_issue: string) => {
           throw new Error(`No option condition evaluated to true and no default option provided`)
         }
 
+        // PUSH onto varResolutionStack BEFORE invocation
+        currentContext.varResolutionStack[_privatePush]({
+          optionName: chosenVarOption.methodName,
+          choices: configChoices,
+        })
+
         return invokeVarOption(this, chosenVarOption, args)
       } finally {
         currentContext.currentElementDecision[_privatePop]()
+        // POP from stack and save to lastVarResolution
+        // E2E will read lastVarResolution after original.apply()
+        const popped = currentContext.varResolutionStack[_privatePop]()
+        if (popped) {
+          currentContext.lastVarResolution = popped
+        }
       }
     }
+
+    // Mark the wrapper so @E2E can detect at decoration time that this method is a VarPoint
+    ;(descriptor.value as any)[__isVarPoint] = true
 
     return descriptor
   }

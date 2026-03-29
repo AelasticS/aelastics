@@ -65,10 +65,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
 
     @SpecPoint()
-    @E2E({
-        input: et.Entity,
-        output: rt.Table
-    })
+    @E2E()
     Entity2Table(e: et.IEntity): Element<rt.ITable> {
         return (
             <r.Table name={e.name}>

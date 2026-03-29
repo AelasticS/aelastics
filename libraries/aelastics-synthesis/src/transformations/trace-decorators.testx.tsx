@@ -42,10 +42,7 @@ const eerSchema1: Element<e.IEERSchema> = (
 const s1: e.IEERSchema = eerSchema1.render(ctx);
 // const k1 = eerSchema1.instance.elements[0]
 
-@M2M({
-  input: e.EERSchema,
-  output: r.RelSchema,
-})
+@M2M()
 class EER2RelTransformation extends abstractM2M<e.IEERSchema, r.IRelSchema> {
   constructor(store: ModelStore) {
     super(store);
@@ -61,19 +58,13 @@ class EER2RelTransformation extends abstractM2M<e.IEERSchema, r.IRelSchema> {
     );
   }
 
-  @E2E({
-    input: e.Entity,
-    output: r.Table,
-  })
+  @E2E()
   Entity2Table(e: e.IEntity): Element<r.ITable> {
     let f = (a: e.IAttribute) => this.Attribute2Column(a);
     return <Table name={`${e.name}`}>{e.attributes.map(f)}</Table>;
   }
 
-  @E2E({
-    input: e.Attribute,
-    output: r.Column,
-  })
+  @E2E()
   Attribute2Column(a: e.IAttribute): Element<r.IColumn> {
     return <Column name={a.name}></Column>;
   }

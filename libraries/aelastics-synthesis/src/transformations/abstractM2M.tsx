@@ -3,54 +3,63 @@
  * Copyright (c) AelasticS 2023.
  */
 
-import * as t from "aelastics-types";
-import { IModel, IModelElement } from "generic-metamodel";
-import { hm } from "../jsx/handle";
-import { Context } from "../jsx/context";
-import {
-  M2M_Transformation,
-  E2E_Transformation,
-  M2M_Trace,
-  E2E_Trace,
-} from "./transformation.model.components_v2";
-import * as tm from "./transformation.model.type";
-import { CpxTemplate, Element, Super, Template } from "../jsx/element";
-import { ModelStore } from "./../index";
-import { Model } from "generic-metamodel/src/models.type";
-import { IConfigurationModel, IChoice } from "./../decisions/3.configuration-model/configuration-meta.model";
+import * as t from "aelastics-types"
+import { IModel, IModelElement } from "generic-metamodel"
+import { hm } from "../jsx/handle"
+import { Context } from "../jsx/context"
+import * as tm from "./transformation.model.type"
+import { Element, ResolveElement } from "../jsx/element"
+import { ModelStore } from "./../index"
+import { IConfigurationModel, IChoice } from "../decisions/3.configuration-model/configuration-meta.model"
+import * as tmT from "../decisions/8.trace-model/trace-meta.model"
+import * as tmC from "../decisions/8.trace-model/trace-model-meta.model-components"
+import { Element as CModelElement } from "../types-metamodel/models-component"
+import { TargetElement } from "../decisions/8.trace-model/trace-model-meta.model-components"
 
-
-type IODescr = { type?: t.Any; instance?: IModel };
+type IODescr = { type?: t.Any; instance?: IModel; jsx?: string }
 type TransformationDescr = {
-  type?: tm.IM2M_Transformation;
-  instance?: tm.IM2M_Trace;
-};
-
-export interface ITraceRecord {
-  target: Element<IModelElement> | undefined;
-  ruleName: string;
+  type?: tm.IM2M_Transformation
+  instance?: tm.IM2M_Trace
 }
 
-export const _privatePop = Symbol('privatePop');
-export const _privatePush = Symbol('privatePush');
+export interface IVarResolution {
+  optionName: string
+  choices: IChoice[]
+}
+
+// Lightweight runtime record for resolve lookups (sourceIndex, jsxIndex).
+// The full trace info (source, ruleType, variabilityOption, choices, timestamps)
+// lives in traceJSXEntries and is rendered into a persistent TraceModel.
+export interface TraceEntryRecord {
+  rule: string // for lookup by ruleName
+  targets: IModelElement[] // populated by resolveTargetForJSX during render
+  _jsxElements: Element<IModelElement>[] // for resolveJSXElement / resolveAllJSXElements
+}
+
+export const _privatePop = Symbol("privatePop")
+export const _privatePush = Symbol("privatePush")
 
 export class Stack<T> {
-  private stack: Array<T> = [];
+  private stack: Array<T> = []
 
   private [_privatePop]: () => T | undefined = () => {
-    return this.stack.pop();
-  };
+    return this.stack.pop()
+  }
 
   private [_privatePush]: (element: T) => void = (element: T) => {
-    this.stack.push(element);
-  };
+    this.stack.push(element)
+  }
 
   public peek(): T | undefined {
-    return this.stack[this.stack.length - 1];
+    return this.stack[this.stack.length - 1]
   }
 
   public isEmpty(): boolean {
-    return this.stack.length === 0;
+    return this.stack.length === 0
+  }
+
+  public depth(): number {
+    return this.stack.length
   }
 }
 
@@ -59,171 +68,345 @@ export class M2MContext extends Context {
   public output: IODescr = {}
   public transformation: TransformationDescr = {}
   public currentElementDecision: Stack<IChoice[]> = new Stack<IChoice[]>()
+  public traceModel?: Element<tmT.ITraceModel>
 
-  public readonly traceMap: Map<IModelElement, Array<ITraceRecord>> = new Map();
+  // Fast O(1) lookup by source element
+  public readonly sourceIndex: Map<IModelElement, TraceEntryRecord[]> = new Map()
 
-  public readonly resolveMap: Map<Element<IModelElement>, IModelElement | undefined> = new Map();
+  // Fast O(1) lookup by JSX element — private, used only by resolveTargetForJSX()
+  private readonly jsxIndex: Map<Element<IModelElement>, TraceEntryRecord> = new Map()
+
+  // JSX elements for trace model creation (rendered later into a persistent trace model)
+  public readonly traceJSXEntries: Element<tmT.ITraceEntry>[] = []
+
+  // Stack for nested VarPoint calls — VarPoint pushes/pops, E2E reads lastVarResolution
+  public readonly varResolutionStack: Stack<IVarResolution> = new Stack<IVarResolution>()
+
+  // Last VarResolution — set by VarPoint in finally, read and cleared by E2E
+  public lastVarResolution?: IVarResolution
 
   constructor() {
-    super();
+    super()
   }
 
   public makeTrace(
     sourceModelElement: IModelElement,
-    targetJSXElement: ITraceRecord // can be undefined, when it only need to be logged method call, not and result
+    jsxElements: Element<IModelElement>[],
+    ruleName: string,
+    ruleType: "RegularRule" | "VariabilityPoint",
+    variabilityOption?: string,
+    choices?: IChoice[]
   ) {
+    if (ruleType === "VariabilityPoint" && (!variabilityOption || !choices)) {
+      throw new Error("VariabilityPoint trace entry requires variabilityOption and choices")
+    }
 
-    if (!this.traceMap.has(sourceModelElement)) {
-      this.traceMap.set(sourceModelElement, [targetJSXElement]);
+    let entryJSX
+
+    const sourceElementNamespace = sourceModelElement.path
+    const targetElementNamespace = this.output.instance ? `${this.output.instance.path}/${this.output.instance.name}` : ""
+
+    if (ruleType === "VariabilityPoint") {
+      entryJSX = (
+        <tmC.VarPointTraceEntry
+          source={<CModelElement $refByName={`${sourceElementNamespace}/${sourceModelElement.name}`} />}
+          rule={ruleName}
+          ruleType={"VariabilityPoint"}
+          variabilityOption={variabilityOption}
+          choices={choices}
+        >
+          {jsxElements.map((jsx) => (
+            <TargetElement $refByName={`${targetElementNamespace}/${jsx.props.name}`} />
+          ))}
+        </tmC.VarPointTraceEntry>
+      )
     } else {
-      const tmpArray = this.traceMap.get(sourceModelElement) as Array<ITraceRecord>;
-      tmpArray.push(targetJSXElement);
-      this.traceMap.set(sourceModelElement, tmpArray);
+      entryJSX = (
+        <tmC.TraceEntry
+          source={<CModelElement $refByName={`${sourceElementNamespace}/${sourceModelElement.name}`} />}
+          rule={ruleName}
+          ruleType={ruleType}
+        >
+          {jsxElements.map((jsx) => (
+            <TargetElement $refByName={`${targetElementNamespace}/${jsx.props.name}`} />
+          ))}
+        </tmC.TraceEntry>
+      )
     }
 
-    // this map will be updated during rendering of element
-    if (targetJSXElement.target) {
-      this.resolveMap.set(targetJSXElement.target, undefined);
+    this.traceJSXEntries.push(entryJSX)
+
+    const entry: TraceEntryRecord = {
+      rule: ruleName,
+      targets: [],
+      _jsxElements: jsxElements,
     }
+
+    // sourceIndex
+    const existing = this.sourceIndex.get(sourceModelElement)
+    if (existing) {
+      existing.push(entry)
+    } else {
+      this.sourceIndex.set(sourceModelElement, [entry])
+    }
+
+    // jsxIndex — register each JSX element from the array
+    for (const jsx of jsxElements) {
+      this.jsxIndex.set(jsx, entry)
+    }
+  }
+
+  public resolveTargetForJSX(jsxElement: Element<IModelElement>, modelElement: IModelElement): void {
+    const entry = this.jsxIndex.get(jsxElement)
+    if (entry) {
+      entry.targets.push(modelElement)
+    }
+  }
+
+  public resolveTarget(source: IModelElement, ruleName?: string, targetType?: t.Any): IModelElement | undefined {
+    const entries = this.sourceIndex.get(source)
+    if (!entries) return undefined
+
+    const entry = ruleName ? entries.find((e) => e.rule === ruleName) : entries[0]
+    if (!entry) return undefined
+
+    if (targetType) {
+      return entry.targets.find((target) => this.store.isTypeOf(target, targetType))
+    }
+
+    return entry.targets[0]
+  }
+
+  public resolveAllTargets(source: IModelElement, ruleName?: string, targetType?: t.Any): IModelElement[] {
+    const entries = this.sourceIndex.get(source)
+    if (!entries) return []
+
+    const entry = ruleName ? entries.find((e) => e.rule === ruleName) : entries[0]
+    if (!entry) return []
+
+    if (targetType) {
+      return entry.targets.filter((target) => this.store.isTypeOf(target, targetType))
+    }
+
+    return entry.targets
+  }
+
+  public resolveJSXElement(input: IModelElement, ruleName?: string, targetType?: t.Any): Element<IModelElement> {
+    const entries = this.sourceIndex.get(input)
+    if (!entries) throw new Error(`Target JSXElement for ${input} source model element does not exist!`)
+
+    const entry = ruleName ? entries.find((e) => e.rule === ruleName) : entries[0]
+
+    if (!entry || entry._jsxElements.length === 0) {
+      throw new Error(`Target JSXElement for ${input} source model element does not exist!`)
+    }
+
+    if (targetType) {
+      const idx = entry.targets.findIndex((target) => this.store.isTypeOf(target, targetType))
+      if (idx === -1) {
+        throw new Error(
+          `Target JSXElement of type ${targetType.name} for ${input} source model element does not exist!`
+        )
+      }
+      return entry._jsxElements[idx]
+    }
+
+    return entry._jsxElements[0]
+  }
+
+  public resolveAllJSXElements(input: IModelElement, ruleName?: string, targetType?: t.Any): Element<IModelElement>[] {
+    const entries = this.sourceIndex.get(input)
+    if (!entries) throw new Error(`Target JSXElements for ${input} source model element do not exist!`)
+
+    const entry = ruleName ? entries.find((e) => e.rule === ruleName) : entries[0]
+
+    if (!entry || entry._jsxElements.length === 0) {
+      throw new Error(`Target JSXElements for ${input} source model element do not exist!`)
+    }
+
+    if (targetType) {
+      return entry._jsxElements.filter((_, idx) => this.store.isTypeOf(entry.targets[idx], targetType))
+    }
+
+    return entry._jsxElements
+  }
+}
+
+export interface IM2M<
+  S extends IModel,
+  D extends IModel,
+  EM extends { [key: string]: IModel } = {},
+  CM extends IConfigurationModel = never,
+> {
+  context: M2MContext
+  extra?: EM
+  configModel?: CM
+
+  template(props: S): Element<S, D>
+
+  transform(source: S): D
+}
+
+export abstract class abstractM2M<
+  S extends IModel,
+  D extends IModel,
+  EM extends { [key: string]: IModel } = {},
+  CM extends IConfigurationModel = never,
+> implements IM2M<S, D, EM, CM> {
+  // transformation type
+  public context: M2MContext = new M2MContext()
+  public configModel?: CM
+  public extra?: EM
+
+  public constructor(store?: ModelStore, extra?: EM, configModel?: CM) {
+    if (store) this.context.pushStore(store)
+    this.extra = extra
+    this.configModel = configModel
+  }
+
+  abstract template(props: S): Element<S, D>
+
+  public transform(source: S): D {
+    const targetJSXTree = this.template(source)
+    const targetModel = targetJSXTree.render<D>(this.context)
+
+    this.context.input.instance = source
+    this.context.output.instance = targetModel
+
+    // Infer types from runtime objects — supplement M2M_Transformation.
+    // Wrapped in try/catch: cross-schema transformations may not have all types
+    // registered in the same schema context, so getTypeOf may fail for the output.
+    try {
+      this.context.input.type = this.context.store.getTypeOf(source)
+      this.context.output.type = this.context.store.getTypeOf(targetModel)
+      if (this.context.transformation.type) {
+        this.context.transformation.type.from = this.context.input.type!.name
+        this.context.transformation.type.to = this.context.output.type!.name
+      }
+    } catch (_e) {
+      // Type inference failed for cross-schema types — from/to remain unset
+    }
+
+    const traceJSXTree = this.createTraceModel()
+    console.log("Generated Trace Model JSX:\n", this.renderToJsx(traceJSXTree))
+    const traceModel = traceJSXTree.render<tmT.ITraceModel>(this.context)
+
+    // Serialize the target model to JSX notation
+    this.context.output.jsx = this.renderToJsx(targetJSXTree)
+    console.log("Generated JSX:\n", this.context.output.jsx)
+
+    return targetModel
   }
 
   /**
-   * 
-   * @param input IModelElement
-   * @param ruleName string
-   * @returns Element<IModelElement>
+   * Serializes an Element<> JSX tree into a human-readable JSX string.
+   * Traverses the element tree directly — no annotations needed.
    */
-  public resolveJSXElement(input: IModelElement, ruleName?: string): Element<IModelElement> {
-    // return this.traceMap.get(input);
+  private renderToJsx(element: Element<any>, level: number = 0, indent: number = 2): string {
+    if (!element) return ""
 
-    const traceRecords = this.traceMap.get(input);
+    const lines: string[] = []
+    const pad = " ".repeat(level * indent)
 
-    let targetJSXElement = undefined;
-
-    if (traceRecords) {
-      if (ruleName) {
-        targetJSXElement = traceRecords.find(e => e.ruleName == ruleName)?.target
-      } else {
-        targetJSXElement = traceRecords[0].target;
-      }
+    // Handle ResolveElement specially
+    if (element instanceof ResolveElement) {
+      const resolveProps = element.props as any
+      const inputName = resolveProps.input?.name ?? "unknown"
+      const ruleAttr = resolveProps.ruleName ? ` ruleName="${resolveProps.ruleName}"` : ""
+      lines.push(`${pad}<Resolve input={${inputName}}${ruleAttr}>`)
+      lines.push(`${pad}${" ".repeat(indent)}{(target) => ...}`)
+      lines.push(`${pad}</Resolve>`)
+      return lines.join("\n")
     }
 
-    // TODO Should this be an Error or Null? The target JSXElement does not exist because of an error during the transformation or because the transformation rule is N/A
-    if (!targetJSXElement) {
-      throw new Error(
-        `Target JSXElement for ${input} source model element does not exists!`
-      );
-    }
+    const tagName = element.name ?? element.type.name
 
-    return targetJSXElement;
+    // Build props string
+    const propsStr = this.formatJsxProps(element.props, level, indent)
 
-  }
-}
-
-export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends IConfigurationModel = never> {
-  context: M2MContext;
-  m2mTransformation?: tm.IM2M_Transformation;
-  template(props: S): Element<S, D>;
-  transform(source: S): D;
-}
-
-// TODO: this class and intereface should be extended with optional Decision Model. 
-
-// TODO DM extends Record<string, IModel> = Record<never, never>
-// TODO Map<string, IModel> = Map<never, never>
-export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, CM extends IConfigurationModel = never>
-  implements IM2M<S, D, EM> {
-  // transformation type
-  public m2mTransformation?: tm.IM2M_Transformation;
-  public context: M2MContext = new M2MContext();
-  public extra?: EM;
-  public configModel?: CM;
-
-  public constructor(store?: ModelStore, extra?: EM, decisionModel?: CM) {
-    if (store) this.context.pushStore(store);
-    this.extra = extra;
-    this.configModel = decisionModel;
-  }
-
-  abstract template(props: S): Element<S, D>;
-
-  // TODO: add arguments: globalConfig and localConfig
-  public transform(source: S): D {
-    const targetModel = this.template(source).render<D>(this.context);
-
-    this.context.input.instance = source;
-    this.context.output.instance = targetModel;
-
-    this.createTraceModel();
-
-    return targetModel;
-  }
-
-  private createTraceModel() {
-    const { store } = this.context;
-
-    // create instance of TraceModel
-    this.context.transformation.instance = store.newModel<tm.IM2M_Trace>(
-      tm.M2M_Trace,
-      {
-        name: `${this.context.input.instance?.name} to ${this.context.output.instance?.name}`,
-        from: this.context.input.instance?.name!,
-        to: this.context.output.instance?.name!,
-      }
-    );
-
-    this.context.transformation.instance.instanceOf =
-      this.context.transformation.type!;
-
-    // create instances of E2E trace
-    Array.from(this.context.traceMap.entries()).forEach(([k, v]) => {
-      if (v) {
-
-        v.forEach(jsxElement => {
-
-          const targetModelElement = this.context.resolveMap.get(jsxElement.target as Element<IModelElement>);
-
-          const ruleType = this.context.transformation.type?.elements.find(
-            (e) => e.name == jsxElement.ruleName
-          ) as tm.IE2E_Transformation;
-
-          if (targetModelElement) {
-            store.newModelElement<tm.IE2E_Trace>(
-              this.context.transformation.instance!,
-              this.context.transformation.instance!,
-              tm.E2E_Trace,
-              {
-                name: `${k.name} to ${targetModelElement?.name}`,
-                parentModel: this.context.transformation.instance,
-                from: [k.name],
-                to: [targetModelElement.name],
-                instanceOf: ruleType,
-              }
-            );
+    // Collect renderable children
+    const childLines: string[] = []
+    for (const child of element.children) {
+      if (child === null || child === undefined) continue
+      if (typeof child === "string") {
+        childLines.push(`${" ".repeat((level + 1) * indent)}${child}`)
+      } else if (Array.isArray(child)) {
+        for (const el of child) {
+          if (el && el instanceof Element) {
+            childLines.push(this.renderToJsx(el, level + 1, indent))
           }
-
-        });
+        }
+      } else if (typeof child === "function") {
+        childLines.push(`${" ".repeat((level + 1) * indent)}{() => ...}`)
+      } else if (child instanceof Element) {
+        childLines.push(this.renderToJsx(child, level + 1, indent))
       }
-    });
+    }
 
-    // return (
-    //   <M2M_Trace
-    //     name={`${this.context.input.instance?.name} to ${this.context.output.instance?.name}`}
-    //   >
-    //     {Array.from(this.context.traceMap.entries()).map(([k, v]) => {
-    //       if (v) {
-    //         const targetModelElement = this.context.resolveMap.get(v);
-    //         return targetModelElement ? (
-    //           <E2E_Transformation>
-    //             <E2E_Trace
-    //               from={[{ id: k.id }]}
-    //               to={[{ id: targetModelElement.id }]}
-    //             ></E2E_Trace>
-    //           </E2E_Transformation>
-    //         ) : null;
-    //       }
-    //     })}
-    //   </M2M_Trace>
-    // );
+    if (childLines.length === 0) {
+      lines.push(`${pad}<${tagName}${propsStr} />`)
+    } else {
+      lines.push(`${pad}<${tagName}${propsStr}>`)
+      lines.push(...childLines)
+      lines.push(`${pad}</${tagName}>`)
+    }
+
+    return lines.join("\n")
+  }
+
+  /**
+   * Formats element props as JSX attribute string.
+   * Skips internal infrastructure props (store) and handles
+   * refs, primitives, nested Element values and arrays.
+   */
+  private formatJsxProps(props: any, _level: number = 0, indent: number = 2): string {
+    if (!props) return ""
+
+    const skipKeys = new Set(["store", "children"])
+    const parts: string[] = []
+
+    for (const [key, value] of Object.entries(props)) {
+      if (skipKeys.has(key)) continue
+      if (value === undefined || value === null) continue
+
+      if (value instanceof Element) {
+        // Inline nested Element prop — render compactly
+        const inlineJsx = this.renderToJsx(value, 0, indent).trim()
+        parts.push(`${key}={${inlineJsx}}`)
+      } else if (typeof value === "string") {
+        parts.push(`${key}="${value}"`)
+      } else if (typeof value === "number" || typeof value === "boolean") {
+        parts.push(`${key}={${value}}`)
+      } else if (Array.isArray(value)) {
+        const items = value.map((v) => {
+          if (v instanceof Element) return `<${v.name ?? v.type.name} />`
+          if (typeof v === "string") return `"${v}"`
+          if (typeof v === "object" && v !== null && "name" in v) return v.name
+          return String(v)
+        })
+        parts.push(`${key}={[${items.join(", ")}]}`)
+      } else if (typeof value === "object") {
+        // Object references (e.g. $ref pointing to IModelElement)
+        if ("name" in value) {
+          parts.push(`${key}={${(value as any).name}}`)
+        } else {
+          parts.push(`${key}={...}`)
+        }
+      }
+    }
+
+    return parts.length > 0 ? " " + parts.join(" ") : ""
+  }
+
+  private createTraceModel(): Element<tmT.ITraceModel> {
+    //TODO check this props for trace model
+    return (
+      <tmC.TraceModel
+        name={`${this.context.input.instance?.name} to ${this.context.output.instance?.name}`}
+        store={this.context.store}
+      >
+        {this.context.traceJSXEntries}
+      </tmC.TraceModel>
+    )
   }
 }
