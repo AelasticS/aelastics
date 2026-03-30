@@ -72,7 +72,7 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
   */
   @E2E()
   Attribute2Column(a: IAttribute): Element<rmT.IColumn> {
-    return <Column name={this.applyNaming(a.name)} isKey={a.isKey} isAutoincrement={this.primaryKeyStrategy(a)}></Column>
+    return <Column name={this.applyNaming(a.name)} isKey={a.isKey} isAutoincrement={this.primaryKeyStrategy(a)} type={this.getColumnType(a.attrDomain)}></Column>
   }
 
   // @E2E is outermost: wraps the VarPoint dispatcher, so tracing happens after VarPoint selects
@@ -113,18 +113,18 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
     return (
       <Table name={this.applyNaming(rel.name)}>
         <Column
-          name={this.applyNaming(role1.domain.name + "Id")}
+          name={this.applyNaming(role1.domain.name + "Id_FK")}
           type={this.getColumnType(role1)}
           isForeignKey={true}
-          references={role1.name}
+          references={role1.domain.name}
           isNullable={role1.lb !== "1" && role1.ub !== "1"}
           isKey={role1.ub === "1"}
         />
         <Column
-          name={this.applyNaming(role2.domain.name + "Id")}
+          name={this.applyNaming(role2.domain.name + "Id_FK")}
           type={this.getColumnType(role2)}
           isForeignKey={true}
-          references={role2.name}
+          references={role2.domain.name}
           isNullable={role2.lb !== "1"}
           isKey={role2.ub === "1"}
         />
@@ -164,7 +164,10 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
 
   @VarOption("applyNaming", Option("SnakeCase"))
   applySnakeCaseNaming(name: string): string {
-    return name.replace(/_/g, "")
+    return name
+      .replace(/([a-z])([A-Z])/g, "$1_$2")
+      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2")
+      .toLowerCase()
   }
 
   // ######### END NamingConvention variations #############
