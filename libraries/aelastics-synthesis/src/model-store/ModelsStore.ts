@@ -175,6 +175,12 @@ export class ModelStore {
     }
   }
 
+  public evaluate<P extends IModelElement>(element: Element<P>): P {
+    const ctx = new Context()
+    ctx.pushStore(this)
+    return element.render<P>(ctx)
+  }
+
   public addElement() {
   }
 
