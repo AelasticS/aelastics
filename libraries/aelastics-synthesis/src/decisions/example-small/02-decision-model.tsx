@@ -35,10 +35,10 @@ export const RelationSchemaDesignIssues = (store: ModelStore): Element<t.IDecisi
       />
     </ElementIssue>
     <ModelIssue name="NamingConvention" description="How to name the database tables">
-      <Option name="CamelCase" description="Use camelCase for table names" isDefault={true}
+      <Option name="CamelCase" description="Use camelCase for table names" isDefault={false}
               optionType={<SimpleOption name="CamelCaseOption" />}
       />
-      <Option name="SnakeCase" description="Use snake_case for table names" isDefault={false}
+      <Option name="SnakeCase" description="Use snake_case for table names" isDefault={true}
               optionType={<SimpleOption name="SnakeCaseOption" />}
       />
     </ModelIssue>
