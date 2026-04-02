@@ -1,5 +1,5 @@
-/** @jsx hm */
-import { hm } from "./../../jsx/handle";
+/** @jsx createExprNode */
+import { createExprNode } from "./../../jsx/handle";
 import {
   M2T,
   Dir,
@@ -10,7 +10,7 @@ import {
 } from "./../../m2t/m2t-model/m2t.jsx";
 import * as m2tmm from "./../../m2t/m2t-model/m2t.meta.model";
 import * as tmm from "./../types-meta.model";
-import { ModelStore, Context, Element, E2E, M2M } from "./../../index";
+import { ModelStore, Context, ExprNode, E2E, M2M } from "./../../index";
 import { abstractM2M } from "./../../transformations/abstractM2M";
 import { SpecPoint, SpecOption } from "./../../transformations/spec-decorators";
 import * as t from "aelastics-types"
@@ -87,7 +87,7 @@ export class Types2TextModelTransformations extends abstractM2M<
     );
   }
 
-  initialImpors(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> {
+  initialImpors(m: tmm.ITypeModel): Array<ExprNode<m2tmm.IParagraph>> {
     return [
       <P parentSection={<Sec $refByName="imports"></Sec>}>
         import * as t from "aelastics-types";
@@ -104,7 +104,7 @@ export class Types2TextModelTransformations extends abstractM2M<
       output: t.arrayOf(m2tmm.Paragraph),
     }
   )
-  transformToModel(m: tmm.ITypeModel): Array<Element<m2tmm.IParagraph>> | null {
+  transformToModel(m: tmm.ITypeModel): Array<ExprNode<m2tmm.IParagraph>> | null {
     return [
       <P parentSection={<Sec $refByName="typeDefinition"></Sec>}>
         {`export const ${m.name}_Schema = t.schema("${m.name}_Schema");`}
@@ -122,7 +122,7 @@ export class Types2TextModelTransformations extends abstractM2M<
   })
   transformType(
     t: tmm.IType
-  ): [Element<m2tmm.ISection>, Element<m2tmm.IParagraph>] | null {
+  ): [ExprNode<m2tmm.ISection>, ExprNode<m2tmm.IParagraph>] | null {
     if (this.context.resolveJSXElement(t)) {
       return null;
     }
@@ -136,8 +136,8 @@ export class Types2TextModelTransformations extends abstractM2M<
 
     const typeOfElement = this.context.store.getTypeOf(t);
 
-    let typeDefinitionSection: Element<m2tmm.ISection> | null =
-      {} as Element<m2tmm.ISection>;
+    let typeDefinitionSection: ExprNode<m2tmm.ISection> | null =
+      {} as ExprNode<m2tmm.ISection>;
     switch (typeOfElement.name) {
       case tmm.Object.name:
       case tmm.Subtype.name:
@@ -161,7 +161,7 @@ export class Types2TextModelTransformations extends abstractM2M<
     input: tmm.Object,
     output: m2tmm.Section,
   })
-  transformObject(t: tmm.IObject): Element<m2tmm.ISection> {
+  transformObject(t: tmm.IObject): ExprNode<m2tmm.ISection> {
     return (
       <Sec name={t.name + "_type_sec"}>
         <SecParent $refByName="typeDefinition"></SecParent>
@@ -180,7 +180,7 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @SpecOption("transformObject", tmm.Object)
-  public transformObj(t: tmm.IObject): Element<m2tmm.ISection> {
+  public transformObj(t: tmm.IObject): ExprNode<m2tmm.ISection> {
     return (
       <Sec>
         <Sec $refByName={t.name + "_type_export_sec"}>
@@ -191,7 +191,7 @@ export class Types2TextModelTransformations extends abstractM2M<
   }
 
   @SpecOption("transformObject", tmm.Subtype)
-  transformSubtype(t: tmm.ISubtype): Element<m2tmm.ISection> {
+  transformSubtype(t: tmm.ISubtype): ExprNode<m2tmm.ISection> {
     return (
       <Sec name={t.name + "_type_sec"}>
         <Sec $refByName={t.name + "_type_export_sec"}>
@@ -205,7 +205,7 @@ export class Types2TextModelTransformations extends abstractM2M<
     input: tmm.Object,
     output: m2tmm.M2T_Item,
   })
-  transformProperty(p: tmm.IProperty): Element<m2tmm.IParagraph> {
+  transformProperty(p: tmm.IProperty): ExprNode<m2tmm.IParagraph> {
     const domainText: string = this.context.store.isTypeOf(
       p.domain,
       tmm.SimpleType

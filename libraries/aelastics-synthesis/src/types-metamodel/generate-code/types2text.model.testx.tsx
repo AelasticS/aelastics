@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { Element, ElementInstance } from "../../jsx/element";
-import { hm } from "../../jsx/handle";
+import { ExprNode, ElementInstance } from "../../jsx/element";
+import { createExprNode } from "../../jsx/handle";
 import * as t from "../types-meta.model";
 import {
   TypeObject,
@@ -39,7 +39,7 @@ describe("test types2text transormations", () => {
     const ctx = new Context();
     ctx.pushStore(store);
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel1" store={store}></TypeModel>
     );
 
@@ -57,7 +57,7 @@ describe("test types2text transormations", () => {
     const ctx = new Context();
     ctx.pushStore(store);
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel" store={store}>
         <TypeSubtype name="Worker">
           <TypeSupertype $refByName="Worker"></TypeSupertype>
@@ -78,7 +78,7 @@ describe("test types2text transormations", () => {
     const ctx = new Context();
     ctx.pushStore(store);
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel2" store={store}>
         <TypeObject name="StringObject"></TypeObject>
         <TypeObject name="Person2">
@@ -108,7 +108,7 @@ describe("test types2text transormations", () => {
     const ctx = new Context();
     ctx.pushStore(store);
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel" store={store}>
         <TypeSubtype name="Worker"></TypeSubtype>
         <TypeObject name="Person">
@@ -137,7 +137,7 @@ describe("test types2text transormations", () => {
     const ctx = new Context();
     ctx.pushStore(store);
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel" store={store}>
         {importPredefinedTypes("../FirstTypeModel")}
         <TypeSubtype name="Worker3">
@@ -186,7 +186,7 @@ describe("test types2text transormations", () => {
     const ctx = new Context();
     ctx.pushStore(store);
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel" store={store}>
         {importPredefinedTypes("../FirstTypeModel")}
         <TypeSubtype name="Worker">
@@ -242,7 +242,7 @@ describe("test types2text transormations", () => {
     const ctx = new Context();
     ctx.pushStore(store);
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel" store={store}>
         <TypeSubtype name="Worker"></TypeSubtype>
         <TypeObject name="Person">
@@ -280,7 +280,7 @@ describe("test types2text transormations", () => {
     const ctx = new Context();
     ctx.pushStore(store);
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="FirstTypeModel" store={store}>
         <TypeObject name="Company"></TypeObject>
         <TypeSubtype name="Worker"></TypeSubtype>

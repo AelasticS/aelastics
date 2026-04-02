@@ -1,10 +1,10 @@
-/** @jsx hm */
-import { Element, ModelStore, Template, hm } from "aelastics-synthesis";
+/** @jsx createExprNode */
+import { ExprNode, ModelStore, Template, createExprNode } from "aelastics-synthesis";
 import * as uml from "./uml.jsx-comp";
 import * as umlT from "./uml.meta.model.type";
 import { IModelElement } from "generic-metamodel";
 
-export type ConceptOrRef = string | Element<IModelElement>
+export type ConceptOrRef = string | ExprNode<IModelElement>
 
 export interface IObserverParams {
   observer: string,
@@ -27,7 +27,7 @@ export const Observer = (p:IObserverParams) =>  (
     }
     // ...
 
-  </uml.Class> as Element<umlT.IClass>
+  </uml.Class> as ExprNode<umlT.IClass>
 );
 
 export interface ICommandParams {
@@ -44,7 +44,7 @@ export const Command = (p:ICommandParams) =>  (
       type={<uml.Class $refByName={p.subject} />}
       multiplicity="0..*"
     />
-  </uml.Class> as Element<umlT.IClass>
+  </uml.Class> as ExprNode<umlT.IClass>
 );
 
 export interface IAbstractFactoryParams {
@@ -61,7 +61,7 @@ export const AbstractFactory = (p:IAbstractFactoryParams) =>  (
       type={<uml.Class $refByName={p.subject} />}
       multiplicity="0..*"
     />
-  </uml.Class> as Element<umlT.IClass>
+  </uml.Class> as ExprNode<umlT.IClass>
 );
 
 export interface ISingletonParams {
@@ -75,7 +75,7 @@ export const Singleton = (p:ISingletonParams) =>  (
       type={<uml.Class $refByName={p.name} />}
       multiplicity="0..*"
     />
-  </uml.Class> as Element<umlT.IClass>
+  </uml.Class> as ExprNode<umlT.IClass>
 );
 
 

@@ -1,5 +1,5 @@
-/** @jsx hm */
-import { hm } from "aelastics-synthesis";
+/** @jsx createExprNode */
+import { createExprNode } from "aelastics-synthesis";
 import * as bpm from "./BPM.jsx-comps";
 
 const approvalModel = () => (

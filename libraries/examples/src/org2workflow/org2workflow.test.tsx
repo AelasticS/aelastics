@@ -1,5 +1,5 @@
-/** @jsx hm */
-import { hm } from 'aelastics-synthesis'
+/** @jsx createExprNode */
+import { createExprNode } from 'aelastics-synthesis'
 import { Context } from 'aelastics-synthesis'
 import { ModelStore } from 'aelastics-synthesis'
 import * as ot from './org-model.meta'

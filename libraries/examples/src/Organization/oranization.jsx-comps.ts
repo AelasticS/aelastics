@@ -1,5 +1,5 @@
 import * as org from './organization.model.type'
-import { Element, ValueTemplate, WithRefProps } from 'aelastics-synthesis'
+import { ExprNode, ValueTemplate, WithRefProps } from 'aelastics-synthesis'
 import { ModelStore } from 'aelastics-synthesis'
 
 export type IOrgModelProps = WithRefProps<org.IOrganization> & { store?: ModelStore }
@@ -17,7 +17,7 @@ export type IOrgModelProps = WithRefProps<org.IOrganization> & { store?: ModelSt
 // }
 
 export const Child: ValueTemplate<org.IChild> = (props) => {
-    return new Element(org.Child, props, 'children')
+    return new ExprNode(org.Child, props, 'children')
 }
 
 

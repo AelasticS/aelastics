@@ -1,25 +1,25 @@
-/** @jsx hm */
-import { hm } from './../../index';
+/** @jsx createExprNode */
+import { createExprNode } from './../../index';
 import { M2T, M2T_Model, IParagraph, ISection } from "../index";
 import { Dir, Doc, P, Sec } from "../index";
 import { IDirectory, IDocument } from "../index";
-import { ModelStore, Context, Element } from './../../index';
+import { ModelStore, Context, ExprNode } from './../../index';
 
 const testStore = new ModelStore();
 
-let testDoc1Element: Element<IDocument> = (
+let testDoc1Element: ExprNode<IDocument> = (
     <Doc name="TestDoc1.txt">
         <P>{"some text"}</P>
     </Doc>
 );
 
-let testDoc2Element: Element<IDocument> = (
+let testDoc2Element: ExprNode<IDocument> = (
     <Doc name="TestDoc2.txt">
         <P>{`some text for Math.log2(8)=${Math.log2(8)}`}</P>
     </Doc>
 );
 
-let dir1Element: Element<IDirectory> = (
+let dir1Element: ExprNode<IDirectory> = (
     <Dir name="directory1">
         {testDoc1Element}
         <Dir name="subDir1">
@@ -28,13 +28,13 @@ let dir1Element: Element<IDirectory> = (
     </Dir>
 );
 
-let testModel1_Element: Element<M2T_Model> = (
+let testModel1_Element: ExprNode<M2T_Model> = (
     <M2T name="test model1" store={testStore}>
         {testDoc1Element}
     </M2T>
 );
 
-let testModel2_Element: Element<M2T_Model> = (
+let testModel2_Element: ExprNode<M2T_Model> = (
     <M2T name="test model2" store={testStore}>
         {testDoc2Element}
     </M2T>
@@ -56,7 +56,7 @@ let Doc1TopDir = <Doc name="Doc1">
     <P>Conclusions</P>
 </Doc>
 
-let testModel3_Element: Element<M2T_Model> = (
+let testModel3_Element: ExprNode<M2T_Model> = (
     <M2T name="test model3" store={testStore}>
         <Dir name="TopDir">
             {Doc1TopDir}

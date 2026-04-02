@@ -1,4 +1,4 @@
-// /** @jsx hm */
+// /** @jsx createExprNode */
 //
 // import { Context } from "../../jsx/context"
 // import { ModelStore } from "../../index"

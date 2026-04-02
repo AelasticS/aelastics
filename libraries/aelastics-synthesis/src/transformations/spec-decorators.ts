@@ -2,7 +2,7 @@
 
 import { Any } from "aelastics-types";
 import { IModelElement } from "generic-metamodel";
-import { Element } from "../jsx/element";
+import { ExprNode } from "../jsx/element";
 import { abstractM2M } from "./abstractM2M";
 
 // https://stackoverflow.com/questions/55179461/reflection-in-javascript-how-to-intercept-an-object-for-function-enhancement-d
@@ -22,7 +22,7 @@ export const SpecPoint = () => {
     descriptor: PropertyDescriptor
   ) {
     // save original method
-    const original: (...a: any[]) => Element<any> = target[propertyKey];
+    const original: (...a: any[]) => ExprNode<any> = target[propertyKey];
     descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
       const a: IModelElement = args[0];
       const aType = this.context.store.getTypeOf(a);
@@ -43,7 +43,7 @@ export const SpecPoint = () => {
       // get result form original method
       let orgResult = original.apply(this, args);
       // get result from specialized method
-      let specResult: Element<IModelElement> = (this as any)[option.specMethod](
+      let specResult: ExprNode<IModelElement> = (this as any)[option.specMethod](
         ...args
       );
       // connect corresponding results(elemnets)

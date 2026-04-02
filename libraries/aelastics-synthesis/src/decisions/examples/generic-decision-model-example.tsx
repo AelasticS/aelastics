@@ -1,8 +1,8 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
 
-import { hm } from "../../jsx/handle"
-import { Element } from "../../jsx/element"
+import { createExprNode } from "../../jsx/handle"
+import { ExprNode } from "../../jsx/element"
 import * as gdmT from "../1.decision-model/decision-meta.model"
 import {
   CompositeOption,
@@ -25,7 +25,7 @@ import { TypeString } from "../../types-metamodel/predefined-types"
 const testStore = new ModelStore()
 const context = new Context()
 
-export const NamingConventionGDM: Element<gdmT.IDecisionModel> = (
+export const NamingConventionGDM: ExprNode<gdmT.IDecisionModel> = (
   <DecisionModel
     name="Naming convention-gdm"
     description="This is a generic decision model for naming convention"
@@ -70,7 +70,7 @@ export const NamingConventionGDM: Element<gdmT.IDecisionModel> = (
 
   </DecisionModel>)
 
-export const PerformanceOptimizationGMD: Element<gdmT.IDecisionModel> = (
+export const PerformanceOptimizationGMD: ExprNode<gdmT.IDecisionModel> = (
   <DecisionModel
     name="Performance optimization - gdm"
     description="This is a generic decision model for performance optimization"

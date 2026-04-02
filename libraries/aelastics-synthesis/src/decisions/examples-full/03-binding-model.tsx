@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
-import { Element } from "../../jsx/element"
+import { createExprNode } from "../../jsx/handle"
+import { ExprNode } from "../../jsx/element"
 import { ModelStore } from "../../index"
 
 import * as dbmC from "../2.binding-model/binding-meta.model-components"

@@ -1,11 +1,11 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2023.
  */
 
 import * as t from "aelastics-types";
 import { IModel, IModelElement } from "generic-metamodel";
-import { hm } from "../jsx/handle";
+import { createExprNode } from "../jsx/handle";
 import { Context } from "../jsx/context";
 import {
   M2M_Transformation,
@@ -14,7 +14,7 @@ import {
   E2E_Trace,
 } from "./transformation.model.components_v2";
 import * as tm from "./transformation.model.type";
-import { CpxTemplate, Element, Super, Template } from "../jsx/element";
+import { CpxTemplate, ExprNode, Super, Template } from "../jsx/element";
 import { ModelStore } from "./../index";
 import { Model } from "generic-metamodel/src/models.type";
 import { IConfigurationModel, IChoice } from "./../decisions/3.configuration-model/configuration-meta.model";
@@ -27,7 +27,7 @@ type TransformationDescr = {
 };
 
 export interface ITraceRecord {
-  target: Element<IModelElement> | undefined;
+  target: ExprNode<IModelElement> | undefined;
   ruleName: string;
 }
 
@@ -63,7 +63,7 @@ export class M2MContext<P = undefined> extends Context {
 
   public readonly traceMap: Map<IModelElement, Array<ITraceRecord>> = new Map();
 
-  public readonly resolveMap: Map<Element<IModelElement>, IModelElement | undefined> = new Map();
+  public readonly resolveMap: Map<ExprNode<IModelElement>, IModelElement | undefined> = new Map();
 
   // param is used to keep additional information during transformation
   // passed from transform() method of abstractM2M
@@ -98,7 +98,7 @@ export class M2MContext<P = undefined> extends Context {
    * @param ruleName string
    * @returns Element<IModelElement>
    */
-  public resolveJSXElement(input: IModelElement, ruleName?: string): Element<IModelElement> {
+  public resolveJSXElement(input: IModelElement, ruleName?: string): ExprNode<IModelElement> {
     // return this.traceMap.get(input);
 
     const traceRecords = this.traceMap.get(input);
@@ -128,7 +128,7 @@ export class M2MContext<P = undefined> extends Context {
 export interface IM2M<S extends IModel, D extends IModel, EM extends { [key: string]: IModel } = {}, DM extends IConfigurationModel = never, P = undefined> {
   context: M2MContext<P>;
   m2mTransformation?: tm.IM2M_Transformation;
-  template(props: S): Element<S, D>;
+  template(props: S): ExprNode<S, D>;
   transform(source: S): D;
 }
 
@@ -150,7 +150,7 @@ export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends
     this.configModel = decisionModel;
   }
 
-  abstract template(props: S): Element<S, D>;
+  abstract template(props: S): ExprNode<S, D>;
 
   public transform(source: S, param?: P): D {
     this.context.param = param;
@@ -186,7 +186,7 @@ export abstract class abstractM2M<S extends IModel, D extends IModel, EM extends
 
         v.forEach(jsxElement => {
 
-          const targetModelElement = this.context.resolveMap.get(jsxElement.target as Element<IModelElement>);
+          const targetModelElement = this.context.resolveMap.get(jsxElement.target as ExprNode<IModelElement>);
 
           const ruleType = this.context.transformation.type?.elements.find(
             (e) => e.name == jsxElement.ruleName

@@ -1,16 +1,16 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
-import {  hm } from 'aelastics-synthesis'
+import {  createExprNode } from 'aelastics-synthesis'
 import { SpecPoint, SpecOption} from "aelastics-synthesis"
 import * as et from '../eer-model/EER.meta.model.type'
 import * as rt from '../relational-model/REL.meta.model.type'
 import * as e from '../eer-model/EER.jsx-comps'
 import * as r from '../relational-model/REL.jsx-comps'
 import { abstractM2M, M2M, E2E } from 'aelastics-synthesis';
-import { Element } from 'aelastics-synthesis'
+import { ExprNode } from 'aelastics-synthesis'
 import { Context } from 'aelastics-synthesis'
 import { ModelStore } from 'aelastics-synthesis'
 
@@ -33,7 +33,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
     @SpecPoint()
     @E2E({input: et.Entity,  output: rt.Table})
-    Entity2Table(e: et.IEntity): Element<rt.ITable> {
+    Entity2Table(e: et.IEntity): ExprNode<rt.ITable> {
         return (
             <r.Table name={e.name}>
                 {e.attributes.map((a) => this.Attribute2Column(a))}
@@ -42,7 +42,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     }
 
     @SpecOption('Entity2Table', et.Kernel)
-    Kernel2Table(k: et.IKernel): Element<rt.ITable> { // inherit table name and column from super rule
+    Kernel2Table(k: et.IKernel): ExprNode<rt.ITable> { // inherit table name and column from super rule
         return (
             <r.Table>  
                 <r.Column name = {`${k.name}ID_PK`}/>
@@ -50,7 +50,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
         );
     }
     @SpecOption('Entity2Table', et.Weak)
-    Week2Table(w: et.IWeak): Element<rt.ITable> { // override table name from super rule
+    Week2Table(w: et.IWeak): ExprNode<rt.ITable> { // override table name from super rule
         return (
             <r.Table name={`Weak_${w.name}`}> 
                 <r.Column name = {`${w.name}ID_PK`}/>
@@ -63,7 +63,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
         input: et.Attribute,
         output: rt.Column
     })
-    Attribute2Column(a: et.IAttribute): Element<rt.IColumn> {
+    Attribute2Column(a: et.IAttribute): ExprNode<rt.IColumn> {
         return (
             <r.Column name={a.name}/>
         );
@@ -79,7 +79,7 @@ describe("Test model transformations", () => {
     it("tests specialization of Entity2Table rule", () => {
         const testStore = new ModelStore()
 
-const eerSchema1:Element<et.IEERSchema> = <e.EERSchema id='1' name='Persons' MDA_level='M1' store={testStore}>
+const eerSchema1:ExprNode<et.IEERSchema> = <e.EERSchema id='1' name='Persons' MDA_level='M1' store={testStore}>
     <e.Kernel id='2' name='Person'>
         <e.Attribute id='5' name='PersonName'>
             <e.Domain id='6' name='string' />

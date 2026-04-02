@@ -1,6 +1,6 @@
 import { ModelStore } from "../index"
 import { Model as GenericModel, ModelElement, IModel, IModelElement } from "generic-metamodel"
-import { CpxTemplate, Element as jsxE, Template, WithRefProps } from "../jsx/element"
+import { CpxTemplate, ExprNode as jsxE, Template, WithRefProps } from "../jsx/element"
 
 export type IModelProps = WithRefProps<IModel> & {
   store?: ModelStore;

@@ -2,8 +2,8 @@
  * Author: Sinisa Neskovic
  * Copyright (c) 2023 Aelastics
  */
-/** @jsx hm */
-import {  hm } from '../jsx/handle'
+/** @jsx createExprNode */
+import {  createExprNode } from '../jsx/handle'
 import { EERSchema, IEERSchema, Kernel } from "../test/eer-model/EER.meta.model.type"
 import { ModelMonad, MonadicFunction, ModelM, makeMonadic } from "./model-monad"
 import * as e from '../test/eer-model/EER-components'

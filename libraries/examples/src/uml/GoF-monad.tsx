@@ -1,6 +1,6 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import {Element, ModelM, ModelMonad, makeMonadic} from "aelastics-synthesis"
+import {ExprNode, ModelM, ModelMonad, makeMonadic} from "aelastics-synthesis"
 import * as ut from "./uml.meta.model.type"
 import * as p from "./GoF-patterns"
 import { IModel } from "generic-metamodel"
@@ -9,11 +9,11 @@ import { IClassDiagram } from "./uml.meta.model.type"
 export class Go4Monad {
     private genericMonad: ModelMonad<ut.IClassDiagram>
     
-    static of(m:ModelM<ut.IClassDiagram>, initialCD:Element<ut.IClassDiagram>):Go4Monad {
+    static of(m:ModelM<ut.IClassDiagram>, initialCD:ExprNode<ut.IClassDiagram>):Go4Monad {
             return new Go4Monad(m, initialCD)
     } 
 
-    private constructor(m:ModelM<ut.IClassDiagram>, initialCD:Element<ut.IClassDiagram>) {
+    private constructor(m:ModelM<ut.IClassDiagram>, initialCD:ExprNode<ut.IClassDiagram>) {
         this.genericMonad = ModelMonad.of(m)
         this.genericMonad.apply(makeMonadic(initialCD))
     }

@@ -1,4 +1,4 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
@@ -7,20 +7,20 @@
 
 
 
-import { hm } from "../jsx/handle";
+import { createExprNode } from "../jsx/handle";
 import { VarPoint, VarOption } from "./../variability/var-decorators";
 import * as et from "../test/eer-model/EER.meta.model.type";
 import * as rt from "../test/relational-model/REL.meta.model.type.v2";
 import * as e from "../test/eer-model/EER-components";
 import * as r from "../test/relational-model/REL-components.v2";
 import { abstractM2M } from "./../transformations/abstractM2M";
-import { Element, Resolve } from "../jsx/element";
+import { ExprNode, Resolve } from "../jsx/element";
 import { Context } from "../jsx/context";
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption, Option } from "../index"
 
 const testStore = new ModelStore();
 
-const eerSchema1: Element<et.IEERSchema> = (
+const eerSchema1: ExprNode<et.IEERSchema> = (
   <e.EERSchema name="Persons" MDA_level="M1" store={testStore}>
     <e.Kernel name="Person">
       <e.Attribute name="personId" isKey={true}>
@@ -101,7 +101,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
   @E2E({ input: et.Entity, output: rt.Table })
   @SpecPoint()
-  Entity2Table(e: et.IEntity): Element<rt.ITable> {
+  Entity2Table(e: et.IEntity): ExprNode<rt.ITable> {
     return (
       <r.Table name={e.name}>
         {e.attributes.map((a) => this.Attribute2Column(a))}
@@ -111,14 +111,14 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
 
   // @E2E({ input: et.Kernel, output: rt.Table })
   @SpecOption("Entity2Table", et.Kernel)
-  Kernel2Table(k: et.IKernel): Element<rt.ITable> {
+  Kernel2Table(k: et.IKernel): ExprNode<rt.ITable> {
     // inherit table name and column from super rule
     return <r.Table name={`k_${k.name}`}></r.Table>;
   }
 
   // @E2E({ input: et.Weak, output: rt.Table })
   @SpecOption("Entity2Table", et.Weak)
-  Week2Table(w: et.IWeak): Element<rt.ITable> {
+  Week2Table(w: et.IWeak): ExprNode<rt.ITable> {
     // TODO Formiraj slozeni kljuc od kljuca jakog objekta i svog kljuca. Ovo vazi pod uslov da se prvo obidju svi kerneli, pa onda slabi.
     // Ovo sve vazi pod ogranicenjem da weak moze zavisiti samo od kernela, a nema podtipova i agregacija u modelu
     return (
@@ -171,17 +171,17 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
   }
 
   @E2E({ input: et.Attribute, output: rt.Column })
-  Attribute2Column(a: et.IAttribute): Element<rt.IColumn> {
+  Attribute2Column(a: et.IAttribute): ExprNode<rt.IColumn> {
     return <r.Column name={a.name} isKey={a.isKey}></r.Column>;
   }
 
   @E2E({ input: et.Attribute, output: rt.Column })
-  Attribute2PKColumn(a: et.IAttribute, ownerTable: rt.ITable): Element<rt.IColumn> {
+  Attribute2PKColumn(a: et.IAttribute, ownerTable: rt.ITable): ExprNode<rt.IColumn> {
     return <r.Column name={`fk_${a.name}`} isKey={true} ownerTable={<r.Table $refByName={ownerTable.name}></r.Table>}></r.Column >;
   }
 
   @E2E({ input: et.Attribute, output: rt.ForeignKeyColumn })
-  Attribute2FKColumn(a: et.IAttribute): Element<rt.IForeignKeyColumn> {
+  Attribute2FKColumn(a: et.IAttribute): ExprNode<rt.IForeignKeyColumn> {
 
     return <Resolve input={a} ruleName="Attribute2Column">
       {(refColumn: rt.IColumn) => (
@@ -201,13 +201,13 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
   @VarPoint('Neki issue')
   RelationshipToElement(
     rel: et.IRelationship
-  ): Element<rt.IForeignKey> | Element<rt.ITable> {
+  ): ExprNode<rt.IForeignKey> | ExprNode<rt.ITable> {
     throw new Error("Not implemented VarOptions for VarPoint FKorTable");
     // return null as unknown as Element<rt.IForeignKey> | Element<rt.ITable>;
   }
 
   @VarOption("RelationshipToElement", Option('OptionToFk'))
-  RelatioshipToFK(rel: et.IRelationship): Element<rt.IForeignKey> {
+  RelatioshipToFK(rel: et.IRelationship): ExprNode<rt.IForeignKey> {
     // const aaa = this.context.resolve(rel.ordinaryMapping[0]);
 
     return (
@@ -218,7 +218,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
   }
 
   @VarOption("RelationshipToElement", Option('optionToTable'))
-  RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
+  RelatioshipToTable(rel: et.IRelationship): ExprNode<rt.ITable> {
     const codomain = et.getCodomain(rel.roles[0]);
     const domain = et.getInverse(rel.roles[0]);
 

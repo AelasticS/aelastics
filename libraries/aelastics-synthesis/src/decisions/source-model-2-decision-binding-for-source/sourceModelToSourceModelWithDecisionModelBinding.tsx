@@ -1,8 +1,8 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
+import { createExprNode } from "../../jsx/handle"
 import { abstractM2M } from "../../transformations/abstractM2M"
-import { Element, Resolve } from "../../jsx/element"
+import { ExprNode, Resolve } from "../../jsx/element"
 import { Context } from "../../jsx/context"
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../../index"
 import { IModel, IModelElement, Model, ModelElement } from "generic-metamodel"

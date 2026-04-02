@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
-import { Element } from "../../jsx/element"
+import { createExprNode } from "../../jsx/handle"
+import { ExprNode } from "../../jsx/element"
 import { ModelStore } from "../../index"
 
 import { BindingModel, Binding } from "../2.binding-model/binding-meta.model-components"
@@ -10,7 +10,7 @@ import { Model, Element as ModelElement } from "../../types-metamodel/models-com
 import { DecisionModel, ElementIssue } from "../1.decision-model/decision-meta.model-components"
 
 
-export const ER_Bindings = (store: ModelStore): Element<t.IBindingModel> => (
+export const ER_Bindings = (store: ModelStore): ExprNode<t.IBindingModel> => (
   <BindingModel
     name="ER_Bindings"
     description="Binding EER Model concepts to relation schema design issues"

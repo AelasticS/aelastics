@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
-import { Element } from "../../jsx/element"
+import { createExprNode } from "../../jsx/handle"
+import { ExprNode } from "../../jsx/element"
 import * as t from "../../types-metamodel/types-meta.model"
 import {
     TypeObject,
@@ -21,7 +21,7 @@ import { IBindingElement } from "../2.binding-model/binding-meta.model"
 
 const store = new ModelStore();
 
-export const typeForDecisionModel = (store: ModelStore, element: IModelElement, bindings: IBindingElement[]): Element<t.ITypeModel> => {
+export const typeForDecisionModel = (store: ModelStore, element: IModelElement, bindings: IBindingElement[]): ExprNode<t.ITypeModel> => {
 
     const definedProperties: Map<string, boolean> = new Map(); // Map<propertyName, isOptional>
 
@@ -35,7 +35,7 @@ export const typeForDecisionModel = (store: ModelStore, element: IModelElement, 
                         if (!definedProperties.has(issue.name)) {
                             definedProperties.set(issue.name, hasCondition);
 
-                            var propertyType: Element<t.IType> = getAllVariationsType(issue);
+                            var propertyType: ExprNode<t.IType> = getAllVariationsType(issue);
                             if (hasCondition) {
                                 propertyType.props.name = `${issue.name}Base`;
                                 propertyType =
@@ -65,7 +65,7 @@ export const typeForDecisionModel = (store: ModelStore, element: IModelElement, 
     </TypeModel >
 };
 
-function getAllVariationsType(issue: IIssue): Element<t.IType> {
+function getAllVariationsType(issue: IIssue): ExprNode<t.IType> {
     return <TypeUnion name={`${issue.name}Union`}>
         {issue.possibleOptions.map((option: IOption) => {
             return <UnionElement>

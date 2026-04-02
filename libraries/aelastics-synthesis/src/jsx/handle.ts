@@ -1,6 +1,6 @@
 import * as g from 'generic-metamodel'
 import { Context } from './context'
-import { CpxTemplate, Element, Template, WithRefProps } from './element'
+import { CpxTemplate, ExprNode, Template, WithRefProps } from './element'
 
 //export function hm<P extends WithRefProps<g.IModelElement>>
 // (t: Template<P>, props: P, ...children: Element<any>[]): Element<P> {
@@ -16,14 +16,14 @@ import { CpxTemplate, Element, Template, WithRefProps } from './element'
 //   return childElem
 // }
 
-export function hm(t: Template<g.IModelElement> | CpxTemplate<{}, g.IModelElement>, props: {}, ...children: Element<any>[])
-  : Element<any, any> {
-  let childElem = t(props)
-  childElem.children.push(...children.flat())
-  return childElem
+export function createExprNode(t: Template<g.IModelElement> | CpxTemplate<{}, g.IModelElement>, props: {}, ...childrenExprs: ExprNode<any>[])
+  : ExprNode<any, any> {
+  let exprNode = t(props)
+    exprNode.childArray.push(...childrenExprs.flat())
+  return exprNode
 }
 
-export function render<P extends g.IModelElement> (el:Element<P>) {
+export function render<P extends g.IModelElement> (el:ExprNode<P>) {
    return el.render(new Context())
 }
 

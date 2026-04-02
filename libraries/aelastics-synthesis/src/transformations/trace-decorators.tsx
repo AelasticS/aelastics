@@ -1,9 +1,9 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
-import { hm } from "../jsx/handle"
+import { createExprNode } from "../jsx/handle"
 import * as t from "aelastics-types"
 import * as g from "generic-metamodel"
 import {
@@ -16,7 +16,7 @@ import {
 } from "./transformation.model.type"
 import { abstractM2M, IM2M } from "./abstractM2M"
 import { IModel } from "generic-metamodel"
-import { CpxTemplate, Element } from "../jsx/element"
+import { CpxTemplate, ExprNode } from "../jsx/element"
 import { AnySchema } from "aelastics-types/lib/annotations/Annotation"
 import { Sec } from "../m2t"
 import { IConfigurationModel } from "../decisions/3.configuration-model/configuration-meta.model"
@@ -188,7 +188,7 @@ export const E2E = function({ input, output, ruleName }: IE2EDecorator) {
       }
 
       let sourceModelElement = args[0]
-      let targetJSXElement = original.apply(this, args) as Element<any>
+      let targetJSXElement = original.apply(this, args) as ExprNode<any>
       if (!targetJSXElement) {
         return null
       }

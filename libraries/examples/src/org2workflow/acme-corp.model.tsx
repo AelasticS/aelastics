@@ -1,11 +1,11 @@
-/** @jsx hm */
-import { hm } from "aelastics-synthesis"
-import { Element } from "aelastics-synthesis"
+/** @jsx createExprNode */
+import { createExprNode } from "aelastics-synthesis"
+import { ExprNode } from "aelastics-synthesis"
 import { ModelStore } from "aelastics-synthesis"
 import * as org from './org-model.meta'
 import * as o from './org-model.jsx-comps'
 
-export const acmeCorpModel = (store: ModelStore): Element<org.IOrganization> => (
+export const acmeCorpModel = (store: ModelStore): ExprNode<org.IOrganization> => (
     <o.Organization name="Acme Corp" MDA_level="M1" store={store}>
         <o.Board name="Executive Board">
             <o.Worker name="Alice" />

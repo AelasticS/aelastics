@@ -1,4 +1,4 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
@@ -7,14 +7,14 @@
 
 
 
-import { hm } from "../../jsx/handle";
+import { createExprNode } from "../../jsx/handle";
 import { VarPoint, VarOption } from "../../variability/var-decorators";
 import * as et from "../../test/eer-model/EER.meta.model.type";
 import * as rt from "../../test/relational-model/REL.meta.model.type.v2";
 import * as e from "../../test/eer-model/EER-components";
 import * as r from "../../test/relational-model/REL-components.v2";
 import { abstractM2M } from "../../transformations/abstractM2M";
-import { Element, Resolve } from "../../jsx/element";
+import { ExprNode, Resolve } from "../../jsx/element";
 import { Context } from "../../jsx/context";
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption, Option, Or, Not, And } from "../../index"
 import * as cmT from "../3.configuration-model/configuration-meta.model"; // import decision model types for decision model transformation
@@ -57,7 +57,7 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
   //   ruleName: "Entity2Table"
   // })
   @SpecPoint()
-  Entity2Table(e: et.IEntity): Element<rt.ITable> {
+  Entity2Table(e: et.IEntity): ExprNode<rt.ITable> {
     return (
       <r.Table name={e.name}>
         {e.attributes.map((a) => this.Attribute2Column(a))}
@@ -67,14 +67,14 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
 
   // @E2E({ input: et.Kernel, output: rt.Table })
   @SpecOption("Entity2Table", et.Kernel)
-  Kernel2Table(k: et.IKernel): Element<rt.ITable> {
+  Kernel2Table(k: et.IKernel): ExprNode<rt.ITable> {
     // inherit table name and column from super rule
     return <r.Table name={`k_${k.name}`}></r.Table>;
   }
 
   // @E2E({ input: et.Weak, output: rt.Table })
   @SpecOption("Entity2Table", et.Weak)
-  Week2Table(w: et.IWeak): Element<rt.ITable> {
+  Week2Table(w: et.IWeak): ExprNode<rt.ITable> {
     // TODO Formiraj slozeni kljuc od kljuca jakog objekta i svog kljuca. Ovo vazi pod uslov da se prvo obidju svi kerneli, pa onda slabi.
     // Ovo sve vazi pod ogranicenjem da weak moze zavisiti samo od kernela, a nema podtipova i agregacija u modelu
     return (
@@ -127,17 +127,17 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
   }
 
   // @E2E({ input: et.Attribute, output: rt.Column })
-  Attribute2Column(a: et.IAttribute): Element<rt.IColumn> {
+  Attribute2Column(a: et.IAttribute): ExprNode<rt.IColumn> {
     return <r.Column name={a.name} isKey={a.isKey}></r.Column>;
   }
 
   // @E2E({ input: et.Attribute, output: rt.Column })
-  Attribute2PKColumn(a: et.IAttribute, ownerTable: rt.ITable): Element<rt.IColumn> {
+  Attribute2PKColumn(a: et.IAttribute, ownerTable: rt.ITable): ExprNode<rt.IColumn> {
     return <r.Column name={`fk_${a.name}`} isKey={true} ownerTable={<r.Table $refByName={ownerTable.name}></r.Table>}></r.Column >;
   }
 
   // @E2E({ input: et.Attribute, output: rt.ForeignKeyColumn })
-  Attribute2FKColumn(a: et.IAttribute): Element<rt.IForeignKeyColumn> {
+  Attribute2FKColumn(a: et.IAttribute): ExprNode<rt.IForeignKeyColumn> {
 
     return <Resolve input={a} ruleName="Attribute2Column">
       {(refColumn: rt.IColumn) => (
@@ -157,14 +157,14 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
   @VarPoint('Neki Issue')
   RelationshipToElement(
     rel: et.IRelationship
-  ): Element<rt.IForeignKey> | Element<rt.ITable> {
+  ): ExprNode<rt.IForeignKey> | ExprNode<rt.ITable> {
     throw new Error("Not implemented VarOptions for VarPoint FKorTable");
     // return null as unknown as Element<rt.IForeignKey> | Element<rt.ITable>;
   }
 
   // TODO Input for this rule expression should be DecisionForElement OR array of SelectedOption
   @VarOption("RelationshipToElement", Option('nekiOption'))
-  RelatioshipToFK(rel: et.IRelationship): Element<rt.IForeignKey> {
+  RelatioshipToFK(rel: et.IRelationship): ExprNode<rt.IForeignKey> {
     // const aaa = this.context.resolve(rel.ordinaryMapping[0]);
 
     return (
@@ -176,7 +176,7 @@ class EER2RelDomainWithDecisionTransformation extends abstractM2M<et.IEERSchema,
 
   // TODO Type of decision should be defined by type of element (e.g. Relationship, Entity, etc.) or by specific element (e.g. RelationshipWorksIn, etc.)
   @VarOption("RelationshipToElement", Option('nekiOption'))
-  RelatioshipToTable(rel: et.IRelationship): Element<rt.ITable> {
+  RelatioshipToTable(rel: et.IRelationship): ExprNode<rt.ITable> {
     const codomain = et.getCodomain(rel.roles[0]);
     const domain = et.getInverse(rel.roles[0]);
 

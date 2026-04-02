@@ -1,11 +1,11 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
-import {hm} from '../../jsx/handle'
+import {createExprNode} from '../../jsx/handle'
 import { Context } from '../../jsx/context';
-import { Element } from '../../jsx/element';
+import { ExprNode } from '../../jsx/element';
 import { ModelStore } from '../../index'
 import { Process, Sequence, Task, Document, OutputDocument, InputDocument } from './BPM.components'
 import { IProcess, ISequence } from './BPM.meta.model.type'

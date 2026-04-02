@@ -1,4 +1,4 @@
-// /** @jsx hm */
+// /** @jsx createExprNode */
 
 // // import { Object, Property, hm, TypeModel } from "./components_trans";
 // import { IFeature, IFeatureDiagram } from "./FM_MetaModel/fm-meta.model-V2.type";

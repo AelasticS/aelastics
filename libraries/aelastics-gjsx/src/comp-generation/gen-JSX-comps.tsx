@@ -1,12 +1,12 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 import {
   ConnectionInfo,
   defaultConnectionInfo,
-  hm,
+  createExprNode,
   Template,
   ModelStore,
   Context,
-  Element,
+  ExprNode,
   JSX_Export as jsx,
 } from "aelastics-synthesis";
 import {
@@ -55,7 +55,7 @@ export function jsx2TextModel(
   topElement: jsx.Complex_JSX_Element,
   options: Options,
   store: ModelStore
-): Element<M2T_Model> {
+): ExprNode<M2T_Model> {
   // create context
   const ctx: PrintingContext = {
     path: options.pathToTypesDefModule,
@@ -146,7 +146,7 @@ function printJSXComp(
     <P>
       {`
 export const ${el.tagName}: Template<${ctx.varName}.I${el.typeName}> = (props) => {
-  return new Element(${ctx.varName}.I${el.typeName}, props, {
+  return new ExprNode(${ctx.varName}.I${el.typeName}, props, {
     propName:"${ciFinal.propName}",
     isParentProp: ${ciFinal.isParentProp},
     isReconnectAllowed:${ciFinal.isReconnectAllowed},
@@ -164,12 +164,12 @@ function printTopJSX_Element(
   return (
     <P>
       {`import * as ${ctx.varName} from "${ctx.path}"
-import { ConnectionInfo, CpxTemplate, Element, Template, WithRefProps, ModelStore } from 'aelastics-synthesis'
+import { ConnectionInfo, CpxTemplate, ExprNode, Template, WithRefProps, ModelStore } from 'aelastics-synthesis'
 
 export type I${el.typeName}_Props = WithRefProps<${ctx.varName}.${el.typeName}> & { store?: ModelStore }
 
 export const ${el.tagName}: CpxTemplate<I${el.typeName}_Props, ${ctx.varName}.${el.typeName}> = (props) => {
-     return new Element(${ctx.varName}.${el.typeName}, props, undefined)
+     return new ExprNode(${ctx.varName}.${el.typeName}, props, undefined)
 }
 `}
     </P>

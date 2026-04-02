@@ -1,6 +1,6 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
+import { createExprNode } from "../../jsx/handle"
 import { ModelStore } from "../../index"
 import {
   Column,

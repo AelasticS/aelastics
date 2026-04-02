@@ -1,16 +1,16 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
 // const EER = getEER({} as IModel, null)
 
-import { hm } from "../jsx/handle";
+import { createExprNode } from "../jsx/handle";
 import * as et from "../test/eer-model/EER.meta.model.type";
 import * as e from "../test/eer-model/EER-components";
-import { Element } from "../jsx/element";
+import { ExprNode } from "../jsx/element";
 
-const eerSchema1: Element<et.IEERSchema> = (
+const eerSchema1: ExprNode<et.IEERSchema> = (
   <e.EERSchema name="Persons" MDA_level="M1">
     <e.Kernel name="Person">
       <e.Attribute name="PersonName">
@@ -28,6 +28,6 @@ const eerSchema1: Element<et.IEERSchema> = (
   </e.EERSchema>
 );
 
-export default function f() : Element<et.IEERSchema> {
+export default function f() : ExprNode<et.IEERSchema> {
   return eerSchema1;
 }
