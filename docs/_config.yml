@@ -1,0 +1,12 @@
+title: AelasticS Framework
+description: A functional TypeScript framework for type-safe data modeling and transformation
+theme: minima
+url: ""
+
+nav:
+  - title: Home
+    url: /
+  - title: Libraries
+    url: /libraries
+  - title: Getting Started
+    url: /getting-started
