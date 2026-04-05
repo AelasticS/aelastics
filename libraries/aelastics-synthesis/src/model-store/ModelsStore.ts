@@ -175,7 +175,7 @@ export class ModelStore {
     }
   }
 
-  public evaluate<P extends IModelElement>(element: ExprNode<P>): P {
+  public render<P extends IModelElement>(element: ExprNode<P>): P {
     const ctx = new Context()
     ctx.pushStore(this)
     return element.render<P>(ctx)

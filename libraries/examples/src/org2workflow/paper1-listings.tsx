@@ -9,7 +9,8 @@ import { Process, Sequence, Task, Parallel, WorkflowModel, SubProcess } from "./
 import { IProcess, ISequence, ITask, IWorkflowModel } from "./workflow.meta"
 import { dep1 } from "../Organization/example-department"
 import { IOrganization } from "../Organization/organization.model.type"
-import { ModelStore, ExprNode } from "aelastics-synthesis"
+import { ModelStore } from "aelastics-synthesis"
+import { ExprNode } from "aelastics-synthesis"
 
 const processName = "DocumentApproval"
 const approverCount = 2
@@ -60,7 +61,7 @@ export const ConfigurableApproval = ({ document, approvers, mode }: IApprovalCon
 const ContractApproval = <ConfigurableApproval document="Contract" approvers={3} mode="parallel" />
 
 const store = new ModelStore()
-const contractApprovalModel = store.evaluate(ContractApproval)
+const contractApprovalModel = store.render(ContractApproval)
 
 export const GenericApproval = (WorkerTask: Template<ITask>) =>
     (c: IApprovalConfig) => {
@@ -92,7 +93,7 @@ const TwoStepApproval = GenericApproval(TwoStepWrite)
 const contractTwoStep = (
     <TwoStepApproval document="Contract" approvers={2} mode="parallel" />
 )
-const contractTwoStepModel = store.evaluate(contractTwoStep)
+const contractTwoStepModel = store.render(contractTwoStep)
 
 /*
     

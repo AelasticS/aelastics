@@ -1,0 +1,701 @@
+Decision Support in AelasticS Synthesis
+========================================
+
+This document describes how the AelasticS Synthesis framework supports
+design decisions in model-to-model (M2M) transformations. The focus is
+on the decision-support layer, but since the reader may not be familiar
+with Synthesis, the document begins with a concise introduction to the
+framework's foundational concepts.
+
+
+1. Synthesis Framework Essentials
+----------------------------------
+
+1.1. Models, metamodels, and model expressions.
+
+Synthesis operates in the domain of model-driven engineering (MDE). A
+metamodel defines the structure of a family of models -- it specifies
+what types of elements exist, what properties they have, and how they
+relate. A model is an instance of a metamodel: a concrete population of
+elements conforming to the metamodel's constraints.
+
+In Synthesis, metamodels are defined using the aelastics-types library,
+which provides a rich type system (object types, subtypes, arrays,
+tagged unions, optional types, links, etc.). Each metamodel is a schema
+(t.schema), and model element types are defined as t.subtype of a base
+ModelElement or Model type from the generic-metamodel package.
+
+Model instances are constructed as model expressions using TypeScript
+JSX syntax. JSX is repurposed -- it does not produce DOM nodes. Instead,
+each JSX tag invokes a component function that creates an Element object
+(an intermediate representation). For example:
+
+  <Table name="Person">
+    <Column name="personId" isKey={true} />
+    <Column name="name" />
+  </Table>
+
+This JSX expression does not create an HTML table. The Table and Column
+are component functions that return Element instances, forming a tree.
+This tree is a model expression -- a declarative description of a model
+fragment.
+
+1.2. Rendering: from model expressions to model instances.
+
+An Element tree is materialized into actual typed model objects by
+calling .render(context). The render process traverses the element tree,
+creates typed model objects via the ModelStore (a registry that manages
+model elements, their types, and cross-references), and resolves
+references ($refByName links). The result is a fully populated model
+instance conforming to its metamodel.
+
+This two-phase approach (construct element tree, then render) allows the
+framework to intercept model construction for tracing, decision
+resolution, and reference resolution before the final model is produced.
+
+1.3. Transformations as classes with JSX rules.
+
+An M2M transformation maps a source model to a target model. In
+Synthesis, a transformation is a TypeScript class extending abstractM2M.
+The class is annotated with @M2M({ input: SourceSchema, output:
+TargetSchema }) to register its source and target metamodels.
+
+Transformation rules are methods that accept source model elements and
+return JSX expressions constructing target elements. The top-level rule
+is template(source), which receives the root source model and returns
+the root target model expression. Rules compose: a rule may call other
+rules within its JSX, building the target model tree from nested rule
+invocations.
+
+1.4. Key decorators for transformation rules.
+
+  @M2M({ input, output })
+    Class-level decorator. Registers the source and target metamodel
+    schemas and initializes the transformation context.
+
+  @E2E({ input, output })
+    Method-level decorator. Marks a rule as an element-to-element mapping
+    and records a trace link from each source element to the target
+    element it produces.
+
+  @SpecPoint() / @SpecOption(baseRule, sourceType)
+    Method-level decorators. Enable polymorphic dispatch: @SpecPoint
+    marks a rule whose behavior varies by the runtime type of the input,
+    and @SpecOption registers a specialized rule for a specific input
+    subtype. The framework dispatches automatically based on the actual
+    type of the source element, without if/switch statements.
+
+1.5. ModelStore and Context.
+
+The ModelStore is a central registry for all models and their elements.
+It tracks each element's type, manages naming hierarchies for $refByName
+resolution, and provides type queries (isTypeOf, getTypeOf).
+
+The M2MContext extends the rendering Context with transformation-specific
+state: input/output model descriptors, a trace map (source element -->
+target element records), a resolve map (JSX Element --> rendered model
+element), and a parameter slot. It accompanies the transformation
+throughout execution and is accessible in all rules as this.context.
+
+
+2. Motivation for Decision Support
+------------------------------------
+
+Many M2M transformations involve design choices that cannot be resolved
+by the transformation logic alone. For example, when mapping an EER
+schema to a relational schema, the transformation author must decide:
+  - How to implement 1:N relationships (foreign key vs. join table)
+  - How to generate primary keys (auto-increment vs. UUID vs. sequence)
+  - What naming convention to apply (CamelCase vs. snake_case)
+
+These decisions depend on the target deployment context, performance
+requirements, or organizational conventions -- not on the source model
+structure. Synthesis externalizes these decisions into explicit,
+first-class models so that:
+  (a) the transformation code contains no conditional branching over
+      design alternatives,
+  (b) decision rationale is captured and traceable, and
+  (c) different configurations can produce structurally different target
+      models from the same source without modifying the transformation.
+
+
+3. Decision Support Architecture
+---------------------------------
+
+The decision support layer is organized around four interconnected
+metamodels, each defined as an aelastics-types schema with corresponding
+JSX components. They form a chain:
+
+  Decision Model --> Binding Model --> Configuration Model --> Transformation
+                                                                  |
+                                                            Trace Model
+
+Each metamodel is described below.
+
+
+4. Decision Model (Design Space)
+---------------------------------
+
+The Decision Model defines the space of possible design alternatives. It
+is a model conforming to the Decision_TypeSchema and contains:
+
+  DecisionModel
+    issues: Issue[]
+
+  Issue (abstract)
+    possibleOptions: Option[]
+
+  ElementIssue extends Issue
+    -- an issue scoped to individual source model elements
+
+  ModelIssue extends Issue
+    -- an issue that applies globally to the entire source model
+
+  Option
+    ParentIssue: Issue
+    Pros: string
+    Cons: string
+    isDefault: boolean (optional)
+    optionType: SimpleOption | CompositeOption (tagged union)
+
+  SimpleOption
+    valueType: Type (optional)
+
+  CompositeOption
+    subIssues: Issue[]   -- enables hierarchical decision trees
+
+  Constraint
+    type: "Requires" | "Exclude"
+    source: Option
+    target: Option
+
+An Issue represents a design question (e.g., "How to implement 1:N
+relationships?"). Each Issue enumerates its possible Options (e.g.,
+"ForeignKey" and "JoinTable"). Options may be simple (leaf choices) or
+composite (choices that open further sub-issues, enabling hierarchical
+decision structures). Constraints between options express dependencies
+("Requires") or incompatibilities ("Exclude").
+
+Like all models in Synthesis, the Decision Model is constructed as a
+JSX model expression:
+
+  <DecisionModel name="RelationSchemaDesign" store={store}>
+    <ElementIssue name="OneToManyStrategy">
+      <Option name="ForeignKey" isDefault={false}
+              optionType={<SimpleOption name="FK" />} />
+      <Option name="JoinTable"  isDefault={true}
+              optionType={<SimpleOption name="JoinTableOption" />} />
+    </ElementIssue>
+    <ElementIssue name="PrimaryKeyStrategy">
+      <Option name="UseAutoIncrement" isDefault={true}
+              optionType={<SimpleOption name="PK_AutoInc" />} />
+      <Option name="UseManualIncrement"
+              optionType={<SimpleOption name="PK_ManInc" />} />
+    </ElementIssue>
+    <ModelIssue name="NamingConvention">
+      <Option name="CamelCase" isDefault={true}
+              optionType={<SimpleOption name="CamelCaseOption" />} />
+      <Option name="SnakeCase"
+              optionType={<SimpleOption name="SnakeCaseOption" />} />
+    </ModelIssue>
+  </DecisionModel>
+
+
+5. Binding Model
+-----------------
+
+The Binding Model connects source metamodel element types to the design
+issues that are relevant to them. It is the bridge between "what exists
+in the source" and "what must be decided." It conforms to
+BindingModel_TypeSchema and contains:
+
+  BindingModel
+    sourceModel: Model          -- the source metamodel
+    decisionModel: DecisionModel -- the applicable design space
+    bindings: BindingElement[]
+
+  BindingElement
+    element: ModelElement   -- a source metamodel type (e.g., Relationship)
+    issues: ElementIssue[]  -- which issues apply to elements of this type
+    condition: string (opt) -- an optional predicate further filtering
+                               which source elements this binding applies to
+
+The condition field holds a JavaScript function expression (as a string)
+that is evaluated at transformation time against each source element. For
+example, a binding for OneToManyStrategy might include a condition that
+checks whether a relationship has exactly two roles with specific
+cardinalities (1:N pattern).
+
+Example (JSX):
+
+  <BindingModel name="ER_Bindings" store={store}
+    sourceModel={<Model $refByName="ERMetamodel" />}
+    decisionModel={<DecisionModel $refByName="RelationSchemaDesign" />}>
+    <Binding name="PKStrategyBinding"
+      element={<ModelElement $refByName="ERMetamodel/Attribute" />}
+      issues={[
+        <ElementIssue $refByName="RelationSchemaDesign/PrimaryKeyStrategy" />
+      ]} />
+    <Binding name="OneToManyBinding"
+      element={<ModelElement $refByName="ERMetamodel/Relationship" />}
+      issues={[
+        <ElementIssue $refByName="RelationSchemaDesign/OneToManyStrategy" />
+      ]}
+      condition='return (e) => {
+        if (!e.roles || e.roles.length !== 2) return false;
+        return (e.roles[0].ub === "1" && e.roles[1].ub === "M") || ...;
+      }' />
+  </BindingModel>
+
+
+6. Configuration Model
+-----------------------
+
+The Configuration Model records the actual decisions made for a specific
+source model. While the Decision Model defines the design space and the
+Binding Model connects it to source types, the Configuration Model
+captures specific choices. It conforms to ConfigurationModel_TypeSchema:
+
+  ConfigurationModel
+    decisions: Decision[]
+    sourceModel: Model
+    bindingModel: BindingModel
+
+  Decision
+    choices: Choice[]
+
+  ElementDecision extends Decision
+    element: ModelElement  -- the specific source element this decision
+                              applies to
+
+  Choice
+    assumptions: string (optional)
+    justification: string (optional)
+    consequences: string (optional)
+    issue: Issue
+    selectedOption: Option
+    value: SimpleOption | CompositeOption (optional tagged union)
+
+A Decision groups one or more Choices. An ElementDecision is scoped to a
+specific source model element. A Choice records which Option was selected
+for which Issue, along with optional rationale (assumptions,
+justification, consequences).
+
+The framework provides an automatic default configuration generator
+(SourceModelToDefaultConfigurationModel) -- itself an M2M transformation
+-- that traverses the binding model, matches each source element to its
+applicable issues, and selects the default option for each issue. This
+produces a valid initial configuration that the user can then customize.
+
+Example (JSX):
+
+  <ConfigurationModel name="CompanySchemaConfig" store={store}
+    sourceModel={<Model $refByName="CompanySchema" />}
+    bindingModel={<BindingModel $refByName="ER_Bindings" />}>
+    <GlobalChoice name="CamelCaseNaming"
+      choices={[
+        <Choice name="UseCamelCase"
+          issue={<GlobalIssue $refByName="RelationSchemaDesign/NamingConvention" />}
+          selectedOption={<Option $refByName="RelationSchemaDesign/CamelCase" />} />
+      ]} />
+    <ElementChoice name="EmploymentJoinTableMapping"
+      element={<Element $refByName="CompanySchema/Employment" />}
+      choices={[
+        <Choice name="UseJoinTable"
+          issue={<ElementIssue $refByName="RelationSchemaDesign/OneToManyStrategy" />}
+          selectedOption={<Option $refByName="RelationSchemaDesign/JoinTable" />}
+          assumptions="Join table avoids nulls"
+          justification="Handles optional relationships cleanly"
+          consequences="A new join table will manage the relationship" />
+      ]} />
+  </ConfigurationModel>
+
+
+7. Variability Decorators: @VarPoint, @VarOption, @Default
+------------------------------------------------------------
+
+While @SpecPoint/@SpecOption (introduced in Section 1.4) provide
+polymorphic dispatch based on the runtime type of a source element,
+@VarPoint/@VarOption provide configurable dispatch based on the
+Configuration Model. The two mechanisms are complementary:
+
+  @SpecPoint/@SpecOption: dispatch by source element TYPE
+  @VarPoint/@VarOption:   dispatch by selected design OPTION
+
+7.1. Internal data structures.
+
+The variability decorator system uses three key internal structures:
+
+  (a) varPointRegistry: a WeakMap keyed by the class prototype, mapping
+      to a Map<string, IVarOption[]>. Each entry maps a variability
+      point's method name to an array of registered option descriptors.
+      The WeakMap is keyed by prototype (not by the method function
+      object) so that outer decorators like @E2E can freely wrap the
+      method without losing the registered options.
+
+  (b) IVarOption: a descriptor for each registered alternative:
+        {
+          methodName: string        -- the name of the option method
+          evalCondition: EvalCondition -- the condition function
+          isDefault?: boolean       -- whether this is the fallback
+        }
+
+  (c) __VarOptionRef: a symbol-like property stored on the decorated
+      method function, recording which VarPoint this VarOption belongs
+      to. This is used by the @Default decorator to locate the correct
+      registry entry.
+
+7.2. @VarPoint(issueName) -- registration phase.
+
+When the class is loaded, the @VarPoint decorator:
+
+  1. Calls registerVarPoint(target, propertyKey), which creates an empty
+     options array in varPointRegistry for this (prototype, method name)
+     pair if one does not already exist.
+
+  2. Replaces the original method with a dispatcher function. The
+     original method body (which typically throws "not implemented") is
+     never called. The dispatcher function is described in 7.4.
+
+7.3. @VarOption(varPointMethodName, condition) -- registration phase.
+
+When the class is loaded, the @VarOption decorator:
+
+  1. Checks isVarPoint(target, varPointMethodName) -- verifies that the
+     named method has been registered as a variability point in the
+     WeakMap registry. This lookup is independent of the current value
+     of target[varPointMethodName], so it works even if another
+     decorator (such as @E2E) has already wrapped that method.
+
+  2. If it is a valid VarPoint, calls registerVarOption(target,
+     varPointMethodName, { methodName: propertyKey, evalCondition:
+     condition }), which pushes the option descriptor into the options
+     array for that VarPoint.
+
+  3. Stores a back-reference on the option method itself via
+     setVarOptionReference(descriptor.value, varPointMethodName). This
+     is used later by @Default to find which VarPoint an option belongs
+     to.
+
+7.4. @VarPoint dispatcher -- runtime behavior.
+
+When a @VarPoint-decorated method is called at runtime, the replacement
+dispatcher function executes:
+
+  Step 1: Resolve applicable choices.
+    The dispatcher calls resolveConfiguredChoices(transformation,
+    element), which reads this.configModel.decisions and filters them:
+    - Global decisions (not ElementDecision) are always included.
+    - ElementDecisions are included only if their element.id matches
+      the current source element's id.
+    The result is a flat array of IChoice objects.
+
+  Step 2: Push onto context stack.
+    The choices are pushed onto this.context.currentElementDecision
+    (a Stack<IChoice[]>). This makes the choices available to nested
+    rules if needed and ensures balanced push/pop via try/finally.
+
+  Step 3: Select the option.
+    The selectVarOption function iterates through the registered
+    IVarOption array for this VarPoint and evaluates each option's
+    evalCondition against the resolved choices:
+    - It first looks for a non-default option whose condition returns
+      true. The first match wins.
+    - If no non-default option matches, it falls back to the option
+      marked isDefault: true.
+    - If no option matches at all, it throws an error.
+
+  Step 4: Invoke the selected method.
+    The dispatcher calls this[chosenOption.methodName](...args),
+    executing the actual transformation logic of the selected option.
+
+  Step 5: Pop from context stack.
+    In the finally block, the choices are popped from the stack,
+    ensuring cleanup even if the option method throws.
+
+The complete runtime flow:
+
+  caller invokes this.RelationshipMapping(rel)
+    --> @VarPoint dispatcher activates
+    --> resolves choices for `rel` from configModel
+    --> pushes choices onto context stack
+    --> evaluates Option("JoinTable") against choices --> true
+    --> calls this.relationshipAsJoinTable(rel)
+    --> pops choices from context stack
+    --> returns the result (a JSX Element)
+
+7.5. @Default() -- marking the fallback.
+
+The @Default decorator reads the __VarOptionRef back-reference from the
+decorated method to find which VarPoint it belongs to, then locates the
+corresponding IVarOption entry in the registry and sets its isDefault
+flag to true. This is used by selectVarOption as the fallback when no
+other condition matches.
+
+7.6. Interaction with @E2E.
+
+The @E2E decorator and @VarPoint can be composed on the same method.
+TypeScript applies decorators bottom-up, so:
+
+  @E2E({ input: Relationship, output: Table })   // applied second (outer)
+  @VarPoint("OneToManyStrategy")                   // applied first (inner)
+  RelationshipMapping(rel) { ... }
+
+@VarPoint runs first and replaces the method with the dispatcher. Then
+@E2E wraps the dispatcher, adding trace recording around it. At runtime:
+@E2E's wrapper is called first, which calls the @VarPoint dispatcher
+inside, which selects and calls the actual option method. The trace link
+is recorded after the VarPoint resolution, so the trace captures the
+actual target element produced by the selected option.
+
+7.7. Why WeakMap and not properties on the method?
+
+An earlier design stored the options array directly on the VarPoint's
+function object (target[methodName].__varOptions). This broke when @E2E
+or other decorators replaced the function, because the new wrapper
+function lost the __varOptions property. The WeakMap registry keyed by
+(prototype, methodName) decouples option registration from the function
+object, making decorator composition order-independent.
+
+
+8. Condition DSL (Option, And, Or, Not)
+----------------------------------------
+
+The framework provides a small expression DSL for composing conditions
+in @VarOption decorators. Each operator returns an EvalCondition -- a
+function with signature (configChoices[], element?, context?) => boolean.
+
+  Option(optionName: string): EvalCondition
+    Returns a function that checks whether any Choice in the resolved
+    configChoices has selectedOption.name === optionName. This is the
+    leaf predicate -- it inspects the actual configuration. If the
+    configChoices array is empty (e.g., when called outside a VarPoint
+    context), it falls back to resolving choices from this.configModel
+    directly.
+
+  And(...conditions: EvalCondition[]): EvalCondition
+    Returns a function that evaluates to true iff every condition
+    evaluates to true. Uses Array.every().
+
+  Or(...conditions: EvalCondition[]): EvalCondition
+    Returns a function that evaluates to true iff at least one
+    condition evaluates to true. Uses Array.some().
+
+  Not(condition: EvalCondition): EvalCondition
+    Returns a function that inverts the condition's result.
+
+These operators compose naturally in @VarOption decorators:
+
+  @VarOption("RelationshipMapping", Option("ForeignKey"))
+  relationshipAsForeignKey(rel) { ... }
+
+  @VarOption("RelationshipMapping", Option("JoinTable"))
+  relationshipAsJoinTable(rel) { ... }
+
+  // Composite condition:
+  @VarOption("someRule", And(Option("A"), Not(Option("B"))))
+  someMethod(e) { ... }
+
+
+9. Integration with the abstractM2M Base Class
+------------------------------------------------
+
+The abstractM2M base class accepts an optional configuration model as
+its fourth generic parameter CM:
+
+  abstractM2M<S, D, EM, CM extends IConfigurationModel, P>
+
+The constructor signature is:
+
+  constructor(store?: ModelStore, extra?: EM, decisionModel?: CM)
+
+The configuration model is stored as this.configModel. The M2MContext
+maintains a currentElementDecision stack (Stack<IChoice[]>) that the
+@VarPoint decorator pushes/pops as variability points are entered and
+exited.
+
+The Stack class uses private symbol-indexed methods ([_privatePop] and
+[_privatePush]) that are accessible only to the variability decorator
+code via the exported symbols, preventing transformation authors from
+accidentally manipulating the decision stack.
+
+A decision-aware transformation class:
+  (a) extends abstractM2M with CM = IConfigurationModel,
+  (b) receives the configuration model in its constructor,
+  (c) uses @VarPoint on rules with design alternatives, and
+  (d) uses @VarOption with condition expressions on each alternative.
+
+
+10. Trace Model for Decision-Aware Transformations
+----------------------------------------------------
+
+The decision-aware trace model extends the basic transformation trace
+with decision information. It conforms to TraceModel_TypeSchema:
+
+  TraceModel
+    transformationSpec: string
+    source: Model
+    targets: Model[]
+    config: ConfigurationModel
+    traceRecords: TraceEntry[]
+    timestamp: string
+
+  TraceEntry
+    rule: string
+    timestamp: number
+    source: ModelElement
+    targets: ModelElement[]
+    ruleType: "RegularRule" | "VariabilityPoint"
+    variabilityOption: string (optional)
+    choices: Choice[] (optional)
+
+Each TraceEntry records which rule produced a target element from a
+source element. For variability points, the entry additionally records
+the ruleType as "VariabilityPoint", the name of the selected
+variabilityOption method, and the choices that led to that selection.
+This enables full decision traceability: given any target element, one
+can determine not only which source element produced it, but also which
+design decision and chosen option influenced its structure.
+
+Example trace entry for a decision-driven rule:
+
+  TraceEntry
+    source: Relationship "Employment"
+    targets: [Table "employment"]
+    rule: "RelationshipMapping"
+    ruleType: "VariabilityPoint"
+    variabilityOption: "relationshipAsJoinTable"
+    choices: [Choice(issue=OneToManyStrategy, selectedOption=JoinTable)]
+
+
+11. End-to-End Process
+-----------------------
+
+The complete decision-supported transformation process involves five
+steps:
+
+  Step 1: Define the source metamodel and create a source model instance.
+    Example: EER metamodel with a CompanySchema containing Entity
+    "Person", Entity "Company", and Relationship "Employment".
+
+  Step 2: Define the Decision Model (design space).
+    Enumerate the issues and options relevant to the transformation
+    domain. Example: OneToManyStrategy, PrimaryKeyStrategy,
+    NamingConvention with their respective options.
+
+  Step 3: Define the Binding Model.
+    Connect source metamodel types to relevant issues, optionally with
+    conditions. Example: bind Relationship to OneToManyStrategy with a
+    cardinality predicate; bind Attribute to PrimaryKeyStrategy.
+
+  Step 4: Create or generate the Configuration Model.
+    Either create manually (specifying choices per element) or use
+    SourceModelToDefaultConfigurationModel to auto-generate a default
+    configuration from the binding model. Customize as needed.
+
+  Step 5: Execute the transformation with the configuration.
+    Pass the configuration model to the transformation constructor.
+    The framework dispatches @VarPoint rules to the appropriate
+    @VarOption methods based on the configuration.
+
+In code:
+
+  const store = new ModelStore()
+  const context = new Context()
+
+  // Render metamodels and models
+  const eerMM = EERModel(store).render(context)
+  const dm = RelationSchemaDesignIssues(store).render(context)
+  const bm = ER_Bindings(store).render(context)
+  const sm = CompanySchema(store).render(context)
+
+  // Step 4a: auto-generate default configuration
+  const sm2config = new SourceModelToDefaultConfigurationModel(
+    store, { bindingModel: bm }
+  )
+  const defaultConfig = sm2config.transform(sm)
+
+  // Step 5: execute with configuration
+  const eer2rel = new EER2RelDomainWithDecisionTransformation(
+    store, {}, defaultConfig
+  )
+  const relSchema = eer2rel.transform(sm)
+
+
+12. Example: EER to Relational with Decisions
+----------------------------------------------
+
+The EER2RelDomainWithDecisionTransformation demonstrates all decision
+support features. It transforms an EER schema to a relational schema
+with three variability points:
+
+  @E2E({ input: Relationship, output: Table })
+  @VarPoint("OneToManyStrategy")
+  RelationshipMapping(rel): dispatches to either
+    @Default()
+    @VarOption("RelationshipMapping", Option("ForeignKey"))
+      --> relationshipAsForeignKey(rel)
+    @VarOption("RelationshipMapping", Option("JoinTable"))
+      --> relationshipAsJoinTable(rel)
+
+  @VarPoint("PrimaryKeyStrategy")
+  primaryKeyStrategy(a): dispatches to either
+    @VarOption("primaryKeyStrategy", Option("UseAutoIncrement"))
+      --> useAutoIncrement(a)
+    @VarOption("primaryKeyStrategy", Option("UseManualIncrement"))
+      --> useManualIncrement(a)
+
+  @VarPoint("NamingConvention")
+  applyNaming(name): dispatches to either
+    @VarOption("applyNaming", Option("CamelCase"))
+      --> applyCamelCaseNaming(name)
+    @VarOption("applyNaming", Option("SnakeCase"))
+      --> applySnakeCaseNaming(name)
+
+For the CompanySchema with the JoinTable configuration, the Employment
+relationship produces a separate join table:
+
+  RelSchema "CompanySchema_Relational_Schema_with_Decision_Model"
+    Table "Person"
+      Column "personId" (isKey: true, isAutoincrement: true)
+      Column "name"
+    Table "Company"
+      Column "companyId" (isKey: true, isAutoincrement: true)
+      Column "companyName"
+    Table "Employment"            <-- join table, from JoinTable option
+      Column "CompanyId" (FK)
+      Column "PersonId"  (FK)
+
+With the ForeignKey configuration instead, no separate table is created;
+a foreign key column is added to the Company table:
+
+  RelSchema "CompanySchema_Relational_Schema_with_Decision_Model"
+    Table "Person"
+      Column "personId" (isKey: true)
+      Column "name"
+    Table "Company"
+      Column "companyId" (isKey: true)
+      Column "companyName"
+      Column "PersonId_FK" (FK)   <-- foreign key, from ForeignKey option
+
+
+13. Summary of Decision Support Concepts
+------------------------------------------
+
+  Decision Model: defines the design space (issues, options, constraints)
+  Binding Model:  connects source metamodel types to relevant issues
+  Configuration Model: records actual choices with rationale
+  @VarPoint:      marks a rule as having design alternatives; replaces
+                  the method with a dispatcher that resolves choices and
+                  selects the matching option at runtime
+  @VarOption:     registers an alternative implementation for a VarPoint
+                  in a WeakMap-based registry keyed by prototype and
+                  method name
+  @Default:       marks a VarOption as the fallback
+  Option/And/Or/Not: composable condition DSL for option selection
+  Trace Model:    records which option was selected and why
+
+Together, these mechanisms achieve separation of concerns between
+transformation logic (how to map each alternative) and transformation
+configuration (which alternative to apply), while maintaining full
+traceability from target elements back through the decision chain.
