@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { Element } from "../../jsx/element";
-import { hm } from "../../jsx/handle";
+import { ExprNode } from "../../jsx/element";
+import { createExprNode } from "../../jsx/handle";
 import { ModelStore } from "../../model-store/ModelsStore";
 import { abstractM2M } from "../../transformations/abstractM2M";
 import * as fm from "../fm-metamodel/fm-meta.model.type";
@@ -35,7 +35,7 @@ export class FM2TypesTransformations extends abstractM2M<
     );
   }
 
-  Feature2Type(f: fm.IFeature): Element<tmm.IType> {
+  Feature2Type(f: fm.IFeature): ExprNode<tmm.IType> {
     let type = undefined;
     if (
       f.maxCardinality == 1 ||
@@ -60,7 +60,7 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   @SpecPoint()
-  Feature2Object(f: fm.IFeature): Element<tmm.IType> {
+  Feature2Object(f: fm.IFeature): ExprNode<tmm.IType> {
     return (
       <TypeObject name={f.name + "_type"}>
         {f.subfeatures?.map((e) => {
@@ -77,7 +77,7 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   @SpecOption("Feature2Object", fm.SolitaryFeature)
-  Solitary2Object(f: fm.ISolitaryFeature): Element<tmm.IObject> {
+  Solitary2Object(f: fm.ISolitaryFeature): ExprNode<tmm.IObject> {
     return (
       <TypeObject>
         {f.attributes?.map((e) => this.Attribute2Property(e as fm.IAttribute))}
@@ -86,11 +86,11 @@ export class FM2TypesTransformations extends abstractM2M<
   }
 
   @SpecOption("Feature2Object", fm.GroupFeature)
-  Group2Object(f: fm.IGroupFeature): Element<tmm.IObject> {
+  Group2Object(f: fm.IGroupFeature): ExprNode<tmm.IObject> {
     return <TypeObject></TypeObject>;
   }
 
-  Attribute2Property(a: fm.IAttribute): Element<tmm.IProperty> {
+  Attribute2Property(a: fm.IAttribute): ExprNode<tmm.IProperty> {
     return (
       <Property name={a.name + "_attr"}>
         <PropertyDomain $refByName={a.type}></PropertyDomain>
@@ -98,7 +98,7 @@ export class FM2TypesTransformations extends abstractM2M<
     );
   }
 
-  Feature2Array(f: fm.IFeature): Element<tmm.IType> {
+  Feature2Array(f: fm.IFeature): ExprNode<tmm.IType> {
     return (
       <TypeArray
         name={f.name + "_array"}

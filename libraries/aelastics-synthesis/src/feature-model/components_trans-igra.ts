@@ -8,8 +8,8 @@
 // export function hm<P extends WithRefProps<g.IModelElement>>(
 //   t: Template<P>,
 //   props: P,
-//   ...children: Element<any>[]
-// ): Element<P> {
+//   ...children: ExprNode<any>[]
+// ): ExprNode<P> {
 //   let childElem = t(props);
 //   childElem.children.push(...children.flat());
 //   return childElem;
@@ -22,8 +22,8 @@
 //   $ref_id?: string;
 // };
 
-// export class Element<P extends WithRefProps<g.IModelElement>> {
-//   public children: Element<any>[] = [];
+// export class ExprNode<P extends WithRefProps<g.IModelElement>> {
+//   public children: ExprNode<any>[] = [];
 //   public makeTrace: boolean = false;
 //   constructor(
 //     public readonly type: t.Any,
@@ -36,22 +36,22 @@
 
 // export type Template<P extends WithRefProps<g.IModelElement>> = (
 //   props: P
-// ) => Element<P>;
+// ) => ExprNode<P>;
 
 // export const Object: Template<WithRefProps<g.IObject>> = (props) => {
-//   return new Element(g.Object, props, undefined);
+//   return new ExprNode(g.Object, props, undefined);
 // };
 
 // export const Property: Template<WithRefProps<g.IProperty>> = (props) => {
-//   return new Element(g.Property, props, "properties");
+//   return new ExprNode(g.Property, props, "properties");
 // };
 
 // export const Subtype: Template<WithRefProps<g.ISubtype>> = (props) => {
-//   return new Element(g.Subtype, props, undefined);
+//   return new ExprNode(g.Subtype, props, undefined);
 // };
 
 // export const TypeModel: Template<WithRefProps<g.ITypeModel>> = (props) => {
-//   return new Element(g.TypeModel, props, undefined);
+//   return new ExprNode(g.TypeModel, props, undefined);
 // };
 // // export type IModelElementProps = { name: string } & STX.InstanceProps;
 

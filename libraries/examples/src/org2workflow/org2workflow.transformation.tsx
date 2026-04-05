@@ -1,8 +1,8 @@
-/** @jsx hm */
-import { hm } from "aelastics-synthesis"
+/** @jsx createExprNode */
+import { createExprNode } from "aelastics-synthesis"
 import { SpecPoint, SpecOption } from "aelastics-synthesis"
 import { abstractM2M, M2M, E2E } from "aelastics-synthesis"
-import { Element } from "aelastics-synthesis"
+import { ExprNode } from "aelastics-synthesis"
 
 import * as ot from "./org-model.meta"
 import * as wt from "./workflow.meta"
@@ -42,21 +42,21 @@ export class Org2WorkflowTransformation extends abstractM2M<
 
   @E2E()
   @SpecPoint()
-  OrgUnit2Approval(unit: ot.IOrgUnit): Element<wt.IStep> {
+  OrgUnit2Approval(unit: ot.IOrgUnit): ExprNode<wt.IStep> {
     return (
       <w.Task name={`ApproveBy${unit.name}`} />
     )
   }
 
   @SpecOption("OrgUnit2Approval", ot.Department)
-  Department2Approval(dept: ot.IDepartment): Element<wt.ITask> {
+  Department2Approval(dept: ot.IDepartment): ExprNode<wt.ITask> {
     return (
       <w.Task name={`ApproveBy${dept.manager.name}`} performer={dept.manager.name} />
     )
   }
 
   @SpecOption("OrgUnit2Approval", ot.Board)
-  Board2Approval(board: ot.IBoard): Element<wt.IParallel> {
+  Board2Approval(board: ot.IBoard): ExprNode<wt.IParallel> {
     return (
       <w.Parallel name={`BoardApproval${board.name}`}>
         {board.members.map((member) => (

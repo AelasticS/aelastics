@@ -1,11 +1,11 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
 import { abstractM2M, IM2M } from "./abstractM2M"
 import { IModel } from "generic-metamodel"
-import { CpxTemplate, Element } from "../jsx/element"
+import { CpxTemplate, ExprNode } from "../jsx/element"
 import { AnySchema } from "aelastics-types/lib/annotations/Annotation"
 import { Sec } from "../m2t"
 import { IConfigurationModel } from "../decisions/3.configuration-model/configuration-meta.model"
@@ -64,11 +64,11 @@ export const E2E = function() {
     const wrapped = function(this: abstractM2M<any, any, any, DM>, ...args: any[]) {
         let sourceModelElement = args[0]
 
-        let result = original.apply(this, args) as Element<any> | Element<any>[] | null
+        let result = original.apply(this, args) as ExprNode<any> | ExprNode<any>[] | null
         if (!result) return null
 
         // Normalize result to array
-        const jsxElements: Element<any>[] = Array.isArray(result) ? result : [result]
+        const jsxElements: ExprNode<any>[] = Array.isArray(result) ? result : [result]
         if (jsxElements.length === 0) return null
 
         // Infer types from runtime objects

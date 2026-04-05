@@ -1,7 +1,7 @@
-/** @jsx hm */
-import { hm, render } from './handle'
+/** @jsx createExprNode */
+import { createExprNode, render } from './handle'
 
-import { WithRefProps, Template, ElementInstance, Element, CpxTemplate, ConnectionInfo, defaultConnectionInfo } from './element'
+import { WithRefProps, Template, ElementInstance, ExprNode, CpxTemplate, ConnectionInfo, defaultConnectionInfo } from './element'
 import * as g from 'generic-metamodel'
 import * as t from 'aelastics-types'
 import { ModelStore } from '../index'
@@ -30,27 +30,27 @@ export type IElementProps = WithRefProps<g.IModelElement>
 // }
 
 export const Elem: Template<g.IModelElement> = (props) => {
-    return new Element(g.ModelElement, props, undefined)
+    return new ExprNode(g.ModelElement, props, undefined)
 }
 
 export const ElemWithText: Template<g.IModelElement> = (props) => {
     const connInfo: ConnectionInfo = defaultConnectionInfo(undefined)
     connInfo.textContentAllowed = true
     connInfo.textPropName = "label"
-    return new Element(g.ModelElement, props, connInfo)
+    return new ExprNode(g.ModelElement, props, connInfo)
 }
 
 export type IModelProps = WithRefProps<g.IModel> & { store: ModelStore }
 
 export const Model: CpxTemplate<IModelProps, g.IModel> = (props) => {
-    return new Element(g.Model, props, undefined)
+    return new ExprNode(g.Model, props, undefined)
 }
 
 
 describe("Test jsx", () => {
 
     it("should create a model with one element", () => {
-        let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
+        let e: ExprNode<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <Elem name='el1'>
             </Elem>
         </Model>
@@ -66,7 +66,7 @@ describe("Test jsx", () => {
     })
 
     it("should allow an element to have textual content if specifed so", () => {
-        let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
+        let e: ExprNode<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <ElemWithText name='el with text'>
                 {"some text"}
             </ElemWithText>
@@ -82,7 +82,7 @@ describe("Test jsx", () => {
     })
 
     it("should NOT allow an element to have textual content if specifed so", () => {
-        let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
+        let e: ExprNode<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <Elem name='el1'>
                 some text
             </Elem>
@@ -90,7 +90,7 @@ describe("Test jsx", () => {
         expect(() => e.render(new Context())).toThrow(Error)
     })
     it("should allow an element to have textual content if specifed so", () => {
-        let e: Element<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
+        let e: ExprNode<g.IModelElement> = <Model name='model1' store={new ModelStore()}>
             <Elem name='el1'>
             </Elem>
         </Model>
@@ -115,7 +115,7 @@ describe("Test jsx", () => {
                 </Model>
             )
         }
-        let me: Element<g.IModelElement> = <ModelCpx m='model' e='elem' n={3}>
+        let me: ExprNode<g.IModelElement> = <ModelCpx m='model' e='elem' n={3}>
             <Elem name='extra_elem' />
         </ModelCpx>
 

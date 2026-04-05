@@ -1,13 +1,13 @@
 import * as dm from './configuration-meta.model';
 import { ModelStore } from '../../index';
-import { CpxTemplate, Element, Template, WithRefProps } from "../../jsx/element";
+import { CpxTemplate, ExprNode, Template, WithRefProps } from "../../jsx/element";
 
 export type IModelProps = WithRefProps<dm.IConfigurationModel> & {
     store?: ModelStore;
 };
 
 export const ConfigurationModel: CpxTemplate<IModelProps, dm.IConfigurationModel> = (props) => {
-    return new Element(dm.ConfigurationModel, props, undefined);
+    return new ExprNode(dm.ConfigurationModel, props, undefined);
 }
 
 // export const SelectedOption = (option: IOption) => {
@@ -17,30 +17,30 @@ export const ConfigurationModel: CpxTemplate<IModelProps, dm.IConfigurationModel
 
 //     return (props: WithRefProps<dm.IBaseSelectedOption>) => {
 //         // 
-//         return new Element(SelectedOptionType, props, 'selectedOptions');
+//         return new ExprNode(SelectedOptionType, props, 'selectedOptions');
 //     };
 // };
 
 export const SelectedOption: Template<dm.IChoice> = (props) => {
-    return new Element(dm.Choice, props, 'selectedOptions');
+    return new ExprNode(dm.Choice, props, 'selectedOptions');
 }
 
 export const ElementChoice: Template<dm.IElementDecision> = (props) => {
-    return new Element(dm.ElementDecision, props, 'decisions');
+    return new ExprNode(dm.ElementDecision, props, 'decisions');
 }
 
 export const GlobalChoice: Template<dm.IDecision> = (props)=>{
-    return new Element(dm.Decision, props, 'decisions');
+    return new ExprNode(dm.Decision, props, 'decisions');
 }
 
 export const SimpleOption: Template<dm.ISimpleOption> = (props) => {
-    return new Element(dm.SimpleOption, props, 'value');
+    return new ExprNode(dm.SimpleOption, props, 'value');
 }
 
 export const CompositeOption: Template<dm.ICompositeOption> = (props) => {
-    return new Element(dm.CompositeOption, props, 'value');
+    return new ExprNode(dm.CompositeOption, props, 'value');
 }
 
 export const Choice: Template<dm.IChoice> = (props)=>{
-    return new Element(dm.Choice, props, undefined);
+    return new ExprNode(dm.Choice, props, undefined);
 }

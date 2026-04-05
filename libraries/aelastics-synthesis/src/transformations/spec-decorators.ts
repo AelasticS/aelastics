@@ -2,7 +2,7 @@
 
 import { Any } from "aelastics-types";
 import { IModelElement } from "generic-metamodel";
-import { Element } from "../jsx/element";
+import { ExprNode } from "../jsx/element";
 import { abstractM2M } from "./abstractM2M";
 import { __isE2E } from "./trace-decorators";
 
@@ -45,7 +45,7 @@ export const SpecPoint = () => {
     }
 
     // Read from descriptor.value (not target[propertyKey]) to preserve any inner decorator wrappers.
-    const original: (...a: any[]) => Element<any> = descriptor.value;
+    const original: (...a: any[]) => ExprNode<any> = descriptor.value;
 
     descriptor.value = function (this: abstractM2M<any, any>, ...args: any[]) {
       const a: IModelElement = args[0];
@@ -67,7 +67,7 @@ export const SpecPoint = () => {
       // get result form original method
       let orgResult = original.apply(this, args);
       // get result from specialized method
-      let specResult: Element<IModelElement> = (this as any)[option.specMethod](
+      let specResult: ExprNode<IModelElement> = (this as any)[option.specMethod](
         ...args
       );
       // connect corresponding results (elements)

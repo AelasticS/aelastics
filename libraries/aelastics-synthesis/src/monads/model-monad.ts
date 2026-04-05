@@ -4,7 +4,7 @@
  */
 
 import { Context } from "../jsx/context";
-import { Element, Template } from "../jsx/element";
+import { ExprNode, Template } from "../jsx/element";
 import { IModel, IModelElement } from "generic-metamodel";
 import { ModelStore } from "../model-store/ModelsStore";
 import * as t from "aelastics-types";
@@ -21,7 +21,7 @@ export class ModelM<M extends IModel> {
 export type MonadicFunction<M extends IModel> = (m: ModelM<M>) => ModelMonad<M>;
 
 export const makeMonadic = <M extends IModel, E extends IModelElement>(
-  e: Element<E>
+  e: ExprNode<E>
 ): MonadicFunction<M> => {
   return (mm: ModelM<any>) => {
     e.render(mm.context);

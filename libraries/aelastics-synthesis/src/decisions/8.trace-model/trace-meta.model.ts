@@ -1,7 +1,6 @@
 import * as t from "aelastics-types"
 import { Model, ModelElement } from "generic-metamodel"
 import { Choice, ConfigurationModel } from "./../3.configuration-model/configuration-meta.model"
-import { DocElement, Document } from "../../m2t"
 
 export const TraceModel_TypeSchema = t.schema("TraceModel_TypeSchema")
 

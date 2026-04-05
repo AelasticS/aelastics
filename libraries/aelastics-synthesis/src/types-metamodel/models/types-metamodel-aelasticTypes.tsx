@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
-import { Element } from "../../jsx/element"
+import { createExprNode } from "../../jsx/handle"
+import { ExprNode } from "../../jsx/element"
 import * as t from "../types-meta.model"
 import {
     TypeObject,
@@ -19,7 +19,7 @@ import { ModelStore, P } from "../../index"
 
 const store = new ModelStore();
 
-export const aelasticsTypesModel: Element<t.ITypeModel> = (
+export const aelasticsTypesModel: ExprNode<t.ITypeModel> = (
 
     <TypeModel name="AelasticsTypes" store={store}>
         <TypeObject name="Type" />

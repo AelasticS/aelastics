@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle";
-import { Element } from "../../jsx/element";
+import { createExprNode } from "../../jsx/handle";
+import { ExprNode } from "../../jsx/element";
 import * as fm from "./fm-meta.model.type";
 import {
   Attribute,
@@ -15,7 +15,7 @@ import { ModelStore } from '../../index';
 
 const testStore = new ModelStore();
 
-const fmModelDiagram: Element<fm.IFeatureDiagram> = (
+const fmModelDiagram: ExprNode<fm.IFeatureDiagram> = (
   <FeatureDiagram
     name="Body Electronics System Feature Model"
     store={testStore}

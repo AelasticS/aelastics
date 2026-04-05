@@ -1,11 +1,11 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
 // const EER = getEER({} as IModel, null)
 
-import { hm } from "../jsx/handle";
+import { createExprNode } from "../jsx/handle";
 import { M2M, E2E } from "./trace-decorators";
 import * as e from "../test/eer-model/EER.meta.model.type";
 import * as r from "../test/relational-model/REL.meta.model.type";
@@ -18,7 +18,7 @@ import {
 import { Column } from "../test/relational-model/REL-components";
 import { Table, RelSchema } from "../test/relational-model/REL-components";
 import { abstractM2M } from "./abstractM2M";
-import { Element, Template } from "../jsx/element";
+import { ExprNode, Template } from "../jsx/element";
 import { Context } from "../jsx/context";
 import { ModelStore } from "../index";
 
@@ -26,7 +26,7 @@ const store = new ModelStore();
 const ctx = new Context();
 ctx.pushStore(store);
 
-const eerSchema1: Element<e.IEERSchema> = (
+const eerSchema1: ExprNode<e.IEERSchema> = (
   <EERSchema id="1" name="Persons" MDA_level="M1" store={store}>
     <Kernel id="2" name="Person">
       <Attribute id="3" name="PersonID">
@@ -59,13 +59,13 @@ class EER2RelTransformation extends abstractM2M<e.IEERSchema, r.IRelSchema> {
   }
 
   @E2E()
-  Entity2Table(e: e.IEntity): Element<r.ITable> {
+  Entity2Table(e: e.IEntity): ExprNode<r.ITable> {
     let f = (a: e.IAttribute) => this.Attribute2Column(a);
     return <Table name={`${e.name}`}>{e.attributes.map(f)}</Table>;
   }
 
   @E2E()
-  Attribute2Column(a: e.IAttribute): Element<r.IColumn> {
+  Attribute2Column(a: e.IAttribute): ExprNode<r.IColumn> {
     return <Column name={a.name}></Column>;
   }
 }

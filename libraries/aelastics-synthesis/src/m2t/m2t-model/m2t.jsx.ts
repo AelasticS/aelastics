@@ -3,7 +3,7 @@ import {
   ConnectionInfo,
   CpxTemplate,
   defaultConnectionInfo,
-  Element,
+  ExprNode,
   Template,
   WithRefProps,
 } from "./../../index";
@@ -12,15 +12,15 @@ import { ModelStore } from "./../../index";
 export type IM2T_Props = WithRefProps<f.M2T_Model> & { store?: ModelStore };
 
 export const M2T: CpxTemplate<IM2T_Props, f.M2T_Model> = (props) => {
-  return new Element(f.M2T_Model, props, undefined);
+  return new ExprNode(f.M2T_Model, props, undefined);
 };
 
 export const Dir: Template<f.IDirectory> = (props) => {
-  return new Element(f.Directory, props, "items");
+  return new ExprNode(f.Directory, props, "items");
 };
 
 export const Doc: Template<f.IDocument> = (props) => {
-  return new Element(f.Document, props, "items");
+  return new ExprNode(f.Document, props, "items");
 };
 
 export const DocParent: Template<f.IDocument> = (props) => {
@@ -32,7 +32,7 @@ export const DocParent: Template<f.IDocument> = (props) => {
     textPropName: "items",
   };
 
-  return new Element(f.Document, props, "items");
+  return new ExprNode(f.Document, props, "items");
 };
 
 export const P: Template<f.IParagraph> = (props) => {
@@ -40,13 +40,13 @@ export const P: Template<f.IParagraph> = (props) => {
   connInfo.textContentAllowed = true;
   connInfo.textPropName = "txtContent";
 
-  return new Element(f.Paragraph, props, connInfo);
+  return new ExprNode(f.Paragraph, props, connInfo);
 };
 
 export const Sec: Template<f.ISection> = (props) => {
-  return new Element(f.Section, props, "elements");
+  return new ExprNode(f.Section, props, "elements");
 };
 
 export const SecParent: Template<f.ISection> = (props) => {
-  return new Element(f.Section, props, "parentSection");
+  return new ExprNode(f.Section, props, "parentSection");
 };

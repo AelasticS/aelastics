@@ -1,6 +1,6 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
+import { createExprNode } from "../../jsx/handle"
 import { ModelStore } from "../../index"
 import { TraceModel, TraceEntry, VarPointTraceEntry } from "../8.trace-model/trace-model-meta.model-components"
 import { EERSchema as ERSchema, Attribute, Kernel as Entity, Relationship } from "../../test/eer-model/EER-components"

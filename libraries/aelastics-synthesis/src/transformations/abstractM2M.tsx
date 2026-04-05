@@ -1,14 +1,14 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2023.
  */
 
 import * as t from "aelastics-types"
 import { IModel, IModelElement } from "generic-metamodel"
-import { hm } from "../jsx/handle"
+import { createExprNode } from "../jsx/handle"
 import { Context } from "../jsx/context"
 import * as tm from "./transformation.model.type"
-import { Element, ResolveElement } from "../jsx/element"
+import { ExprNode, ResolveElement } from "../jsx/element"
 import { ModelStore } from "./../index"
 import { IConfigurationModel, IChoice } from "../decisions/3.configuration-model/configuration-meta.model"
 import * as tmT from "../decisions/8.trace-model/trace-meta.model"
@@ -33,14 +33,14 @@ export interface IVarResolution {
 export interface TraceEntryRecord {
   rule: string // for lookup by ruleName
   targets: IModelElement[] // populated by resolveTargetForJSX during render
-  _jsxElements: Element<IModelElement>[] // for resolveJSXElement / resolveAllJSXElements
+  _jsxElements: ExprNode<IModelElement>[] // for resolveJSXElement / resolveAllJSXElements
 }
 
 // Raw data stored during template() execution; converted to trace JSX
 // in createTraceModel() when output.instance is available.
 export interface RawTraceEntryData {
   sourceModelElement: IModelElement
-  jsxElements: Element<IModelElement>[]
+  jsxElements: ExprNode<IModelElement>[]
   ruleName: string
   ruleType: "RegularRule" | "VariabilityPoint"
   variabilityOption?: string
@@ -80,13 +80,13 @@ export class M2MContext<P = undefined> extends Context {
   public output: IODescr = {}
   public transformation: TransformationDescr = {}
   public currentElementDecision: Stack<IChoice[]> = new Stack<IChoice[]>()
-  public traceModel?: Element<tmT.ITraceModel>
+  public traceModel?: ExprNode<tmT.ITraceModel>
 
   // Fast O(1) lookup by source element
   public readonly sourceIndex: Map<IModelElement, TraceEntryRecord[]> = new Map()
 
   // Fast O(1) lookup by JSX element — private, used only by resolveTargetForJSX()
-  private readonly jsxIndex: Map<Element<IModelElement>, TraceEntryRecord> = new Map()
+  private readonly jsxIndex: Map<ExprNode<IModelElement>, TraceEntryRecord> = new Map()
 
   // Raw trace data collected during template(); converted to JSX lazily in createTraceModel()
   public readonly rawTraceEntries: RawTraceEntryData[] = []
@@ -107,7 +107,7 @@ export class M2MContext<P = undefined> extends Context {
 
   public makeTrace(
     sourceModelElement: IModelElement,
-    jsxElements: Element<IModelElement>[],
+    jsxElements: ExprNode<IModelElement>[],
     ruleName: string,
     ruleType: "RegularRule" | "VariabilityPoint",
     variabilityOption?: string,
@@ -148,7 +148,7 @@ export class M2MContext<P = undefined> extends Context {
     }
   }
 
-  public resolveTargetForJSX(jsxElement: Element<IModelElement>, modelElement: IModelElement): void {
+  public resolveTargetForJSX(jsxElement: ExprNode<IModelElement>, modelElement: IModelElement): void {
     const entry = this.jsxIndex.get(jsxElement)
     if (entry) {
       entry.targets.push(modelElement)
@@ -183,7 +183,7 @@ export class M2MContext<P = undefined> extends Context {
     return entry.targets
   }
 
-  public resolveJSXElement(input: IModelElement, ruleName?: string, targetType?: t.Any): Element<IModelElement> {
+  public resolveJSXElement(input: IModelElement, ruleName?: string, targetType?: t.Any): ExprNode<IModelElement> {
     const entries = this.sourceIndex.get(input)
     if (!entries) throw new Error(`Target JSXElement for ${input} source model element does not exist!`)
 
@@ -206,7 +206,7 @@ export class M2MContext<P = undefined> extends Context {
     return entry._jsxElements[0]
   }
 
-  public resolveAllJSXElements(input: IModelElement, ruleName?: string, targetType?: t.Any): Element<IModelElement>[] {
+  public resolveAllJSXElements(input: IModelElement, ruleName?: string, targetType?: t.Any): ExprNode<IModelElement>[] {
     const entries = this.sourceIndex.get(input)
     if (!entries) throw new Error(`Target JSXElements for ${input} source model element do not exist!`)
 
@@ -235,7 +235,7 @@ export interface IM2M<
   extra?: EM
   configModel?: CM
 
-  template(props: S): Element<S, D>
+  template(props: S): ExprNode<S, D>
 
   transform(source: S): D
 }
@@ -258,7 +258,7 @@ export abstract class abstractM2M<
     this.configModel = configModel
   }
 
-  abstract template(props: S): Element<S, D>
+  abstract template(props: S): ExprNode<S, D>
 
   public transform(source: S, param?: P): D {
     this.context.param = param
@@ -294,10 +294,10 @@ export abstract class abstractM2M<
   }
 
   /**
-   * Serializes an Element<> JSX tree into a human-readable JSX string.
+   * Serializes an ExprNode<> JSX tree into a human-readable JSX string.
    * Traverses the element tree directly — no annotations needed.
    */
-  private renderToJsx(element: Element<any>, level: number = 0, indent: number = 2): string {
+  private renderToJsx(element: ExprNode<any>, level: number = 0, indent: number = 2): string {
     if (!element) return ""
 
     const lines: string[] = []
@@ -321,19 +321,19 @@ export abstract class abstractM2M<
 
     // Collect renderable children
     const childLines: string[] = []
-    for (const child of element.children) {
+    for (const child of element.childArray) {
       if (child === null || child === undefined) continue
       if (typeof child === "string") {
         childLines.push(`${" ".repeat((level + 1) * indent)}${child}`)
       } else if (Array.isArray(child)) {
         for (const el of child) {
-          if (el && el instanceof Element) {
+          if (el && el instanceof ExprNode) {
             childLines.push(this.renderToJsx(el, level + 1, indent))
           }
         }
       } else if (typeof child === "function") {
         childLines.push(`${" ".repeat((level + 1) * indent)}{() => ...}`)
-      } else if (child instanceof Element) {
+      } else if (child instanceof ExprNode) {
         childLines.push(this.renderToJsx(child, level + 1, indent))
       }
     }
@@ -364,7 +364,7 @@ export abstract class abstractM2M<
       if (skipKeys.has(key)) continue
       if (value === undefined || value === null) continue
 
-      if (value instanceof Element) {
+      if (value instanceof ExprNode) {
         // Inline nested Element prop — render compactly
         const inlineJsx = this.renderToJsx(value, 0, indent).trim()
         parts.push(`${key}={${inlineJsx}}`)
@@ -374,7 +374,7 @@ export abstract class abstractM2M<
         parts.push(`${key}={${value}}`)
       } else if (Array.isArray(value)) {
         const items = value.map((v) => {
-          if (v instanceof Element) return this.renderToJsx(v, 0, indent).trim()
+          if (v instanceof ExprNode) return this.renderToJsx(v, 0, indent).trim()
           if (typeof v === "string") return `"${v}"`
           if (typeof v === "object" && v !== null && "name" in v) return v.name
           return String(v)
@@ -393,7 +393,7 @@ export abstract class abstractM2M<
     return parts.length > 0 ? " " + parts.join(" ") : ""
   }
 
-  private createTraceModel(): Element<tmT.ITraceModel> {
+  private createTraceModel(): ExprNode<tmT.ITraceModel> {
     // Now output.instance is available — build trace JSX entries from raw data
     const targetElementNamespace = this.context.output.instance
       ? `${this.context.output.instance.path}/${this.context.output.instance.name}`

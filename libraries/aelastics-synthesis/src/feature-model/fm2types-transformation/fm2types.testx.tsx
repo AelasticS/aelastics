@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { Element, ElementInstance } from "../../jsx/element";
-import { hm } from "../../jsx/handle";
+import { ExprNode, ElementInstance } from "../../jsx/element";
+import { createExprNode } from "../../jsx/handle";
 import * as fm from "../fm-metamodel/fm-meta.model.type";
 
 import { FM2TypesTransformations } from "./fm2types-transformation";
@@ -30,7 +30,7 @@ const store = new ModelStore();
 const ctx: Context = new Context();
 ctx.pushStore(store);
 
-const featureModel: Element<fm.IFeatureDiagram> = (
+const featureModel: ExprNode<fm.IFeatureDiagram> = (
   <FeatureDiagram name="Body Electronics System Feature Model" store={store}>
     <RootFeature
       name="Body Electronics System"
@@ -88,7 +88,7 @@ const typeModel = new FM2TypesTransformations(store).transform(
   featureModel.render(ctx)
 );
 
-const outputTypeModelExample1: Element<t.ITypeModel> = (
+const outputTypeModelExample1: ExprNode<t.ITypeModel> = (
   <TypeModel name="FirstFMDiagram_type_model">
     <TypeObject name="BodyElectronicsSystem_type">
       <Property
@@ -99,7 +99,7 @@ const outputTypeModelExample1: Element<t.ITypeModel> = (
   </TypeModel>
 );
 
-const outputTypeModelExample2: Element<t.ITypeModel> = (
+const outputTypeModelExample2: ExprNode<t.ITypeModel> = (
   <TypeModel name="FirstFMDiagram_type_model" store={store}>
     <TypeObject name="BodyElectronicsSystem_type"></TypeObject>
     <TypeOptional>
@@ -108,7 +108,7 @@ const outputTypeModelExample2: Element<t.ITypeModel> = (
   </TypeModel>
 );
 
-const outputTypeModelExample3: Element<t.ITypeModel> = (
+const outputTypeModelExample3: ExprNode<t.ITypeModel> = (
   <TypeModel name="FirstFMDiagram_type_model" store={store}></TypeModel>
 );
 
@@ -116,7 +116,7 @@ const outputTypeModelExample3: Element<t.ITypeModel> = (
 
 describe("Test FM2Type transformations", () => {
   it("Create type model", () => {
-    const m1: Element<fm.IFeatureDiagram> = (
+    const m1: ExprNode<fm.IFeatureDiagram> = (
       <FeatureDiagram
         name="Body Electronics System Feature Model1"
         store={store}
@@ -132,7 +132,7 @@ describe("Test FM2Type transformations", () => {
   });
 
   it("tests root to type model", () => {
-    const m1: Element<fm.IFeatureDiagram> = (
+    const m1: ExprNode<fm.IFeatureDiagram> = (
       <FeatureDiagram
         name="Body Electronics System Feature Model2"
         store={store}
@@ -158,7 +158,7 @@ describe("Test FM2Type transformations", () => {
   });
 
   it("tests root to optional in type model", () => {
-    const m1: Element<fm.IFeatureDiagram> = (
+    const m1: ExprNode<fm.IFeatureDiagram> = (
       <FeatureDiagram
         name="Body Electronics System Feature Model3"
         store={store}
@@ -195,7 +195,7 @@ describe("Test FM2Type transformations", () => {
   });
 
   it("tests soliratry to object property in type model", () => {
-    const m1: Element<fm.IFeatureDiagram> = (
+    const m1: ExprNode<fm.IFeatureDiagram> = (
       <FeatureDiagram
         name="Body Electronics System Feature Model4"
         store={store}
@@ -238,7 +238,7 @@ describe("Test FM2Type transformations", () => {
   });
 
   it("tests soliraty to optional object property in type model", () => {
-    const m1: Element<fm.IFeatureDiagram> = (
+    const m1: ExprNode<fm.IFeatureDiagram> = (
       <FeatureDiagram
         name="Body Electronics System Feature Model5"
         store={store}
@@ -282,7 +282,7 @@ describe("Test FM2Type transformations", () => {
   });
 
   it("tests solitary to array object property in type model", () => {
-    const m1: Element<fm.IFeatureDiagram> = (
+    const m1: ExprNode<fm.IFeatureDiagram> = (
       <FeatureDiagram
         name="Body Electronics System Feature Model6"
         store={store}
@@ -328,7 +328,7 @@ describe("Test FM2Type transformations", () => {
   });
 
   it("test attribute to object property", () => {
-    const m1: Element<fm.IFeatureDiagram> = (
+    const m1: ExprNode<fm.IFeatureDiagram> = (
       <FeatureDiagram
         name="Body Electronics System Feature Model7"
         store={store}
@@ -381,7 +381,7 @@ describe("Test FM2Type transformations", () => {
   });
 
   // // TODO Example 1 of result type model
-  // const resultTypeModel: Element<t.ITypeModel> = (
+  // const resultTypeModel: ExprNode<t.ITypeModel> = (
   // <TypeModel name="FirstFMDiagram_type_model" store={store}>
   //   <TypeOptional
   //     optionalType={

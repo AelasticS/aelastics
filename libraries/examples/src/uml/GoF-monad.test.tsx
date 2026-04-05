@@ -2,9 +2,9 @@
  * Author: Sinisa Neskovic
  * Copyright (c) 2023 Aelastics
  */
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { MonadicFunction, ModelM, makeMonadic, hm, ModelMonad } from "aelastics-synthesis"
+import { MonadicFunction, ModelM, makeMonadic, createExprNode, ModelMonad } from "aelastics-synthesis"
 import { Go4Monad } from "./GoF-monad"
 import * as uml from "./uml.jsx-comp"
 import * as umlT from "./uml.meta.model.type"

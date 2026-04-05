@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
-import { Element, ModelStore } from "../../index"
+import { createExprNode } from "../../jsx/handle"
+import { ExprNode, ModelStore } from "../../index"
 import {
   DecisionModel,
   ElementIssue,
@@ -12,7 +12,7 @@ import {
 
 import * as t from "./../1.decision-model/decision-meta.model"
 
-export const RelationSchemaDesignIssues = (store: ModelStore): Element<t.IDecisionModel> => (
+export const RelationSchemaDesignIssues = (store: ModelStore): ExprNode<t.IDecisionModel> => (
   <DecisionModel
     name="RelationSchemaDesign"
     description="Design space for persistence strategies"

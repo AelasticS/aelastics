@@ -1,7 +1,7 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../jsx/handle"
-import { Element } from "../jsx/element"
+import { createExprNode } from "../jsx/handle"
+import { ExprNode } from "../jsx/element"
 import * as t from "./types-meta.model"
 import {
   TypeObject,
@@ -27,7 +27,7 @@ import { ModelStore } from "../index"
 
 const store = new ModelStore()
 
-// const exampleOfReferencing: Element<t.ITypeModel> = (
+// const exampleOfReferencing: ExprNode<t.ITypeModel> = (
 //   <TypeModel name="TypeModel" store={store}>
 //     <Object name="Object" $local_id="1">
 //       <Property name="prop1" />
@@ -40,7 +40,7 @@ const store = new ModelStore()
 
 import { importPredefinedTypes } from "./predefined-model"
 
-const typeModel: Element<t.ITypeModel> = (
+const typeModel: ExprNode<t.ITypeModel> = (
   <TypeModel name="FirstTypeModel" store={store}>
     {importPredefinedTypes("../FirstTypeModel")}
     <TypeObject name="Person">
@@ -183,7 +183,7 @@ describe("Type instance", () => {
 
   it("Test object reference", () => {
 
-    const typeModel: Element<t.ITypeModel> = (
+    const typeModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="ObjectTypeModel" store={store}>
         {importPredefinedTypes("../ObjectTypeModel")}
 
@@ -205,7 +205,7 @@ describe("Type instance", () => {
       </TypeModel>
     )
 
-    const personModel: Element<t.ITypeModel> = (
+    const personModel: ExprNode<t.ITypeModel> = (
       <TypeModel name="PersonTypeModel" store={store}>
         {importPredefinedTypes("../PersonTypeModel")}
 

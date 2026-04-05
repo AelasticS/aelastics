@@ -1,8 +1,8 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
 
-import { hm } from "../../jsx/handle";
-import { Element } from "../../jsx/element";
+import { createExprNode } from "../../jsx/handle";
+import { ExprNode } from "../../jsx/element";
 import * as et from "../../test/eer-model/EER.meta.model.type";
 import { EERSchema, Kernel, Attribute, Domain, Relationship, OrdinaryMapping, Weak, WeakMapping } from "../../test/eer-model/EER-components";
 
@@ -14,7 +14,7 @@ const testStore = new ModelStore();
 const context = new Context();
 
 
-export const eerSchema1: Element<et.IEERSchema> = (
+export const eerSchema1: ExprNode<et.IEERSchema> = (
     <EERSchema name="Persons" MDA_level="M1" store={testStore}>
         <Kernel name="Person">
             <Attribute name="personId" isKey={true}>

@@ -1,11 +1,11 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
-import { Element, ModelStore } from "../../index"
+import { createExprNode } from "../../jsx/handle"
+import { ExprNode, ModelStore } from "../../index"
 import { EERSchema, Attribute, Domain, Relationship, Role, Entity } from "../../test/eer-model/EER-components"
 import * as t from "./../../test/eer-model/EER.meta.model.type"
 
-export const CompanySchema = (store: ModelStore): Element<t.IEERSchema> => {
+export const CompanySchema = (store: ModelStore): ExprNode<t.IEERSchema> => {
   return (
     <EERSchema name="CompanySchema" MDA_level="M1" store={store}>
       <Entity name="Person">

@@ -1,16 +1,14 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 // /*
 //  * Copyright (c) AelasticS 2022.
 //  */
 
-import { hm, Template } from "aelastics-synthesis"
+import { createExprNode, Template, ModelStore, ExprNode } from "aelastics-synthesis"
 import * as t from "aelastics-types"
 import { Process, Sequence, Task, Document, OutputDocument, InputDocument, Parallel } from "./BPM.jsx-comps"
 import { IProcess, ISequence, ITask } from "./BPM.meta.model.type"
 import { dep1 } from "../Organization/example-department"
 import { IOrganization } from "../Organization/organization.model.type"
-import { ModelStore } from "aelastics-synthesis"
-import { Element } from "aelastics-synthesis"
 
 export const StaticApproval: IProcess = (
   <Process name="Approval">

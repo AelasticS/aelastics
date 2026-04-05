@@ -10,7 +10,7 @@ import {
 } from "generic-metamodel"
 import * as t from "aelastics-types"
 import { ServerProxy } from "aelastics-store"
-import { Element } from "../index"
+import { ExprNode } from "../index"
 import { doParseURL } from "./path"
 import { Context } from "../jsx/context"
 import { JSX_Export as je } from "../index"
@@ -175,7 +175,7 @@ export class ModelStore {
     }
   }
 
-  public evaluate<P extends IModelElement>(element: Element<P>): P {
+  public evaluate<P extends IModelElement>(element: ExprNode<P>): P {
     const ctx = new Context()
     ctx.pushStore(this)
     return element.render<P>(ctx)
@@ -215,7 +215,7 @@ export class ModelStore {
       case AccessProtocol["jsx-file"]:
         const [pathType, segments] = doParseURL(path)
         const module = await import(path)
-        const el: Element<IModelElement> = module.default()
+        const el: ExprNode<IModelElement> = module.default()
         if (el.type.isOfType(Namespace)) return el.render(ctx)
         throw new Error(
           `ImportNamespace: element ${el.type.name} is not a namespace or model`,

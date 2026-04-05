@@ -1,38 +1,38 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
-import {hm} from '../../jsx/handle'
+import { createExprNode } from "../../jsx/handle"
 import * as t from "aelastics-types"
-import { Process, Sequence, Task, Document, OutputDocument, InputDocument, Parallel} from './BPM.components'
-import { IProcess, ISequence, ITask } from './BPM.meta.model.type'
-import { dep1 } from './example-department'
-import { IOrganization } from './organization.model.type'
-import { ModelStore } from '../../index'
-import { Element } from '../../jsx/element'
+import { Process, Sequence, Task, Document, OutputDocument, InputDocument, Parallel } from "./BPM.components"
+import { IProcess, ISequence, ITask } from "./BPM.meta.model.type"
+import { dep1 } from "./example-department"
+import { IOrganization } from "./organization.model.type"
+import { ModelStore } from "../../index"
+import { ExprNode } from '../../jsx/element'
 
-// export const Approval_X_times_Par: (x: number) => Element<IProcess> = (x) => {
-    export const Approval_X_times_Par = (x: number) => () => {
-        let f: () => Element<IProcess> = () => {
-            let tasks =  Array<string>() // create approval tasks names
-            for (let i = 1; i <= x; i++) {
-                tasks.push(`${i}`)
-            }
-            return (
-                <Process name='Approval' store={new ModelStore()}>
-                    <Sequence>
-                        <Task name='write' />
-                        <Parallel>
-                            {
-                                tasks.map(t => <Task name={`approval ${t}`} />)
-                            }
-                        </Parallel>
-                    </Sequence>
-                </Process>)
-        }
-        return f;
+// export const Approval_X_times_Par: (x: number) => ExprNode<IProcess> = (x) => {
+export const Approval_X_times_Par = (x: number) => () => {
+  let f: () => ExprNode<IProcess> = () => {
+    let tasks = Array<string>() // create approval tasks names
+    for (let i = 1; i <= x; i++) {
+      tasks.push(`${i}`)
     }
+    return (
+      <Process name="Approval" store={new ModelStore()}>
+        <Sequence>
+          <Task name="write" />
+          <Parallel>
+            {
+              tasks.map(t => <Task name={`approval ${t}`} />)
+            }
+          </Parallel>
+        </Sequence>
+      </Process>)
+  }
+  return f
+}
 /*
     export const Approval_X_Par: (x: number, isParallel: boolean) => STX.Template<IProcessProps, IProcess> =
     (x, isParallel) => {
@@ -88,7 +88,7 @@ import { Element } from '../../jsx/element'
         return f
     }
 
- */   
+ */
 /*
     const Approval_2_Seq_v2 = (Approval: STX.Template<IProcessProps, IProcess>) => {
         return <Process name='Approval'>
@@ -136,6 +136,7 @@ const Approval_Par_Write_ConfigHOC = Approval_Par_ConfigHOC(<Task name="write" /
 const Approval_Par_Write_Dept1 = Approval_Par_Write_ConfigHOC(dep1)
 */
 describe("Dummy test", () => {
-    it("works if true is truthy", () => {
-      expect(true).toBeTruthy()
-    })})
+  it("works if true is truthy", () => {
+    expect(true).toBeTruthy()
+  })
+})

@@ -1,11 +1,11 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
-import {hm} from '../../jsx/handle'
+import { createExprNode } from '../../jsx/handle'
 import { Context } from '../../jsx/context';
-import { Element } from '../../jsx/element';
+import { ExprNode } from '../../jsx/element';
 import { ModelStore } from '../../index'
 import { Process, Sequence, Task, Document, OutputDocument, InputDocument } from './BPM.components'
 import { IProcess, ISequence } from './BPM.meta.model.type'
@@ -19,7 +19,7 @@ describe("Dummy test", () => {
 describe('test create function', () => {
 
   it('should create direct Sequence tag', () => {
-    let e: Element<IProcess> = <Process name='Approval' store={new ModelStore()}>
+    let e: ExprNode<IProcess> = <Process name='Approval' store={new ModelStore()}>
       <Sequence name='seq1'>
         <Task name='write' />
         <Task name='approve' />
@@ -46,7 +46,7 @@ describe('test create function', () => {
 describe('test create function', () => {
 
   it('should connect using references', () => {
-    let e: Element<IProcess> = <Process name='Approval' store={new ModelStore()}>
+    let e: ExprNode<IProcess> = <Process name='Approval' store={new ModelStore()}>
       <Sequence name='seq1'>
         <Document name='Proposal' $id='doc1' />
         <Document name='Final result' $id='doc2' />

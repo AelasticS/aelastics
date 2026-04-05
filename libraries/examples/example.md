@@ -12,7 +12,7 @@ A detailed explanation of the AelasticS framework and its full capabilities is b
 Models are defined as trees of composable functions, where each domain concept (e.g., Entity, Attribute, Table, Column) is mapped to a corresponding JSX component. This approach enables models to be expressed as nested JSX markup, which is compiled to function calls that instantiate model elements and their relationships. For example, an entity-relationship (ER) schema is represented as:
 
 ```typescript
-const eerSchema: Element<IEERSchema> = (
+const eerSchema: ExprNode<IEERSchema> = (
     <EERSchema name="Persons">
         <Kernel name="Person">
             <Attribute name="PersonName">
@@ -40,7 +40,7 @@ Model templates in AelasticS leverage the expressive power of TypeScript embedde
 For example, a template for a generic document pattern can be defined as a function that takes the document name as a parameter and returns a JSX model structure:
 
 ```typescript
-function DocumentPattern(documentName: string): Element<IEERSchema> {
+function DocumentPattern(documentName: string): ExprNode<IEERSchema> {
   return (
     <EERSchema name={`${documentName}-Schema`}>
       <Kernel name={documentName}>
@@ -121,17 +121,17 @@ For example, a variable point in a transformation might be defined as:
 
 ```typescript
 @VarPoint('RelationshipMapping')
-RelationshipMapping(rel: et.IRelationship): Element<rt.IRelSchema> {
+RelationshipMapping(rel: et.IRelationship): ExprNode<rt.IRelSchema> {
   // abstract rule for relationship mapping
 }
 
 
-RelationshipAsForeignKey(rel: et.IRelationship): Element<rt.IRelSchema> {
+RelationshipAsForeignKey(rel: et.IRelationship): ExprNode<rt.IRelSchema> {
   // concrete variant: map relationship as foreign key
 }
 
 @VarOption('RelationshipMapping', 'JoinTable')
-RelationshipAsJoinTable(rel: et.IRelationship): Element<rt.IRelSchema> {
+RelationshipAsJoinTable(rel: et.IRelationship): ExprNode<rt.IRelSchema> {
 
   // concrete variant: map relationship as join table
 }
@@ -149,7 +149,7 @@ For instance, the transformation from ER entities to relational tables is define
 ```typescript
 @E2E()
 @SpecPoint()
-Entity2Table(e: et.IEntity): Element<rt.ITable> {
+Entity2Table(e: et.IEntity): ExprNode<rt.ITable> {
     return (
         <r.Table name={e.name}>
             {e.attributes.map((a) => this.Attribute2Column(a))}

@@ -1,11 +1,11 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 /*
  * Copyright (c) AelasticS 2022.
  */
 
 // const EER = getEER({} as IModel, null)
 
-import { hm } from "../../jsx/handle"
+import { createExprNode } from "../../jsx/handle"
 import { VarPoint, VarOption, Default } from "../../variability/var-decorators"
 import { Option, And, Not, Or } from "./../../variability/eval-operators"
 import {
@@ -22,7 +22,7 @@ import {
 } from "../../test/eer-model/EER.meta.model.type"
 import * as rmT from "./../09-relational-schema/REL.meta.model.type"
 import { abstractM2M } from "../../transformations/abstractM2M"
-import { Element, Resolve } from "../../jsx/element"
+import { ExprNode, Resolve } from "../../jsx/element"
 import { E2E, ModelStore, M2M, SpecPoint, SpecOption } from "../../index"
 import * as cm from "./../3.configuration-model/configuration-meta.model"
 
@@ -54,7 +54,7 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
   }
 
   @E2E()
-  Entity2Table(e: IEntity): Element<rmT.ITable> {
+  Entity2Table(e: IEntity): ExprNode<rmT.ITable> {
     return <Table name={this.applyNaming(e.name)}>{e.attributes.map((a) => this.Attribute2Column(a))}</Table>
   }
 
@@ -71,7 +71,7 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
 
   */
   @E2E()
-  Attribute2Column(a: IAttribute): Element<rmT.IColumn> {
+  Attribute2Column(a: IAttribute): ExprNode<rmT.IColumn> {
     return <Column name={this.applyNaming(a.name)} isKey={a.isKey} isAutoincrement={this.primaryKeyStrategy(a)} type={this.getColumnType(a.attrDomain)}></Column>
   }
 
@@ -80,14 +80,14 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
   // registers its options bucket in the registry before @VarOption decorators run on later methods.
   @E2E()
   @VarPoint("OneToManyStrategy")
-  RelationshipMapping(rel: IRelationship): Element<rmT.IColumn> | Element<rmT.ITable> {
+  RelationshipMapping(rel: IRelationship): ExprNode<rmT.IColumn> | ExprNode<rmT.ITable> {
     throw new Error("Not implemented VarOptions for VarPoint RelationshipMapping")
-    // return null as unknown as Element<IForeignKey> | Element<ITable>;
+    // return null as unknown as ExprNode<IForeignKey> | ExprNode<ITable>;
   }
 
   @Default()
   @VarOption("RelationshipMapping", Option("ForeignKey"))
-  relationshipAsForeignKey(rel: IRelationship): Element<rmT.IColumn> {
+  relationshipAsForeignKey(rel: IRelationship): ExprNode<rmT.IColumn> {
     const fkSide = this.getFKSide(rel)
     const pkSide = this.getPKSide(rel)
 
@@ -106,7 +106,7 @@ export class EER2RelDomainWithDecisionTransformation extends abstractM2M<
   }
 
   @VarOption("RelationshipMapping", Option("JoinTable"))
-  relationshipAsJoinTable(rel: IRelationship): Element<rmT.ITable> {
+  relationshipAsJoinTable(rel: IRelationship): ExprNode<rmT.ITable> {
     const role1 = rel.roles[0]
     const role2 = rel.roles[1]
 

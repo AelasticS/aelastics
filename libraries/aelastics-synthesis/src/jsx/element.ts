@@ -48,19 +48,19 @@ export type RenderPros = {
 };
 
 // export type Template<P extends WithRefProps<g.IModelElement>,
-//       R extends Partial<g.IModelElement> = P> = (props: P) => Element<R>
+//       R extends Partial<g.IModelElement> = P> = (props: P) => ExprNode<R>
 
 export type Template<P extends g.IModelElement> = (
   props: WithRefProps<P>
-) => Element<WithRefProps<P>, P>;
+) => ExprNode<WithRefProps<P>, P>;
 
 export type CpxTemplate<P extends {}, R extends g.IModelElement> = (
   props: P
-) => Element<P, R>;
+) => ExprNode<P, R>;
 
 export type ValueTemplate<P extends t.ObjectLiteral> = (
   props: WithRefProps<P>
-) => Element<WithRefProps<P>, P>;
+) => ExprNode<WithRefProps<P>, P>;
 
 export type Super<P extends {}, R extends g.IModelElement> =
   | Template<R>
@@ -84,10 +84,13 @@ export function defaultConnectionInfo(propName?: string): ConnectionInfo {
   };
 }
 
-export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
-  public children: Element<any>[] = [];
+export class ExprNode<P extends WithRefProps<g.IModelElement>, R = P> {
+  private _children: ExprNode<any>[] = [];
+  public get children(): ExprNode<any>[] | ExprNode<any> { return this._children; }
+  public set children(val: ExprNode<any>[] | ExprNode<any>) { this._children = Array.isArray(val) ? val : [val]; }
+  public get childArray(): ExprNode<any>[] { return this._children; }
   public isAbstract: boolean = false; // used to resolve SpecOption decorator
-  public subElement?: Element<any>;
+  public subElement?: ExprNode<any>;
   public readonly connectionInfo?: ConnectionInfo;
   public props: P;
   public rule?: string;
@@ -115,7 +118,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
       if (Array.isArray(value)) {
         tmp = value.map((v) => {
-          if (v instanceof Element) {
+          if (v instanceof ExprNode) {
             const modelElement = v.render(ctx, isImport);
 
             if (ctx instanceof M2MContext) {
@@ -127,7 +130,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
             return v;
           }
         });
-      } else if (value instanceof Element) {
+      } else if (value instanceof ExprNode) {
         tmp = value.render(ctx, isImport);
 
         if (ctx instanceof M2MContext) {
@@ -210,7 +213,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
       // TODO: Consider overring of specPoint
 
       // take children from spec
-      this.children.push(...this.subElement.children);
+      this._children.push(...this.subElement.childArray);
       return sub;
     }
 
@@ -224,7 +227,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
       if (Object.keys(this.props).length > 1) {
         throw new Error(
-          `Element '${this.type.fullPathName}' has $ref property - cannot have additional properties!`
+          `ExprNode '${this.type.fullPathName}' has $ref property - cannot have additional properties!`
         );
       }
 
@@ -238,14 +241,14 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
       if (Object.keys(this.props).length > 1) {
         throw new Error(
-          `Element '${this.type.fullPathName}' has $refByID property - cannot have additional properties!`
+          `ExprNode '${this.type.fullPathName}' has $refByID property - cannot have additional properties!`
         );
       }
 
       return { type: this.type, instance: el };
     } else if (this.props?.$refByName) {
       // is reference to an existing element by name
-      const fullPathName = Element.getFullPathName(this.props.$refByName, ctx); // `${this.props.$refByName}`;
+      const fullPathName = ExprNode.getFullPathName(this.props.$refByName, ctx); // `${this.props.$refByName}`;
       el = store.getByName(fullPathName);
       if (!el)
         throw new ReferenceError(
@@ -254,7 +257,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
       if (Object.keys(this.props).length > 1) {
         throw new Error(
-          `Element '${this.type.fullPathName}' has $refByName property - cannot have additional properties!`
+          `ExprNode '${this.type.fullPathName}' has $refByName property - cannot have additional properties!`
         );
       }
 
@@ -328,7 +331,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     }
     let objType = parent.type as t.ObjectType<any, any>;
     let mapPropTypes = objType.allProperties;
-    this.children.forEach((childElement) => {
+    this._children.forEach((childElement: ExprNode<any>) => {
       if (childElement === null) return; // null prevents rendering https://legacy.reactjs.org/docs/conditional-rendering.html#preventing-component-from-rendering
       if (!childElement) {
         throw new Error(
@@ -371,21 +374,21 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
     }
     return parent.instance as P;
 
-    function renderChild(childElement: Element<any, any>) {
+    function renderChild(childElement: ExprNode<any, any>) {
 
       // check if childElement is type of ResolveElement
       if (childElement instanceof ResolveElement) {
         const tempE: ResolveElement = childElement;
 
         // Resolve element can have only one child and it has to be a function
-        if (childElement.children.length !== 1) {
+        if (childElement.childArray.length !== 1) {
           throw new Error(
             `Resolve element for "${tempE.props.name ? tempE.props.name : ''
             }" can have only one child element!`
           );
         }
 
-        if (typeof childElement.children[0] !== "function") {
+        if (typeof childElement.childArray[0] !== "function") {
           throw new Error(
             `Resolve element for "${tempE.props.name ? tempE.props.name : ''
             }" must have function as a child element!`
@@ -405,9 +408,9 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
         }
 
         // call template function and replace original childElement
-        let func: Function = childElement.children[0];
+        let func: Function = childElement.childArray[0];
 
-        // TODO childElement can be type of Element or ResolveElement
+        // TODO childElement can be type of ExprNode or ResolveElement
         let childFuncElement = func(targetModelElement);
 
 
@@ -424,7 +427,7 @@ export class Element<P extends WithRefProps<g.IModelElement>, R = P> {
 
       connectToParent(childElement, ctx, isImport);
 
-      function connectToParent(childElement: Element<g.IModelElement>, ctx: Context, isImport: boolean | undefined) {
+      function connectToParent(childElement: ExprNode<g.IModelElement>, ctx: Context, isImport: boolean | undefined) {
 
         const childModelElement = childElement.render(ctx, isImport);
         if (ctx instanceof M2MContext) {
@@ -460,7 +463,7 @@ export const Resolve = (props: IResolveElementProps) => {
   return new ResolveElement(g.ModelElement, props as any, undefined);
 };
 
-export class ResolveElement extends Element<
+export class ResolveElement extends ExprNode<
   WithRefProps<IResolveElementProps>
 > {
   constructor(

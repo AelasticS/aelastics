@@ -1,8 +1,8 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
 import { Context, ModelStore } from "../../index"
-import { Element } from "../../jsx/element"
-import { hm } from "../../jsx/handle"
+import { ExprNode } from "../../jsx/element"
+import { createExprNode } from "../../jsx/handle"
 import {
   InverseProperty,
   Property,
@@ -18,7 +18,7 @@ import { TypeBoolean, TypeNumber, TypeString } from "../../types-metamodel/prede
 
 const store = new ModelStore()
 
-export const EERModel = (store: ModelStore): Element<t.ITypeModel> => (
+export const EERModel = (store: ModelStore): ExprNode<t.ITypeModel> => (
   <TypeModel name="ERMetamodel" store={store}>
     <TypeNumber name="number"></TypeNumber>
     <TypeString name="string"></TypeString>

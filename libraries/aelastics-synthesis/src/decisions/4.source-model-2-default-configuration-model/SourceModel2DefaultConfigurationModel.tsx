@@ -1,8 +1,8 @@
-/** @jsx hm */
+/** @jsx createExprNode */
 
-import { hm } from "../../jsx/handle"
+import { createExprNode } from "../../jsx/handle"
 import { abstractM2M } from "../../transformations/abstractM2M"
-import { Element } from "../../jsx/element"
+import { ExprNode } from "../../jsx/element"
 import { E2E, ModelStore, M2M } from "../../index"
 import { IModel, IModelElement, Model, ModelElement } from "generic-metamodel"
 
@@ -45,7 +45,7 @@ export class SourceModelToDefaultConfigurationModel extends abstractM2M<IModel, 
     )
   }
 
-  private createElementChoices(sourceModelElement: IModelElement): Element<cmT.IDecision> | null {
+  private createElementChoices(sourceModelElement: IModelElement): ExprNode<cmT.IDecision> | null {
 
     const decisionBindingElements = this.getBindingElementBySourceModelElement(sourceModelElement)
     // this shuld be one binding element for each source model element, but eventually it can be more than one, so we need to handle thats
@@ -74,7 +74,7 @@ export class SourceModelToDefaultConfigurationModel extends abstractM2M<IModel, 
     )
   }
 
-  private createChosenOptionForIssue(issue: dmT.IIssue): Element<cmT.IChoice> {
+  private createChosenOptionForIssue(issue: dmT.IIssue): ExprNode<cmT.IChoice> {
 
     let defaultOption: dmT.IOption | undefined = issue.possibleOptions.find((o: dmT.IOption) => {
       return o.isDefault === true
