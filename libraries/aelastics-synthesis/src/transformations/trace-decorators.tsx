@@ -5,7 +5,7 @@
 
 import { abstractM2M, IM2M } from "./abstractM2M"
 import { IModel } from "generic-metamodel"
-import { CpxTemplate, ExprNode } from "../jsx/element"
+import { CpxTemplate, ExprNode, ResolveElement } from "../jsx/element"
 import { AnySchema } from "aelastics-types/lib/annotations/Annotation"
 import { Sec } from "../m2t"
 import { IConfigurationModel } from "../decisions/3.configuration-model/configuration-meta.model"
@@ -71,10 +71,14 @@ export const E2E = function() {
         const jsxElements: ExprNode<any>[] = Array.isArray(result) ? result : [result]
         if (jsxElements.length === 0) return null
 
+        // Filter out ResolveElements — they should not be traced
+        const traceableElements = jsxElements.filter(el => !(el instanceof ResolveElement))
+        if (traceableElements.length === 0) return result
+
         // Infer types from runtime objects
         const fromType = this.context.store.getTypeOf(sourceModelElement)
         // Use type of first element (all should be same type)
-        const toType = jsxElements[0].type
+        const toType = traceableElements[0].type
 
         // Read and always clear lastVarResolution to prevent leak
         const varRes = this.context.lastVarResolution
@@ -86,12 +90,12 @@ export const E2E = function() {
         // but we ignore it — such methods are always "RegularRule".
         if (isAlsoVarPoint && varRes !== undefined) {
           this.context.makeTrace(
-            sourceModelElement, jsxElements, propertyKey,
+            sourceModelElement, traceableElements, propertyKey,
             "VariabilityPoint", varRes.optionName, varRes.choices,
           )
         } else {
           this.context.makeTrace(
-            sourceModelElement, jsxElements, propertyKey, "RegularRule",
+            sourceModelElement, traceableElements, propertyKey, "RegularRule",
           )
         }
 

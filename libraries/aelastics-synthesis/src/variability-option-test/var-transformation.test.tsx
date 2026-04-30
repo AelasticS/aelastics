@@ -8,7 +8,7 @@
 
 
 import { createExprNode } from "../jsx/handle";
-import { VarPoint, VarOption } from "./../variability/var-decorators";
+import { VarPoint, VarOption, Default } from "./../variability/var-decorators"
 import * as et from "../test/eer-model/EER.meta.model.type";
 import * as rt from "../test/relational-model/REL.meta.model.type.v2";
 import * as e from "../test/eer-model/EER-components";
@@ -217,6 +217,7 @@ class EER2RelTransformation extends abstractM2M<et.IEERSchema, rt.IRelSchema> {
     );
   }
 
+  @Default()
   @VarOption("RelationshipToElement", Option('optionToTable'))
   RelatioshipToTable(rel: et.IRelationship): ExprNode<rt.ITable> {
     const codomain = et.getCodomain(rel.roles[0]);

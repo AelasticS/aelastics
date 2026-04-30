@@ -51,7 +51,7 @@ export const Relationship: Template<e.IRelationship> = (props) => {
 }
 
 export const OrdinaryMapping: Template<e.IOrdinaryMapping> = (props) => {
-  return new ExprNode(e.OrdinaryMapping, props, "ordinaryMappings")
+  return new ExprNode(e.OrdinaryMapping, props, "roles")
 }
 
 export const WeakMapping: Template<e.IWeakMapping> = (props) => {
