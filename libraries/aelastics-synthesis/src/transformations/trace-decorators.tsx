@@ -5,20 +5,25 @@
 
 import { abstractM2M, IM2M } from "./abstractM2M"
 import { IModel } from "generic-metamodel"
-import { CpxTemplate, ExprNode, ResolveElement } from "../jsx/element"
-import { AnySchema } from "aelastics-types/lib/annotations/Annotation"
-import { Sec } from "../m2t"
+import { ExprNode, ResolveElement } from "../jsx/element"
 import { IConfigurationModel } from "../decisions/3.configuration-model/configuration-meta.model"
-import * as tmC from "./../decisions/8.trace-model/trace-model-meta.model-components"
+import {
+  __isVarPoint,
+  __isSpecPoint,
+  guardE2E,
+  findPointRegistration,
+  consumePointResolutions,
+  appendDecoratorHistory,
+} from "./decorator-guards"
 
+// Re-export point sentinels — used by point decorators to stamp their wrappers
+export { __isVarPoint, __isSpecPoint }
 
 type Class<T = any> = new (...args: any[]) => T;
 
 // Class decorator — parameter-free
 export const M2M = () => {
   return function <T extends Class<IM2M<any, any, any, any, any>>>(target: T): T {
-    const transformationName = target.name
-
     const decorated = class extends target {
       constructor(...args: any[]) {
         super(...args)
@@ -27,13 +32,6 @@ export const M2M = () => {
     return decorated as unknown as T
   }
 }
-
-// Sentinel used by @SpecPoint/@VarPoint to detect incorrect ordering (they must not wrap @E2E).
-export const __isE2E = "__isE2E"
-
-// Sentinel set by @VarPoint on its wrapper function so that @E2E can detect at decoration time
-// whether the method itself is a VarPoint (both decorators present → VariabilityPoint trace).
-export const __isVarPoint = "__isVarPoint"
 
 /**
  * Method decorator — adds end-to-end tracing to a transformation rule.
@@ -54,12 +52,11 @@ export const E2E = function() {
   ) {
     const original = descriptor.value
 
-    // Determine at decoration time whether this method is ALSO a @VarPoint.
-    // When @E2E is outer (wraps @VarPoint), @VarPoint runs first and marks its wrapper with __isVarPoint.
-    // Only methods that are themselves VarPoints should be traced as "VariabilityPoint".
-    // Methods that merely call VarPoints internally (e.g. Attribute2Column calling applyNaming)
-    // are always "RegularRule".
-    const isAlsoVarPoint = !!(original as any)[__isVarPoint]
+    guardE2E(original, propertyKey)
+
+    // Detect at decoration time whether a point decorator (@VarPoint, @SpecPoint, …)
+    // is present. Uses the registry — no hardcoded sentinel references.
+    const pointReg = findPointRegistration(original)
 
     const wrapped = function(this: abstractM2M<any, any, any, DM>, ...args: any[]) {
         let sourceModelElement = args[0]
@@ -75,34 +72,23 @@ export const E2E = function() {
         const traceableElements = jsxElements.filter(el => !(el instanceof ResolveElement))
         if (traceableElements.length === 0) return result
 
-        // Infer types from runtime objects
-        const fromType = this.context.store.getTypeOf(sourceModelElement)
-        // Use type of first element (all should be same type)
-        const toType = traceableElements[0].type
+        // Consume ALL point resolutions (clears leaks from internally nested calls).
+        // Returns only the resolution belonging to our registered point decorator.
+        const resolution = pointReg
+          ? consumePointResolutions(this.context, pointReg)
+          : undefined
 
-        // Read and always clear lastVarResolution to prevent leak
-        const varRes = this.context.lastVarResolution
-        this.context.lastVarResolution = undefined
-
-        // Trace as "VariabilityPoint" ONLY when this method itself is both @E2E and @VarPoint.
-        // If this method only has @E2E (e.g. Attribute2Column), inner VarPoint calls
-        // (e.g. applyNaming, primaryKeyStrategy) may have set lastVarResolution,
-        // but we ignore it — such methods are always "RegularRule".
-        if (isAlsoVarPoint && varRes !== undefined) {
-          this.context.makeTrace(
-            sourceModelElement, traceableElements, propertyKey,
-            "VariabilityPoint", varRes.optionName, varRes.choices,
-          )
+        if (pointReg && resolution !== undefined) {
+          // Delegate to the point decorator's own makeTrace implementation
+          pointReg.makeTrace(this.context, sourceModelElement, traceableElements, propertyKey, resolution)
         } else {
-          this.context.makeTrace(
-            sourceModelElement, traceableElements, propertyKey, "RegularRule",
-          )
+          this.context.makeTrace(sourceModelElement, traceableElements, propertyKey, "RegularRule")
         }
 
         return result
       }
       // Mark the wrapper so @SpecPoint/@VarPoint can detect incorrect ordering
-    ;(wrapped as any)[__isE2E] = true
+    appendDecoratorHistory(original, wrapped, "E2E")
     descriptor.value = wrapped
     return descriptor
   }

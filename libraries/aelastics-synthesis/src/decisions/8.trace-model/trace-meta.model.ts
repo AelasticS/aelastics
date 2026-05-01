@@ -11,7 +11,7 @@ export const TraceEntry = t.subtype(
     timestamp: t.number,
     source: ModelElement,
     targets: t.arrayOf(ModelElement),
-    ruleType: t.string.derive().oneOf(["RegularRule", "VariabilityPoint"]),
+    ruleType: t.string.derive().oneOf(["RegularRule", "VariabilityPoint", "SpecializationPoint"]),
   },
   "TraceEntry",
   TraceModel_TypeSchema,
@@ -28,13 +28,24 @@ export const VariabilityPointTraceEntry = t.subtype(
   TraceModel_TypeSchema,
 )
 
+export const SpecializationPointTraceEntry = t.subtype(
+  TraceEntry,
+  {
+    ruleType: t.literal("SpecializationPoint"),
+    specializationOption: t.string,
+    sourceType: t.string,
+  },
+  "SpecializationPointTraceEntry",
+  TraceModel_TypeSchema,
+)
+
 export const TraceModel = t.subtype(
   Model,
   {
     transformationSpec: t.string,
     source: Model,
     targets: t.arrayOf(Model),
-    config: ConfigurationModel,
+    config: t.optional(ConfigurationModel),
     traceEntries: t.arrayOf(TraceEntry),
     timestamp: t.string,
     rule: t.string,
@@ -49,3 +60,4 @@ export const TraceModel = t.subtype(
 export type ITraceModel = t.TypeOf<typeof TraceModel>;
 export type ITraceEntry = t.TypeOf<typeof TraceEntry>;
 export type IVarPointTraceEntry = t.TypeOf<typeof VariabilityPointTraceEntry>;
+export type ISpecPointTraceEntry = t.TypeOf<typeof SpecializationPointTraceEntry>;

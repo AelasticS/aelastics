@@ -16,6 +16,10 @@ export const VarPointTraceEntry: Template<tm.IVarPointTraceEntry> = (props) => {
   return new ExprNode(tm.VariabilityPointTraceEntry, props, "traceEntries")
 }
 
+export const SpecPointTraceEntry: Template<tm.ISpecPointTraceEntry> = (props) => {
+  return new ExprNode(tm.SpecializationPointTraceEntry, props, "traceEntries")
+}
+
 export const TargetElement: Template<tm.ITraceEntry> = (props) => {
   return new ExprNode(tm.TraceEntry, props, "targets")
 }

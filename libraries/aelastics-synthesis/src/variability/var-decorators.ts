@@ -1,7 +1,15 @@
 // https://luckylibora.medium.com/typescript-method-decorators-in-depth-problems-and-solutions-74387d51e6a
 
 import { abstractM2M, _privatePop, _privatePush } from "../transformations/abstractM2M"
-import { __isE2E, __isVarPoint } from "../transformations/trace-decorators"
+import {
+  __isVarPoint,
+  guardVarPoint,
+  guardVarOption,
+  guardDefault,
+  registerPointDecorator,
+  appendDecoratorHistory,
+  recordDecorator,
+} from "../transformations/decorator-guards"
 // import * as tcM from "../decisions/3.transformation-configuration/transformation-configuration-meta.model";  // import decision model types for decision model transformation
 import * as tcM from "./../decisions/3.configuration-model/configuration-meta.model"
 import { EvalCondition } from "./eval-operators"
@@ -130,15 +138,9 @@ export const VarPoint = (_issue: string) => {
     // This allows outer decorators (e.g. @E2E) to wrap this method without breaking registration.
     registerVarPoint(target, propertyKey)
 
-    // Throw error if @VarPoint wraps an @E2E method (incorrect decorator order).
-    // The correct order is @E2E outer (upper), @VarPoint inner (lower).
-    if (descriptor.value && (descriptor.value as any)[__isE2E]) {
-      throw new Error(
-        `@VarPoint("${_issue}") on "${propertyKey}" wraps an @E2E() decorator. ` +
-        `@E2E() must be the outer (upper) decorator so it traces the VarPoint result.\n` +
-        `  Correct order:\n    @E2E()\n    @VarPoint("${_issue}")\n    ${propertyKey}(...) { ... }`
-      )
-    }
+    // Throw error if @VarPoint wraps @E2E, or is combined with @SpecPoint.
+    const original = descriptor.value
+    guardVarPoint(original, propertyKey, _issue)
 
     descriptor.value = function(this: any, ...args: any[]) {
       const transformation = this as abstractM2M<any, any, any, tcM.IConfigurationModel>
@@ -183,6 +185,7 @@ export const VarPoint = (_issue: string) => {
 
     // Mark the wrapper so @E2E can detect at decoration time that this method is a VarPoint
     ;(descriptor.value as any)[__isVarPoint] = true
+    appendDecoratorHistory(original, descriptor.value, "VarPoint", { issue: _issue })
 
     return descriptor
   }
@@ -198,6 +201,9 @@ export const VarOption = (
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
+    // @VarOption must not be placed above @E2E — would cause duplicate trace entries.
+    guardVarOption(descriptor.value, propertyKey)
+
     // Use registry lookup — independent of what's currently in target[methodName],
     // so @E2E or any other decorator wrapping the VarPoint method doesn't break registration.
     if (isVarPoint(target, methodName)) {
@@ -213,6 +219,7 @@ export const VarOption = (
       // Čuvaj referencu na VarPoint metodu na ovoj metodi (potrebno za @Default)
       setVarOptionReference(descriptor.value as DecoratedMethod, methodName)
     }
+    recordDecorator(descriptor.value, "VarOption", { varPointMethod: methodName })
     return descriptor
   }
 }
@@ -223,6 +230,8 @@ export const Default = () => {
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
+    guardDefault(descriptor.value, propertyKey)
+
     // Reads __VarOptionRef set by @VarOption, then registers via registry (not target[ref]).
     const varOptionRef = getVarOptionReference(descriptor.value as DecoratedMethod)
 
@@ -234,6 +243,21 @@ export const Default = () => {
       }
     }
 
+    recordDecorator(descriptor.value, "Default")
     return descriptor
   }
 }
+
+// ─── Self-registration ────────────────────────────────────────────────────────
+// @VarPoint registers as a point decorator so @E2E can trace it without
+// hardcoded sentinel references.
+registerPointDecorator({
+  sentinel: __isVarPoint,
+  getResolution: (ctx) => ctx.lastVarResolution,
+  clearResolution: (ctx) => { ctx.lastVarResolution = undefined },
+  makeTrace: (ctx, source, elements, ruleName, resolution) => {
+    ctx.makeTrace(source, elements, ruleName, "VariabilityPoint", resolution.optionName, resolution.choices)
+  },
+})
+
+

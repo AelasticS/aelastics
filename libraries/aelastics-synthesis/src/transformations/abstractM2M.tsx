@@ -27,6 +27,11 @@ export interface IVarResolution {
   choices: IChoice[]
 }
 
+export interface ISpecResolution {
+  optionName: string
+  sourceTypeName: string
+}
+
 // Lightweight runtime record for resolve lookups (sourceIndex, jsxIndex).
 // The full trace info (source, ruleType, variabilityOption, choices, timestamps)
 // lives in rawTraceEntries and is rendered into a persistent TraceModel lazily.
@@ -42,9 +47,11 @@ export interface RawTraceEntryData {
   sourceModelElement: IModelElement
   jsxElements: ExprNode<IModelElement>[]
   ruleName: string
-  ruleType: "RegularRule" | "VariabilityPoint"
+  ruleType: "RegularRule" | "VariabilityPoint" | "SpecializationPoint"
   variabilityOption?: string
   choices?: IChoice[]
+  specializationOption?: string
+  sourceTypeName?: string
 }
 
 export const _privatePop = Symbol("privatePop")
@@ -97,6 +104,9 @@ export class M2MContext<P = undefined> extends Context {
   // Last VarResolution — set by VarPoint in finally, read and cleared by E2E
   public lastVarResolution?: IVarResolution
 
+  // Last SpecResolution — set by SpecPoint wrapper, read and cleared by E2E
+  public lastSpecResolution?: ISpecResolution
+
   // param is used to keep additional information during transformation
   // passed from transform() method of abstractM2M
   public param?:P
@@ -109,12 +119,18 @@ export class M2MContext<P = undefined> extends Context {
     sourceModelElement: IModelElement,
     jsxElements: ExprNode<IModelElement>[],
     ruleName: string,
-    ruleType: "RegularRule" | "VariabilityPoint",
+    ruleType: "RegularRule" | "VariabilityPoint" | "SpecializationPoint",
     variabilityOption?: string,
-    choices?: IChoice[]
+    choices?: IChoice[],
+    specializationOption?: string,
+    sourceTypeName?: string,
   ) {
     if (ruleType === "VariabilityPoint" && (!variabilityOption || !choices)) {
       throw new Error("VariabilityPoint trace entry requires variabilityOption and choices")
+    }
+
+    if (ruleType === "SpecializationPoint" && !specializationOption) {
+      throw new Error("SpecializationPoint trace entry requires specializationOption")
     }
 
     // Store raw data — JSX entries will be created lazily in createTraceModel()
@@ -126,6 +142,8 @@ export class M2MContext<P = undefined> extends Context {
       ruleType,
       variabilityOption,
       choices,
+      specializationOption,
+      sourceTypeName,
     })
 
     const entry: TraceEntryRecord = {
@@ -422,6 +440,17 @@ export abstract class abstractM2M<
             ruleType={"VariabilityPoint"}
             variabilityOption={raw.variabilityOption}
             choices={raw.choices}
+            targets={targetElements}
+          />
+        )
+      } else if (raw.ruleType === "SpecializationPoint") {
+        return (
+          <tmC.SpecPointTraceEntry
+            source={<CModelElement $refByName={`${sourceElementNamespace}/${raw.sourceModelElement.name}`} />}
+            rule={raw.ruleName}
+            ruleType={"SpecializationPoint"}
+            specializationOption={raw.specializationOption}
+            sourceType={raw.sourceTypeName}
             targets={targetElements}
           />
         )
