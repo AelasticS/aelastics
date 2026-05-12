@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-types/api/classes/NullType" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">Class: NullType | Synthesis</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://AelasticS.github.io/aelastics/types/api/classes/NullType"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Class: NullType | Synthesis"><meta data-rh="true" name="description" content="Defined in11"><meta data-rh="true" property="og:description" content="Defined in11"><link data-rh="true" rel="icon" href="/aelastics/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://AelasticS.github.io/aelastics/types/api/classes/NullType"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/types/api/classes/NullType" hreflang="en"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/types/api/classes/NullType" hreflang="x-default"><link rel="stylesheet" href="/aelastics/assets/css/styles.7b209e7d.css">
+<script src="/aelastics/assets/js/runtime~main.a90a0d5e.js" defer="defer"></script>
+<script src="/aelastics/assets/js/main.0c2c0ad9.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_jFli" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/aelastics/"><b class="navbar__title text--truncate">Synthesis</b></a><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Documentation</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/synthesis">Synthesis eDSL</a></li><li><a class="dropdown__link" href="/aelastics/cli/intro">synth CLI</a></li><li><a aria-current="page" class="dropdown__link dropdown__link--active" href="/aelastics/types/intro">aelastics-types</a></li><li><a class="dropdown__link" href="/aelastics/store/intro">aelastics-store</a></li><li><a class="dropdown__link" href="/aelastics/result/intro">aelastics-result</a></li></ul></div><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Resources</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/contributing">Contributing</a></li><li><a href="https://github.com/AelasticS/Synthesis" target="_blank" rel="noopener noreferrer" class="dropdown__link">GitHub<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="navbar__items navbar__items--right"><div class="toggle_TKxK colorModeToggle_Jxcn"><button class="clean-btn toggleButton_jheP toggleButtonDisabled_Mb6Y" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_JvxC"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_gY7M"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_fGuX"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_AP4F"><div class="docsWrapper_SxSz"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_omdD" type="button"></button><div class="docRoot_v39k"><aside class="theme-doc-sidebar-container docSidebarContainer_OI0o"><div class="sidebarViewport_dOw7"><div class="sidebar_sQc7"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_DuOC"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/types/intro">@aelastics/types</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" href="/aelastics/types/defining-types">Defining Types</a><button aria-label="Expand sidebar category &#x27;Defining Types&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" href="/aelastics/types/instances">Working with Instances</a><button aria-label="Expand sidebar category &#x27;Working with Instances&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/types/annotations">Annotations</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" href="/aelastics/types/graph-transducers">Graph Transducers</a><button aria-label="Expand sidebar category &#x27;Graph Transducers&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" href="/aelastics/types/api">Synthesis</a><button aria-label="Collapse sidebar category &#x27;Synthesis&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" tabindex="0" href="/aelastics/types/api/classes/ArrayType">classes</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/ArrayType">Class: ArrayType\&lt;E\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/BooleanType">Class: BooleanType</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/ComplexType">Class: abstract ComplexType\&lt;V, G, T\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/DateType">Class: DateType</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/EntityReference">Class: EntityReference\&lt;T\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/LinkType">Class: LinkType</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/LiteralType">Class: LiteralType\&lt;V\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/Node">Class: Node</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/aelastics/types/api/classes/NullType">Class: NullType</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/NumberType">Class: NumberType</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/ObjectType">Class: ObjectType\&lt;P, I\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/OptionalType">Class: OptionalType\&lt;T\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/SimpleType">Class: abstract SimpleType\&lt;V, G, T\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/StringType">Class: StringType</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/Subtype">Class: Subtype\&lt;P, SP, S\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/TaggedUnionType">Class: TaggedUnionType\&lt;P\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/Type">Class: abstract Type\&lt;V, G, T\&gt;</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/TypeSchema">Class: TypeSchema</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/UndefinedType">Class: UndefinedType</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/classes/VoidType">Class: VoidType</a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/aelastics/types/api/functions/arrayOf">functions</a></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/aelastics/types/api/globals">@aelastics/types</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/aelastics/types/api/interfaces/InstanceReference">interfaces</a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/aelastics/types/api/namespaces/AnnotationTypes">namespaces</a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/aelastics/types/api/type-aliases/Any">type-aliases</a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/aelastics/types/api/variables/DefaultSchema">variables</a></div></li></ul></li></ul></nav></div></div></aside><main class="docMainContainer_Snz0"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_gHUR"><div class="docItemContainer_mVx6"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_y8jP" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/aelastics/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_NQPs"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/aelastics/types/api"><span itemprop="name">Synthesis</span></a><meta itemprop="position" content="1"></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">classes</span><meta itemprop="position" content="2"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Class: NullType</span><meta itemprop="position" content="3"></li></ul></nav><div class="tocCollapsible_lx4i theme-doc-toc-mobile tocMobile_E_qM"><button type="button" class="clean-btn tocCollapsibleButton_uMZQ">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Class: NullType</h1></header>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/simple-types/Null.ts#L11" target="_blank" rel="noopener noreferrer">simple-types/Null.ts:11</a></p>
+<p>Abstract class representing a generic data type with validation and transformation capabilities.
+It supports operations across three types of data representations: natural, graph, and tree DTOs.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="extends">Extends<a href="#extends" class="hash-link" aria-label="Direct link to Extends" title="Direct link to Extends">​</a></h2>
+<ul>
+<li><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>&lt;<code>null</code>, <code>null</code>, <code>null</code>&gt;</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="constructors">Constructors<a href="#constructors" class="hash-link" aria-label="Direct link to Constructors" title="Direct link to Constructors">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="new-nulltype">new NullType()<a href="#new-nulltype" class="hash-link" aria-label="Direct link to new NullType()" title="Direct link to new NullType()">​</a></h3>
+<blockquote>
+<p><strong>new NullType</strong>(<code>name</code>, <code>typeCategory</code>, <code>schema</code>): <a href="/aelastics/types/api/classes/NullType"><code>NullType</code></a></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/simple-types/Null.ts#L13" target="_blank" rel="noopener noreferrer">simple-types/Null.ts:13</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters">Parameters<a href="#parameters" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="name">name<a href="#name" class="hash-link" aria-label="Direct link to name" title="Direct link to name">​</a></h5>
+<p><code>string</code></p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="typecategory">typeCategory<a href="#typecategory" class="hash-link" aria-label="Direct link to typeCategory" title="Direct link to typeCategory">​</a></h5>
+<p><a href="/aelastics/types/api/type-aliases/TypeCategory"><code>TypeCategory</code></a></p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="schema">schema<a href="#schema" class="hash-link" aria-label="Direct link to schema" title="Direct link to schema">​</a></h5>
+<p><a href="/aelastics/types/api/classes/TypeSchema"><code>TypeSchema</code></a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns">Returns<a href="#returns" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><a href="/aelastics/types/api/classes/NullType"><code>NullType</code></a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="overrides">Overrides<a href="#overrides" class="hash-link" aria-label="Direct link to Overrides" title="Direct link to Overrides">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#constructors"><code>constructor</code></a></p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="_g">_G<a href="#_g" class="hash-link" aria-label="Direct link to _G" title="Direct link to _G">​</a></h3>
+<blockquote>
+<p><code>readonly</code> <strong>_G</strong>: <code>null</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L56" target="_blank" rel="noopener noreferrer">type/Type.ts:56</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from">Inherited from<a href="#inherited-from" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#_g"><code>_G</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="_t">_T<a href="#_t" class="hash-link" aria-label="Direct link to _T" title="Direct link to _T">​</a></h3>
+<blockquote>
+<p><code>readonly</code> <strong>_T</strong>: <code>null</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L58" target="_blank" rel="noopener noreferrer">type/Type.ts:58</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-1">Inherited from<a href="#inherited-from-1" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#_t"><code>_T</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="_v">_V<a href="#_v" class="hash-link" aria-label="Direct link to _V" title="Direct link to _V">​</a></h3>
+<blockquote>
+<p><code>readonly</code> <strong>_V</strong>: <code>null</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L54" target="_blank" rel="noopener noreferrer">type/Type.ts:54</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-2">Inherited from<a href="#inherited-from-2" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#_v"><code>_V</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="derivedfrom">derivedFrom?<a href="#derivedfrom" class="hash-link" aria-label="Direct link to derivedFrom?" title="Direct link to derivedFrom?">​</a></h3>
+<blockquote>
+<p><code>optional</code> <strong>derivedFrom</strong>: <a href="/aelastics/types/api/classes/Type"><code>Type</code></a>&lt;<code>any</code>, <code>any</code>, <code>any</code>&gt;</p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L68" target="_blank" rel="noopener noreferrer">type/Type.ts:68</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-3">Inherited from<a href="#inherited-from-3" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#derivedfrom"><code>derivedFrom</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="issystemtype">isSystemType<a href="#issystemtype" class="hash-link" aria-label="Direct link to isSystemType" title="Direct link to isSystemType">​</a></h3>
+<blockquote>
+<p><code>readonly</code> <strong>isSystemType</strong>: <code>boolean</code> = <code>false</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L64" target="_blank" rel="noopener noreferrer">type/Type.ts:64</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-4">Inherited from<a href="#inherited-from-4" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#issystemtype"><code>isSystemType</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="name-1">name<a href="#name-1" class="hash-link" aria-label="Direct link to name" title="Direct link to name">​</a></h3>
+<blockquote>
+<p><code>readonly</code> <strong>name</strong>: <code>string</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L60" target="_blank" rel="noopener noreferrer">type/Type.ts:60</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-5">Inherited from<a href="#inherited-from-5" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#name-1"><code>name</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="ownerschema">ownerSchema<a href="#ownerschema" class="hash-link" aria-label="Direct link to ownerSchema" title="Direct link to ownerSchema">​</a></h3>
+<blockquote>
+<p><strong>ownerSchema</strong>: <a href="/aelastics/types/api/classes/TypeSchema"><code>TypeSchema</code></a></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L66" target="_blank" rel="noopener noreferrer">type/Type.ts:66</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-6">Inherited from<a href="#inherited-from-6" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#ownerschema"><code>ownerSchema</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="typecategory-1">typeCategory<a href="#typecategory-1" class="hash-link" aria-label="Direct link to typeCategory" title="Direct link to typeCategory">​</a></h3>
+<blockquote>
+<p><code>readonly</code> <strong>typeCategory</strong>: <a href="/aelastics/types/api/type-aliases/TypeCategory"><code>TypeCategory</code></a></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L62" target="_blank" rel="noopener noreferrer">type/Type.ts:62</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-7">Inherited from<a href="#inherited-from-7" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#typecategory-1"><code>typeCategory</code></a></p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="accessors">Accessors<a href="#accessors" class="hash-link" aria-label="Direct link to Accessors" title="Direct link to Accessors">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="fullpathname">fullPathName<a href="#fullpathname" class="hash-link" aria-label="Direct link to fullPathName" title="Direct link to fullPathName">​</a></h3>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="get-signature">Get Signature<a href="#get-signature" class="hash-link" aria-label="Direct link to Get Signature" title="Direct link to Get Signature">​</a></h4>
+<blockquote>
+<p><strong>get</strong> <strong>fullPathName</strong>(): <code>string</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L136" target="_blank" rel="noopener noreferrer">type/Type.ts:136</a></p>
+<p>Returns the full path name of the type, including its path from the root schema.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="returns-1">Returns<a href="#returns-1" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h5>
+<p><code>string</code></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-8">Inherited from<a href="#inherited-from-8" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#fullpathname"><code>fullPathName</code></a></p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="methods">Methods<a href="#methods" class="hash-link" aria-label="Direct link to Methods" title="Direct link to Methods">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="addchild">addChild()<a href="#addchild" class="hash-link" aria-label="Direct link to addChild()" title="Direct link to addChild()">​</a></h3>
+<blockquote>
+<p><strong>addChild</strong>(<code>parent</code>, <code>child</code>, <code>n</code>): <code>void</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/simple-types/SimpleType.ts#L14" target="_blank" rel="noopener noreferrer">simple-types/SimpleType.ts:14</a></p>
+<p>Abstract method to add a child to a parent object within the context of a node.
+Must be implemented by subclasses to define how children are added to parent instances.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-1">Parameters<a href="#parameters-1" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="parent">parent<a href="#parent" class="hash-link" aria-label="Direct link to parent" title="Direct link to parent">​</a></h5>
+<p><code>any</code></p>
+<p>The parent object to add a child to.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="child">child<a href="#child" class="hash-link" aria-label="Direct link to child" title="Direct link to child">​</a></h5>
+<p><code>any</code></p>
+<p>The child object to add.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="n">n<a href="#n" class="hash-link" aria-label="Direct link to n" title="Direct link to n">​</a></h5>
+<p><a href="/aelastics/types/api/classes/Node"><code>Node</code></a></p>
+<p>The node context for adding the child.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-2">Returns<a href="#returns-2" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>void</code></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-9">Inherited from<a href="#inherited-from-9" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#addchild"><code>addChild</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="addvalidator">addValidator()<a href="#addvalidator" class="hash-link" aria-label="Direct link to addValidator()" title="Direct link to addValidator()">​</a></h3>
+<blockquote>
+<p><strong>addValidator</strong>(<code>validator</code>): <code>this</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L173" target="_blank" rel="noopener noreferrer">type/Type.ts:173</a></p>
+<p>Adds a validator to this type.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-2">Parameters<a href="#parameters-2" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="validator">validator<a href="#validator" class="hash-link" aria-label="Direct link to validator" title="Direct link to validator">​</a></h5>
+<p><code>Validator</code>&lt;<code>null</code>&gt;</p>
+<p>The validator to add.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-3">Returns<a href="#returns-3" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>this</code></p>
+<p>this instance for chaining.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-10">Inherited from<a href="#inherited-from-10" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#addvalidator"><code>addValidator</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="checkvalidators">checkValidators()<a href="#checkvalidators" class="hash-link" aria-label="Direct link to checkValidators()" title="Direct link to checkValidators()">​</a></h3>
+<blockquote>
+<p><strong>checkValidators</strong>(<code>value</code>): <code>ServiceResult</code>&lt;<code>boolean</code>&gt;</p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L189" target="_blank" rel="noopener noreferrer">type/Type.ts:189</a></p>
+<p>Checks the validators for the given value, accumulating errors.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-3">Parameters<a href="#parameters-3" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="value">value<a href="#value" class="hash-link" aria-label="Direct link to value" title="Direct link to value">​</a></h5>
+<p><code>any</code></p>
+<p>The value to check.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-4">Returns<a href="#returns-4" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>ServiceResult</code>&lt;<code>boolean</code>&gt;</p>
+<p>A ServiceResult indicating success or failure with detailed errors.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-11">Inherited from<a href="#inherited-from-11" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#checkvalidators"><code>checkValidators</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="children">children()<a href="#children" class="hash-link" aria-label="Direct link to children()" title="Direct link to children()">​</a></h3>
+<blockquote>
+<p><strong>children</strong>(<code>i</code>, <code>n</code>): <code>Generator</code>&lt;[<code>null</code>, <a href="/aelastics/types/api/type-aliases/Any"><code>Any</code></a>, <code>Partial</code>&lt;{ <code>childExtra</code>: {}; <code>index</code>: <code>number</code>; <code>optional</code>: <code>boolean</code>; <code>parentInstance</code>: <code>any</code>; <code>parentResult</code>: <code>any</code>; <code>parentType</code>: <a href="/aelastics/types/api/type-aliases/Any"><code>Any</code></a>; <code>propName</code>: <code>string</code>; <code>role</code>: <code>RoleType</code>; }&gt;]&gt;</p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/simple-types/SimpleType.ts#L16" target="_blank" rel="noopener noreferrer">simple-types/SimpleType.ts:16</a></p>
+<p>Abstract method to iterate over children of a given value within a node.
+Must be implemented by subclasses to handle specific child iteration logic.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-4">Parameters<a href="#parameters-4" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="i">i<a href="#i" class="hash-link" aria-label="Direct link to i" title="Direct link to i">​</a></h5>
+<p><code>null</code></p>
+<p>The instance whose children to iterate over.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="n-1">n<a href="#n-1" class="hash-link" aria-label="Direct link to n" title="Direct link to n">​</a></h5>
+<p><a href="/aelastics/types/api/classes/Node"><code>Node</code></a></p>
+<p>The node context for the iteration.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-5">Returns<a href="#returns-5" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>Generator</code>&lt;[<code>null</code>, <a href="/aelastics/types/api/type-aliases/Any"><code>Any</code></a>, <code>Partial</code>&lt;{ <code>childExtra</code>: {}; <code>index</code>: <code>number</code>; <code>optional</code>: <code>boolean</code>; <code>parentInstance</code>: <code>any</code>; <code>parentResult</code>: <code>any</code>; <code>parentType</code>: <a href="/aelastics/types/api/type-aliases/Any"><code>Any</code></a>; <code>propName</code>: <code>string</code>; <code>role</code>: <code>RoleType</code>; }&gt;]&gt;</p>
+<p>A generator yielding tuples of child values, their types, and extra information.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-12">Inherited from<a href="#inherited-from-12" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#children"><code>children</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="createinstance">createInstance()<a href="#createinstance" class="hash-link" aria-label="Direct link to createInstance()" title="Direct link to createInstance()">​</a></h3>
+<blockquote>
+<p><strong>createInstance</strong>(<code>input</code>?): <code>unknown</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L339" target="_blank" rel="noopener noreferrer">type/Type.ts:339</a></p>
+<p>Creates a new instance of the type, potentially using a provided input as the basis.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-5">Parameters<a href="#parameters-5" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="input">input?<a href="#input" class="hash-link" aria-label="Direct link to input?" title="Direct link to input?">​</a></h5>
+<p><code>any</code></p>
+<p>Optional input to use as the basis for the new instance.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-6">Returns<a href="#returns-6" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>unknown</code></p>
+<p>The newly created instance.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-13">Inherited from<a href="#inherited-from-13" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#createinstance"><code>createInstance</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="derive">derive()<a href="#derive" class="hash-link" aria-label="Direct link to derive()" title="Direct link to derive()">​</a></h3>
+<blockquote>
+<p><strong>derive</strong>(<code>name</code>?, <code>schema</code>?): <code>this</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L151" target="_blank" rel="noopener noreferrer">type/Type.ts:151</a></p>
+<p>Derives a new type from this type.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-6">Parameters<a href="#parameters-6" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="name-2">name?<a href="#name-2" class="hash-link" aria-label="Direct link to name?" title="Direct link to name?">​</a></h5>
+<p><code>string</code></p>
+<p>The name of the new derived type, optional.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="schema-1">schema?<a href="#schema-1" class="hash-link" aria-label="Direct link to schema?" title="Direct link to schema?">​</a></h5>
+<p><a href="/aelastics/types/api/classes/TypeSchema"><code>TypeSchema</code></a> = <code>DefaultSchema</code></p>
+<p>The schema for the new type, defaults to DefaultSchema if not provided.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-7">Returns<a href="#returns-7" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>this</code></p>
+<p>A new instance of the derived type.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-14">Inherited from<a href="#inherited-from-14" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#derive"><code>derive</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="dotransformation">doTransformation()<a href="#dotransformation" class="hash-link" aria-label="Direct link to doTransformation()" title="Direct link to doTransformation()">​</a></h3>
+<blockquote>
+<p><strong>doTransformation</strong>&lt;<code>A</code>&gt;(<code>t</code>, <code>input</code>, <code>initObj</code>?, <code>resetAcc</code>?, <code>typeLevel</code>?): [<code>A</code>, <a href="/aelastics/types/api/namespaces/Trans/type-aliases/WhatToDo"><code>WhatToDo</code></a>]</p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/simple-types/SimpleType.ts#L20" target="_blank" rel="noopener noreferrer">simple-types/SimpleType.ts:20</a></p>
+<p>Abstract method to handle the transformation process.
+Must be implemented by subclasses to define specific transformation behaviors.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="type-parameters">Type Parameters<a href="#type-parameters" class="hash-link" aria-label="Direct link to Type Parameters" title="Direct link to Type Parameters">​</a></h4>
+<p>• <strong>A</strong></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-7">Parameters<a href="#parameters-7" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="t">t<a href="#t" class="hash-link" aria-label="Direct link to t" title="Direct link to t">​</a></h5>
+<p><a href="/aelastics/types/api/namespaces/Trans/interfaces/IProcessor"><code>IProcessor</code></a></p>
+<p>The processor to use for transformation.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="input-1">input<a href="#input-1" class="hash-link" aria-label="Direct link to input" title="Direct link to input">​</a></h5>
+<p>The input data or node.</p>
+<p><code>null</code> | <a href="/aelastics/types/api/classes/Node"><code>Node</code></a></p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="initobj">initObj?<a href="#initobj" class="hash-link" aria-label="Direct link to initObj?" title="Direct link to initObj?">​</a></h5>
+<p><code>A</code></p>
+<p>The initial object to start with.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="resetacc">resetAcc?<a href="#resetacc" class="hash-link" aria-label="Direct link to resetAcc?" title="Direct link to resetAcc?">​</a></h5>
+<p><code>boolean</code> = <code>false</code></p>
+<p>Whether to reset the accumulator.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="typelevel">typeLevel?<a href="#typelevel" class="hash-link" aria-label="Direct link to typeLevel?" title="Direct link to typeLevel?">​</a></h5>
+<p><code>boolean</code> = <code>false</code></p>
+<p>Whether the transformation should consider type level specifics.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-8">Returns<a href="#returns-8" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p>[<code>A</code>, <a href="/aelastics/types/api/namespaces/Trans/type-aliases/WhatToDo"><code>WhatToDo</code></a>]</p>
+<p>A tuple containing the transformed data and the next action.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-15">Inherited from<a href="#inherited-from-15" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#dotransformation"><code>doTransformation</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="fromdtograph">fromDtoGraph()<a href="#fromdtograph" class="hash-link" aria-label="Direct link to fromDtoGraph()" title="Direct link to fromDtoGraph()">​</a></h3>
+<blockquote>
+<p><strong>fromDtoGraph</strong>(<code>input</code>): <code>null</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L329" target="_blank" rel="noopener noreferrer">type/Type.ts:329</a></p>
+<p>Converts an input graph-formatted Data Transfer Object back into the natural value type.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-8">Parameters<a href="#parameters-8" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="input-2">input<a href="#input-2" class="hash-link" aria-label="Direct link to input" title="Direct link to input">​</a></h5>
+<p><code>null</code></p>
+<p>The graph DTO to convert.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-9">Returns<a href="#returns-9" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>null</code></p>
+<p>The converted natural value type.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-16">Inherited from<a href="#inherited-from-16" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#fromdtograph"><code>fromDtoGraph</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="init">init()<a href="#init" class="hash-link" aria-label="Direct link to init()" title="Direct link to init()">​</a></h3>
+<blockquote>
+<p><strong>init</strong>(<code>n</code>): <code>null</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/simple-types/Null.ts#L20" target="_blank" rel="noopener noreferrer">simple-types/Null.ts:20</a></p>
+<p>Abstract method to initialize and create an empty instance of the type.
+Must be implemented by subclasses to define how new instances are created.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-9">Parameters<a href="#parameters-9" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="n-2">n<a href="#n-2" class="hash-link" aria-label="Direct link to n" title="Direct link to n">​</a></h5>
+<p><a href="/aelastics/types/api/classes/Node"><code>Node</code></a></p>
+<p>The node context for the initialization.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-10">Returns<a href="#returns-10" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>null</code></p>
+<p>An initialized, empty instance of the type.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="overrides-1">Overrides<a href="#overrides-1" class="hash-link" aria-label="Direct link to Overrides" title="Direct link to Overrides">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#init"><code>init</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="isoftype">isOfType()<a href="#isoftype" class="hash-link" aria-label="Direct link to isOfType()" title="Direct link to isOfType()">​</a></h3>
+<blockquote>
+<p><strong>isOfType</strong>(<code>t</code>): <code>boolean</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L164" target="_blank" rel="noopener noreferrer">type/Type.ts:164</a></p>
+<p>Checks if this type is of or derived from another type.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-10">Parameters<a href="#parameters-10" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="t-1">t<a href="#t-1" class="hash-link" aria-label="Direct link to t" title="Direct link to t">​</a></h5>
+<p><a href="/aelastics/types/api/classes/Type"><code>Type</code></a>&lt;<code>any</code>, <code>any</code>, <code>any</code>&gt;</p>
+<p>The type to check against.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-11">Returns<a href="#returns-11" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>boolean</code></p>
+<p>true if this type is or derives from the given type.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-17">Inherited from<a href="#inherited-from-17" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#isoftype"><code>isOfType</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="issimple">isSimple()<a href="#issimple" class="hash-link" aria-label="Direct link to isSimple()" title="Direct link to isSimple()">​</a></h3>
+<blockquote>
+<p><strong>isSimple</strong>(): <code>boolean</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/simple-types/SimpleType.ts#L7" target="_blank" rel="noopener noreferrer">simple-types/SimpleType.ts:7</a></p>
+<p>Abstract method to determine if the type is simple.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-12">Returns<a href="#returns-12" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>boolean</code></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-18">Inherited from<a href="#inherited-from-18" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#issimple"><code>isSimple</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="todtograph">toDtoGraph()<a href="#todtograph" class="hash-link" aria-label="Direct link to toDtoGraph()" title="Direct link to toDtoGraph()">​</a></h3>
+<blockquote>
+<p><strong>toDtoGraph</strong>(<code>input</code>): <code>null</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L319" target="_blank" rel="noopener noreferrer">type/Type.ts:319</a></p>
+<p>Converts an input object of natural value type into a graph-formatted Data Transfer Object.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-11">Parameters<a href="#parameters-11" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="input-3">input<a href="#input-3" class="hash-link" aria-label="Direct link to input" title="Direct link to input">​</a></h5>
+<p><code>null</code></p>
+<p>The input object to convert.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-13">Returns<a href="#returns-13" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>null</code></p>
+<p>The converted graph DTO.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-19">Inherited from<a href="#inherited-from-19" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#todtograph"><code>toDtoGraph</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="transduce">transduce()<a href="#transduce" class="hash-link" aria-label="Direct link to transduce()" title="Direct link to transduce()">​</a></h3>
+<blockquote>
+<p><strong>transduce</strong>&lt;<code>A</code>&gt;(<code>t</code>, <code>input</code>, <code>initObj</code>?, <code>resetAcc</code>?, <code>typeLevel</code>?): <code>A</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L227" target="_blank" rel="noopener noreferrer">type/Type.ts:227</a></p>
+<p>Transforms the input data using the specified processor.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="type-parameters-1">Type Parameters<a href="#type-parameters-1" class="hash-link" aria-label="Direct link to Type Parameters" title="Direct link to Type Parameters">​</a></h4>
+<p>• <strong>A</strong></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-12">Parameters<a href="#parameters-12" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="t-2">t<a href="#t-2" class="hash-link" aria-label="Direct link to t" title="Direct link to t">​</a></h5>
+<p><a href="/aelastics/types/api/namespaces/Trans/interfaces/IProcessor"><code>IProcessor</code></a></p>
+<p>The processor to use for transformation.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="input-4">input<a href="#input-4" class="hash-link" aria-label="Direct link to input" title="Direct link to input">​</a></h5>
+<p><code>any</code></p>
+<p>The input data or node.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="initobj-1">initObj?<a href="#initobj-1" class="hash-link" aria-label="Direct link to initObj?" title="Direct link to initObj?">​</a></h5>
+<p><code>A</code></p>
+<p>The initial object to start with.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="resetacc-1">resetAcc?<a href="#resetacc-1" class="hash-link" aria-label="Direct link to resetAcc?" title="Direct link to resetAcc?">​</a></h5>
+<p><code>boolean</code></p>
+<p>Whether to reset the accumulator.</p>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="typelevel-1">typeLevel?<a href="#typelevel-1" class="hash-link" aria-label="Direct link to typeLevel?" title="Direct link to typeLevel?">​</a></h5>
+<p><code>boolean</code> = <code>false</code></p>
+<p>Whether the transformation should consider type level specifics.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-14">Returns<a href="#returns-14" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>A</code></p>
+<p>The transformed data.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-20">Inherited from<a href="#inherited-from-20" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#transduce"><code>transduce</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="validate">validate()<a href="#validate" class="hash-link" aria-label="Direct link to validate()" title="Direct link to validate()">​</a></h3>
+<blockquote>
+<p><strong>validate</strong>(<code>input</code>): <code>ServiceResult</code>&lt;<code>boolean</code>&gt;</p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L307" target="_blank" rel="noopener noreferrer">type/Type.ts:307</a></p>
+<p>Simplifies the process of validating a value, directly returning a service result indicating success or failure.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-13">Parameters<a href="#parameters-13" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="input-5">input<a href="#input-5" class="hash-link" aria-label="Direct link to input" title="Direct link to input">​</a></h5>
+<p><code>null</code></p>
+<p>The input value to validate.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-15">Returns<a href="#returns-15" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>ServiceResult</code>&lt;<code>boolean</code>&gt;</p>
+<p>A ServiceResult indicating whether the input is valid, along with detailed error information if not.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-21">Inherited from<a href="#inherited-from-21" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#validate"><code>validate</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="validateandreport">validateAndReport()<a href="#validateandreport" class="hash-link" aria-label="Direct link to validateAndReport()" title="Direct link to validateAndReport()">​</a></h3>
+<blockquote>
+<p><strong>validateAndReport</strong>(<code>input</code>): [<code>boolean</code>, <code>any</code>]</p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L281" target="_blank" rel="noopener noreferrer">type/Type.ts:281</a></p>
+<p>Validates the input value and reports any errors encountered.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-14">Parameters<a href="#parameters-14" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="input-6">input<a href="#input-6" class="hash-link" aria-label="Direct link to input" title="Direct link to input">​</a></h5>
+<p><code>null</code></p>
+<p>The input value to validate.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-16">Returns<a href="#returns-16" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p>[<code>boolean</code>, <code>any</code>]</p>
+<p>A tuple indicating whether validation passed and any error object associated with failures.</p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-22">Inherited from<a href="#inherited-from-22" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#validateandreport"><code>validateAndReport</code></a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="sanitizename">sanitizeName()<a href="#sanitizename" class="hash-link" aria-label="Direct link to sanitizeName()" title="Direct link to sanitizeName()">​</a></h3>
+<blockquote>
+<p><code>static</code> <strong>sanitizeName</strong>(<code>name</code>): <code>string</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/AelasticS/Synthesis/blob/5ee96f66941f732b6c1b1c9ed56972d851afcd63/libraries/aelastics-types/src/type/Type.ts#L119" target="_blank" rel="noopener noreferrer">type/Type.ts:119</a></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="parameters-15">Parameters<a href="#parameters-15" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<h5 class="anchor anchorWithStickyNavbar_bweN" id="name-3">name<a href="#name-3" class="hash-link" aria-label="Direct link to name" title="Direct link to name">​</a></h5>
+<p><code>string</code></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="returns-17">Returns<a href="#returns-17" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>string</code></p>
+<h4 class="anchor anchorWithStickyNavbar_bweN" id="inherited-from-23">Inherited from<a href="#inherited-from-23" class="hash-link" aria-label="Direct link to Inherited from" title="Direct link to Inherited from">​</a></h4>
+<p><a href="/aelastics/types/api/classes/SimpleType"><code>SimpleType</code></a>.<a href="/aelastics/types/api/classes/SimpleType#sanitizename"><code>sanitizeName</code></a></p></div></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/aelastics/types/api/classes/Node"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Class: Node</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/aelastics/types/api/classes/NumberType"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Class: NumberType</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_tmrw thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#extends" class="table-of-contents__link toc-highlight">Extends</a></li><li><a href="#constructors" class="table-of-contents__link toc-highlight">Constructors</a><ul><li><a href="#new-nulltype" class="table-of-contents__link toc-highlight">new NullType()</a></li></ul></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a><ul><li><a href="#_g" class="table-of-contents__link toc-highlight">_G</a></li><li><a href="#_t" class="table-of-contents__link toc-highlight">_T</a></li><li><a href="#_v" class="table-of-contents__link toc-highlight">_V</a></li><li><a href="#derivedfrom" class="table-of-contents__link toc-highlight">derivedFrom?</a></li><li><a href="#issystemtype" class="table-of-contents__link toc-highlight">isSystemType</a></li><li><a href="#name-1" class="table-of-contents__link toc-highlight">name</a></li><li><a href="#ownerschema" class="table-of-contents__link toc-highlight">ownerSchema</a></li><li><a href="#typecategory-1" class="table-of-contents__link toc-highlight">typeCategory</a></li></ul></li><li><a href="#accessors" class="table-of-contents__link toc-highlight">Accessors</a><ul><li><a href="#fullpathname" class="table-of-contents__link toc-highlight">fullPathName</a></li></ul></li><li><a href="#methods" class="table-of-contents__link toc-highlight">Methods</a><ul><li><a href="#addchild" class="table-of-contents__link toc-highlight">addChild()</a></li><li><a href="#addvalidator" class="table-of-contents__link toc-highlight">addValidator()</a></li><li><a href="#checkvalidators" class="table-of-contents__link toc-highlight">checkValidators()</a></li><li><a href="#children" class="table-of-contents__link toc-highlight">children()</a></li><li><a href="#createinstance" class="table-of-contents__link toc-highlight">createInstance()</a></li><li><a href="#derive" class="table-of-contents__link toc-highlight">derive()</a></li><li><a href="#dotransformation" class="table-of-contents__link toc-highlight">doTransformation()</a></li><li><a href="#fromdtograph" class="table-of-contents__link toc-highlight">fromDtoGraph()</a></li><li><a href="#init" class="table-of-contents__link toc-highlight">init()</a></li><li><a href="#isoftype" class="table-of-contents__link toc-highlight">isOfType()</a></li><li><a href="#issimple" class="table-of-contents__link toc-highlight">isSimple()</a></li><li><a href="#todtograph" class="table-of-contents__link toc-highlight">toDtoGraph()</a></li><li><a href="#transduce" class="table-of-contents__link toc-highlight">transduce()</a></li><li><a href="#validate" class="table-of-contents__link toc-highlight">validate()</a></li><li><a href="#validateandreport" class="table-of-contents__link toc-highlight">validateAndReport()</a></li><li><a href="#sanitizename" class="table-of-contents__link toc-highlight">sanitizeName()</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2019–2026 AelasticS.</div></div></div></footer></div>
+</body>
+</html>
