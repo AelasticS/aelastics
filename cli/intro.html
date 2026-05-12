@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.7.0">
 <title data-rh="true">Synthesis CLI - synth | Synthesis</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://AelasticS.github.io/aelastics/cli/intro"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Synthesis CLI - synth | Synthesis"><meta data-rh="true" name="description" content="synth is not yet implemented. This page describes the intended design and is"><meta data-rh="true" property="og:description" content="synth is not yet implemented. This page describes the intended design and is"><link data-rh="true" rel="icon" href="/aelastics/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://AelasticS.github.io/aelastics/cli/intro"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/cli/intro" hreflang="en"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/cli/intro" hreflang="x-default"><link rel="stylesheet" href="/aelastics/assets/css/styles.7b209e7d.css">
-<script src="/aelastics/assets/js/runtime~main.4b296883.js" defer="defer"></script>
+<script src="/aelastics/assets/js/runtime~main.21aa071f.js" defer="defer"></script>
 <script src="/aelastics/assets/js/main.e92a0bde.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -13,9 +13,17 @@
 included here to document the planned interface. Commands shown below are not
 runnable today.</p></div></div>
 <p><code>synth</code> is the command-line tool for the Synthesis model-driven engineering
-toolkit. It manages a local workspace of metamodels, models, and
-transformations, and applies those transformations to produce target models or
-generated text.</p>
+toolkit. It does three things:</p>
+<ol>
+<li><strong>Builds and packages transformations</strong> — scaffold a new transformation
+project, compile and validate it, and publish it to npm as an installable
+package others can use.</li>
+<li><strong>Installs and manages a local workspace</strong> of metamodels, models, and
+transformations — install transformations from npm (or git, or local
+paths), upload and download models, organize them by namespace.</li>
+<li><strong>Runs transformations</strong> against models in the workspace to produce target
+models or generated text.</li>
+</ol>
 <h2 class="anchor anchorWithStickyNavbar_bweN" id="why-a-cli">Why a CLI<a href="#why-a-cli" class="hash-link" aria-label="Direct link to Why a CLI" title="Direct link to Why a CLI">​</a></h2>
 <p>The Synthesis libraries (<code>@aelastics/types</code>, <code>@aelastics/store</code>, and the
 transformation framework) provide programmatic APIs that assume the caller has
