@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-user-guide/concepts" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">Concepts | Synthesis</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://AelasticS.github.io/aelastics/user-guide/concepts"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Concepts | Synthesis"><meta data-rh="true" name="description" content="synth is the command-line tool for the Synthesis model-driven engineering"><meta data-rh="true" property="og:description" content="synth is the command-line tool for the Synthesis model-driven engineering"><link data-rh="true" rel="icon" href="/aelastics/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://AelasticS.github.io/aelastics/user-guide/concepts"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/user-guide/concepts" hreflang="en"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/user-guide/concepts" hreflang="x-default"><link rel="stylesheet" href="/aelastics/assets/css/styles.449dfb93.css">
+<script src="/aelastics/assets/js/runtime~main.8f245ae5.js" defer="defer"></script>
+<script src="/aelastics/assets/js/main.615ded05.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_jFli" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/aelastics/"><b class="navbar__title text--truncate">Synthesis</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/aelastics/user-guide">User Guide</a><a class="navbar__item navbar__link" href="/aelastics/developer-guide">Developer Guide</a><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Libraries</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/types/intro">@aelastics/types</a></li><li><a class="dropdown__link" href="/aelastics/store/intro">@aelastics/store</a></li><li><a class="dropdown__link" href="/aelastics/result/intro">@aelastics/result</a></li></ul></div><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Resources</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/user-guide/getting-started/download">Download synth CLI</a></li><li><a href="https://github.com/AelasticS/Synthesis/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="dropdown__link">Contributing<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li><a href="https://github.com/AelasticS/Synthesis" target="_blank" rel="noopener noreferrer" class="dropdown__link">GitHub<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="navbar__items navbar__items--right"><div class="toggle_TKxK colorModeToggle_Jxcn"><button class="clean-btn toggleButton_jheP toggleButtonDisabled_Mb6Y" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_JvxC"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_gY7M"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_fGuX"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_AP4F"><div class="docsWrapper_SxSz"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_omdD" type="button"></button><div class="docRoot_v39k"><aside class="theme-doc-sidebar-container docSidebarContainer_OI0o"><div class="sidebarViewport_dOw7"><div class="sidebar_sQc7"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_DuOC"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/user-guide">User Guide</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/aelastics/user-guide/getting-started/download">Getting Started</a></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" href="/aelastics/user-guide/concepts">Concepts</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/user-guide/tutorial">Tutorial</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/aelastics/user-guide/guides/managing-models">Guides</a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/aelastics/user-guide/reference/commands">Reference</a></div></li></ul></nav></div></div></aside><main class="docMainContainer_Snz0"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_gHUR"><div class="docItemContainer_mVx6"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_y8jP" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/aelastics/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_NQPs"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Concepts</span><meta itemprop="position" content="1"></li></ul></nav><div class="tocCollapsible_lx4i theme-doc-toc-mobile tocMobile_E_qM"><button type="button" class="clean-btn tocCollapsibleButton_uMZQ">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Concepts</h1></header>
+<p><code>synth</code> is the command-line tool for the Synthesis model-driven engineering
+toolkit. It does three things:</p>
+<ol>
+<li><strong>Manages a local workspace</strong> of models, installed transformations, and
+saved pipelines. Models are imported through a validation gate, organized
+in nested namespaces, and protected by a dependency graph on deletion.</li>
+<li><strong>Runs transformations</strong>, model-to-model and model-to-text, as single
+steps, ad-hoc chains, or saved pipelines, with an explicit-consent policy
+for every design decision a transformation leaves open.</li>
+<li><strong>Builds and packages transformations</strong>: scaffold a transformation
+project, build it, and pack or publish it as an installable package.</li>
+</ol>
+<p>The CLI is not a replacement for the Synthesis libraries; it is a thin layer
+that operates on the same artifacts and removes the ceremony of wiring up
+imports, schemas, and a <code>ModelStore</code> by hand.</p>
+<p>This page defines the handful of concepts every other page builds on.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="the-workspace">The workspace<a href="#the-workspace" class="hash-link" aria-label="Direct link to The workspace" title="Direct link to The workspace">​</a></h2>
+<p>Everything <code>synth</code> manages lives in one local folder, the <strong>workspace</strong>,
+created by <code>synth init</code> (default <code>~/.synth/</code>, movable with
+<code>synth workspace --set &lt;path&gt;</code>):</p>
+<div class="language-text codeBlockContainer_MZ5g theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_hzvK"><pre tabindex="0" class="prism-code language-text codeBlock_W398 thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_H5n5"><span class="token-line" style="color:#393A34"><span class="token plain">~/.synth/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── config.json          # workspace settings, installed-transformation registry</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── models/              # .tsx model files in a nested namespace tree</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│   └── com/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│       └── example/</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">│           └── persons.tsx      # ref: com.example/persons</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">├── transformations/     # installed transformation packages</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">└── pipelines/           # saved pipelines, one &lt;name&gt;.json per pipeline</span><br></span></code></pre><div class="buttonGroup_ODBw"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_Yqny" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_Ea9c"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon__4Xa"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="namespaces-and-refs">Namespaces and refs<a href="#namespaces-and-refs" class="hash-link" aria-label="Direct link to Namespaces and refs" title="Direct link to Namespaces and refs">​</a></h2>
+<p>A <strong>namespace</strong> is a directory path under <code>models/</code>: the namespace
+<code>com.example</code> is the directory <code>models/com/example/</code>, and namespaces nest to
+any depth. A model is addressed by its <strong>ref</strong>, <code>&lt;namespace&gt;/&lt;name&gt;</code>, e.g.
+<code>com.example/persons</code> for <code>models/com/example/persons.tsx</code>. Ref and disk
+location are mechanically derivable from each other, so the ref itself is
+never stored in the file and cannot drift.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="models-are-code">Models are code<a href="#models-are-code" class="hash-link" aria-label="Direct link to Models are code" title="Direct link to Models are code">​</a></h2>
+<p>A workspace model is a <code>.tsx</code> module (JSX that renders into a model when
+executed), not a JSON data file. Every workspace model carries an exported
+<code>$synth</code> header, a pure literal constant that records what the model is
+(its kind and metamodel), what it depends on, and where it came from. The
+header is <strong>written and maintained by the tools</strong>, never required from
+humans; a hand-authored file without a header gets one derived at import.</p>
+<p>Because models are code, nothing enters the workspace unchecked:
+<code>model import</code> renders the file for real and validates it against its
+metamodel before copying it in. The invariant this buys: <strong>everything in the
+workspace was loadable when it entered.</strong></p>
+<p>The full story (the header fields, the import gate, and the
+dependency-graph protection on deletion) is in
+<a href="/aelastics/user-guide/guides/managing-models">Managing Models</a>.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="transformations-chains-and-pipelines">Transformations, chains, and pipelines<a href="#transformations-chains-and-pipelines" class="hash-link" aria-label="Direct link to Transformations, chains, and pipelines" title="Direct link to Transformations, chains, and pipelines">​</a></h2>
+<p>A <strong>transformation</strong> is an installed package whose manifest declares its
+kind, model-to-model (the result is a new workspace model) or
+model-to-text (the result is generated files), plus its source and target
+metamodels and any open design decisions. <code>synth transformation show &lt;name&gt;</code>
+prints all of it without running anything.</p>
+<p>Several transformations can run as a <strong>chain</strong>: step N&#x27;s output model feeds
+step N+1 in memory. Before anything executes, the chain is type-checked from
+the manifests: step N&#x27;s target metamodel must equal step N+1&#x27;s source
+metamodel. Only the last step may be model-to-text.</p>
+<p>A <strong>pipeline</strong> is a chain with a name: an ordered list of steps saved in the
+workspace and replayed with <code>synth pipeline run &lt;name&gt; --in &lt;ref&gt;</code>. A
+pipeline stores steps only, with no input model, no configuration, and no
+consents, so every run names its own data. See <a href="/aelastics/user-guide/guides/pipelines">Pipelines</a>.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="decisions-and-configurations">Decisions and configurations<a href="#decisions-and-configurations" class="hash-link" aria-label="Direct link to Decisions and configurations" title="Direct link to Decisions and configurations">​</a></h2>
+<p>Many transformations are <strong>configuration-based</strong>: they leave design decisions
+open (say, a naming convention) and declare defaults. <code>synth</code> never applies
+defaults silently: a configuration-based run must either name a reviewed
+<strong>configuration model</strong> (<code>--config &lt;ref&gt;</code>) or accept the generated defaults
+explicitly (<code>--default-configs</code>), and every applied default is announced in
+the output. With neither, the run aborts before any engine work. The full
+workflow is in <a href="/aelastics/user-guide/guides/configurations">Configurations</a>.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="canonical-names-and-typing-aliases">Canonical names and typing aliases<a href="#canonical-names-and-typing-aliases" class="hash-link" aria-label="Direct link to Canonical names and typing aliases" title="Direct link to Canonical names and typing aliases">​</a></h2>
+<p>Every command is <code>synth &lt;resource&gt; &lt;verb&gt;</code>. Each resource topic has a
+full-word <strong>canonical</strong> name, the one used in help, documentation, and error
+hints, and the three long ones also have a two-letter <strong>typing alias</strong>, a
+pure shortcut with identical behavior:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Resource</th><th>Canonical topic</th><th>Alias</th></tr></thead><tbody><tr><td>transformation</td><td><code>transformation</code></td><td><code>tx</code></td></tr><tr><td>namespace</td><td><code>namespace</code></td><td><code>ns</code></td></tr><tr><td>pipeline</td><td><code>pipeline</code></td><td><code>pl</code></td></tr><tr><td>model</td><td><code>model</code></td><td>(none)</td></tr><tr><td>config</td><td><code>config</code></td><td>(none)</td></tr><tr><td>workspace</td><td><code>workspace</code></td><td>(none)</td></tr></tbody></table>
+<p><code>synth tx run</code> and <code>synth transformation run</code> are the same command.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="interactive-by-default-strict-in-scripts">Interactive by default, strict in scripts<a href="#interactive-by-default-strict-in-scripts" class="hash-link" aria-label="Direct link to Interactive by default, strict in scripts" title="Direct link to Interactive by default, strict in scripts">​</a></h2>
+<p>In a terminal, <code>synth</code> helps you fill in what you left out: a bare
+<code>synth transformation run</code> opens a picker over the installed transformations,
+then over the models matching its source metamodel, then asks explicitly how
+to handle open decisions. Piped, scripted, <code>--json</code>, <code>--quiet</code>, and CI
+invocations never prompt; they fail with the same strict errors a script can
+rely on. Shell completion for values (transformation names, refs, pipeline
+names) is available after a one-time setup; see
+<a href="/aelastics/user-guide/getting-started/installation#shell-completion">Installation</a>.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="two-kinds-of-users">Two kinds of users<a href="#two-kinds-of-users" class="hash-link" aria-label="Direct link to Two kinds of users" title="Direct link to Two kinds of users">​</a></h2>
+<ul>
+<li><strong>Consumers</strong>: install transformations, import models, run
+transformations and pipelines against their data. Most users start here;
+this guide is for you.</li>
+<li><strong>Authors</strong>: scaffold a transformation project
+(<code>synth transformation init</code>), implement and build it, pack or publish it.
+The <a href="/aelastics/developer-guide">Developer Guide</a> covers authoring;
+<a href="/aelastics/developer-guide/guides/packaging-transformations">Packaging Transformations</a>
+documents the manifest and the full workflow.</li>
+</ul></div></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/aelastics/user-guide/getting-started/quick-start"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Quick Start</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/aelastics/user-guide/tutorial"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Tutorial</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_tmrw thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-workspace" class="table-of-contents__link toc-highlight">The workspace</a></li><li><a href="#namespaces-and-refs" class="table-of-contents__link toc-highlight">Namespaces and refs</a></li><li><a href="#models-are-code" class="table-of-contents__link toc-highlight">Models are code</a></li><li><a href="#transformations-chains-and-pipelines" class="table-of-contents__link toc-highlight">Transformations, chains, and pipelines</a></li><li><a href="#decisions-and-configurations" class="table-of-contents__link toc-highlight">Decisions and configurations</a></li><li><a href="#canonical-names-and-typing-aliases" class="table-of-contents__link toc-highlight">Canonical names and typing aliases</a></li><li><a href="#interactive-by-default-strict-in-scripts" class="table-of-contents__link toc-highlight">Interactive by default, strict in scripts</a></li><li><a href="#two-kinds-of-users" class="table-of-contents__link toc-highlight">Two kinds of users</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2019–2026 AelasticS.</div></div></div></footer></div>
+</body>
+</html>

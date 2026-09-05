@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-developer-guide/tutorial/model-to-text/index" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">Model-to-text transformations | Synthesis</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://AelasticS.github.io/aelastics/developer-guide/tutorial/model-to-text"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Model-to-text transformations | Synthesis"><meta data-rh="true" name="description" content="A model-to-text transformation reads a model and writes files: SQL DDL,"><meta data-rh="true" property="og:description" content="A model-to-text transformation reads a model and writes files: SQL DDL,"><link data-rh="true" rel="icon" href="/aelastics/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://AelasticS.github.io/aelastics/developer-guide/tutorial/model-to-text"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/developer-guide/tutorial/model-to-text" hreflang="en"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/developer-guide/tutorial/model-to-text" hreflang="x-default"><link rel="stylesheet" href="/aelastics/assets/css/styles.449dfb93.css">
+<script src="/aelastics/assets/js/runtime~main.8f245ae5.js" defer="defer"></script>
+<script src="/aelastics/assets/js/main.615ded05.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_jFli" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/aelastics/"><b class="navbar__title text--truncate">Synthesis</b></a><a class="navbar__item navbar__link" href="/aelastics/user-guide">User Guide</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/aelastics/developer-guide">Developer Guide</a><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Libraries</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/types/intro">@aelastics/types</a></li><li><a class="dropdown__link" href="/aelastics/store/intro">@aelastics/store</a></li><li><a class="dropdown__link" href="/aelastics/result/intro">@aelastics/result</a></li></ul></div><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Resources</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/user-guide/getting-started/download">Download synth CLI</a></li><li><a href="https://github.com/AelasticS/Synthesis/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="dropdown__link">Contributing<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li><a href="https://github.com/AelasticS/Synthesis" target="_blank" rel="noopener noreferrer" class="dropdown__link">GitHub<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="navbar__items navbar__items--right"><div class="toggle_TKxK colorModeToggle_Jxcn"><button class="clean-btn toggleButton_jheP toggleButtonDisabled_Mb6Y" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_JvxC"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_gY7M"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_fGuX"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_AP4F"><div class="docsWrapper_SxSz"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_omdD" type="button"></button><div class="docRoot_v39k"><aside class="theme-doc-sidebar-container docSidebarContainer_OI0o"><div class="sidebarViewport_dOw7"><div class="sidebar_sQc7"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_DuOC"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/developer-guide">Developer Guide</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/developer-guide/concepts">Concepts</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" href="/aelastics/developer-guide/tutorial">Tutorial</a><button aria-label="Collapse sidebar category &#x27;Tutorial&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-model">Model-to-model transformations</a><button aria-label="Expand sidebar category &#x27;Model-to-model transformations&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible menu__list-item-collapsible--active"><a class="menu__link menu__link--sublist menu__link--active" aria-current="page" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-text">Model-to-text transformations</a><button aria-label="Collapse sidebar category &#x27;Model-to-text transformations&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-text/part-1-basic">Part 1: Basic</a><button aria-label="Expand sidebar category &#x27;Part 1: Basic&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-text/part-2-structured">Part 2: Structured</a><button aria-label="Expand sidebar category &#x27;Part 2: Structured&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-text/part-3-configuration-based">Part 3: Configuration-based</a><button aria-label="Expand sidebar category &#x27;Part 3: Configuration-based&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li></ul></li></ul></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/developer-guide/examples">Examples</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/aelastics/developer-guide/guides/defining-metamodels">Guides</a></div></li></ul></nav></div></div></aside><main class="docMainContainer_Snz0"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_gHUR"><div class="docItemContainer_mVx6"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_y8jP" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/aelastics/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_NQPs"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/aelastics/developer-guide/tutorial"><span itemprop="name">Tutorial</span></a><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Model-to-text transformations</span><meta itemprop="position" content="2"></li></ul></nav><div class="tocCollapsible_lx4i theme-doc-toc-mobile tocMobile_E_qM"><button type="button" class="clean-btn tocCollapsibleButton_uMZQ">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Model-to-text transformations</h1></header>
+<p>A model-to-text transformation reads a model and writes files: SQL DDL,
+documentation, source code, diagram sources, configuration. Synthesis
+has no separate template language for that, and no second execution
+model. Generating text is a transformation like any other, and the only
+thing that really changes is the target metamodel.</p>
+<p>That target metamodel describes a file system subtree: folders, the
+files inside them, and the content of each file. A model written in it
+holds items, where an item is either a <code>Directory</code>, which becomes a
+folder and holds items of its own, or a <code>Document</code>, which becomes one
+file. Inside a document, a <code>Section</code> is a named region and a
+<code>Paragraph</code> is one line of text. So a model in this metamodel is a plan
+of what to write to disk, from the folder structure down to the
+individual lines.</p>
+<p>The rules that build such a model are the same typed functions
+returning JSX that the model-to-model tutorial taught, in a class
+extending the same base class. The manifest declares <code>&quot;kind&quot;: &quot;m2t&quot;</code>,
+and a run takes <code>--out-dir</code> rather than <code>--out</code>. That last difference
+is not an arbitrary flag name. A model-to-model transformation produces
+exactly one model, which the CLI stores as one workspace model under
+the name <code>--out</code> gives it. A model-to-text transformation produces a
+whole tree, possibly many files in many folders, so there is nothing
+single to name: you give it a directory, and the tree described by the
+model is written underneath it.</p>
+<p>The running case is SQL DDL, and the source metamodel is
+<code>rel-tutorial-metamodel</code>: exactly what the
+<a href="/aelastics/developer-guide/tutorial/model-to-model">model-to-model tutorial</a> produces. The two
+tutorials join up. The relational schema that tutorial&#x27;s Part 1
+generates from its Library model is the model this tutorial consumes,
+so you can feed your own output straight in, and every companion
+package here ships that generated schema as its sample.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="the-three-parts">The three parts<a href="#the-three-parts" class="hash-link" aria-label="Direct link to The three parts" title="Direct link to The three parts">​</a></h2>
+<p>All three parts generate DDL for the same schema. What each part
+changes is how the generated text is organized, and what decides it.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="part-1-basic">Part 1: Basic<a href="#part-1-basic" class="hash-link" aria-label="Direct link to Part 1: Basic" title="Direct link to Part 1: Basic">​</a></h3>
+<p><strong>Available now.</strong>
+<a href="/aelastics/developer-guide/tutorial/model-to-text/part-1-basic">Start here</a>.</p>
+<p>One file, with fixed logic and no decorators: a header comment and one
+<code>CREATE TABLE</code> statement per table, each foreign key written as an
+inline <code>REFERENCES</code> clause. You meet the text-document metamodel and
+its components (<code>M2T</code>, <code>Doc</code>, <code>Sec</code>, <code>P</code>), the manifest fields that
+make a package <code>m2t</code>, and a run that writes files. Placement is nesting
+here: a rule&#x27;s output ends up where the rule was written.</p>
+<p>Answer key: <code>examples/tutorial/sql-tutorial-basic</code>.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="part-2-structured">Part 2: Structured<a href="#part-2-structured" class="hash-link" aria-label="Direct link to Part 2: Structured" title="Direct link to Part 2: Structured">​</a></h3>
+<p><strong>Available now.</strong>
+<a href="/aelastics/developer-guide/tutorial/model-to-text/part-2-structured">Continue here</a>.</p>
+<p>The same content, reorganized in two ways. The documents declare empty
+named sections and the rules point at the section they belong to with
+<code>SecParent</code>, so a rule no longer has to be written where its output
+lands. And the output becomes two documents, which is two files,
+because the foreign keys move out of the <code>CREATE TABLE</code> statements into
+<code>ALTER TABLE ... ADD CONSTRAINT</code> statements in a second file.</p>
+<p>That split is not a formatting preference. References can be circular,
+so no ordering of <code>CREATE TABLE</code> statements satisfies every inline
+<code>REFERENCES</code> clause, and production DDL therefore creates every table
+first and constrains them afterwards. The document structure is the
+deployment order made structural.</p>
+<p>Answer key: <code>examples/tutorial/sql-tutorial-structured</code>.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="part-3-configuration-based">Part 3: Configuration-based<a href="#part-3-configuration-based" class="hash-link" aria-label="Direct link to Part 3: Configuration-based" title="Direct link to Part 3: Configuration-based">​</a></h3>
+<p><strong>Available now.</strong>
+<a href="/aelastics/developer-guide/tutorial/model-to-text/part-3-configuration-based">Continue here</a>.</p>
+<p>Parts 1 and 2 each committed to one layout, and both are right for some
+project and wrong for another. Nothing in a relational schema says
+whether its DDL should ship as one script, as tables plus constraints,
+or as one file per table. Part 3 declares that as an issue with options
+in a decision model, binds it to the source metamodel, and turns the
+layouts into <code>@VarOption</code> methods behind a <code>@VarPoint</code>. The choice then
+lives in a configuration model, is reported on every run, and changes
+what files exist without touching code.</p>
+<p>Answer key: <code>examples/tutorial/sql-tutorial-configuration-based</code>.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="at-a-glance">At a glance<a href="#at-a-glance" class="hash-link" aria-label="Direct link to At a glance" title="Direct link to At a glance">​</a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Part</th><th>What it generates</th><th>Mechanism</th><th>Status</th></tr></thead><tbody><tr><td>1: Basic</td><td>One file: a header and one <code>CREATE TABLE</code> per table, with inline <code>REFERENCES</code></td><td><code>M2T</code>, <code>Doc</code>, <code>Sec</code>, <code>P</code>; nesting is placement</td><td>Available</td></tr><tr><td>2: Structured</td><td>Two files: the tables in one, the <code>ALTER TABLE</code> constraints in the other</td><td>Named sections, <code>SecParent</code>, one <code>Doc</code> per file</td><td>Available</td></tr><tr><td>3: Configuration-based</td><td>One file, two files, or one file per table, chosen per run</td><td>Decision model, binding model, <code>@VarPoint</code> and <code>@VarOption</code></td><td>Available</td></tr></tbody></table>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="text-is-where-a-chain-ends">Text is where a chain ends<a href="#text-is-where-a-chain-ends" class="hash-link" aria-label="Direct link to Text is where a chain ends" title="Direct link to Text is where a chain ends">​</a></h2>
+<p>Because the source metamodel here is the model-to-model tutorial&#x27;s
+target, the two halves can run as one command. The CLI type-checks the
+chain from the manifests first, passes the intermediate model in
+memory, and writes only the final files:</p>
+<div class="language-bash codeBlockContainer_MZ5g theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_hzvK"><pre tabindex="0" class="prism-code language-bash codeBlock_W398 thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_H5n5"><span class="token-line" style="color:#393A34"><span class="token synth-command function" style="color:#d73a49">synth transformation run</span><span class="token plain"> </span><span class="token operand-name" style="color:#005cc5">eer-tutorial-basic</span><span class="token plain"> </span><span class="token operand-name" style="color:#005cc5">sql-tutorial-basic</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token parameter" style="color:#e36209">--in</span><span class="token plain"> </span><span class="token operand-path" style="color:#005cc5">demo/library</span><span class="token plain"> </span><span class="token parameter" style="color:#e36209">--out-dir</span><span class="token plain"> </span><span class="token operand-path" style="color:#005cc5">./generated</span><br></span></code></pre><div class="buttonGroup_ODBw"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_Yqny" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_Ea9c"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon__4Xa"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<div class="language-text codeBlockContainer_MZ5g theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_hzvK"><pre tabindex="0" class="prism-code language-text codeBlock_W398 thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_H5n5"><span class="token-line" style="color:#393A34"><span class="token plain">Running 2 steps on demo/library: eer-tutorial-basic -&gt; sql-tutorial-basic</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">[step 1/2 eer-tutorial-basic] Running eer-tutorial-basic@0.1.0 (m2m)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">[step 2/2 sql-tutorial-basic] Running sql-tutorial-basic@0.1.0 (m2t)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Wrote /home/you/work/generated/Library_rel.sql</span><br></span></code></pre><div class="buttonGroup_ODBw"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_Yqny" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_Ea9c"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon__4Xa"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>An <code>m2t</code> step may only be the last step of a chain, because its result
+is files rather than a model, and nothing can consume it further. That
+is the one asymmetry between the two kinds, and it follows from what
+they produce rather than from how they are written. The User Guide
+covers composing runs in
+<a href="/aelastics/user-guide/guides/pipelines">Pipelines</a>.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="prerequisites-for-all-parts">Prerequisites for all parts<a href="#prerequisites-for-all-parts" class="hash-link" aria-label="Direct link to Prerequisites for all parts" title="Direct link to Prerequisites for all parts">​</a></h2>
+<p>You need a checkout of the Synthesis repository built once with <code>rush install</code> and <code>rush build</code>, and the <code>synth</code> CLI. Until the
+<code>@synthesis/*</code> packages are published to npm, transformation packages
+resolve them from the repository workspace. Inside the repository you
+can run the CLI as <code>node apps/cli/bin/run.js</code>; the tutorial writes
+<code>synth</code> for short.</p>
+<p>This tutorial assumes the
+<a href="/aelastics/developer-guide/tutorial/model-to-model/part-1-basic">model-to-model tutorial&#x27;s Part 1</a>.
+Metamodels, JSX authoring, the workspace, the <code>synth.json</code> manifest,
+and the build, install, run loop are shared by both kinds, and they are
+explained in full there rather than repeated here. Part 3 additionally
+assumes the model-to-model tutorial&#x27;s
+<a href="/aelastics/developer-guide/tutorial/model-to-model/part-3-configuration-based">Part 3</a>, which
+introduces decision models, binding models, and variation points.</p></div></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/aelastics/developer-guide/tutorial/model-to-model/part-4-name-scopes/run-and-compare"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">4. Run and compare</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/aelastics/developer-guide/tutorial/model-to-text/part-1-basic"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Part 1: Basic</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_tmrw thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-three-parts" class="table-of-contents__link toc-highlight">The three parts</a><ul><li><a href="#part-1-basic" class="table-of-contents__link toc-highlight">Part 1: Basic</a></li><li><a href="#part-2-structured" class="table-of-contents__link toc-highlight">Part 2: Structured</a></li><li><a href="#part-3-configuration-based" class="table-of-contents__link toc-highlight">Part 3: Configuration-based</a></li></ul></li><li><a href="#at-a-glance" class="table-of-contents__link toc-highlight">At a glance</a></li><li><a href="#text-is-where-a-chain-ends" class="table-of-contents__link toc-highlight">Text is where a chain ends</a></li><li><a href="#prerequisites-for-all-parts" class="table-of-contents__link toc-highlight">Prerequisites for all parts</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2019–2026 AelasticS.</div></div></div></footer></div>
+</body>
+</html>

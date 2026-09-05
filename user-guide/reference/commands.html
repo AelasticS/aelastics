@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-user-guide/reference/commands" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">Command Reference | Synthesis</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://AelasticS.github.io/aelastics/user-guide/reference/commands"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Command Reference | Synthesis"><meta data-rh="true" name="description" content="Every command operates on a resource and has the form:"><meta data-rh="true" property="og:description" content="Every command operates on a resource and has the form:"><link data-rh="true" rel="icon" href="/aelastics/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://AelasticS.github.io/aelastics/user-guide/reference/commands"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/user-guide/reference/commands" hreflang="en"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/user-guide/reference/commands" hreflang="x-default"><link rel="stylesheet" href="/aelastics/assets/css/styles.449dfb93.css">
+<script src="/aelastics/assets/js/runtime~main.8f245ae5.js" defer="defer"></script>
+<script src="/aelastics/assets/js/main.615ded05.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_jFli" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/aelastics/"><b class="navbar__title text--truncate">Synthesis</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/aelastics/user-guide">User Guide</a><a class="navbar__item navbar__link" href="/aelastics/developer-guide">Developer Guide</a><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Libraries</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/types/intro">@aelastics/types</a></li><li><a class="dropdown__link" href="/aelastics/store/intro">@aelastics/store</a></li><li><a class="dropdown__link" href="/aelastics/result/intro">@aelastics/result</a></li></ul></div><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Resources</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/user-guide/getting-started/download">Download synth CLI</a></li><li><a href="https://github.com/AelasticS/Synthesis/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="dropdown__link">Contributing<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li><a href="https://github.com/AelasticS/Synthesis" target="_blank" rel="noopener noreferrer" class="dropdown__link">GitHub<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="navbar__items navbar__items--right"><div class="toggle_TKxK colorModeToggle_Jxcn"><button class="clean-btn toggleButton_jheP toggleButtonDisabled_Mb6Y" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_JvxC"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_gY7M"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_fGuX"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_AP4F"><div class="docsWrapper_SxSz"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_omdD" type="button"></button><div class="docRoot_v39k"><aside class="theme-doc-sidebar-container docSidebarContainer_OI0o"><div class="sidebarViewport_dOw7"><div class="sidebar_sQc7"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_DuOC"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/user-guide">User Guide</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/aelastics/user-guide/getting-started/download">Getting Started</a></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/user-guide/concepts">Concepts</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/user-guide/tutorial">Tutorial</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/aelastics/user-guide/guides/managing-models">Guides</a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/aelastics/user-guide/reference/commands">Reference</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/aelastics/user-guide/reference/commands">Command Reference</a></li></ul></li></ul></nav></div></div></aside><main class="docMainContainer_Snz0"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_gHUR"><div class="docItemContainer_mVx6"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_y8jP" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/aelastics/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_NQPs"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Reference</span><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Command Reference</span><meta itemprop="position" content="2"></li></ul></nav><div class="tocCollapsible_lx4i theme-doc-toc-mobile tocMobile_E_qM"><button type="button" class="clean-btn tocCollapsibleButton_uMZQ">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Command Reference</h1></header>
+<p>Every command operates on a <strong>resource</strong> and has the form:</p>
+<div class="language-bash codeBlockContainer_MZ5g theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_hzvK"><pre tabindex="0" class="prism-code language-bash codeBlock_W398 thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_H5n5"><span class="token-line" style="color:#393A34"><span class="token synth-command function" style="color:#d73a49">synth</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">resource</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">verb</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">arguments</span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">flags</span><span class="token punctuation" style="color:#393A34">]</span><br></span></code></pre><div class="buttonGroup_ODBw"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_Yqny" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_Ea9c"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon__4Xa"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>An argument&#x27;s resource type is always determined by the topic it was typed
+under: <code>transformation run</code>&#x27;s arguments are always transformations,
+<code>pipeline run</code>&#x27;s argument is always a pipeline; nothing is guessed from what
+happens to exist in the workspace. The <code>transformation</code>, <code>namespace</code>, and
+<code>pipeline</code> topics have the typing aliases <code>tx</code>, <code>ns</code>, and <code>pl</code> (see
+<a href="/aelastics/user-guide/concepts#canonical-names-and-typing-aliases">the alias table</a>); a few
+workspace-wide operations (<code>init</code>, <code>doctor</code>, <code>cd</code>, <code>workspace</code>) omit the
+resource prefix.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="global-flags">Global flags<a href="#global-flags" class="hash-link" aria-label="Direct link to Global flags" title="Direct link to Global flags">​</a></h2>
+<p>These apply to every <code>synth</code> command.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Flag</th><th>Description</th></tr></thead><tbody><tr><td><code>--workspace &lt;path&gt;</code></td><td>Override the active workspace for this invocation.</td></tr><tr><td><code>--ns &lt;namespace&gt;</code></td><td>Namespace context override (otherwise resolved from config).</td></tr><tr><td><code>--json</code></td><td>Emit machine-readable JSON instead of formatted text.</td></tr><tr><td><code>-q</code>, <code>--quiet</code></td><td>Suppress informational output.</td></tr><tr><td><code>-v</code>, <code>--verbose</code></td><td>Print debug-level logs.</td></tr></tbody></table>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="exit-codes-and---json">Exit codes and <code>--json</code><a href="#exit-codes-and---json" class="hash-link" aria-label="Direct link to exit-codes-and---json" title="Direct link to exit-codes-and---json">​</a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td><code>0</code></td><td>Success.</td></tr><tr><td><code>1</code></td><td>Generic failure (unhandled error, invalid arguments).</td></tr><tr><td><code>2</code></td><td>Validation failure (model errors, chain mismatch, missing configuration consent, import-gate rejection).</td></tr><tr><td><code>3</code></td><td>Resource not found (model, transformation, pipeline, or namespace).</td></tr><tr><td><code>4</code></td><td>Workspace not initialized or unreadable.</td></tr></tbody></table>
+<p>The <code>--json</code> contract is uniform: on failure a command prints a
+machine-readable error object as its only stdout:</p>
+<div class="language-json codeBlockContainer_MZ5g theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_hzvK"><pre tabindex="0" class="prism-code language-json codeBlock_W398 thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_H5n5"><span class="token-line" style="color:#393A34"><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> </span><span class="token property" style="color:#36acaa">&quot;error&quot;</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&quot;Transformation &#x27;no-such-tx&#x27; not found.&quot;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre><div class="buttonGroup_ODBw"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_Yqny" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_Ea9c"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon__4Xa"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>It <strong>also</strong> exits non-zero with the same code as the human-readable mode. No
+command ever prints an <code>error</code> object with exit 0.</p>
+<p>In a terminal session (stdin and stdout are TTYs, no <code>--json</code>, no <code>--quiet</code>,
+<code>CI</code> unset), the commands <code>transformation run</code>, <code>pipeline run</code>, and
+<code>config init</code> prompt for missing values instead of failing. Every other
+session (pipes, scripts, CI, machine output) gets the strict errors below,
+unchanged.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="workspace">Workspace<a href="#workspace" class="hash-link" aria-label="Direct link to Workspace" title="Direct link to Workspace">​</a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Command</th><th>Description</th></tr></thead><tbody><tr><td><code>synth init [--path &lt;dir&gt;]</code></td><td>Create a new workspace (default <code>~/.synth/</code>): <code>config.json</code>, <code>models/</code>, <code>transformations/</code>, <code>pipelines/</code>.</td></tr><tr><td><code>synth workspace</code></td><td>Print the active workspace path.</td></tr><tr><td><code>synth workspace --set &lt;path&gt;</code></td><td>Switch the active workspace.</td></tr><tr><td><code>synth doctor [--fix]</code></td><td>Check workspace integrity.</td></tr><tr><td><code>synth cd [&lt;namespace&gt;]</code></td><td>Change the current namespace; without an argument, show it.</td></tr></tbody></table>
+<p><code>synth doctor</code> re-checks the import-gate invariant workspace-wide: every
+model file must parse, its <code>$synth</code> header must agree with the rendered
+content, its declared references must resolve, and every saved pipeline must
+pass the same static checks as <code>pipeline mk</code> (schema, steps installed, chain
+compatibility; pipeline problems are warnings and never block the
+workspace). <code>doctor --fix</code> re-derives and writes missing or unparseable model
+headers through the same code path as <code>model import</code>.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="namespaces">Namespaces<a href="#namespaces" class="hash-link" aria-label="Direct link to Namespaces" title="Direct link to Namespaces">​</a></h2>
+<p>Namespaces are nested directories under <code>models/</code>; <code>com.example</code> is
+<code>models/com/example/</code> and may contain both models and deeper namespaces.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Command</th><th>Description</th></tr></thead><tbody><tr><td><code>synth namespace ls</code></td><td>List all namespaces in the workspace.</td></tr><tr><td><code>synth namespace mk &lt;namespace&gt;</code></td><td>Create an empty namespace (segments: letters, digits, hyphen, underscore, dot-separated).</td></tr><tr><td><code>synth namespace rm &lt;namespace&gt;</code></td><td>Remove a namespace; must be empty unless <code>--force</code>.</td></tr></tbody></table>
+<p><code>namespace rm --cascade</code> additionally deletes every model <strong>outside</strong> the
+namespace that transitively references a model inside it (implies
+<code>--force</code>). This is the same reverse-dependency reasoning as
+<code>model rm --cascade</code>, applied to the whole subtree.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="models">Models<a href="#models" class="hash-link" aria-label="Direct link to Models" title="Direct link to Models">​</a></h2>
+<p>A model is a <code>.tsx</code> file at <code>models/&lt;namespace path&gt;/&lt;name&gt;.tsx</code>, addressed
+by its ref <code>&lt;namespace&gt;/&lt;name&gt;</code> (see <a href="/aelastics/user-guide/guides/managing-models#models-are-code">Models are code</a>).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Command</th><th>Description</th></tr></thead><tbody><tr><td><code>synth model import &lt;file&gt;</code></td><td>Validate a <code>.tsx</code> model file and copy it into the workspace.</td></tr><tr><td><code>synth model export &lt;ref&gt; [--to &lt;file&gt;]</code></td><td>Write a model out to disk, verbatim, header included.</td></tr><tr><td><code>synth model ls</code></td><td>List models with their header metadata (<code>--ns</code> filters to a namespace).</td></tr><tr><td><code>synth model show &lt;ref&gt;</code></td><td>Show a model&#x27;s header and file location.</td></tr><tr><td><code>synth model validate &lt;ref&gt;</code></td><td>Render the model for real and check it against its metamodel.</td></tr><tr><td><code>synth model rm &lt;ref&gt;</code></td><td>Delete a model, guarded by the dependency graph.</td></tr></tbody></table>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="model-import-the-validation-gate"><code>model import</code>: the validation gate<a href="#model-import-the-validation-gate" class="hash-link" aria-label="Direct link to model-import-the-validation-gate" title="Direct link to model-import-the-validation-gate">​</a></h3>
+<p>Everything enters the workspace through <code>model import &lt;file&gt; --as &lt;ref&gt;</code>:</p>
+<ol>
+<li>The file is transpiled and rendered into a throwaway store, giving full
+structural validation. Broken JSX, an unresolvable metamodel, or a
+dangling <code>$refByName</code> reject the import.</li>
+<li>The model&#x27;s references are checked against the workspace; a missing
+dependency is an error naming it (in a terminal session, <code>synth</code> offers
+to import it first).</li>
+<li>The <code>$synth</code> header is derived or verified and written; authorship fields
+are stamped (<code>--author</code>, <code>--description</code>, <code>--tags</code>, defaults from
+<code>git config</code>).</li>
+<li>The file is copied into the namespace tree. <code>--force</code> overwrites an
+existing target.</li>
+</ol>
+<p>The invariant this buys: <strong>everything in the workspace was loadable when it
+entered</strong>. That is why run time is strict: <code>--in</code> accepts workspace refs,
+never file paths.</p>
+<p>Configuration models reference their transformation&#x27;s decision and binding
+models, which live in the installed package rather than the workspace; pass
+<code>--tx &lt;name&gt;</code> so the validation render pre-loads the package&#x27;s parts. The
+same applies to <code>model validate</code> on a configuration model.</p>
+<p><code>model validate</code> also accepts <code>--against &lt;metamodel&gt;</code> to assert the header
+declares a specific metamodel.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="model-rm-and-the-dependency-graph"><code>model rm</code> and the dependency graph<a href="#model-rm-and-the-dependency-graph" class="hash-link" aria-label="Direct link to model-rm-and-the-dependency-graph" title="Direct link to model-rm-and-the-dependency-graph">​</a></h3>
+<p>Deletion is protected by the reverse-dependency graph built from <code>$synth</code>
+headers: <code>model rm &lt;ref&gt;</code> is <strong>refused</strong> (exit 2) while any other model
+transitively references the target, and the refusal lists the dependent
+models. <code>--cascade</code> deletes the target together with every model that
+transitively references it. <code>config rm</code> has the same semantics for
+configuration models.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="transformations">Transformations<a href="#transformations" class="hash-link" aria-label="Direct link to Transformations" title="Direct link to Transformations">​</a></h2>
+<p>Transformations are installed packages (see
+<a href="/aelastics/developer-guide/guides/packaging-transformations">Packaging Transformations</a>); the manifest
+declares everything the CLI needs (kind, metamodels, entry point, decision
+and binding model parts) without loading code.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Command</th><th>Description</th></tr></thead><tbody><tr><td><code>synth transformation install &lt;dir&gt;</code></td><td>Install from a local package directory; the manifest&#x27;s claims are verified against the loaded transformation class.</td></tr><tr><td><code>synth transformation uninstall &lt;name&gt;</code></td><td>Remove an installed transformation. Refused (exit 2) while any saved pipeline lists it as a step; update or <code>pipeline rm</code> those pipelines first.</td></tr><tr><td><code>synth transformation ls</code></td><td>List installed transformations with versions.</td></tr><tr><td><code>synth transformation show &lt;name&gt;</code></td><td>Print kind, source/target metamodels, and, for configuration-based transformations, every issue with its options and defaults (loaded from the package&#x27;s decision model).</td></tr><tr><td><code>synth transformation run &lt;tx&gt; [&lt;tx&gt; ...]</code></td><td>Run one transformation or a chain; see below.</td></tr><tr><td><code>synth transformation init &lt;name&gt;</code></td><td>Scaffold a new transformation project (<code>package.json</code>, <code>synth.json</code>, <code>tsconfig.json</code>, <code>src/index.ts</code>).</td></tr><tr><td><code>synth transformation build</code></td><td>Build the transformation project in the current directory.</td></tr><tr><td><code>synth transformation test</code></td><td>Run the project&#x27;s test fixtures.</td></tr><tr><td><code>synth transformation pack</code></td><td>Produce a distributable tarball.</td></tr><tr><td><code>synth transformation publish</code></td><td>Publish to npm (<code>--access</code>, <code>--tag</code>, <code>--dry-run</code>).</td></tr></tbody></table>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="transformation-run"><code>transformation run</code><a href="#transformation-run" class="hash-link" aria-label="Direct link to transformation-run" title="Direct link to transformation-run">​</a></h3>
+<div class="language-bash codeBlockContainer_MZ5g theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_hzvK"><pre tabindex="0" class="prism-code language-bash codeBlock_W398 thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_H5n5"><span class="token-line" style="color:#393A34"><span class="token synth-command function" style="color:#d73a49">synth transformation run</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">tx</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">tx</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">..</span><span class="token plain">.</span><span class="token punctuation" style="color:#393A34">]</span><span class="token plain"> </span><span class="token parameter" style="color:#e36209">--in</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">ref</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">flags</span><span class="token punctuation" style="color:#393A34">]</span><br></span></code></pre><div class="buttonGroup_ODBw"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_Yqny" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_Ea9c"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon__4Xa"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>Whether a run is model-to-model or model-to-text is decided by the
+manifest&#x27;s <code>kind</code>, never by the command name.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Flag</th><th>Description</th></tr></thead><tbody><tr><td><code>--in &lt;ref&gt;</code></td><td>Source model ref the first step transforms. Required.</td></tr><tr><td><code>--out &lt;ref&gt;</code></td><td>Destination for the final result model (last step m2m only; default <code>&lt;namespace&gt;/&lt;name&gt;-&lt;last-tx&gt;</code> derived from <code>--in</code>).</td></tr><tr><td><code>--out-dir &lt;dir&gt;</code></td><td>Output directory for generated files (last step m2t only).</td></tr><tr><td><code>--config &lt;ref&gt;</code></td><td>Configuration model for step 1 (configuration-based only).</td></tr><tr><td><code>--default-configs</code></td><td>Explicitly accept generated default configurations for every configuration-based step not covered by <code>--config</code>.</td></tr><tr><td><code>--save-config &lt;ref&gt;</code></td><td>Persist the generated default configuration as a workspace model (single step, only with <code>--default-configs</code>).</td></tr><tr><td><code>--keep-intermediates</code></td><td>Also write every intermediate chain result as a workspace model at <code>&lt;namespace&gt;/&lt;name&gt;-&lt;step-tx&gt;</code>.</td></tr><tr><td><code>--save-as &lt;name&gt;</code></td><td>After a successful run, save the steps as a pipeline (see <a href="/aelastics/user-guide/guides/pipelines">Pipelines</a>).</td></tr><tr><td><code>--overwrite</code></td><td>Replace existing targets (final and intermediate models, <code>--save-config</code> target, <code>--save-as</code> pipeline).</td></tr></tbody></table>
+<p>An m2m result is written back into the workspace as a model file with a
+provenance header (<code>generatedBy: { tx, txVersion, config, date }</code>) and passes
+back through the same import gate as any other model. An m2t result generates
+files under <code>--out-dir</code>. Existing targets are only replaced with
+<code>--overwrite</code>.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="the-consent-policy-decisions-are-never-applied-implicitly">The consent policy: decisions are never applied implicitly<a href="#the-consent-policy-decisions-are-never-applied-implicitly" class="hash-link" aria-label="Direct link to The consent policy: decisions are never applied implicitly" title="Direct link to The consent policy: decisions are never applied implicitly">​</a></h3>
+<p>Many transformations are <strong>configuration-based</strong>: they leave design decisions
+open (say, a naming convention) and declare defaults. <code>synth</code> never applies
+those defaults silently. A configuration-based run must carry exactly one of:</p>
+<ul>
+<li><code>--config &lt;ref&gt;</code>: run on a reviewed, editable configuration model
+(created with <code>synth config init</code>, see <a href="/aelastics/user-guide/guides/configurations">Configurations</a>);</li>
+<li><code>--default-configs</code>: explicitly accept generated defaults; every applied
+choice is announced in the output, e.g. <code>NamingConvention -&gt; SnakeCase (default)</code>.</li>
+</ul>
+<p>With neither, the run aborts (exit 2) <strong>before any engine work</strong>, and the
+error teaches both paths:</p>
+<div class="language-text codeBlockContainer_MZ5g theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_hzvK"><pre tabindex="0" class="prism-code language-text codeBlock_W398 thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_H5n5"><span class="token-line" style="color:#393A34"><span class="token plain">Transformation &#x27;eer-to-relational&#x27; is configuration-based. Provide --config &lt;ref&gt;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">(create one with: synth config init eer-to-relational --for com.example/persons)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">or accept generated defaults explicitly with --default-configs.</span><br></span></code></pre><div class="buttonGroup_ODBw"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_Yqny" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_Ea9c"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon__4Xa"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>The policy is uniform: it applies identically to single steps, ad-hoc
+chains, and saved pipelines; a pipeline is convenience, never a bypass.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="chains">Chains<a href="#chains" class="hash-link" aria-label="Direct link to Chains" title="Direct link to Chains">​</a></h3>
+<p>Several transformation names run as a chain: step N&#x27;s output model feeds
+step N+1 in memory. Before anything executes, the chain is type-checked
+from the manifests: step N&#x27;s target metamodel must equal step N+1&#x27;s source
+metamodel, and a mismatch names the incompatible pair. Only the last step
+may be m2t (text is terminal); a last m2t step requires <code>--out-dir</code>,
+otherwise <code>--out</code> applies.</p>
+<p>Configuration consent in a chain: <code>--config</code> binds to <strong>step 1 only</strong>;
+an explicit configuration cannot exist for a model that is only produced
+mid-run. Every other configuration-based step (and step 1 without <code>--config</code>)
+requires <code>--default-configs</code>. To configure a later step explicitly, run
+stepwise: keep the intermediate with <code>--keep-intermediates</code>, then
+<code>config init</code> against it and run the next step with <code>--config</code>; the full
+sequence is in <a href="/aelastics/user-guide/guides/configurations#configuring-a-chain-stepwise">Configurations</a>.</p>
+<div class="language-bash codeBlockContainer_MZ5g theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_hzvK"><pre tabindex="0" class="prism-code language-bash codeBlock_W398 thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_H5n5"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#0b8235;font-style:italic"># One chain, defaults accepted for both steps</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token synth-command function" style="color:#d73a49">synth transformation run</span><span class="token plain"> </span><span class="token operand-name" style="color:#005cc5">eer-to-relational</span><span class="token plain"> </span><span class="token operand-name" style="color:#005cc5">rel-to-sql-ddl</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token parameter" style="color:#e36209">--in</span><span class="token plain"> </span><span class="token operand-path" style="color:#005cc5">com.example/persons</span><span class="token plain"> </span><span class="token parameter" style="color:#e36209">--default-configs</span><span class="token plain"> </span><span class="token parameter" style="color:#e36209">--out-dir</span><span class="token plain"> </span><span class="token operand-path" style="color:#005cc5">./generated</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#0b8235;font-style:italic"># Reviewed configuration for step 1, defaults for the rest</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token synth-command function" style="color:#d73a49">synth transformation run</span><span class="token plain"> </span><span class="token operand-name" style="color:#005cc5">eer-to-relational</span><span class="token plain"> </span><span class="token operand-name" style="color:#005cc5">rel-to-sql-ddl</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token parameter" style="color:#e36209">--in</span><span class="token plain"> </span><span class="token operand-path" style="color:#005cc5">com.example/persons</span><span class="token plain"> </span><span class="token parameter" style="color:#e36209">--config</span><span class="token plain"> </span><span class="token operand-path" style="color:#005cc5">com.example/persons-cfg</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">\</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token parameter" style="color:#e36209">--default-configs</span><span class="token plain"> </span><span class="token parameter" style="color:#e36209">--out-dir</span><span class="token plain"> </span><span class="token operand-path" style="color:#005cc5">./generated</span><br></span></code></pre><div class="buttonGroup_ODBw"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_Yqny" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_Ea9c"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon__4Xa"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="configurations">Configurations<a href="#configurations" class="hash-link" aria-label="Direct link to Configurations" title="Direct link to Configurations">​</a></h2>
+<p>Configuration models record the decisions for one transformation on one
+specific source model. They live in the models tree like any other model;
+the <code>config</code> topic filters and contextualizes them. The full workflow is in
+<a href="/aelastics/user-guide/guides/configurations">Configurations</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Command</th><th>Description</th></tr></thead><tbody><tr><td><code>synth config init &lt;tx&gt; --for &lt;model&gt;</code></td><td>Generate the default configuration model as an editable workspace model (default ref <code>&lt;namespace&gt;/&lt;name&gt;-cfg</code>, override with <code>--out</code>; <code>--overwrite</code> replaces).</td></tr><tr><td><code>synth config ls [--for &lt;tx&gt;]</code></td><td>List configuration models, optionally only those generated by one transformation.</td></tr><tr><td><code>synth config show &lt;ref&gt;</code></td><td>Render a configuration and print every decision it records (<code>--tx</code> supplies the context for hand-written configurations).</td></tr><tr><td><code>synth config edit &lt;ref&gt;</code></td><td>Open the configuration in <code>$EDITOR</code>; re-check afterwards with <code>model validate &lt;ref&gt; --tx &lt;name&gt;</code>.</td></tr><tr><td><code>synth config rm &lt;ref&gt;</code></td><td>Delete a configuration model (<code>model rm</code> semantics: dependency check, <code>--cascade</code>).</td></tr></tbody></table>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="pipelines">Pipelines<a href="#pipelines" class="hash-link" aria-label="Direct link to Pipelines" title="Direct link to Pipelines">​</a></h2>
+<p>A pipeline is a <strong>named process</strong>: an ordered list of transformation steps
+stored as plain JSON at <code>pipelines/&lt;name&gt;.json</code>, with no data bindings and no
+stored consents. Every run names its own data. Full guide:
+<a href="/aelastics/user-guide/guides/pipelines">Pipelines</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Command</th><th>Description</th></tr></thead><tbody><tr><td><code>synth pipeline mk &lt;name&gt; &lt;tx...&gt;</code></td><td>Create a pipeline; validation is static and manifest-driven, nothing executes (<code>--description</code>, <code>--overwrite</code>).</td></tr><tr><td><code>synth pipeline run &lt;name&gt; --in &lt;ref&gt;</code></td><td>Run a saved pipeline through the identical request path as <code>transformation run</code> with those steps; <code>--in</code> is always required.</td></tr><tr><td><code>synth pipeline ls</code></td><td>List saved pipelines with steps and description.</td></tr><tr><td><code>synth pipeline show &lt;name&gt;</code></td><td>Show every field of a pipeline.</td></tr><tr><td><code>synth pipeline rm &lt;name&gt;</code></td><td>Delete a pipeline (nothing references pipelines, so no dependency check).</td></tr><tr><td><code>synth pipeline edit &lt;name&gt;</code></td><td>Edit the JSON in <code>$EDITOR</code>; afterwards the file is re-validated like <code>pipeline mk</code> and problems are reported as warnings.</td></tr></tbody></table>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="shell-completion">Shell completion<a href="#shell-completion" class="hash-link" aria-label="Direct link to Shell completion" title="Direct link to Shell completion">​</a></h2>
+<p><code>synth autocomplete</code> prints the one-time setup instructions for command and
+flag completion; a second, dynamic layer completes <strong>values</strong>
+(transformation names, model and configuration refs, pipeline names,
+namespaces), context-aware (after <code>transformation run eer-to-relational</code>,
+TAB on <code>--in</code> offers only models matching its source metamodel). Setup for
+both layers is in <a href="/aelastics/user-guide/getting-started/installation#shell-completion">Installation</a>.</p></div></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/aelastics/user-guide/guides/pipelines"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Pipelines</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_tmrw thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#global-flags" class="table-of-contents__link toc-highlight">Global flags</a></li><li><a href="#exit-codes-and---json" class="table-of-contents__link toc-highlight">Exit codes and <code>--json</code></a></li><li><a href="#workspace" class="table-of-contents__link toc-highlight">Workspace</a></li><li><a href="#namespaces" class="table-of-contents__link toc-highlight">Namespaces</a></li><li><a href="#models" class="table-of-contents__link toc-highlight">Models</a><ul><li><a href="#model-import-the-validation-gate" class="table-of-contents__link toc-highlight"><code>model import</code>: the validation gate</a></li><li><a href="#model-rm-and-the-dependency-graph" class="table-of-contents__link toc-highlight"><code>model rm</code> and the dependency graph</a></li></ul></li><li><a href="#transformations" class="table-of-contents__link toc-highlight">Transformations</a><ul><li><a href="#transformation-run" class="table-of-contents__link toc-highlight"><code>transformation run</code></a></li><li><a href="#the-consent-policy-decisions-are-never-applied-implicitly" class="table-of-contents__link toc-highlight">The consent policy: decisions are never applied implicitly</a></li><li><a href="#chains" class="table-of-contents__link toc-highlight">Chains</a></li></ul></li><li><a href="#configurations" class="table-of-contents__link toc-highlight">Configurations</a></li><li><a href="#pipelines" class="table-of-contents__link toc-highlight">Pipelines</a></li><li><a href="#shell-completion" class="table-of-contents__link toc-highlight">Shell completion</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2019–2026 AelasticS.</div></div></div></footer></div>
+</body>
+</html>

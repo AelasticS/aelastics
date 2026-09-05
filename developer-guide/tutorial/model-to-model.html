@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-developer-guide/tutorial/model-to-model/index" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">Model-to-model transformations | Synthesis</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://AelasticS.github.io/aelastics/developer-guide/tutorial/model-to-model"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Model-to-model transformations | Synthesis"><meta data-rh="true" name="description" content="A model-to-model transformation reads a source model written in one"><meta data-rh="true" property="og:description" content="A model-to-model transformation reads a source model written in one"><link data-rh="true" rel="icon" href="/aelastics/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://AelasticS.github.io/aelastics/developer-guide/tutorial/model-to-model"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/developer-guide/tutorial/model-to-model" hreflang="en"><link data-rh="true" rel="alternate" href="https://AelasticS.github.io/aelastics/developer-guide/tutorial/model-to-model" hreflang="x-default"><link rel="stylesheet" href="/aelastics/assets/css/styles.449dfb93.css">
+<script src="/aelastics/assets/js/runtime~main.8f245ae5.js" defer="defer"></script>
+<script src="/aelastics/assets/js/main.615ded05.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const n=new URLSearchParams(window.location.search).entries();for(var[t,e]of n)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_jFli" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/aelastics/"><b class="navbar__title text--truncate">Synthesis</b></a><a class="navbar__item navbar__link" href="/aelastics/user-guide">User Guide</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/aelastics/developer-guide">Developer Guide</a><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Libraries</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/types/intro">@aelastics/types</a></li><li><a class="dropdown__link" href="/aelastics/store/intro">@aelastics/store</a></li><li><a class="dropdown__link" href="/aelastics/result/intro">@aelastics/result</a></li></ul></div><div class="navbar__item dropdown dropdown--hoverable"><a href="#" aria-haspopup="true" aria-expanded="false" role="button" class="navbar__link">Resources</a><ul class="dropdown__menu"><li><a class="dropdown__link" href="/aelastics/user-guide/getting-started/download">Download synth CLI</a></li><li><a href="https://github.com/AelasticS/Synthesis/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="dropdown__link">Contributing<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li><a href="https://github.com/AelasticS/Synthesis" target="_blank" rel="noopener noreferrer" class="dropdown__link">GitHub<svg width="12" height="12" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KmqX"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="navbar__items navbar__items--right"><div class="toggle_TKxK colorModeToggle_Jxcn"><button class="clean-btn toggleButton_jheP toggleButtonDisabled_Mb6Y" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_JvxC"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_gY7M"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_fGuX"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_AP4F"><div class="docsWrapper_SxSz"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_omdD" type="button"></button><div class="docRoot_v39k"><aside class="theme-doc-sidebar-container docSidebarContainer_OI0o"><div class="sidebarViewport_dOw7"><div class="sidebar_sQc7"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_DuOC"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/developer-guide">Developer Guide</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/developer-guide/concepts">Concepts</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" href="/aelastics/developer-guide/tutorial">Tutorial</a><button aria-label="Collapse sidebar category &#x27;Tutorial&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible menu__list-item-collapsible--active"><a class="menu__link menu__link--sublist menu__link--active" aria-current="page" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-model">Model-to-model transformations</a><button aria-label="Collapse sidebar category &#x27;Model-to-model transformations&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-model/part-1-basic">Part 1: Basic</a><button aria-label="Expand sidebar category &#x27;Part 1: Basic&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-model/part-2-advanced">Part 2: Advanced</a><button aria-label="Expand sidebar category &#x27;Part 2: Advanced&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-model/part-3-configuration-based">Part 3: Configuration-based</a><button aria-label="Expand sidebar category &#x27;Part 3: Configuration-based&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-model/part-4-name-scopes">Part 4: Name scopes</a><button aria-label="Expand sidebar category &#x27;Part 4: Name scopes&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/aelastics/developer-guide/tutorial/model-to-text">Model-to-text transformations</a><button aria-label="Expand sidebar category &#x27;Model-to-text transformations&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li></ul></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/aelastics/developer-guide/examples">Examples</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/aelastics/developer-guide/guides/defining-metamodels">Guides</a></div></li></ul></nav></div></div></aside><main class="docMainContainer_Snz0"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_gHUR"><div class="docItemContainer_mVx6"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_y8jP" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/aelastics/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_NQPs"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/aelastics/developer-guide/tutorial"><span itemprop="name">Tutorial</span></a><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Model-to-model transformations</span><meta itemprop="position" content="2"></li></ul></nav><div class="tocCollapsible_lx4i theme-doc-toc-mobile tocMobile_E_qM"><button type="button" class="clean-btn tocCollapsibleButton_uMZQ">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Model-to-model transformations</h1></header>
+<p>A model-to-model transformation reads a source model written in one
+metamodel and produces a target model written in another. This tutorial
+uses the case every modelling course starts with, because its rules are
+familiar and its hard questions are real: an Extended
+Entity-Relationship (EER) schema becomes a relational schema. Entities
+become tables, attributes become columns, and relationships become
+foreign keys or join tables depending on their cardinality.</p>
+<p>The tutorial is built around a single observation. The mapping rules
+you would write by hand are almost entirely mechanical, except for a
+handful of places where the source model does not determine the answer.
+Whether a 1:N relationship becomes a foreign key or a join table is a
+design decision, not a deduction. Everything Parts 2 and 3 add is
+machinery for handling exactly those places well, and the closing part
+turns to a different kind of quality: the names the generated schema
+carries.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="the-four-parts">The four parts<a href="#the-four-parts" class="hash-link" aria-label="Direct link to The four parts" title="Direct link to The four parts">​</a></h2>
+<p>Each part changes one thing about a transformation you already know.
+Parts 2 and 3 each start from the previous part&#x27;s rules and reorganize
+them; Part 4 returns to Part 1&#x27;s code and changes its naming world
+instead.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="part-1-basic">Part 1: Basic<a href="#part-1-basic" class="hash-link" aria-label="Direct link to Part 1: Basic" title="Direct link to Part 1: Basic">​</a></h3>
+<p><strong>Available now.</strong>
+<a href="/aelastics/developer-guide/tutorial/model-to-model/part-1-basic">Start here</a>.</p>
+<p>A complete transformation with fixed logic and no decorators. You meet
+the source metamodel, the target metamodel, JSX model authoring, the
+transformation class, the <code>synth.json</code> manifest, and the loop of build,
+install, and run. The relationship mapping is decided by one plain
+<code>if</code> statement: M:N becomes a join table, everything else becomes a
+foreign key on the N side. That conditional is deliberate, and the next
+two parts each dissolve it in a different way.</p>
+<p>Answer key: <code>examples/tutorial/eer-tutorial-basic</code>.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="part-2-advanced">Part 2: Advanced<a href="#part-2-advanced" class="hash-link" aria-label="Direct link to Part 2: Advanced" title="Direct link to Part 2: Advanced">​</a></h3>
+<p><strong>Available now.</strong>
+<a href="/aelastics/developer-guide/tutorial/model-to-model/part-2-advanced">Continue here</a>.</p>
+<p>The source metamodel grows the <code>Kernel</code> and <code>Weak</code> entity subtypes, and
+the entity rule stops being one function that inspects its argument.
+Instead it becomes a specialization point (<code>@SpecPoint</code>) with one
+specialized implementation (<code>@SpecOption</code>) per subtype, dispatched by
+the engine on the runtime type of the source element. This is the right
+mechanism when the variants are determined by the source model: a weak
+entity is a weak entity, and no configuration should be able to say
+otherwise.</p>
+<p>Answer key: <code>examples/tutorial/eer-tutorial-advanced</code>, which uses
+<code>eer-tutorial-metamodel/advanced</code> as its source
+metamodel.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="part-3-configuration-based">Part 3: Configuration-based<a href="#part-3-configuration-based" class="hash-link" aria-label="Direct link to Part 3: Configuration-based" title="Direct link to Part 3: Configuration-based">​</a></h3>
+<p><strong>Available now.</strong>
+<a href="/aelastics/developer-guide/tutorial/model-to-model/part-3-configuration-based">Continue here</a>.</p>
+<p>What remains after Part 2 is the genuinely open case: the relationship
+cardinality decisions. Part 3 turns them into a declared design space.
+A decision model states the issues and their admissible options, a
+binding model attaches each issue to the metamodel concepts it
+concerns, and a configuration model closes the decisions for one
+concrete run. The transformation declares variation points
+(<code>@VarPoint</code>) and their options (<code>@VarOption</code>), and the engine
+dispatches on the configuration rather than on an <code>if</code> statement. The
+same source model and the same transformation then produce different
+relational architectures.</p>
+<p>Answer key: <code>examples/tutorial/eer-tutorial-configuration-based</code>.</p>
+<h3 class="anchor anchorWithStickyNavbar_bweN" id="part-4-name-scopes">Part 4: Name scopes<a href="#part-4-name-scopes" class="hash-link" aria-label="Direct link to Part 4: Name scopes" title="Direct link to Part 4: Name scopes">​</a></h3>
+<p><strong>Available now.</strong>
+<a href="/aelastics/developer-guide/tutorial/model-to-model/part-4-name-scopes">Finish here</a>.</p>
+<p>The closing part changes no rules at all. Parts 1 to 3 lived under the
+flat naming rule, element names unique across the whole model, which
+is why the sample carried qualified names like <code>bookId</code> and the
+generated foreign keys were called <code>AuthorId_FK</code>. Part 4 declares
+<code>Entity</code> and <code>Table</code> name scopes on dedicated stages of the two
+metamodels, and reworks Part 1&#x27;s transformation onto them: every table
+now has its own <code>id</code>, foreign key columns take natural names like
+<code>authorId</code>, and references between tables become paths like
+<code>Author/id</code>. The diff against Part 1 is deliberately tiny, because
+scopes are a property of the metamodel, not of the rules.</p>
+<p>Answer key: <code>examples/tutorial/eer-tutorial-name-scopes</code>, which uses
+the <code>name-scopes</code> stages of both tutorial metamodels.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="at-a-glance">At a glance<a href="#at-a-glance" class="hash-link" aria-label="Direct link to At a glance" title="Direct link to At a glance">​</a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Part</th><th>What decides the mapping</th><th>Mechanism</th></tr></thead><tbody><tr><td>1: Basic</td><td>A hand written conditional in the rule</td><td>Plain TypeScript</td></tr><tr><td>2: Advanced</td><td>The runtime type of the source element</td><td><code>@SpecPoint</code> and <code>@SpecOption</code></td></tr><tr><td>3: Configuration-based</td><td>A configuration chosen for the run</td><td>Decision model, binding model, <code>@VarPoint</code> and <code>@VarOption</code></td></tr><tr><td>4: Name scopes</td><td>Nothing new; the naming world changes</td><td><code>declareNamespace</code> and path references</td></tr></tbody></table>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="what-happens-after-your-transformation-runs">What happens after your transformation runs<a href="#what-happens-after-your-transformation-runs" class="hash-link" aria-label="Direct link to What happens after your transformation runs" title="Direct link to What happens after your transformation runs">​</a></h2>
+<p>A transformation is rarely the whole job. Because its result is an
+ordinary model in the workspace, it can be fed straight into the next
+transformation: an EER schema becomes a relational schema, and that
+relational schema becomes SQL text. The CLI runs such a chain in one
+command, passing intermediate models in memory, and a chain that proves
+useful can be saved as a named pipeline and replayed.</p>
+<p>Composing runs is the user&#x27;s side of the story, and the User Guide
+covers it in
+<a href="/aelastics/user-guide/guides/pipelines">Pipelines</a>, with a worked
+end-to-end walkthrough in the
+<a href="/aelastics/user-guide/tutorial">User Guide tutorial</a>.</p>
+<p>What matters on the authoring side is that chaining is only possible
+because of what you declare. The CLI type-checks a chain from the
+manifests before it executes anything: step N&#x27;s target metamodel must
+equal step N+1&#x27;s source metamodel. The <code>source</code> and <code>target</code> entries in
+<code>synth.json</code> are therefore not documentation, they are the interface
+that decides whether your transformation can be composed with anyone
+else&#x27;s. Declaring them accurately is what makes your package a good
+citizen in a chain.</p>
+<h2 class="anchor anchorWithStickyNavbar_bweN" id="prerequisites-for-all-parts">Prerequisites for all parts<a href="#prerequisites-for-all-parts" class="hash-link" aria-label="Direct link to Prerequisites for all parts" title="Direct link to Prerequisites for all parts">​</a></h2>
+<p>You need a checkout of the Synthesis repository built once with <code>rush install</code> and <code>rush build</code>, and the <code>synth</code> CLI. Until the
+<code>@synthesis/*</code> packages are published to npm, transformation packages
+resolve them from the repository workspace. Inside the repository you
+can run the CLI as <code>node apps/cli/bin/run.js</code>; the tutorial writes
+<code>synth</code> for short.</p>
+<p>Part 1 assumes no prior Synthesis experience beyond the
+<a href="/aelastics/user-guide/concepts">User Guide&#x27;s concepts page</a>. Each
+later part builds directly on the one before it.</p></div></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/aelastics/developer-guide/tutorial"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Tutorial</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/aelastics/developer-guide/tutorial/model-to-model/part-1-basic"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Part 1: Basic</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_tmrw thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-four-parts" class="table-of-contents__link toc-highlight">The four parts</a><ul><li><a href="#part-1-basic" class="table-of-contents__link toc-highlight">Part 1: Basic</a></li><li><a href="#part-2-advanced" class="table-of-contents__link toc-highlight">Part 2: Advanced</a></li><li><a href="#part-3-configuration-based" class="table-of-contents__link toc-highlight">Part 3: Configuration-based</a></li><li><a href="#part-4-name-scopes" class="table-of-contents__link toc-highlight">Part 4: Name scopes</a></li></ul></li><li><a href="#at-a-glance" class="table-of-contents__link toc-highlight">At a glance</a></li><li><a href="#what-happens-after-your-transformation-runs" class="table-of-contents__link toc-highlight">What happens after your transformation runs</a></li><li><a href="#prerequisites-for-all-parts" class="table-of-contents__link toc-highlight">Prerequisites for all parts</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2019–2026 AelasticS.</div></div></div></footer></div>
+</body>
+</html>
